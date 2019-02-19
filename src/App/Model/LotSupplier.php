@@ -139,7 +139,7 @@ class LotSupplier extends AbstractModel {
      * @param bool $websiteContact
      * @return LotSupplier
      */
-    public function setWebsiteContact(?bool $websiteContact): LotSupplier
+    public function setWebsiteContact(bool $websiteContact): LotSupplier
     {
         $this->websiteContact = $websiteContact;
         return $this;

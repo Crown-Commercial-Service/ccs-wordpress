@@ -233,20 +233,6 @@ class SalesforceApi
 
 
     /**
-     * @param $supplierId
-     * @return mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function getContact($supplierId)
-    {
-        $this->response = $this->client->request('GET', 'sobjects/Master_Framework_Lot_Contact__c/' . $supplierId, [
-          'headers' => $this->headers,
-        ]);
-
-        return $this->getResponseContent();
-    }
-
-    /**
      * @param $accountId
      * @return mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -262,6 +248,44 @@ class SalesforceApi
         $supplier->setMappedFields($this->getResponseContent());
 
         return $supplier;
+    }
+
+
+    /**
+     * @param $lotId
+     * @param $supplierId
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getContact($lotId, $supplierId)
+    {
+        $potentialLotContacts = $this->query("SELECT Id, Contact_Name__c, Email__c, Website_Contact__c, Master_Framework_Lot__c, Supplier_Contact__c from Master_Framework_Lot_Contact__c WHERE Master_Framework_Lot__c = '" . $lotId . "'");
+
+        if ($potentialLotContacts->totalSize == 0)
+        {
+            // Nothing was found
+            return null;
+        }
+        
+
+        foreach ($potentialLotContacts->records as $potentialLotContact)
+        {
+            $contactRecord = $this->query("SELECT Id, AccountId from Contact where Id = '" . $potentialLotContact->Supplier_Contact__c . "'");
+
+            if ($contactRecord->totalSize == 0)
+            {
+                continue;
+            }
+
+            $accountId = $contactRecord->records[0]->AccountId;
+
+            if ($supplierId == $accountId)
+            {
+                return $potentialLotContact;
+            }
+        }
+
+        return null;   
     }
 
 

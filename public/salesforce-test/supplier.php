@@ -3,9 +3,19 @@
 require '_header.php';
 use App\Services\Salesforce\SalesforceApi;
 
-$accountId = $_GET['account_id'];
 
 $salesforceApi = new SalesforceApi();
+
+
+$details = $salesforceApi->getContact('a0bb000000bcVzrAAE', '001b000003OCdKHAA1');
+
+
+var_dump($details);
+
+die('dead');
+
+$accountId = $_GET['account_id'];
+
 
 $account = $salesforceApi->getAccount($accountId);
 

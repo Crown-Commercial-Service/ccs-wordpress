@@ -8,8 +8,12 @@ class LotSupplierRepository extends AbstractRepository
 {
 
     protected $databaseBindings = [
-      'lot_id'      => ':lot_id',
-      'supplier_id' => ':supplier_id',
+      'lot_id'          => ':lot_id',
+      'supplier_id'     => ':supplier_id',
+      'contact_name'    => ':contact_name',
+      'contact_email'   => ':contact_email',
+      'website_contact' => ':website_contact',
+      'trading_name'    => ':trading_name',
     ];
 
     /**
@@ -97,6 +101,26 @@ class LotSupplierRepository extends AbstractRepository
         if (isset($databaseBindings['supplier_id'])) {
             $supplierId = $lotSupplier->getSupplierId();
             $query->bindParam(':supplier_id', $supplierId, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['contact_name'])) {
+            $contactName = $lotSupplier->getContactName();
+            $query->bindParam(':contact_name', $contactName, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['contact_email'])) {
+            $contactEmail = $lotSupplier->getContactEmail();
+            $query->bindParam(':contact_email', $contactEmail, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['website_contact'])) {
+            $websiteContact = $lotSupplier->isWebsiteContact();
+            $query->bindParam(':website_contact', $websiteContact, \PDO::PARAM_BOOL);
+        }
+
+        if (isset($databaseBindings['trading_name'])) {
+            $tradingName = $lotSupplier->getTradingName();
+            $query->bindParam(':trading_name', $tradingName, \PDO::PARAM_STR);
         }
 
         return $query;

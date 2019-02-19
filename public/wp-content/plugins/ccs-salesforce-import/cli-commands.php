@@ -102,11 +102,20 @@ class Import
                         continue;
                     }
 
+
                     $importCount['suppliers']++;
                     $lotSuppler = new LotSupplier([
                       'lot_id' => $lot->getSalesforceId(),
                       'supplier_id' => $supplier->getSalesforceId()
                     ]);
+
+                    $contactDetails = $salesforceApi->getContact($lotSuppler->getLotId(), $lotSuppler->getSupplierId());
+
+                    if (!empty($contactDetails))
+                    {
+                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSuppler, $contactDetails);
+                    }
+
                     $lotSupplierRepository->create($lotSuppler);
                 }
 
@@ -117,6 +126,24 @@ class Import
           'importCount' => $importCount,
           'errorCount'  => $errorCount
         ];
+    }
+
+
+    protected function addContactDetailsToLotSupplier(LotSupplier $lotSuppler, $contactDetails) {
+
+        if (isset($contactDetails->Contact_Name__c)) {
+            $lotSuppler->setContactName($contactDetails->Contact_Name__c);
+        }
+
+        if (isset($contactDetails->Email__c)) {
+            $lotSuppler->setContactEmail($contactDetails->Email__c);
+        }
+
+        if (isset($contactDetails->Website_Contact__c)) {
+            $lotSuppler->setWebsiteContact($contactDetails->Website_Contact__c);
+        }
+
+        return $lotSuppler;
     }
 
 

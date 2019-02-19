@@ -76,12 +76,13 @@ class Import
             foreach ($lots as $lot) {
                 if (!$lotRepository->createOrUpdateExcludingWordpressId('salesforce_id',
                   $lot->getSalesforceId(), $lot)) {
+                    WP_CLI::error('Lot not imported.');
                     $errorCount['lots']++;
                     continue;
                 }
                 $lot = $lotRepository->findById($lot->getSalesforceId(), 'salesforce_id');
 
-
+                WP_CLI::success('Lot imported.');
                 $importCount['lots']++;
 
                 $this->createLotInWordpress($lot);
@@ -99,25 +100,26 @@ class Import
                 foreach ($suppliers as $supplier) {
                     if (!$supplierRepository->createOrUpdateExcludingWordpressId('salesforce_id',
                       $supplier->getSalesforceId(), $supplier)) {
+                        WP_CLI::error('Supplier not imported.');
                         $errorCount['suppliers']++;
                         continue;
                     }
 
-
+                    WP_CLI::success('Supplier imported.');
                     $importCount['suppliers']++;
-                    $lotSuppler = new LotSupplier([
+                    $lotSupplier = new LotSupplier([
                       'lot_id' => $lot->getSalesforceId(),
                       'supplier_id' => $supplier->getSalesforceId()
                     ]);
 
-                    $contactDetails = $salesforceApi->getContact($lotSuppler->getLotId(), $lotSuppler->getSupplierId());
+                    $contactDetails = $salesforceApi->getContact($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
 
                     if (!empty($contactDetails))
                     {
-                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSuppler, $contactDetails);
+                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
                     }
 
-                    $lotSupplierRepository->create($lotSuppler);
+                    $lotSupplierRepository->create($lotSupplier);
                 }
 
             }
@@ -130,21 +132,21 @@ class Import
     }
 
 
-    protected function addContactDetailsToLotSupplier(LotSupplier $lotSuppler, $contactDetails) {
+    protected function addContactDetailsToLotSupplier(LotSupplier $lotSupplier, $contactDetails) {
 
         if (isset($contactDetails->Contact_Name__c)) {
-            $lotSuppler->setContactName($contactDetails->Contact_Name__c);
+            $lotSupplier->setContactName($contactDetails->Contact_Name__c);
         }
 
         if (isset($contactDetails->Email__c)) {
-            $lotSuppler->setContactEmail($contactDetails->Email__c);
+            $lotSupplier->setContactEmail($contactDetails->Email__c);
         }
 
         if (isset($contactDetails->Website_Contact__c)) {
-            $lotSuppler->setWebsiteContact($contactDetails->Website_Contact__c);
+            $lotSupplier->setWebsiteContact($contactDetails->Website_Contact__c);
         }
 
-        return $lotSuppler;
+        return $lotSupplier;
     }
 
 
@@ -185,10 +187,12 @@ class Import
         {
             // This lot already has a Wordpress ID assigned, so we need to update the Title.
             $this->updatePostTitle($lot, 'lot');
+            WP_CLI::success('Updated Lot Title in Wordpress.');
             return;
         }
 
         $wordpressId = $this->createLotPostInWordpress($lot);
+        WP_CLI::success('Created Lot in Wordpress.');
 
         //Update the Lot model with the new Wordpress ID
         $lot->setWordpressId($wordpressId);

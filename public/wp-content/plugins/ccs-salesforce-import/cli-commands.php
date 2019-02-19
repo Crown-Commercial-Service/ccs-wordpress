@@ -96,11 +96,20 @@ class Import
                         continue;
                     }
 
+
                     $importCount['suppliers']++;
                     $lotSuppler = new LotSupplier([
                       'lot_id' => $lot->getSalesforceId(),
                       'supplier_id' => $supplier->getSalesforceId()
                     ]);
+
+                    $contactDetails = $salesforceApi->getContact($lotSuppler->getLotId(), $lotSuppler->getSupplierId());
+
+                    if (!empty($contactDetails))
+                    {
+                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSuppler, $contactDetails);
+                    }
+
                     $lotSupplierRepository->create($lotSuppler);
                 }
 
@@ -114,6 +123,24 @@ class Import
     }
 
 
+    protected function addContactDetailsToLotSupplier(LotSupplier $lotSuppler, $contactDetails) {
+
+        if (isset($contactDetails->Contact_Name__c)) {
+            $lotSuppler->setContactName($contactDetails->Contact_Name__c);
+        }
+
+        if (isset($contactDetails->Email__c)) {
+            $lotSuppler->setContactEmail($contactDetails->Email__c);
+        }
+
+        if (isset($contactDetails->Website_Contact__c)) {
+            $lotSuppler->setWebsiteContact($contactDetails->Website_Contact__c);
+        }
+
+        return $lotSuppler;
+    }
+
+
     /**
      * Determine if we need to create a new 'Framework' post in Wordpress, then (if we do) - create one.
      *
@@ -121,8 +148,6 @@ class Import
      */
     protected function createFrameworkInWordpress($framework)
     {
-        var_dump($framework);
-        die();
         if (!empty($framework->getWordpressId()))
         {
             // This framework already has a Wordpress ID assigned, so we need to update the Title.
@@ -138,8 +163,6 @@ class Import
         // Save the Framework back into the custom database.
         $frameworkRepository = new FrameworkRepository();
         $frameworkRepository->update('salesforce_id', $framework->getSalesforceId(), $framework);
-
-        die();
     }
 
 

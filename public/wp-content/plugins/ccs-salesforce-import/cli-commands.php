@@ -51,6 +51,7 @@ class Import
         $salesforceApi = new SalesforceApi();
 
         $frameworks = $salesforceApi->getAllFrameworks();
+
         $frameworkRepository = new FrameworkRepository();
         $lotRepository = new LotRepository();
 
@@ -62,7 +63,7 @@ class Import
                 continue;
             }
 
-            $framework = $frameworkRepository->findById($framework->getId());
+            $framework = $frameworkRepository->findById($framework->getSalesforceId(), 'salesforce_id');
 
             WP_CLI::success('Framework ' . $index . ' imported.');
             $importCount['frameworks']++;
@@ -77,8 +78,13 @@ class Import
                     $errorCount['lots']++;
                     continue;
                 }
+                $lot = $lotRepository->findById($lot->getSalesforceId(), 'salesforce_id');
+
 
                 $importCount['lots']++;
+
+                $this->createLotInWordpress($lot);
+
 
                 $suppliers = $salesforceApi->getLotSuppliers($lot->getSalesforceId());
 
@@ -151,11 +157,11 @@ class Import
         if (!empty($framework->getWordpressId()))
         {
             // This framework already has a Wordpress ID assigned, so we need to update the Title.
-            $this->updateFrameworkTitle($framework);
+            $this->updatePostTitle($framework, 'framework');
             return;
         }
 
-        $wordpressId = $this->createPostInWordpress($framework);
+        $wordpressId = $this->createFrameworkPostInWordpress($framework);
 
         //Update the Framework model with the new Wordpress ID
         $framework->setWordpressId($wordpressId);
@@ -165,28 +171,42 @@ class Import
         $frameworkRepository->update('salesforce_id', $framework->getSalesforceId(), $framework);
     }
 
-
-    public function updateFrameworkTitle($framework)
+    /**
+     * Determine if we need to create a new 'Lot' post in Wordpress, then (if we do) - create one.
+     *
+     * @param $lot
+     */
+    protected function createLotInWordpress($lot)
     {
-       $post_id = wp_update_post(array(
-            'ID' => $framework->getWordpressId(),
-            'post_title' => 'Title 1',
-            'post_type' => 'framework'
-        ), true);
-
-        if (is_wp_error($post_id)) {
-            $errors = $post_id->get_error_messages();
-            foreach ($errors as $error) {
-                echo $error;
-            }
+        if (!empty($lot->getWordpressId()))
+        {
+            // This lot already has a Wordpress ID assigned, so we need to update the Title.
+            $this->updatePostTitle($lot, 'lot');
+            return;
         }
 
-//        $frameworkTitle = get_post_field('post_title', $framework->getWordpressId());
-//
-//        update_field('post_title', 'Title1', $framework->getWordpressId());
+        $wordpressId = $this->createLotPostInWordpress($lot);
+
+        //Update the Lot model with the new Wordpress ID
+        $lot->setWordpressId($wordpressId);
+
+        // Save the Lot back into the custom database.
+        $lotRepository = new LotRepository();
+        $lotRepository->update('salesforce_id', $lot->getSalesforceId(), $lot);
     }
 
-    public function createPostInWordpress($framework)
+
+    public function updatePostTitle($model, $type)
+    {
+       wp_update_post(array(
+            'ID' => $model->getWordpressId(),
+            'post_title' => $model->getTitle(),
+            'post_type' => $type
+        ));
+
+    }
+
+    public function createFrameworkPostInWordpress($framework)
     {
         // Create a new post
         $wordpressId = wp_insert_post(array(
@@ -194,8 +214,21 @@ class Import
             'post_type' => 'framework'
         ));
 
-        //Save the salesforce id in Wordpress
-        update_field('framework_id', $framework->getSalesforceId(), $wordpressId);
+
+            //Save the salesforce id in Wordpress
+            update_field('framework_id', $framework->getSalesforceId(), $wordpressId);
+
+
+        return $wordpressId;
+    }
+
+    public function createLotPostInWordpress($lot)
+    {
+        // Create a new post
+        $wordpressId = wp_insert_post(array(
+            'post_title' => $lot->getTitle(),
+            'post_type' => 'lot'
+        ));
 
         return $wordpressId;
     }

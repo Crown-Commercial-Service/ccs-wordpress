@@ -32,10 +32,8 @@ $fg1->add_field( new acf_fields\text( 'Framework ID', 'framework_id', '201902041
 ] ) );
 
 
-$fg1->add_field( new acf_fields\textarea( 'Framework Summary', 'framework_summary', '201902041413a', [
-    'instructions' => 'Framework sunmmary. Limited to 180 characters. Can include HTML code.',
-    'maxlength' => 180,
-    'rows' => 3
+$fg1->add_field( new acf_fields\wysiwyg( 'Framework Summary', 'framework_summary', '201902181515a', [
+    'instructions' => 'A few short sentences - a maximum of 180 characters.'
 ] ) );
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Framework Description', 'framework_description', '201902041416a', [

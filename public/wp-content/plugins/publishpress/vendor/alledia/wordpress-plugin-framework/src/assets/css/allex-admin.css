@@ -229,42 +229,75 @@
 
 /* Subscription form */
 #allex_subscription_ad {
-    background: #fff;
-    margin-left: 25px;
+    margin-left: 5px;
+    max-width: 230px;
+    min-width: 230px;
 }
 
 #allex_subscription_ad img {
-    width: 100%;
+    width: 140%;
+    margin-left: -73px;
+    margin-top: 9px;
+    max-width: none;
 }
 
-#allex_subscription_ad .content {
-    padding: 15px;
-}
-
-form input:invalid,
-form select:invalid,
-form textarea:invalid,
-#allex_subscription_ad .content .error {
-    border: 1px solid #ff606c;
-    background: #f6dbdc;
-}
-
-#allex_subscription_ad .content input {
-    width: 100%;
-    font-size: 14px;
-    max-width: 100%;
-    padding: 5px;
-}
-
-#allex_subscription_ad .content button {
-    margin-top: 20px;
-    width: 100%;
+.allex_subscription_ad_content {
+    padding: 20px;
+    padding-top: 90px;
+    padding-bottom: 25px;
+    margin-top: -116px;
     text-align: center;
+    background: #ffffff;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    -webkit-box-shadow: 5px 5px 47px -5px rgba(0,0,0,0.57);
+    -moz-box-shadow: 5px 5px 47px -5px rgba(0,0,0,0.57);
+    box-shadow: 5px 5px 47px -5px rgba(0,0,0,0.57);
 }
 
-#allex_subscription_ad .control-group {
-    margin-top: 10px;
+.allex_subscription_ad_save {
+    margin-top: 50px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
 }
+
+.allex_subscription_ad_discount {
+    font-size: 60px;
+    line-height: 56px;
+    font-weight: bold;
+    color: #db5852 !important;
+}
+
+.allex_subscription_ad_item {
+    font-size: 16px;
+    margin-top: 5px;
+}
+
+.allex_subscription_ad_button {
+    background: #db5852;
+    color: #ffffff !important;
+    border: none;
+    padding: 10px !important;
+    -webkit-border-radius: 20px !important;
+    -moz-border-radius: 20px !important;
+    border-radius: 20px !important;
+    width: 100%;
+    margin-top: 20px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: block;
+    box-sizing: border-box;
+}
+
+.allex_subscription_ad_link:hover {
+    -webkit-box-shadow: 5px 5px 47px -5px rgba(0,0,0,0.57);
+    -moz-box-shadow: 5px 5px 47px -5px rgba(0,0,0,0.57);
+    box-shadow: 5px 5px 47px -5px rgba(0,0,0,0.57);
+    background-color: #dbf1ff;
+}
+/***********************/
 
 .allex-set-license-link {
     font-weight: bold;

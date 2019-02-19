@@ -235,4 +235,15 @@ class Import
 
         return $wordpressId;
     }
+
+    public function test_endpoint() {
+        return 'Hello';
+    }
 }
+
+add_action( 'rest_api_init', function () {
+    register_rest_route( 'ccs-salesforce-import/v1', '/framework', array(
+        'methods' => 'GET',
+        'callback' => 'test_endpoint',
+    ) );
+} );

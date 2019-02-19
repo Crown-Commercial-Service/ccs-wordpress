@@ -36,16 +36,16 @@ $fg1->add_field( new acf_fields\wysiwyg( 'Summary', 'framework_summary', '201902
     'instructions' => 'A few short sentences - a maximum of 180 characters.'
 ] ) );
 
+$fg1->add_field( (new acf_fields\repeater('Updates', 'framework_updates', '201902041434a', [
+    'button_label' => 'Add Update'
+]))
+    ->add_sub_field( new acf_fields\text( 'Date and title', 'framework_update_title', '201902041813a' ) )
+    ->add_sub_field( new acf_fields\wysiwyg( 'Update Description', 'framework_update_description', '201902041813b' ) )
+);
+
 $fg1->add_field( new acf_fields\wysiwyg( 'Description', 'framework_description', '201902041416a', [
     'instructions' => '',
 ] ) );
-
-$fg1->add_field( (new acf_fields\repeater('Updates', 'framework_updates', '201902041434a', [
-        'button_label' => 'Add Update'
-    ]))
-        ->add_sub_field( new acf_fields\text( 'Date and title', 'framework_update_title', '201902041813a' ) )
-        ->add_sub_field( new acf_fields\wysiwyg( 'Update Description', 'framework_update_description', '201902041813b' ) )
-    );
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Benefits', 'framework_benefits', '201902041814a', [
     'instructions' => '',

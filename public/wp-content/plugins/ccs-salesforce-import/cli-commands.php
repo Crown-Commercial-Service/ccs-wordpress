@@ -70,6 +70,7 @@ class Import
 
             $this->createFrameworkInWordpress($framework);
 
+
             $lots = $salesforceApi->getFrameworkLots($framework->getSalesforceId());
 
             foreach ($lots as $lot) {
@@ -158,10 +159,12 @@ class Import
         {
             // This framework already has a Wordpress ID assigned, so we need to update the Title.
             $this->updatePostTitle($framework, 'framework');
+            WP_CLI::success('Updated Framework Title in Wordpress.');
             return;
         }
 
         $wordpressId = $this->createFrameworkPostInWordpress($framework);
+        WP_CLI::success('Created Framework in Wordpress.');
 
         //Update the Framework model with the new Wordpress ID
         $framework->setWordpressId($wordpressId);

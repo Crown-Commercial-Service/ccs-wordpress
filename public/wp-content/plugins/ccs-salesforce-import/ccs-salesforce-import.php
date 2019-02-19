@@ -24,6 +24,11 @@ if (class_exists('WP_CLI')) {
 
 require __DIR__ . '/PluginCore.php';
 
+function get_latest_post()
+{
+    return 'Hello';
+}
+
 /**
  * Begins execution of the plugin.
  *
@@ -39,6 +44,15 @@ function run_plugin()
 
     register_activation_hook(__FILE__, array('PluginCore', 'activate'));
     register_deactivation_hook(__FILE__, array('PluginCore', 'deactivate'));
+
+    add_action( 'rest_api_init', function () {
+        register_rest_route( 'wp/v2', '/framework', array(
+            'methods' => 'GET',
+            'callback' => 'get_latest_post',
+        ) );
+    } );
 }
 
 run_plugin();
+
+

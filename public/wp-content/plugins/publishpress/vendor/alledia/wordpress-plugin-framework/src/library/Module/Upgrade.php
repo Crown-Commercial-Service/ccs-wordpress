@@ -45,11 +45,11 @@ class Upgrade extends Abstract_Module
     {
         parent::__construct($container);
 
-        $this->plugin_basename     = $this->container['PLUGIN_BASENAME'];
-        $this->plugin_name         = $this->container['PLUGIN_NAME'];
-        $this->plugin_title        = $this->container['PLUGIN_TITLE'];
-        $this->twig                = $this->container['twig'];
-        $this->assets_base_url     = $this->container['ASSETS_BASE_URL'];
+        $this->plugin_basename = $this->container['PLUGIN_BASENAME'];
+        $this->plugin_name     = $this->container['PLUGIN_NAME'];
+        $this->plugin_title    = $this->container['PLUGIN_TITLE'];
+        $this->twig            = $this->container['twig'];
+        $this->assets_base_url = $this->container['ASSETS_BASE_URL'];
     }
 
     /**
@@ -126,33 +126,28 @@ class Upgrade extends Abstract_Module
         }
 
         // @todo: The path have to be relative to plugin, not to the file. Having multiple plugins using this, only the same image will be used.
-        $img_url = $this->assets_base_url . '/img/subscription-ad.jpg';
+        $img_url = $this->assets_base_url . '/img/gift-box.png';
 
         /**
-         * Get the mailchimp config for the plugin.
+         * Get the link for the subscription page.
          *
-         * @param array  $mailchimp_config
+         * @param array  $ad_link
          * @param string $plugin_name
          *
-         * @return array
+         * @return string
          */
-        $mailchimp_config = apply_filters('allex_upgrade_mailchimp_config', [], $this->plugin_name);
+        $ad_link = apply_filters('allex_upgrade_link', '', $this->plugin_name);
 
         echo $this->twig->render(
             'subscription_ad.twig',
             [
                 'image_src'        => $img_url,
-                'mailchimp_config' => $mailchimp_config,
+                'link' => $ad_link,
                 'text'             => [
-                    'title'         => sprintf(__('Get %d%% off the %s extensions', 'allex'),
-                        $this->subscription_discount,
-                        $this->plugin_title),
-                    'thanks'        => sprintf(__('Thanks for using %1$s! Enter your details and we\'ll send you a coupon for %2$d%% off the %1$s extensions.',
-                        'allex'), $this->plugin_title, $this->subscription_discount),
-                    'email_address' => __('Email Address', 'allex'),
-                    'first_name'    => __('First Name', 'allex'),
-                    'last_name'     => __('Last Name', 'allex'),
-                    'yes_send_me'   => __('Yes! Send me the coupon', 'allex'),
+                    'save'     => __('Save', 'allex'),
+                    'discount' => $this->subscription_discount,
+                    'item'     => sprintf(__('off the %s extensions', 'allex'), $this->plugin_title),
+                    'getit'    => __('Get it', 'allex'),
                 ],
             ]
         );

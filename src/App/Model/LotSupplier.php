@@ -132,6 +132,11 @@ class LotSupplier extends AbstractModel {
      */
     public function isWebsiteContact(): bool
     {
+        if (is_null($this->websiteContact))
+        {
+            return false;
+        }
+
         return $this->websiteContact;
     }
 
@@ -139,9 +144,15 @@ class LotSupplier extends AbstractModel {
      * @param bool $websiteContact
      * @return LotSupplier
      */
-    public function setWebsiteContact(bool $websiteContact): LotSupplier
+    public function setWebsiteContact(?bool $websiteContact): LotSupplier
     {
-        $this->websiteContact = $websiteContact;
+        if (!empty($websiteContact))
+        {
+            $this->websiteContact = $websiteContact;
+        } else {
+            $this->websiteContact = false;
+        }
+
         return $this;
     }
 

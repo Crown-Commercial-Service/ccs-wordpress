@@ -39,7 +39,7 @@ function get_framework_json(WP_REST_Request $request)
     }
 
     $frameworkRepository = new FrameworkRepository();
-    $frameworks = $frameworkRepository->findAll(false);
+    $frameworks = $frameworkRepository->findAll(true);
 
     var_dump($frameworks);
 }

@@ -84,7 +84,7 @@ abstract class AbstractRepository implements RepositoryInterface {
 
         if ($paginate)
         {
-            $this->addPaginationQuery($sql, $limit, $page);
+            $sql = $this->addPaginationQuery($sql, $limit, $page);
         }
 
         $query = $this->connection->prepare($sql);

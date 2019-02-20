@@ -52,6 +52,7 @@ function get_framework_json(WP_REST_Request $request)
 
     $meta = [
       'total_results' => $frameworkCount,
+      'limit'         => $limit,
       'results'       => count($frameworks),
       'page'          => $page == 0 ? 1 : $page
     ];

@@ -85,8 +85,53 @@ function run_plugin()
             'callback' => 'get_framework_json',
         ) );
     } );
+
+    add_action( 'save_post', 'save_framework_meta' );
+
 }
 
 run_plugin();
+
+function save_framework_meta($post_id) {
+    $post_type = get_post_type($post_id);
+
+    // If this isn't a 'framework' post, don't do anything
+    if ($post_type != 'framework' ) {
+        return;
+    }
+
+    $frameworkRepository = new FrameworkRepository();
+
+
+    if (!$frameworkRepository->findById($post_id, 'wordpress_id')) {
+        //add error
+        return;
+    };
+
+    $framework = $frameworkRepository->findById($post_id, 'wordpress_id');
+
+    if(isset($_POST['framework_summary']))
+    {
+        $framework->setSummary(sanitize_text_field( $_POST['framework_summary']));
+    }
+
+    if(isset($_POST['framework_description']))
+    {
+        $framework->setDescription(sanitize_text_field( $_POST['framework_description']));
+    }
+
+    if(isset($_POST['framework_benefits']))
+    {
+        $framework->setBenefits(sanitize_text_field( $_POST['framework_benefits']));
+    }
+
+    if(isset($_POST['framework_how_to_buy']))
+    {
+        $framework->setHowToBuy(sanitize_text_field( $_POST['framework_how_to_buy']));
+    }
+
+    $frameworkRepository->update('wordpress_id', $framework->getWordpressId(), $framework);
+
+}
 
 

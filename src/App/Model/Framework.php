@@ -539,7 +539,7 @@ class Framework extends AbstractModel {
     /**
      * @return string
      */
-    public function getDocumentUpdates(): string
+    public function getDocumentUpdates(): ?string
     {
         return $this->documentUpdates;
     }
@@ -548,7 +548,7 @@ class Framework extends AbstractModel {
      * @param string $documentUpdates
      * @return Framework
      */
-    public function setDocumentUpdates(string $documentUpdates): Framework
+    public function setDocumentUpdates(?string $documentUpdates): Framework
     {
         $this->documentUpdates = $documentUpdates;
         return $this;
@@ -570,6 +570,35 @@ class Framework extends AbstractModel {
     {
         $this->documents = $documents;
         return $this;
+    }
+
+    public function toArray()
+    {
+        return [
+          'id'                  => $this->getId(),
+          'rm_number'           => $this->getRmNumber(),
+          'wordpress_id'        => $this->getWordpressId(),
+          'salesforce_id'       => $this->getSalesforceId(),
+          'title'               => $this->getTitle(),
+          'summary'             => $this->getSummary(),
+          'description'         => $this->getDescription(),
+          'updates'             => $this->getUpdates(),
+          'benefits'            => $this->getBenefits(),
+          'how_to_buy'          => $this->getHowToBuy(),
+          'terms'               => $this->getTerms(),
+          'pillar'              => $this->getPillar(),
+          'category'            => $this->getCategory(),
+          'status'              => $this->getStatus(),
+          'start_date'          => !empty($this->getStartDate()) ? $this->getStartDate()->format('Y-m-d') : null,
+          'end_date'            => !empty($this->getEndDate()) ? $this->getEndDate()->format('Y-m-d') : null,
+          'tenders_open_date'   => !empty($this->getTendersOpenDate()) ? $this->getTendersOpenDate()->format('Y-m-d') : null,
+          'tenders_close_date'  => !empty($this->getTendersCloseDate()) ? $this->getTendersCloseDate()->format('Y-m-d') : null,
+          'expected_live_date'  => !empty($this->getExpectedLiveDate()) ? $this->getExpectedLiveDate()->format('Y-m-d') : null,
+          'expected_award_date' => !empty($this->getExpectedAwardDate()) ? $this->getExpectedAwardDate()->format('Y-m-d') : null,
+          'document_updates'    => $this->getDocumentUpdates(),
+          'lots'                => 'not yet supported in this method',
+          'documents'           => 'not yet supported in this method',
+        ];
     }
 
 }

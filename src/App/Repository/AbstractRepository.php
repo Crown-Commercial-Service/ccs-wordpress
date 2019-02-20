@@ -46,6 +46,8 @@ abstract class AbstractRepository implements RepositoryInterface {
         if ($page >= 2)
         {
             $page = $page-1;
+        } else {
+            $page = 0;
         }
 
         $sql .= ' LIMIT ' . $limit . ' OFFSET ' . $page * $limit;
@@ -60,14 +62,19 @@ abstract class AbstractRepository implements RepositoryInterface {
      */
     public function countAll()
     {
-        $sql = 'SELECT count(*) from  ' . $this->tableName;
+        $sql = 'SELECT count(*) as count from  ' . $this->tableName;
 
         $query = $this->connection->prepare($sql);
         $query->execute();
 
-        $results = $query->fetchColumn(\PDO::FETCH_ASSOC);
+        $results = $query->fetch(\PDO::FETCH_ASSOC);
+        
+        if (!isset($results['count']))
+        {
+            return 0;
+        }
 
-        return $results;
+        return (int) $results['count'];
     }
 
     /**

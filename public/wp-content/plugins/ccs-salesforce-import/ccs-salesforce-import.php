@@ -10,6 +10,8 @@
 */
 
 // If this file is called directly, abort.
+use App\Repository\FrameworkRepository;
+
 if (!defined('WPINC')) {
     throw new Exception('You cannot access this file directly');
 }
@@ -24,9 +26,17 @@ if (class_exists('WP_CLI')) {
 
 require __DIR__ . '/PluginCore.php';
 
-function get_latest_post()
+function get_framework_json(WP_REST_Request $request)
 {
-    return 'Hello';
+    $limit = $request['limit'];
+
+    $page = $request['page'];
+
+    $frameworkRepository = new FrameworkRepository();
+
+    $frameworks = $frameworkRepository->findAll();
+
+    return $frameworks;
 }
 
 /**
@@ -46,9 +56,9 @@ function run_plugin()
     register_deactivation_hook(__FILE__, array('PluginCore', 'deactivate'));
 
     add_action( 'rest_api_init', function () {
-        register_rest_route( 'wp/v2', '/framework', array(
+        register_rest_route( 'wp/v2', '/ccs/frameworks', array(
             'methods' => 'GET',
-            'callback' => 'get_latest_post',
+            'callback' => 'get_framework_json',
         ) );
     } );
 }

@@ -37,7 +37,7 @@ function ccs_register_my_cpts() {
         "rewrite" => array("slug" => "frameworks"),
         "query_var" => true,
         "menu_icon" => "dashicons-media-spreadsheet",
-        "supports" => array("title", "excerpt", "revisions", "editor"),
+        "supports" => array("title", "excerpt", "revisions", "editor", "author"),
     );
     register_post_type("framework", $args);
 

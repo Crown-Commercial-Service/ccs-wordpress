@@ -72,3 +72,14 @@ $fg2->add_field( (new acf_fields\repeater('Documents - Downloads', 'framework_do
 );
 
 $fg2->register();
+
+
+
+$fg3 = ( new fewacf\field_group( 'Keywords', '201902201440a', $location, 30 ));
+
+$fg3->add_field( new acf_fields\textarea( 'Keywords', 'framework_keywords', '201902201448a', [
+    'instructions' => 'Optionally enter some keywords (separated by comma\'s) which will be used to help ensure accurate search output (maximum combined length, 1000 character)',
+    'maxlength' => 1000
+] ) );
+
+$fg3->register();

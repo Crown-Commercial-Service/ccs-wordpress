@@ -132,6 +132,11 @@ class Import
     }
 
 
+    /**
+     * @param \App\Model\LotSupplier $lotSupplier
+     * @param $contactDetails
+     * @return \App\Model\LotSupplier
+     */
     protected function addContactDetailsToLotSupplier(LotSupplier $lotSupplier, $contactDetails) {
 
         if (isset($contactDetails->Contact_Name__c)) {
@@ -203,6 +208,12 @@ class Import
     }
 
 
+    /**
+     * Update the title of a Wordpress post
+     *
+     * @param $model
+     * @param $type
+     */
     public function updatePostTitle($model, $type)
     {
        wp_update_post(array(
@@ -213,6 +224,12 @@ class Import
 
     }
 
+    /**
+     * Insert a new Framework post in to Wordpress
+     *
+     * @param $framework
+     * @return int|\WP_Error
+     */
     public function createFrameworkPostInWordpress($framework)
     {
         // Create a new post
@@ -222,13 +239,19 @@ class Import
         ));
 
 
-            //Save the salesforce id in Wordpress
-            update_field('framework_id', $framework->getSalesforceId(), $wordpressId);
+        //Save the salesforce id in Wordpress
+        update_field('framework_id', $framework->getSalesforceId(), $wordpressId);
 
 
         return $wordpressId;
     }
 
+    /**
+     * Insert a new Lot post in to Wordpress
+     *
+     * @param $lot
+     * @return int|\WP_Error
+     */
     public function createLotPostInWordpress($lot)
     {
         // Create a new post

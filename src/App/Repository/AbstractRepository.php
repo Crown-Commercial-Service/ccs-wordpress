@@ -14,6 +14,13 @@ abstract class AbstractRepository implements RepositoryInterface {
     protected $databaseBindings = [];
 
     /**
+     * Any data fields present in the database which are originally from Wordpress
+     *
+     * @var array
+     */
+    protected $wordpressDataFields = ['wordpress_id'];
+
+    /**
      * Database table name
      *
      * @var string
@@ -169,12 +176,16 @@ abstract class AbstractRepository implements RepositoryInterface {
      * @param $object
      * @return mixed
      */
-    public function createOrUpdateExcludingWordpressId($searchField, $searchValue, $object)
+    public function createOrUpdateExcludingWordpressFields($searchField, $searchValue, $object)
     {
         $originalDataBindings = $this->databaseBindings;
-        if (isset($this->databaseBindings['wordpress_id'])) {
-            unset($this->databaseBindings['wordpress_id']);
+        foreach ($this->wordpressDataFields as $wordpressDataField)
+        {
+            if (isset($this->databaseBindings[$wordpressDataField])) {
+                unset($this->databaseBindings[$wordpressDataField]);
+            }
         }
+
         $response = $this->createOrUpdate($searchField, $searchValue, $object);
 
         $this->databaseBindings = $originalDataBindings;

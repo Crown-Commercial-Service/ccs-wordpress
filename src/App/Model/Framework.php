@@ -104,6 +104,15 @@ class Framework extends AbstractModel {
      * @var array
      */
     protected $documents;
+    /**
+     * @var bool
+     */
+    protected $publishOnWebsite;
+    /**
+     * @var string
+     */
+    protected $publishedStatus;
+
 
     /**
      * @return string
@@ -572,6 +581,59 @@ class Framework extends AbstractModel {
         return $this;
     }
 
+    /**
+     * @return bool
+     */
+    public function isPublishOnWebsite(): bool
+    {
+        if (is_null($this->publishOnWebsite))
+        {
+            return false;
+        }
+        return $this->publishOnWebsite;
+    }
+
+    /**
+     * @param bool $publishOnWebsite
+     * @return \App\Model\Framework
+     */
+    public function setPublishOnWebsite(?bool $publishOnWebsite): Framework
+    {
+        if (!empty($websiteContact))
+        {
+            $this->publishOnWebsite = $publishOnWebsite;
+        } else {
+            $this->publishOnWebsite = false;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPublishedStatus(): ?string
+    {
+        return $this->publishedStatus;
+    }
+
+    /**
+     * @param string $publishedStatus
+     * @return Framework
+     */
+    public function setPublishedStatus(?string $publishedStatus): Framework
+    {
+        $this->publishedStatus = $publishedStatus;
+        return $this;
+    }
+
+
+
+    /**
+     * Returns a simple text array representing the object
+     *
+     * @return array
+     */
     public function toArray()
     {
         return [

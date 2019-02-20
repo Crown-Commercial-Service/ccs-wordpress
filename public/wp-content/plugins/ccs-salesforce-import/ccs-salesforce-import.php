@@ -40,7 +40,6 @@ function get_framework_json(WP_REST_Request $request)
     }
     $page = $page ?? 0;
 
-
     $frameworkRepository = new FrameworkRepository();
     $frameworkCount = $frameworkRepository->countAll();
     $frameworks = $frameworkRepository->findAll(true, $limit, $page);

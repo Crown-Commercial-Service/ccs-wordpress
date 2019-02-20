@@ -26,6 +26,11 @@ if (class_exists('WP_CLI')) {
 
 require __DIR__ . '/PluginCore.php';
 
+/**
+ * Endpoint that returns a paginated list of framework data in a json format
+ *
+ * @param WP_REST_Request $request
+ */
 function get_framework_json(WP_REST_Request $request)
 {
     if(isset($request['limit']))
@@ -85,13 +90,21 @@ function run_plugin()
         ) );
     } );
 
-    add_action( 'save_post', 'save_framework_meta' );
+    add_action( 'save_post', 'save_framework_acf' );
 
 }
 
 run_plugin();
 
-function save_framework_meta($post_id) {
+
+/**
+ * Method that saves the submitted Wordpress framework acf data into the custom database
+ *
+ * @param $post_id
+ */
+function save_framework_acf($post_id) {
+
+
     $post_type = get_post_type($post_id);
 
     // If this isn't a 'framework' post, don't do anything
@@ -101,34 +114,35 @@ function save_framework_meta($post_id) {
 
     $frameworkRepository = new FrameworkRepository();
 
-
     if (!$frameworkRepository->findById($post_id, 'wordpress_id')) {
         //add error
         return;
-    };
+    }
 
     $framework = $frameworkRepository->findById($post_id, 'wordpress_id');
 
-    if(isset($_POST['framework_summary']))
+    if(!empty(get_field('framework_summary')))
     {
-        $framework->setSummary(sanitize_text_field( $_POST['framework_summary']));
+        $framework->setSummary(sanitize_text_field(get_field('framework_summary')));
     }
 
-    if(isset($_POST['framework_description']))
+    if(!empty(get_field('framework_description')))
     {
-        $framework->setDescription(sanitize_text_field( $_POST['framework_description']));
+        $framework->setDescription(sanitize_text_field(get_field('framework_description')));
     }
 
-    if(isset($_POST['framework_benefits']))
+    if(!empty(get_field('framework_benefits')))
     {
-        $framework->setBenefits(sanitize_text_field( $_POST['framework_benefits']));
+        $framework->setBenefits(sanitize_text_field(get_field('framework_benefits')));
     }
 
-    if(isset($_POST['framework_how_to_buy']))
+    if(!empty(get_field('framework_how_to_buy')))
     {
-        $framework->setHowToBuy(sanitize_text_field( $_POST['framework_how_to_buy']));
+        $framework->setHowToBuy(sanitize_text_field(get_field('framework_how_to_buy')));
     }
 
+
+    //Save the Wordpress data back into the custom database
     $frameworkRepository->update('wordpress_id', $framework->getWordpressId(), $framework);
 
 }

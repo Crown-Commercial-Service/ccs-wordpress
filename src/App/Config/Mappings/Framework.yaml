@@ -13,3 +13,4 @@ properties:
   tendersCloseDate: Tender_Closing_Date__c
   expectedLiveDate: Framework_Live_Date_Target__c
   expectedAwardDate: Award_Date_Target__c
+  publishOnWebsite: Don_t_publish_as_Framework_on_website__c

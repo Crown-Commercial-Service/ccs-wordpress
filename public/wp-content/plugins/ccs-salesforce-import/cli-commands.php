@@ -56,7 +56,7 @@ class Import
         $lotRepository = new LotRepository();
 
         foreach ($frameworks as $index => $framework) {
-            if (!$frameworkRepository->createOrUpdateExcludingWordpressId('salesforce_id',
+            if (!$frameworkRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
               $framework->getSalesforceId(), $framework)) {
                 WP_CLI::error('Framework ' . $index . ' not imported.');
                 $errorCount['frameworks']++;
@@ -74,7 +74,7 @@ class Import
             $lots = $salesforceApi->getFrameworkLots($framework->getSalesforceId());
 
             foreach ($lots as $lot) {
-                if (!$lotRepository->createOrUpdateExcludingWordpressId('salesforce_id',
+                if (!$lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
                   $lot->getSalesforceId(), $lot)) {
                     WP_CLI::error('Lot not imported.');
                     $errorCount['lots']++;
@@ -98,7 +98,7 @@ class Import
                   'lot_id');
 
                 foreach ($suppliers as $supplier) {
-                    if (!$supplierRepository->createOrUpdateExcludingWordpressId('salesforce_id',
+                    if (!$supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
                       $supplier->getSalesforceId(), $supplier)) {
                         WP_CLI::error('Supplier not imported.');
                         $errorCount['suppliers']++;
@@ -112,12 +112,12 @@ class Import
                       'supplier_id' => $supplier->getSalesforceId()
                     ]);
 
-                    $contactDetails = $salesforceApi->getContact($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
-
-                    if (!empty($contactDetails))
-                    {
-                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
-                    }
+//                    $contactDetails = $salesforceApi->getContact($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
+//
+//                    if (!empty($contactDetails))
+//                    {
+//                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
+//                    }
 
                     $lotSupplierRepository->create($lotSupplier);
                 }

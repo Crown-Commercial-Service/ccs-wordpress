@@ -34,13 +34,59 @@ abstract class AbstractRepository implements RepositoryInterface {
     }
 
     /**
-     * Find all
+     * Adds the required SQL to make pagination work
+     *
+     * @param $sql
+     * @param $limit
+     * @param $page
+     * @return string
+     */
+    protected function addPaginationQuery($sql, $limit, $page)
+    {
+        if ($page >= 2)
+        {
+            $page = $page-1;
+        }
+
+        $sql .= ' LIMIT ' . $limit . ' OFFSET ' . $page * $limit;
+
+        return $sql;
+    }
+
+    /**
+     * Count all
      *
      * @return mixed
      */
-    public function findAll()
+    public function countAll()
+    {
+        $sql = 'SELECT count(*) from  ' . $this->tableName;
+
+        $query = $this->connection->prepare($sql);
+        $query->execute();
+
+        $results = $query->fetchColumn(\PDO::FETCH_ASSOC);
+
+        return $results;
+    }
+
+    /**
+     * Find all
+     *
+     * @param bool $paginate
+     * @param int $limit
+     * @param int $page
+     * @return mixed
+     */
+    public function findAll($paginate = false, $limit = 20, $page = 0)
     {
         $sql = 'SELECT * from  ' . $this->tableName;
+
+        if ($paginate)
+        {
+            $this->addPaginationQuery($limit, $page);
+        }
+
         $query = $this->connection->prepare($sql);
         $query->execute();
 

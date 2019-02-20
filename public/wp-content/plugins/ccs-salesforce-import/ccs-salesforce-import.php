@@ -28,15 +28,20 @@ require __DIR__ . '/PluginCore.php';
 
 function get_framework_json(WP_REST_Request $request)
 {
-    $limit = $request['limit'];
+    if(isset($request['limit']))
+    {
+        $limit = $request['limit'];
+    }
 
-    $page = $request['page'];
+    if(isset($request['page']))
+    {
+        $page = $request['page'];
+    }
 
     $frameworkRepository = new FrameworkRepository();
+    $frameworks = $frameworkRepository->findAll(false);
 
-    $frameworks = $frameworkRepository->findAll();
-
-    return $frameworks;
+    var_dump($frameworks);
 }
 
 /**

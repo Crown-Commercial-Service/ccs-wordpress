@@ -148,7 +148,7 @@ function save_framework_acf($post_id) {
 
     if(!empty(get_field('framework_keywords')))
     {
-        $framework->setKeywords()(sanitize_text_field(get_field('framework_keywords')));
+        $framework->setKeywords(sanitize_text_field(get_field('framework_keywords')));
     }
 
     $framework->setPublishedStatus(sanitize_text_field(get_post_status($post_id)));

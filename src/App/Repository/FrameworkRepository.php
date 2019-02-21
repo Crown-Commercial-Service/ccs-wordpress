@@ -27,7 +27,8 @@ class FrameworkRepository extends AbstractRepository {
       'how_to_buy'          => ':how_to_buy',
       'document_updates'    => ':document_updates',
       'publish_on_website'  => ':publish_on_website',
-      'published_status'    => ':published_status'
+      'published_status'    => ':published_status',
+      'keywords'            => ':keywords'
     ];
 
      /**
@@ -49,7 +50,8 @@ class FrameworkRepository extends AbstractRepository {
       'benefits',
       'how_to_buy',
       'document_updates',
-      'published_status'
+      'published_status',
+      'keywords'
     ];
 
     public function createModel($data = null)
@@ -271,6 +273,12 @@ class FrameworkRepository extends AbstractRepository {
         {
             $publishedStatus = $framework->getPublishedStatus();
             $query->bindParam(':published_status', $publishedStatus, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['keywords']))
+        {
+            $keywords = $framework->getKeywords();
+            $query->bindParam(':keywords', $keywords, \PDO::PARAM_STR);
         }
 
         return $query;

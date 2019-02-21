@@ -2,7 +2,6 @@
 # see https://github.com/github/gitignore/blob/master/WordPress.gitignore
 
 public/*.log
-public/wp-config.php
 public/wp-content/advanced-cache.php
 public/wp-content/backup-db/
 public/wp-content/backups/

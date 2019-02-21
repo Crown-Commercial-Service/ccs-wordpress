@@ -146,6 +146,11 @@ function save_framework_acf($post_id) {
         $framework->setDocumentUpdates(sanitize_text_field(get_field('framework_documents_updates')));
     }
 
+    if(!empty(get_field('framework_keywords')))
+    {
+        $framework->setKeywords()(sanitize_text_field(get_field('framework_keywords')));
+    }
+
     $framework->setPublishedStatus(sanitize_text_field(get_post_status($post_id)));
 
     //Save the Wordpress data back into the custom database

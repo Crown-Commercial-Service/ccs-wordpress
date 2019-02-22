@@ -49,6 +49,14 @@ class Import
         ];
 
         $salesforceApi = new SalesforceApi();
+        
+        // Lets generate an access token
+        $accessTokenRequest = $salesforceApi->generateToken();
+        if (!empty($accessTokenRequest->access_token))
+        {
+            $accessToken = $accessTokenRequest->access_token;
+            $salesforceApi->setupHeaders($accessToken);
+        }
 
         $frameworks = $salesforceApi->getAllFrameworks();
 

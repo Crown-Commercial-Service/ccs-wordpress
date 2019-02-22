@@ -52,11 +52,17 @@ class SalesforceApi
 
     /**
      * Configure the required headers
+     * @param null $accessToken
      */
-    protected function setupHeaders()
+    public function setupHeaders($accessToken = null)
     {
+        if (!$accessToken)
+        {
+            $accessToken = getenv('SALESFORCE_ACCESS_TOKEN');
+        }
+
         $this->headers = [
-          'Authorization' => 'Bearer ' . getenv('SALESFORCE_ACCESS_TOKEN')
+          'Authorization' => 'Bearer ' . $accessToken
         ];
     }
 

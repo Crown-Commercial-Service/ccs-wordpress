@@ -3,7 +3,6 @@
 namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
-use App\Traits\SearchableTrait;
 use Nayjest\StrCaseConverter\Str;
 
 class LotSupplier extends AbstractModel {

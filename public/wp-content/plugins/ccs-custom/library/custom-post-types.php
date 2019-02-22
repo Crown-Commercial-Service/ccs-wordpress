@@ -31,13 +31,13 @@ function ccs_register_my_cpts() {
         "has_archive" => false,
         "show_in_menu" => true,
         "exclude_from_search" => false,
-        "capability_type" => "post",
+        "capability_type" => "framework",
         "map_meta_cap" => true,
         "hierarchical" => false,
         "rewrite" => array("slug" => "frameworks"),
         "query_var" => true,
         "menu_icon" => "dashicons-media-spreadsheet",
-        "supports" => array("title", "excerpt", "revisions", "editor"),
+        "supports" => array("title", "excerpt", "revisions", "editor", "author"),
     );
     register_post_type("framework", $args);
 
@@ -71,7 +71,7 @@ function ccs_register_my_cpts() {
         "has_archive" => false,
         "show_in_menu" => true,
         "exclude_from_search" => false,
-        "capability_type" => "post",
+        "capability_type" => "lot",
         "map_meta_cap" => true,
         "hierarchical" => false,
         "rewrite" => array("slug" => "lots"),
@@ -112,7 +112,7 @@ function ccs_register_my_cpts() {
         "has_archive" => true,
         "show_in_menu" => true,
         "exclude_from_search" => false,
-        "capability_type" => "post",
+        "capability_type" => "supplier",
         "map_meta_cap" => true,
         "hierarchical" => false,
         "rewrite" => array("slug" => "suppliers"),

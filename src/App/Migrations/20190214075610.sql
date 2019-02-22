@@ -21,5 +21,6 @@ CREATE TABLE `ccs_frameworks` (
   `document_updates` text,
   `publish_on_website` tinyint(1) NOT NULL DEFAULT '0',
   `published_status` varchar(100) DEFAULT NULL,
+  `keywords` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

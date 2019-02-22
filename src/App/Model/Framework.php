@@ -3,13 +3,10 @@
 namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
-use App\Traits\SearchableTrait;
 
 class Framework extends AbstractModel {
 
-    use SearchableTrait, SalesforceMappingTrait;
-
-    protected $excludeFromSearch = ['documents', 'documentUpdates', 'mappings'];
+    use SalesforceMappingTrait;
 
     /**
      * @var string
@@ -112,6 +109,10 @@ class Framework extends AbstractModel {
      * @var string
      */
     protected $publishedStatus;
+    /**
+     * @var string
+     */
+    protected $keywords;
 
 
     /**
@@ -626,6 +627,26 @@ class Framework extends AbstractModel {
         $this->publishedStatus = $publishedStatus;
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getKeywords(): string
+    {
+        return $this->keywords;
+    }
+
+    /**
+     * @param string $keywords
+     * @return Framework
+     */
+    public function setKeywords(?string $keywords): Framework
+    {
+        $this->keywords = $keywords;
+        return $this;
+    }
+
+
 
 
 

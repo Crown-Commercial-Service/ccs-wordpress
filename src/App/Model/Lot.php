@@ -3,11 +3,10 @@
 namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
-use App\Traits\SearchableTrait;
 
 class Lot extends AbstractModel {
 
-    use SearchableTrait, SalesforceMappingTrait;
+    use SalesforceMappingTrait;
 
     /**
      * @var string

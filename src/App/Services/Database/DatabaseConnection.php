@@ -2,7 +2,7 @@
 
 namespace App\Services\Database;
 
-require (__DIR__ . '/../../../../public/wp-config.php');
+require_once (__DIR__ . '/../../../../public/wp-config.php');
 
 /**
  * Class DatabaseConnection

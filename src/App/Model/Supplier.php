@@ -3,11 +3,10 @@
 namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
-use App\Traits\SearchableTrait;
 
 class Supplier extends AbstractModel {
 
-    use SearchableTrait, SalesforceMappingTrait;
+    use SalesforceMappingTrait;
 
     /**
      * @var string
@@ -90,7 +89,7 @@ class Supplier extends AbstractModel {
         $this->salesforceId = $salesforceId;
         return $this;
     }
-    
+
     /**
      * @return string
      */
@@ -253,6 +252,6 @@ class Supplier extends AbstractModel {
         return $this;
     }
 
-    
+
 
 }

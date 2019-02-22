@@ -6,6 +6,7 @@ CREATE TABLE `ccs_lots` (
   `lot_number` varchar(20) DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
   `hide_suppliers` varchar(255) DEFAULT '0',
   PRIMARY KEY (`id`)

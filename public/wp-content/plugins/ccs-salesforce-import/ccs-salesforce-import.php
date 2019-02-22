@@ -11,6 +11,7 @@
 
 // If this file is called directly, abort.
 use App\Repository\FrameworkRepository;
+use App\Repository\LotRepository;
 
 if (!defined('WPINC')) {
     throw new Exception('You cannot access this file directly');
@@ -90,7 +91,7 @@ function run_plugin()
         ) );
     } );
 
-    add_action( 'save_post', 'save_framework_acf' );
+    add_action( 'save_post', 'save_post_acf' );
 
 }
 
@@ -98,19 +99,31 @@ run_plugin();
 
 
 /**
- * Method that saves the submitted Wordpress framework acf data into the custom database
+ * Method that saves the submitted Wordpress post acf data into the custom database,
+ * Only for frameworks and lots
  *
  * @param $post_id
  */
-function save_framework_acf($post_id) {
-
+function save_post_acf($post_id) {
 
     $post_type = get_post_type($post_id);
 
-    // If this isn't a 'framework' post, don't do anything
-    if ($post_type != 'framework' ) {
-        return;
+    if ($post_type == 'framework' ) {
+        save_framework_data($post_id);
     }
+
+    if ($post_type == 'lot' ) {
+        save_lot_data($post_id);
+    }
+
+}
+
+/**
+ * Saving user input framework data into the custom database
+ *
+ * @param $post_id
+ */
+function save_framework_data ($post_id) {
 
     $frameworkRepository = new FrameworkRepository();
 
@@ -156,6 +169,32 @@ function save_framework_acf($post_id) {
     //Save the Wordpress data back into the custom database
     $frameworkRepository->update('wordpress_id', $framework->getWordpressId(), $framework);
 
+}
+
+/**
+ *
+ * Saving user input lot data into the custom database
+ *
+ * @param $post_id
+ */
+function save_lot_data ($post_id) {
+
+    $lotRepository = new LotRepository();
+
+    if (!$lotRepository->findById($post_id, 'wordpress_id')) {
+        //add error
+        return;
+    }
+
+    $lot = $lotRepository->findById($post_id, 'wordpress_id');
+
+    if (!empty(get_post_field('post_content', $post_id))){
+
+        $lot->setDescription(sanitize_text_field(get_post_field('post_content', $post_id)));
+
+    }
+    //Save the Wordpress data back into the custom database
+    $lotRepository->update('wordpress_id', $lot->getWordpressId(), $lot);
 }
 
 

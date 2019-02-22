@@ -33,5 +33,5 @@ class DatabaseConnection
 
         $this->connection = new \PDO("mysql:host=$host;dbname=$dbname",
           $username, $password);
-    }git
+    }
 }

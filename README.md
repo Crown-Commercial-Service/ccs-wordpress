@@ -17,4 +17,4 @@ To deploy to Production environment open a Pull Request and merge to `master` br
 ### Requirements
 
 * PHP 7.2+
-* MySQL 5.6+ 
+* MySQL 5.7+ 

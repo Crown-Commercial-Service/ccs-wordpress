@@ -7,7 +7,7 @@ use App\Repository\FrameworkRepository;
  *
  * @param WP_REST_Request $request
  */
-function get_framework_json(WP_REST_Request $request)
+function get_frameworks_json(WP_REST_Request $request)
 {
     if(isset($request['limit']))
     {
@@ -43,4 +43,29 @@ function get_framework_json(WP_REST_Request $request)
     exit;
 }
 
+/**
+ * Endpoint that returns an individual framework in a json format based on the RM number
+ *
+ * @param WP_REST_Request $request
+*/
+function get_individual_framework_json(WP_REST_Request $request) {
+
+    if(isset($request['rm_number']))
+    {
+        $frameworkId = $request['rm_number'];
+    }
+
+    $frameworkRepository = new FrameworkRepository();
+
+    if (!$frameworkRepository->findById($frameworkId, 'rm_number')) {
+//        new WP_Error( 'empty_id', 'framework not found', array('status' => 404) );
+        return;
+    }
+
+    $framework = $frameworkRepository->findById($frameworkId, 'rm_number');
+
+    header('Content-Type: application/json');
+    echo json_encode(['results' => $framework->toArray()]);
+    exit;
+}
 

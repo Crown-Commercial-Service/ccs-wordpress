@@ -49,7 +49,15 @@ function run_plugin()
     add_action( 'rest_api_init', function () {
         register_rest_route( 'wp/v2', '/ccs/frameworks', array(
             'methods' => 'GET',
-            'callback' => 'get_framework_json',
+            'callback' => 'get_frameworks_json',
+        ) );
+    } );
+
+    //Get an individual framework
+    add_action( 'rest_api_init', function () {
+        register_rest_route( 'wp/v2', '/ccs/frameworks/(?P<rm_number>[a-zA-Z0-9-]+)', array(
+            'methods' => 'GET',
+            'callback' => 'get_individual_framework_json',
         ) );
     } );
 

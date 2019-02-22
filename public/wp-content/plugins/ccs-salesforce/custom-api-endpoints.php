@@ -65,7 +65,7 @@ function get_individual_framework_json(WP_REST_Request $request) {
     $framework = $frameworkRepository->findById($frameworkId, 'rm_number');
 
     header('Content-Type: application/json');
-    echo json_encode(['results' => $framework->toArray()]);
+    echo json_encode([$framework->toArray()]);
     exit;
 }
 

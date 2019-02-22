@@ -2,7 +2,6 @@
 
 require '_header.php';
 use App\Services\Salesforce\SalesforceApi;
-use App\Utils\EnvUpdater;
 
 $salesforceApi = new SalesforceApi();
 
@@ -20,11 +19,6 @@ $response = $salesforceApi->generateToken();
 
 
 <?php
-
-echo 'Now attempting to update <b>.env</b> file automatically';
-
-$envUpdater = new EnvUpdater();
-$envUpdater->changeValue(['SALESFORCE_ACCESS_TOKEN' => $response->access_token, 'SALESFORCE_INSTANCE_URL' => $response->instance_url . '/']);
 
 require '_footer.php';
 

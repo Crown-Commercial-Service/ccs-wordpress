@@ -2,8 +2,6 @@
 
 namespace App\Services\Database;
 
-require_once (__DIR__ . '/../../../../public/wp-config.php');
-
 /**
  * Class DatabaseConnection
  * @package App\Services\Database
@@ -28,13 +26,12 @@ class DatabaseConnection
      */
     protected function connect()
     {
-        $host = DB_HOST;
-        $dbname = DB_NAME;
-        $username = DB_USER;
-        $password = DB_PASSWORD;
+        $host = getenv('WP_DB_HOST');
+        $dbname = getenv('WP_DB_NAME');
+        $username = getenv('WP_DB_USER');
+        $password = getenv('WP_DB_PASSWORD');
 
         $this->connection = new \PDO("mysql:host=$host;dbname=$dbname",
           $username, $password);
-    }
-
+    }git
 }

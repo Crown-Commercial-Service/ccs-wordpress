@@ -9,10 +9,10 @@
  * Version:         0.1.0
 */
 
-// If this file is called directly, abort.
 use App\Repository\FrameworkRepository;
 use App\Repository\LotRepository;
 
+// If this file is called directly, abort.
 if (!defined('WPINC')) {
     throw new Exception('You cannot access this file directly');
 }
@@ -28,7 +28,7 @@ if (class_exists('WP_CLI')) {
 require __DIR__ . '/PluginCore.php';
 
 /**
- * Endpoint that returns a paginated list of framework data in a json format
+ * Endpoint that returns a paginated list of frameworks in a json format
  *
  * @param WP_REST_Request $request
  */

@@ -631,7 +631,7 @@ class Framework extends AbstractModel {
     /**
      * @return string
      */
-    public function getKeywords(): string
+    public function getKeywords(): ?string
     {
         return $this->keywords;
     }
@@ -645,10 +645,6 @@ class Framework extends AbstractModel {
         $this->keywords = $keywords;
         return $this;
     }
-
-
-
-
 
     /**
      * Returns a simple text array representing the object

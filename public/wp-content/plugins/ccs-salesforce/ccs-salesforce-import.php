@@ -45,17 +45,23 @@ function run_plugin()
     register_activation_hook(__FILE__, array('PluginCore', 'activate'));
     register_deactivation_hook(__FILE__, array('PluginCore', 'deactivate'));
 
+
+    $api = new CCS_Rest_Api();
+
     //Get all frameworks
     add_action( 'rest_api_init', function () {
         register_rest_route( 'wp/v2', '/ccs/frameworks', array(
             'methods' => 'GET',
             'callback' => 'get_frameworks_json',
+            'permission_callback' => function(){
+                return true;
+            }
         ) );
     } );
 
     //Get an individual framework
     add_action( 'rest_api_init', function () {
-        register_rest_route( 'wp/v2', '/ccs/frameworks/(?P<rm_number>[a-zA-Z0-9-]+)', array(
+        register_rest_route( 'css/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-]+)', array(
             'methods' => 'GET',
             'callback' => 'get_individual_framework_json',
         ) );
@@ -66,6 +72,14 @@ function run_plugin()
         register_rest_route( 'wp/v2', '/ccs/upcoming-deals', array(
             'methods' => 'GET',
             'callback' => 'get_upcoming_deals',
+
+        ) );
+    } );
+
+    add_action( 'rest_api_init', function () use ($api) {
+        register_rest_route( 'ccs/v1', '/error', array(
+            'methods' => 'GET',
+            'callback' => [$api, 'error']
 
         ) );
     } );

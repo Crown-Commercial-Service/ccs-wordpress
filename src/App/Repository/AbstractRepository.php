@@ -75,7 +75,7 @@ abstract class AbstractRepository implements RepositoryInterface {
         $query->execute();
 
         $results = $query->fetch(\PDO::FETCH_ASSOC);
-        
+
         if (!isset($results['count']))
         {
             return 0;

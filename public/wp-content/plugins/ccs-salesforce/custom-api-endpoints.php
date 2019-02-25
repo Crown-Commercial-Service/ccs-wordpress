@@ -1,6 +1,34 @@
 <?php
 
 use App\Repository\FrameworkRepository;
+use App\Repository\LotRepository;
+
+
+class CCS_Rest_Api {
+
+    /**
+     * Return error
+     *
+     * @todo Log this error?
+     *
+     * @param string $message Error message
+     * @param int $statusCode HTTP response status code
+     */
+    public function error(string $message = '', int $statusCode = 500)
+    {
+        $data = json_encode([
+            'message' => $message
+        ]);
+
+        http_response_code($statusCode);
+        header('Content-Type: application/json');
+        echo $data;
+        exit;
+    }
+
+
+
+}
 
 /**
  * Endpoint that returns a paginated list of frameworks in a json format
@@ -9,8 +37,7 @@ use App\Repository\FrameworkRepository;
  */
 function get_frameworks_json(WP_REST_Request $request)
 {
-    if(isset($request['limit']))
-    {
+    if(isset($request['limit'])) {
         $limit = (int) $request['limit'];
     }
     $limit = $limit ?? 10;
@@ -44,14 +71,14 @@ function get_frameworks_json(WP_REST_Request $request)
 }
 
 /**
- * Endpoint that returns an individual framework in a json format based on the RM number
+ * Endpoint that returns an individual framework and its corresponding lots in a json format based on the RM number
  *
  * @param WP_REST_Request $request
 */
 function get_individual_framework_json(WP_REST_Request $request) {
 
-    if(isset($request['rm_number']))
-    {
+    if (!isset($request['rm_number'])) {
+        // @todo error
         $frameworkId = $request['rm_number'];
     }
 
@@ -64,8 +91,24 @@ function get_individual_framework_json(WP_REST_Request $request) {
 
     $framework = $frameworkRepository->findById($frameworkId, 'rm_number');
 
+    // Find all lots for the retrieved framework
+    $lotRepository =  new lotRepository();
+
+    if (!$lotRepository->findAllById($framework->getSalesforceId(), 'framework_id')) {
+//        new WP_Error( 'empty_id', 'lot not found', array('status' => 404) );
+        return;
+    }
+
+    $lots = $lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');
+
+    foreach ($lots as $index => $lot )
+    {
+
+        $lots[$index] = $lot->toArray();
+    }
+
     header('Content-Type: application/json');
-    echo json_encode([$framework->toArray()]);
+    echo json_encode(['framework' => $framework->toArray(), 'lots for framework' => $lots]);
     exit;
 }
 
@@ -91,7 +134,6 @@ function get_upcoming_deals(WP_REST_Request $request)
 //    $page = $page ?? 0;
 
     $frameworkRepository = new FrameworkRepository();
-    $frameworkCount = $frameworkRepository->countAll();
     $frameworks = $frameworkRepository->findAll(false);
 
     $futureFrameworks = [];
@@ -123,16 +165,15 @@ function get_upcoming_deals(WP_REST_Request $request)
 
     }
 
-//    $meta = [
-//        'total_results' => $frameworkCount,
-//        'limit'         => $limit,
-//        'results'       => count($frameworks),
-//        'page'          => $page == 0 ? 1 : $page
-//    ];
-
+    $meta = [
+        'future pipline results' => count($futureFrameworks),
+        'planned pipline results'         => count($plannedFrameworks),
+        'underway pipline results'       => count($underwayFrameworks),
+        'awarded pipline results'          => count($awardedFrameworks)
+    ];
 
     header('Content-Type: application/json');
-    echo json_encode(['Future pipeline' => $futureFrameworks, 'Planned pipeline' => $plannedFrameworks,'Underway pipeline' => $underwayFrameworks, 'Awarded pipeline' => $awardedFrameworks ]);
+    echo json_encode(['meta' => $meta,'Future pipeline' => $futureFrameworks, 'Planned pipeline' => $plannedFrameworks,'Underway pipeline' => $underwayFrameworks, 'Awarded pipeline' => $awardedFrameworks ]);
     exit;
 }
 

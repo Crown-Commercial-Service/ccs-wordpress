@@ -61,6 +61,15 @@ function run_plugin()
         ) );
     } );
 
+    //Get upcoming deals
+    add_action( 'rest_api_init', function () {
+        register_rest_route( 'wp/v2', '/ccs/upcoming-deals', array(
+            'methods' => 'GET',
+            'callback' => 'get_upcoming_deals',
+
+        ) );
+    } );
+
     //Saving wordpress data into the custom database
     add_action( 'save_post', 'save_post_acf' );
 }

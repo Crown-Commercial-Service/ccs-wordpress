@@ -50,7 +50,7 @@ function run_plugin()
 
     //Get all frameworks
     add_action( 'rest_api_init', function () {
-        register_rest_route( 'wp/v2', '/ccs/frameworks', array(
+        register_rest_route( 'ccs/v1', '/frameworks', array(
             'methods' => 'GET',
             'callback' => 'get_frameworks_json',
             'permission_callback' => function(){
@@ -61,7 +61,7 @@ function run_plugin()
 
     //Get an individual framework
     add_action( 'rest_api_init', function () {
-        register_rest_route( 'css/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-]+)', array(
+        register_rest_route( 'ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-]+)', array(
             'methods' => 'GET',
             'callback' => 'get_individual_framework_json',
         ) );
@@ -69,7 +69,7 @@ function run_plugin()
 
     //Get upcoming deals
     add_action( 'rest_api_init', function () {
-        register_rest_route( 'wp/v2', '/ccs/upcoming-deals', array(
+        register_rest_route( 'ccs/v1', '/upcoming-deals', array(
             'methods' => 'GET',
             'callback' => 'get_upcoming_deals',
 

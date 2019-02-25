@@ -79,8 +79,8 @@ function get_individual_framework_json(WP_REST_Request $request) {
 
     if (!isset($request['rm_number'])) {
         // @todo error
-        $frameworkId = $request['rm_number'];
     }
+    $frameworkId = $request['rm_number'];
 
     $frameworkRepository = new FrameworkRepository();
 

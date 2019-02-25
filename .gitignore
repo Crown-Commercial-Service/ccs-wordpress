@@ -13,7 +13,6 @@ public/wp-content/mu-plugins/
 public/wp-content/wp-cache-config.php
 public/wp-content/plugins/hello.php
 
-public/.htaccess
 public/license.txt
 public/readme.html
 public/sitemap.xml

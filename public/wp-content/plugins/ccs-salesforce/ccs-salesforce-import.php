@@ -76,14 +76,6 @@ function run_plugin()
         ) );
     } );
 
-    add_action( 'rest_api_init', function () use ($api) {
-        register_rest_route( 'ccs/v1', '/error', array(
-            'methods' => 'GET',
-            'callback' => [$api, 'error']
-
-        ) );
-    } );
-
     //Saving wordpress data into the custom database
     add_action( 'save_post', 'save_post_acf' );
 }

@@ -284,4 +284,36 @@ class FrameworkRepository extends AbstractRepository {
         return $query;
     }
 
+    /**
+     * Find all rows with a certain condition
+     *
+     * @param $condition
+     * @param bool $paginate
+     * @param int $limit
+     * @param int $page
+     * @return mixed
+     */
+    public function findWhere($condition = null, $paginate = false, $limit = 20, $page = 0)
+    {
+        $sql = 'SELECT * from ' . $this->tableName . ' where ' . $condition ;
+
+        if ($paginate)
+        {
+            $sql = $this->addPaginationQuery($sql, $limit, $page);
+        }
+
+        $query = $this->connection->prepare($sql);
+
+        $query->execute();
+
+        $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (empty($results)) {
+            return false;
+        }
+
+        $modelCollection = $this->translateResultsToModels($results);
+        return $modelCollection;
+    }
+
 }

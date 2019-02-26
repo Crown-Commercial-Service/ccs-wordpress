@@ -52,10 +52,7 @@ function run_plugin()
     add_action( 'rest_api_init', function () {
         register_rest_route( 'ccs/v1', '/frameworks', array(
             'methods' => 'GET',
-            'callback' => 'get_frameworks_json',
-            'permission_callback' => function(){
-                return true;
-            }
+            'callback' => 'get_frameworks',
         ) );
     } );
 
@@ -63,7 +60,7 @@ function run_plugin()
     add_action( 'rest_api_init', function () {
         register_rest_route( 'ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-]+)', array(
             'methods' => 'GET',
-            'callback' => 'get_individual_framework_json',
+            'callback' => 'get_individual_framework',
         ) );
     } );
 

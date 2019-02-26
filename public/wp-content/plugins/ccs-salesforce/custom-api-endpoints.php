@@ -26,8 +26,6 @@ class CCS_Rest_Api {
         exit;
     }
 
-
-
 }
 
 /**
@@ -35,26 +33,30 @@ class CCS_Rest_Api {
  *
  * @param WP_REST_Request $request
  */
-function get_frameworks_json(WP_REST_Request $request)
+function get_frameworks(WP_REST_Request $request)
 {
-    if(isset($request['limit'])) {
-        $limit = (int) $request['limit'];
+    if (isset($request['limit'])) {
+        $limit = (int)$request['limit'];
     }
-    $limit = $limit ?? 10;
+    $limit = $limit ?? 20;
 
-    if(isset($request['page']))
-    {
-        $page = (int) $request['page'];
+    if (isset($request['page'])) {
+        $page = (int)$request['page'];
     }
     $page = $page ?? 0;
 
-    $frameworkRepository = new FrameworkRepository();
-    $frameworkCount = $frameworkRepository->countAll();
-    $frameworks = $frameworkRepository->findAll(true, $limit, $page);
+    $queryCondition = 'status = \'Live\' OR status = \'Expired - Data Still Received\'';
 
-    foreach ($frameworks as $index => $framework)
-    {
+    $frameworkRepository = new FrameworkRepository();
+    $frameworkCount = $frameworkRepository->countAll($queryCondition);
+    $frameworks = $frameworkRepository->findWhere($queryCondition, true, $limit, $page);
+
+    foreach ($frameworks as $index => $framework) {
         $frameworks[$index] = $framework->toArray();
+
+        //Delete the last 3 elements from the frameworks array
+        unset($frameworks[$index]['document_updates'], $frameworks[$index]['lots'], $frameworks[$index]['documents']);
+
     }
 
     $meta = [
@@ -75,7 +77,7 @@ function get_frameworks_json(WP_REST_Request $request)
  *
  * @param WP_REST_Request $request
 */
-function get_individual_framework_json(WP_REST_Request $request) {
+function get_individual_framework(WP_REST_Request $request) {
 
     if (!isset($request['rm_number'])) {
         // @todo error

@@ -118,6 +118,43 @@ abstract class AbstractRepository implements RepositoryInterface {
     }
 
     /**
+     * Find all rows with a certain condition
+     *
+     * @param $condition
+     * @param bool $paginate
+     * @param int $limit
+     * @param int $page
+     * @return mixed
+     */
+    public function findAllWhere($condition = null, $paginate = false, $limit = 20, $page = 0)
+    {
+        $sql = 'SELECT * from ' . $this->tableName . ' where ' . $condition ;
+        var_dump($sql);
+
+
+        if ($paginate)
+        {
+            $sql = $this->addPaginationQuery($sql, $limit, $page);
+        }
+        try {
+            $query = $this->connection->prepare($sql);
+
+            $query->execute();
+
+            $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
+
+        if (empty($results)) {
+            return false;
+        }
+
+        $modelCollection = $this->translateResultsToModels($results);
+        return $modelCollection;
+    }
+
+    /**
      * Find a row with a certain Id
      *
      * @param string $fieldName

@@ -252,6 +252,27 @@ class Supplier extends AbstractModel {
         return $this;
     }
 
+    /**
+     * Returns a simple text array representing the object
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return [
+            'id'                  => $this->getId(),
+            'salesforce_id'       => $this->getSalesforceId(),
+            'duns_number'         => $this->getDunsNumber(),
+            'name'                => $this->getName(),
+            'phone_number'        => $this->getPhoneNumber(),
+            'street'              => $this->getStreet(),
+            'city'                => $this->getCity(),
+            'country'             => $this->getCountry(),
+            'postcode'            => $this->getPostcode(),
+            'website'             => $this->getWebsite(),
+            'trading_name'        => $this->getTradingName(),
 
+        ];
+    }
 
 }

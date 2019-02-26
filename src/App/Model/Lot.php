@@ -253,7 +253,8 @@ class Lot extends AbstractModel {
             'title'               => $this->getTitle(),
             'status'              => $this->getStatus(),
             'description'         => $this->getDescription(),
-            'expiry_date'         => !empty($this->getExpiryDate()) ? $this->getExpiryDate()->format('Y-m-d') : null
+            'expiry_date'         => !empty($this->getExpiryDate()) ? $this->getExpiryDate()->format('Y-m-d') : null,
+            'suppliers'           => '',
         ];
     }
 }

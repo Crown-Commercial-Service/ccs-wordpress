@@ -26,6 +26,9 @@ require_once ($rootDir . 'vendor/autoload.php');
 $dotenv = new Dotenv();
 $dotenv->load($rootDir . '.env');
 
+// whether or not to use S3 storage for WordPress media
+define( 'AS3CF_AWS_USE_EC2_IAM_ROLE', getenv('AS3CF_ENABLED') );
+
 // ** MySQL settings ** //
 /** The name of the database for WordPress */
 define( 'DB_NAME', getenv('WP_DB_NAME') );

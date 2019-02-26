@@ -60,11 +60,11 @@ function get_frameworks(WP_REST_Request $request)
 
     $frameworkRepository = new FrameworkRepository();
     $frameworkCount = $frameworkRepository->countAll($queryCondition);
-    $frameworks = $frameworkRepository->findWhere($queryCondition, true, $limit, $page);
+    $frameworks = $frameworkRepository->findAllWhere($queryCondition, true, $limit, $page);
 
     if ($frameworks === false) {
         $frameworks= [];
-        
+
     } else {
         foreach ($frameworks as $index => $framework) {
 
@@ -84,8 +84,8 @@ function get_frameworks(WP_REST_Request $request)
 
 
     header('Content-Type: application/json');
-    echo json_encode(['meta' => $meta, 'results' => $frameworks]);
-    exit;
+
+    return rest_ensure_response(['meta' => $meta, 'results' => $frameworks]);
 }
 
 /**
@@ -97,14 +97,15 @@ function get_individual_framework(WP_REST_Request $request) {
 
     if (!isset($request['rm_number'])) {
         // @todo error
+        return new WP_Error( 'rest_invalid_param', 'framework not found', array('status' => 404) );
+
     }
     $frameworkId = $request['rm_number'];
 
     $frameworkRepository = new FrameworkRepository();
 
     if (!$frameworkRepository->findById($frameworkId, 'rm_number')) {
-//        new WP_Error( 'empty_id', 'framework not found', array('status' => 404) );
-        return;
+        return new WP_Error( 'rest_invalid_param', 'framework not found', array('status' => 404) );
     }
 
     $framework = $frameworkRepository->findById($frameworkId, 'rm_number');
@@ -113,8 +114,7 @@ function get_individual_framework(WP_REST_Request $request) {
     $lotRepository =  new lotRepository();
 
     if (!$lotRepository->findAllById($framework->getSalesforceId(), 'framework_id')) {
-//        new WP_Error( 'empty_id', 'lot not found', array('status' => 404) );
-        return;
+       return new WP_Error( 'rest_invalid_param', 'lot not found', array('status' => 404) );
     }
 
     $lots = $lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');
@@ -130,8 +130,7 @@ function get_individual_framework(WP_REST_Request $request) {
 
 
     header('Content-Type: application/json');
-    echo json_encode($data);
-    exit;
+    return rest_ensure_response($data);
 }
 
 
@@ -195,8 +194,8 @@ function get_upcoming_deals(WP_REST_Request $request)
     ];
 
     header('Content-Type: application/json');
-    echo json_encode(['meta' => $meta,'Future pipeline' => $futureFrameworks, 'Planned pipeline' => $plannedFrameworks,'Underway pipeline' => $underwayFrameworks, 'Awarded pipeline' => $awardedFrameworks ]);
-    exit;
+
+    return rest_ensure_response(['meta' => $meta,'Future pipeline' => $futureFrameworks, 'Planned pipeline' => $plannedFrameworks,'Underway pipeline' => $underwayFrameworks, 'Awarded pipeline' => $awardedFrameworks ]);
 }
 
 

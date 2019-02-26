@@ -294,7 +294,7 @@ class FrameworkRepository extends AbstractRepository {
      * @param int $page
      * @return mixed
      */
-    public function findWhere($condition = null, $paginate = false, $limit = 20, $page = 0)
+    public function findAllWhere($condition = null, $paginate = false, $limit = 20, $page = 0)
     {
         $sql = 'SELECT * from ' . $this->tableName . ' where ' . $condition ;
 

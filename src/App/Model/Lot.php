@@ -3,11 +3,10 @@
 namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
-use App\Traits\SearchableTrait;
 
 class Lot extends AbstractModel {
 
-    use SearchableTrait, SalesforceMappingTrait;
+    use SalesforceMappingTrait;
 
     /**
      * @var string
@@ -237,4 +236,24 @@ class Lot extends AbstractModel {
         $this->hideSuppliers = $hideSuppliers;
     }
 
+
+    /**
+     * Returns a simple text array representing the object
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return [
+            'id'                  => $this->getId(),
+            'framework_id'        => $this->getFrameworkId(),
+            'wordpress_id'        => $this->getWordpressId(),
+            'salesforce_id'       => $this->getSalesforceId(),
+            'lot_number'          => $this->getLotNumber(),
+            'title'               => $this->getTitle(),
+            'status'              => $this->getStatus(),
+            'description'         => $this->getDescription(),
+            'expiry_date'         => !empty($this->getExpiryDate()) ? $this->getExpiryDate()->format('Y-m-d') : null
+        ];
+    }
 }

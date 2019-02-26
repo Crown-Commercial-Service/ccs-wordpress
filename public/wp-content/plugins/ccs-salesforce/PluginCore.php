@@ -88,4 +88,6 @@ class PluginCore
         return $this->version;
     }
 
+
+
 }

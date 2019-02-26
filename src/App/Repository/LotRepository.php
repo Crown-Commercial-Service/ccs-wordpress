@@ -13,6 +13,7 @@ class LotRepository extends AbstractRepository
       'lot_number'     => ':lot_number',
       'title'          => ':title',
       'status'         => ':status',
+      'description'    => ':description',
       'expiry_date'    => ':expiry_date',
       'hide_suppliers' => ':hide_suppliers',
     ];
@@ -23,6 +24,13 @@ class LotRepository extends AbstractRepository
      * @var string
      */
     protected $tableName = 'ccs_lots';
+
+    /**
+     * Any data fields present in the database which are originally from Wordpress
+     *
+     * @var array
+     */
+    protected $wordpressDataFields = ['description'];
 
     public function createModel($data = null)
     {
@@ -129,6 +137,12 @@ class LotRepository extends AbstractRepository
         {
             $status = $lot->getStatus();
             $query->bindParam(':status', $status, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['description']))
+        {
+            $description = $lot->getDescription();
+            $query->bindParam(':description', $description, \PDO::PARAM_STR);
         }
 
         if (isset($databaseBindings['expiry_date']))

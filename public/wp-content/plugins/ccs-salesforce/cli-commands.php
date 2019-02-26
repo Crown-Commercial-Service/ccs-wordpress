@@ -49,6 +49,14 @@ class Import
         ];
 
         $salesforceApi = new SalesforceApi();
+        
+        // Lets generate an access token
+        $accessTokenRequest = $salesforceApi->generateToken();
+        if (!empty($accessTokenRequest->access_token))
+        {
+            $accessToken = $accessTokenRequest->access_token;
+            $salesforceApi->setupHeaders($accessToken);
+        }
 
         $frameworks = $salesforceApi->getAllFrameworks();
 
@@ -56,7 +64,7 @@ class Import
         $lotRepository = new LotRepository();
 
         foreach ($frameworks as $index => $framework) {
-            if (!$frameworkRepository->createOrUpdateExcludingWordpressId('salesforce_id',
+            if (!$frameworkRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
               $framework->getSalesforceId(), $framework)) {
                 WP_CLI::error('Framework ' . $index . ' not imported.');
                 $errorCount['frameworks']++;
@@ -70,17 +78,19 @@ class Import
 
             $this->createFrameworkInWordpress($framework);
 
+
             $lots = $salesforceApi->getFrameworkLots($framework->getSalesforceId());
 
             foreach ($lots as $lot) {
-                if (!$lotRepository->createOrUpdateExcludingWordpressId('salesforce_id',
+                if (!$lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
                   $lot->getSalesforceId(), $lot)) {
+                    WP_CLI::error('Lot not imported.');
                     $errorCount['lots']++;
                     continue;
                 }
                 $lot = $lotRepository->findById($lot->getSalesforceId(), 'salesforce_id');
 
-
+                WP_CLI::success('Lot imported.');
                 $importCount['lots']++;
 
                 $this->createLotInWordpress($lot);
@@ -96,18 +106,28 @@ class Import
                   'lot_id');
 
                 foreach ($suppliers as $supplier) {
-                    if (!$supplierRepository->createOrUpdateExcludingWordpressId('salesforce_id',
+                    if (!$supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
                       $supplier->getSalesforceId(), $supplier)) {
+                        WP_CLI::error('Supplier not imported.');
                         $errorCount['suppliers']++;
                         continue;
                     }
 
+                    WP_CLI::success('Supplier imported.');
                     $importCount['suppliers']++;
-                    $lotSuppler = new LotSupplier([
+                    $lotSupplier = new LotSupplier([
                       'lot_id' => $lot->getSalesforceId(),
                       'supplier_id' => $supplier->getSalesforceId()
                     ]);
-                    $lotSupplierRepository->create($lotSuppler);
+
+//                    $contactDetails = $salesforceApi->getContact($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
+//
+//                    if (!empty($contactDetails))
+//                    {
+//                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
+//                    }
+
+                    $lotSupplierRepository->create($lotSupplier);
                 }
 
             }
@@ -117,6 +137,29 @@ class Import
           'importCount' => $importCount,
           'errorCount'  => $errorCount
         ];
+    }
+
+
+    /**
+     * @param \App\Model\LotSupplier $lotSupplier
+     * @param $contactDetails
+     * @return \App\Model\LotSupplier
+     */
+    protected function addContactDetailsToLotSupplier(LotSupplier $lotSupplier, $contactDetails) {
+
+        if (isset($contactDetails->Contact_Name__c)) {
+            $lotSupplier->setContactName($contactDetails->Contact_Name__c);
+        }
+
+        if (isset($contactDetails->Email__c)) {
+            $lotSupplier->setContactEmail($contactDetails->Email__c);
+        }
+
+        if (isset($contactDetails->Website_Contact__c)) {
+            $lotSupplier->setWebsiteContact($contactDetails->Website_Contact__c);
+        }
+
+        return $lotSupplier;
     }
 
 
@@ -131,10 +174,12 @@ class Import
         {
             // This framework already has a Wordpress ID assigned, so we need to update the Title.
             $this->updatePostTitle($framework, 'framework');
+            WP_CLI::success('Updated Framework Title in Wordpress.');
             return;
         }
 
         $wordpressId = $this->createFrameworkPostInWordpress($framework);
+        WP_CLI::success('Created Framework in Wordpress.');
 
         //Update the Framework model with the new Wordpress ID
         $framework->setWordpressId($wordpressId);
@@ -155,10 +200,12 @@ class Import
         {
             // This lot already has a Wordpress ID assigned, so we need to update the Title.
             $this->updatePostTitle($lot, 'lot');
+            WP_CLI::success('Updated Lot Title in Wordpress.');
             return;
         }
 
         $wordpressId = $this->createLotPostInWordpress($lot);
+        WP_CLI::success('Created Lot in Wordpress.');
 
         //Update the Lot model with the new Wordpress ID
         $lot->setWordpressId($wordpressId);
@@ -169,6 +216,12 @@ class Import
     }
 
 
+    /**
+     * Update the title of a Wordpress post
+     *
+     * @param $model
+     * @param $type
+     */
     public function updatePostTitle($model, $type)
     {
        wp_update_post(array(
@@ -179,6 +232,12 @@ class Import
 
     }
 
+    /**
+     * Insert a new Framework post in to Wordpress
+     *
+     * @param $framework
+     * @return int|\WP_Error
+     */
     public function createFrameworkPostInWordpress($framework)
     {
         // Create a new post
@@ -188,13 +247,19 @@ class Import
         ));
 
 
-            //Save the salesforce id in Wordpress
-            update_field('framework_id', $framework->getSalesforceId(), $wordpressId);
+        //Save the salesforce id in Wordpress
+        update_field('framework_id', $framework->getSalesforceId(), $wordpressId);
 
 
         return $wordpressId;
     }
 
+    /**
+     * Insert a new Lot post in to Wordpress
+     *
+     * @param $lot
+     * @return int|\WP_Error
+     */
     public function createLotPostInWordpress($lot)
     {
         // Create a new post
@@ -206,3 +271,5 @@ class Import
         return $wordpressId;
     }
 }
+
+

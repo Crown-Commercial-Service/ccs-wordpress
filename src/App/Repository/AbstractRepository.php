@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Services\Database\DatabaseConnection;
+use PDOException;
 
 abstract class AbstractRepository implements RepositoryInterface {
 
@@ -12,6 +13,13 @@ abstract class AbstractRepository implements RepositoryInterface {
      * @var array
      */
     protected $databaseBindings = [];
+
+    /**
+     * Any data fields present in the database which are originally from Wordpress
+     *
+     * @var array
+     */
+    protected $wordpressDataFields = ['wordpress_id'];
 
     /**
      * Database table name
@@ -34,13 +42,67 @@ abstract class AbstractRepository implements RepositoryInterface {
     }
 
     /**
-     * Find all
+     * Adds the required SQL to make pagination work
      *
+     * @param $sql
+     * @param $limit
+     * @param $page
+     * @return string
+     */
+    protected function addPaginationQuery($sql, $limit, $page)
+    {
+        if ($page >= 2)
+        {
+            $page = $page-1;
+        } else {
+            $page = 0;
+        }
+
+        $sql .= ' LIMIT ' . $limit . ' OFFSET ' . $page * $limit;
+
+        return $sql;
+    }
+
+    /**
+     * Count all
+     *
+     * @param $condition
      * @return mixed
      */
-    public function findAll()
+    public function countAll($condition = null)
+    {
+        $sql = 'SELECT count(*) as count from  ' . $this->tableName . ' where ' . $condition;
+
+        $query = $this->connection->prepare($sql);
+        $query->execute();
+
+        $results = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if (!isset($results['count']))
+        {
+            return 0;
+        }
+
+        return (int) $results['count'];
+    }
+
+    /**
+     * Find all
+     *
+     * @param bool $paginate
+     * @param int $limit
+     * @param int $page
+     * @return mixed
+     */
+    public function findAll($paginate = false, $limit = 20, $page = 0)
     {
         $sql = 'SELECT * from  ' . $this->tableName;
+
+        if ($paginate)
+        {
+            $sql = $this->addPaginationQuery($sql, $limit, $page);
+        }
+
         $query = $this->connection->prepare($sql);
         $query->execute();
 
@@ -65,14 +127,16 @@ abstract class AbstractRepository implements RepositoryInterface {
     public function findById($id, $fieldName = 'id')
     {
         $sql = 'SELECT * from ' . $this->tableName . ' where ' . $fieldName . ' = :id';
-
+        try {
         $query = $this->connection->prepare($sql);
         $query->bindParam(':id', $id, \PDO::PARAM_STR);
 
         $query->execute();
 
         $result = $query->fetch(\PDO::FETCH_ASSOC);
-
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
         if (empty($result)) {
             return false;
         }
@@ -116,12 +180,16 @@ abstract class AbstractRepository implements RepositoryInterface {
      * @param $object
      * @return mixed
      */
-    public function createOrUpdateExcludingWordpressId($searchField, $searchValue, $object)
+    public function createOrUpdateExcludingWordpressFields($searchField, $searchValue, $object)
     {
         $originalDataBindings = $this->databaseBindings;
-        if (isset($this->databaseBindings['wordpress_id'])) {
-            unset($this->databaseBindings['wordpress_id']);
+        foreach ($this->wordpressDataFields as $wordpressDataField)
+        {
+            if (isset($this->databaseBindings[$wordpressDataField])) {
+                unset($this->databaseBindings[$wordpressDataField]);
+            }
         }
+
         $response = $this->createOrUpdate($searchField, $searchValue, $object);
 
         $this->databaseBindings = $originalDataBindings;

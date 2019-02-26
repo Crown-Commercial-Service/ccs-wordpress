@@ -1,8 +1,8 @@
 CREATE TABLE `ccs_frameworks` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `rm_number` varchar(255) DEFAULT NULL,
-  `wordpress_id` varchar(255) DEFAULT NULL,
-  `salesforce_id` varchar(255) DEFAULT NULL,
+  `rm_number` varchar(30) DEFAULT NULL,
+  `wordpress_id` varchar(20) DEFAULT NULL,
+  `salesforce_id` varchar(20) DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
   `terms` varchar(255) DEFAULT NULL,
   `pillar` varchar(255) DEFAULT NULL,
@@ -14,5 +14,13 @@ CREATE TABLE `ccs_frameworks` (
   `tenders_close_date` date DEFAULT NULL,
   `expected_live_date` date DEFAULT NULL,
   `expected_award_date` date DEFAULT NULL,
+  `description` text,
+  `summary` text,
+  `benefits` text,
+  `how_to_buy` text,
+  `document_updates` text,
+  `publish_on_website` tinyint(1) NOT NULL DEFAULT '0',
+  `published_status` varchar(100) DEFAULT NULL,
+  `keywords` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

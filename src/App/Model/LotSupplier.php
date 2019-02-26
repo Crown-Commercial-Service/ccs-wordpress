@@ -3,7 +3,6 @@
 namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
-use App\Traits\SearchableTrait;
 use Nayjest\StrCaseConverter\Str;
 
 class LotSupplier extends AbstractModel {
@@ -20,6 +19,22 @@ class LotSupplier extends AbstractModel {
      * @var string
      */
     protected $supplierId;
+    /**
+     * @var string
+     */
+    protected $contactName;
+    /**
+     * @var string
+     */
+    protected $contactEmail;
+    /**
+     * @var bool
+     */
+    protected $websiteContact;
+    /**
+     * @var string
+     */
+    protected $tradingName;
 
     /**
      * @return string
@@ -74,5 +89,90 @@ class LotSupplier extends AbstractModel {
         $this->supplierId = $supplierId;
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getContactName(): ?string
+    {
+        return $this->contactName;
+    }
+
+    /**
+     * @param string $contactName
+     * @return LotSupplier
+     */
+    public function setContactName(?string $contactName): LotSupplier
+    {
+        $this->contactName = $contactName;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getContactEmail(): ?string
+    {
+        return $this->contactEmail;
+    }
+
+    /**
+     * @param string $contactEmail
+     * @return LotSupplier
+     */
+    public function setContactEmail(?string $contactEmail): LotSupplier
+    {
+        $this->contactEmail = $contactEmail;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isWebsiteContact(): bool
+    {
+        if (is_null($this->websiteContact))
+        {
+            return false;
+        }
+
+        return $this->websiteContact;
+    }
+
+    /**
+     * @param bool $websiteContact
+     * @return LotSupplier
+     */
+    public function setWebsiteContact(?bool $websiteContact): LotSupplier
+    {
+        if (!empty($websiteContact))
+        {
+            $this->websiteContact = $websiteContact;
+        } else {
+            $this->websiteContact = false;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTradingName(): ?string
+    {
+        return $this->tradingName;
+    }
+
+    /**
+     * @param string $tradingName
+     * @return LotSupplier
+     */
+    public function setTradingName(?string $tradingName): LotSupplier
+    {
+        $this->tradingName = $tradingName;
+        return $this;
+    }
+
+
 
 }

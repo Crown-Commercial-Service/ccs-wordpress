@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Model\Framework;
+use PDOException;
 
 class FrameworkRepository extends AbstractRepository {
 
@@ -21,6 +22,14 @@ class FrameworkRepository extends AbstractRepository {
       'tenders_close_date'  => ':tenders_close_date',
       'expected_live_date'  => ':expected_live_date',
       'expected_award_date' => ':expected_award_date',
+      'description'         => ':description',
+      'summary'             => ':summary',
+      'benefits'            => ':benefits',
+      'how_to_buy'          => ':how_to_buy',
+      'document_updates'    => ':document_updates',
+      'publish_on_website'  => ':publish_on_website',
+      'published_status'    => ':published_status',
+      'keywords'            => ':keywords'
     ];
 
      /**
@@ -29,6 +38,22 @@ class FrameworkRepository extends AbstractRepository {
      * @var string
      */
     protected $tableName = 'ccs_frameworks';
+
+    /**
+     * Any data fields present in the database which are originally from Wordpress
+     *
+     * @var array
+     */
+    protected $wordpressDataFields = [
+      'wordpress_id',
+      'description',
+      'summary',
+      'benefits',
+      'how_to_buy',
+      'document_updates',
+      'published_status',
+      'keywords'
+    ];
 
     public function createModel($data = null)
     {
@@ -209,7 +234,90 @@ class FrameworkRepository extends AbstractRepository {
             $query->bindParam(':expected_award_date', $expectedAwardDate, \PDO::PARAM_STR);
         }
 
+        if (isset($databaseBindings['description']))
+        {
+            $description = $framework->getDescription();
+            $query->bindParam(':description', $description, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['summary']))
+        {
+            $summary = $framework->getSummary();
+            $query->bindParam(':summary', $summary, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['benefits']))
+        {
+            $benefits = $framework->getBenefits();
+            $query->bindParam(':benefits', $benefits, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['how_to_buy']))
+        {
+            $howToBuy = $framework->getHowToBuy();
+            $query->bindParam(':how_to_buy', $howToBuy, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['document_updates']))
+        {
+            $documentUpdates = $framework->getDocumentUpdates();
+            $query->bindParam(':document_updates', $documentUpdates, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['publish_on_website']))
+        {
+            $publishOnWeb = $framework->isPublishOnWebsite();
+            $query->bindParam(':publish_on_website', $publishOnWeb, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['published_status']))
+        {
+            $publishedStatus = $framework->getPublishedStatus();
+            $query->bindParam(':published_status', $publishedStatus, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['keywords']))
+        {
+            $keywords = $framework->getKeywords();
+            $query->bindParam(':keywords', $keywords, \PDO::PARAM_STR);
+        }
+
         return $query;
+    }
+
+    /**
+     * Find all rows with a certain condition
+     *
+     * @param $condition
+     * @param bool $paginate
+     * @param int $limit
+     * @param int $page
+     * @return mixed
+     */
+    public function findAllWhere($condition = null, $paginate = false, $limit = 20, $page = 0)
+    {
+        $sql = 'SELECT * from ' . $this->tableName . ' where ' . $condition ;
+
+        if ($paginate)
+        {
+            $sql = $this->addPaginationQuery($sql, $limit, $page);
+        }
+        try {
+            $query = $this->connection->prepare($sql);
+
+            $query->execute();
+
+            $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
+
+        if (empty($results)) {
+            return false;
+        }
+
+        $modelCollection = $this->translateResultsToModels($results);
+        return $modelCollection;
     }
 
 }

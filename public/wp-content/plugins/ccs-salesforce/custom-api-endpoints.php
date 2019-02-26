@@ -53,21 +53,18 @@ function get_frameworks(WP_REST_Request $request)
 
     $queryCondition = 'published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
 
+    //If the category search parameter is defined, add it in the SQL query
+    if($category){
+        $queryCondition = 'category = \'' . $category . '\' AND ' . $queryCondition;
+    }
+
     $frameworkRepository = new FrameworkRepository();
     $frameworkCount = $frameworkRepository->countAll($queryCondition);
     $frameworks = $frameworkRepository->findWhere($queryCondition, true, $limit, $page);
 
     foreach ($frameworks as $index => $framework) {
-        if(empty($category)){
-            $frameworks[$index] = $framework->toArray();
-        }
 
-        if($framework->getCategory() == $category ){
-
-        }else {
-
-        }
-
+        $frameworks[$index] = $framework->toArray();
         //Delete the last 3 elements from the frameworks array
         unset($frameworks[$index]['document_updates'], $frameworks[$index]['lots'], $frameworks[$index]['documents']);
 

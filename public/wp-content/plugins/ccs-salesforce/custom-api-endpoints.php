@@ -141,7 +141,6 @@ function get_individual_framework(WP_REST_Request $request) {
         $lots[$index] = $lot->toArray();
 
         $suppliers = $supplierRepository->findAllWhere('salesforce_id IN (SELECT supplier_id FROM ccs_lot_supplier where lot_id=\'' . $lot->getSalesforceId(). '\'', false);
-        var_dump($suppliers);
 
         if ($suppliers === false) {
             $suppliers = [];

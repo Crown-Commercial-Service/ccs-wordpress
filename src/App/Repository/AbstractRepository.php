@@ -129,7 +129,6 @@ abstract class AbstractRepository implements RepositoryInterface {
     public function findAllWhere($condition = null, $paginate = false, $limit = 20, $page = 0)
     {
         $sql = 'SELECT * from ' . $this->tableName . ' where ' . $condition ;
-        var_dump($sql);
 
 
         if ($paginate)

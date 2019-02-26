@@ -62,12 +62,17 @@ function get_frameworks(WP_REST_Request $request)
     $frameworkCount = $frameworkRepository->countAll($queryCondition);
     $frameworks = $frameworkRepository->findWhere($queryCondition, true, $limit, $page);
 
-    foreach ($frameworks as $index => $framework) {
+    if ($frameworks === false) {
+        $frameworks= [];
+        
+    } else {
+        foreach ($frameworks as $index => $framework) {
 
-        $frameworks[$index] = $framework->toArray();
-        //Delete the last 3 elements from the frameworks array
-        unset($frameworks[$index]['document_updates'], $frameworks[$index]['lots'], $frameworks[$index]['documents']);
+            $frameworks[$index] = $framework->toArray();
+            //Delete the last 3 elements from the frameworks array
+            unset($frameworks[$index]['document_updates'], $frameworks[$index]['lots'], $frameworks[$index]['documents']);
 
+        }
     }
 
     $meta = [

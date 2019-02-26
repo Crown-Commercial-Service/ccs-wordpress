@@ -24,3 +24,7 @@ public/sitemap.xml.gz
 .env
 vendor
 vendor/*
+
+# Wordpress
+# Account for plugins that include a vendor directory but no composer.json file
+!public/wp-content/plugins/**/vendor

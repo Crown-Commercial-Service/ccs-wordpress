@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Services\Database\DatabaseConnection;
+use PDOException;
 
 abstract class AbstractRepository implements RepositoryInterface {
 
@@ -126,14 +127,16 @@ abstract class AbstractRepository implements RepositoryInterface {
     public function findById($id, $fieldName = 'id')
     {
         $sql = 'SELECT * from ' . $this->tableName . ' where ' . $fieldName . ' = :id';
-
+        try {
         $query = $this->connection->prepare($sql);
         $query->bindParam(':id', $id, \PDO::PARAM_STR);
 
         $query->execute();
 
         $result = $query->fetch(\PDO::FETCH_ASSOC);
-
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
         if (empty($result)) {
             return false;
         }

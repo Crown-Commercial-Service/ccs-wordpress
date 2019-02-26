@@ -50,7 +50,7 @@ function run_plugin()
 
     //Get all frameworks
     add_action( 'rest_api_init', function () {
-        register_rest_route( 'ccs/v1', '/frameworks', array(
+        register_rest_route( 'ccs/v1', '/frameworks(?P<category>[a-zA-Z0-9-]+)', array(
             'methods' => 'GET',
             'callback' => 'get_frameworks',
         ) );

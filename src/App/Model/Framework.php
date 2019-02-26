@@ -677,6 +677,7 @@ class Framework extends AbstractModel {
           'document_updates'    => $this->getDocumentUpdates(),
           'lots'                => 'not yet supported in this method',
           'documents'           => 'not yet supported in this method',
+          'published_status'    => $this->getPublishedStatus(),
         ];
     }
 

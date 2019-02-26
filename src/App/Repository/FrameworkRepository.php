@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Model\Framework;
+use PDOException;
 
 class FrameworkRepository extends AbstractRepository {
 
@@ -301,12 +302,15 @@ class FrameworkRepository extends AbstractRepository {
         {
             $sql = $this->addPaginationQuery($sql, $limit, $page);
         }
+        try {
+            $query = $this->connection->prepare($sql);
 
-        $query = $this->connection->prepare($sql);
+            $query->execute();
 
-        $query->execute();
-
-        $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+            $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
 
         if (empty($results)) {
             return false;

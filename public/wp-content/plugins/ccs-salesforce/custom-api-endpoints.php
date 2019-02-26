@@ -45,14 +45,28 @@ function get_frameworks(WP_REST_Request $request)
     }
     $page = $page ?? 0;
 
-    $queryCondition = 'status = \'Live\' OR status = \'Expired - Data Still Received\'';
+    $category = false;
+
+    if (isset($request['category'])) {
+        $category = $request['category'];
+    }
+
+    $queryCondition = 'published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
 
     $frameworkRepository = new FrameworkRepository();
     $frameworkCount = $frameworkRepository->countAll($queryCondition);
     $frameworks = $frameworkRepository->findWhere($queryCondition, true, $limit, $page);
 
     foreach ($frameworks as $index => $framework) {
-        $frameworks[$index] = $framework->toArray();
+        if(empty($category)){
+            $frameworks[$index] = $framework->toArray();
+        }
+
+        if($framework->getCategory() == $category ){
+
+        }else {
+
+        }
 
         //Delete the last 3 elements from the frameworks array
         unset($frameworks[$index]['document_updates'], $frameworks[$index]['lots'], $frameworks[$index]['documents']);
@@ -109,8 +123,12 @@ function get_individual_framework(WP_REST_Request $request) {
         $lots[$index] = $lot->toArray();
     }
 
+    $data = $framework->toArray();
+    $data['lots'] = $lots;
+
+
     header('Content-Type: application/json');
-    echo json_encode(['framework' => $framework->toArray(), 'lots for framework' => $lots]);
+    echo json_encode($data);
     exit;
 }
 

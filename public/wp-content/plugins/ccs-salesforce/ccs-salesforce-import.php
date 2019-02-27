@@ -58,7 +58,7 @@ function run_plugin()
 
     //Get an individual framework
     add_action( 'rest_api_init', function () {
-        register_rest_route( 'ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-]+)', array(
+        register_rest_route( 'ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
             'callback' => 'get_individual_framework',
         ) );

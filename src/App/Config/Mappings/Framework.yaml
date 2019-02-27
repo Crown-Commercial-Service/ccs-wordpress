@@ -5,7 +5,7 @@ properties:
   title: Long_Name__c
   terms: Framework_Terms__c
   pillar: Pillar__c
-  category: CCS_Sub_Category_Text__c
+  category: CCS_Category__c
   status: Status__c
   startDate: Start_Date__c
   endDate: Effective_End_Date__c

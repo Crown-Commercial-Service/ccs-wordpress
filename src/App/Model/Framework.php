@@ -114,6 +114,11 @@ class Framework extends AbstractModel {
      */
     protected $keywords;
 
+    /**
+     * @var string
+     */
+    protected $publishUpcomingDeals;
+
 
     /**
      * @return string
@@ -645,6 +650,26 @@ class Framework extends AbstractModel {
         $this->keywords = $keywords;
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getPublishUpcomingDeals(): string
+    {
+        return $this->publishUpcomingDeals;
+    }
+
+    /**
+     * @param string $publishUpcomingDeals
+     * @return Framework
+     */
+    public function setPublishUpcomingDeals(string $publishUpcomingDeals): Framework
+    {
+        $this->publishUpcomingDeals = $publishUpcomingDeals;
+        return $this;
+    }
+
+
 
     /**
      * Returns a simple text array representing the object

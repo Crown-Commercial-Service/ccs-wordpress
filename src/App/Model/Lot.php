@@ -44,6 +44,12 @@ class Lot extends AbstractModel {
      * @var \DateTime
      */
     protected $expiryDate;
+
+    /**
+     * @var string
+     */
+    protected $publishOnWebsite;
+
     /**
      * @var bool
      */
@@ -221,6 +227,24 @@ class Lot extends AbstractModel {
     }
 
     /**
+     * @return string
+     */
+    public function getPublishOnWebsite(): ?string
+    {
+        return $this->publishOnWebsite;
+    }
+
+    /**
+     * @param string $publishOnWebsite
+     * @return Lot
+     */
+    public function setPublishOnWebsite(?string $publishOnWebsite): Lot
+    {
+        $this->publishOnWebsite = $publishOnWebsite;
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function isHideSuppliers(): bool
@@ -235,7 +259,6 @@ class Lot extends AbstractModel {
     {
         $this->hideSuppliers = $hideSuppliers;
     }
-
 
     /**
      * Returns a simple text array representing the object

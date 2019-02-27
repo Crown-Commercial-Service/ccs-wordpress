@@ -155,7 +155,7 @@ class SalesforceApi
         $frameworkMappings = YamlLoader::loadMappings('Framework');
         $fieldsToReturn = implode(', ', array_values($frameworkMappings['properties']));
 
-        //Build the query for getting all the frameworks
+        //Build the query for getting all frameworks
         $sql = <<<EOD
 SELECT {$fieldsToReturn} from {$frameworkMappings['objectName']}
 WHERE (
@@ -184,7 +184,7 @@ EOD;
     }
 
     public function getFrameworkLots($salesforceFrameworkId) {
-        return $this->getAllLots('Master_Framework__c = \'' . $salesforceFrameworkId . '\'');
+        return $this->getAllLots('Master_Framework__c = \'' . $salesforceFrameworkId . '\' AND Master_Framework_Lot_Number__c > \'0\'');
     }
 
     /**
@@ -200,7 +200,6 @@ EOD;
 
         // Make API Request
         $query = 'SELECT ' . $fieldsToReturn . ' from ' . $frameworkMappings['objectName'];
-
         // Add where query if it exists
         if ($where) {
             $query .= ' WHERE ' . $where;

@@ -164,7 +164,7 @@ class FrameworkRepository extends AbstractRepository {
 
         if (isset($databaseBindings['category']))
         {
-            $category = $framework->getPillar();
+            $category = $framework->getCategory();
             $query->bindParam(':category', $category, \PDO::PARAM_STR);
         }
 

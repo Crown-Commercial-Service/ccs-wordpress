@@ -19,14 +19,14 @@ if (!defined('WPINC')) {
  * admin-specific hooks, and public-facing site hooks.
  */
 if (class_exists('WP_CLI')) {
-    require __DIR__ . '/cli-commands.php';
+    require __DIR__ . '/includes/cli-commands.php';
 }
 
-require __DIR__ . '/PluginCore.php';
+require __DIR__ . '/includes/PluginCore.php';
 
-require __DIR__ . '/custom-api-endpoints.php';
+require __DIR__ . '/includes/custom-api-endpoints.php';
 
-require __DIR__ . '/merging-wp-data.php';
+require __DIR__ . '/includes/merging-wp-data.php';
 
 
 /**

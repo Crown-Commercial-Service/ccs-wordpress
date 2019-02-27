@@ -129,25 +129,19 @@ function get_individual_framework(WP_REST_Request $request) {
         $uniqueSuppliers = [];
 
         foreach ($lots as $lot) {
-
             $lotData = $lot->toArray();
+            $suppliersData = [];
 
             // Find all suppliers for the retrieved lots
-            $suppliers = $supplierRepository->findAllWhere('salesforce_id IN (SELECT supplier_id FROM ccs_lot_supplier where lot_id=\'' . $lot->getSalesforceId() . '\'', false);
-            if ($suppliers === false) {
-                $suppliers = [];
-
-            } else {
+            $suppliers = $supplierRepository->findAllWhere('salesforce_id IN (SELECT supplier_id FROM ccs_lot_supplier where lot_id=\'' . $lot->getSalesforceId() . '\')', false);
+            if ($suppliers !== false) {
                 foreach ($suppliers as $supplier) {
-                    $suppliers[] = $supplier->toArray();
+                    $suppliersData[] = $supplier->toArray();
                     $uniqueSuppliers[] = $supplier->getId();
                 }
-
-                // $lotSupplier = $lotSupplierRepository->findAllById($lot->getSalesforceId(), 'lot_id');
-                // $supplier = $supplierRepository->findAllById($lotSupplier->getSupplierId(), 'salesforce_id');
             }
 
-            $lotData['suppliers'] = $suppliers;
+            $lotData['suppliers'] = $suppliersData;
             $lotsData[$lot->getLotNumber()] = $lotData;
         }
     }

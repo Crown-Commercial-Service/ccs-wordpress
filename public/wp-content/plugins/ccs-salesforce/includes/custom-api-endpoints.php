@@ -152,13 +152,21 @@ function get_individual_framework(WP_REST_Request $request) {
         }
     }
 
-    // @todo Natural sort lots array
+    // Natural sort lots array
+    $lotNumbers = array_keys($lotsData);
+    natsort($lotNumbers);
+    $lotsDataCopy = $lotsData;
+    $lotsData = [];
+    foreach ($lotNumbers as $number) {
+        $lotsData[] = $lotsDataCopy[$number];
+    }
 
-    $uniqueSuppliers = array_unique($uniqueSuppliers);
+    // Get unique count of lot suppliers for a framework
+    $uniqueSuppliers = count(array_unique($uniqueSuppliers));
 
     $frameworkData = $framework->toArray();
     $frameworkData['lots'] = $lotsData;
-    $frameworkData['total_suppliers'] = count($uniqueSuppliers);
+    $frameworkData['total_suppliers'] = $uniqueSuppliers;
 
     header('Content-Type: application/json');
     return rest_ensure_response($frameworkData);

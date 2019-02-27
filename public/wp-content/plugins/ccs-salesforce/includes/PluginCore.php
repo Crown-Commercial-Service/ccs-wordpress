@@ -58,9 +58,9 @@ class PluginCore
      */
     private function load_dependencies()
     {
-        $rootDir = __DIR__ . '/../../../../';
+        $rootDir = __DIR__ . '/../../../../../';
 
-        require_once ($rootDir . 'vendor/autoload.php');
+        require_once($rootDir . 'vendor/autoload.php');
         $dotenv = new Dotenv();
         $dotenv->load($rootDir . '.env');
     }

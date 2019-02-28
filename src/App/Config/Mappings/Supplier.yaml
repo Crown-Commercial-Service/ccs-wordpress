@@ -1,0 +1,12 @@
+objectName: Account
+properties:
+  salesforceId: Id
+  dunsNumber: Supplier_DUNS_Number__c
+  name: Name
+  phoneNumber: Phone
+  street: BillingStreet
+  city: BillingCity
+  country: BillingCountry
+  postcode: BillingPostalCode
+  website: Website
+  tradingName: Trading_Name__c

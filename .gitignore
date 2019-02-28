@@ -1,0 +1,30 @@
+# Standard WordPress .gitignore
+# see https://github.com/github/gitignore/blob/master/WordPress.gitignore
+
+public/*.log
+public/wp-content/advanced-cache.php
+public/wp-content/backup-db/
+public/wp-content/backups/
+public/wp-content/blogs.dir/
+public/wp-content/cache/
+public/wp-content/upgrade/
+public/wp-content/uploads/
+public/wp-content/mu-plugins/
+public/wp-content/wp-cache-config.php
+public/wp-content/plugins/hello.php
+
+public/license.txt
+public/readme.html
+public/sitemap.xml
+public/sitemap.xml.gz
+
+
+.env.*.php
+.env.php
+.env
+vendor
+vendor/*
+
+# Wordpress
+# Account for plugins that include a vendor directory but no composer.json file
+!public/wp-content/plugins/**/vendor

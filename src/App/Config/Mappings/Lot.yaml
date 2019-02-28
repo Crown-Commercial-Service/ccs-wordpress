@@ -3,6 +3,6 @@ properties:
   salesforceId: Id
   frameworkId: Master_Framework__c
   lotNumber: Master_Framework_Lot_Number__c
-  title: Long_Name__c
+  title: Name
   status: Status__c
   expiryDate: Expiry_Date__c

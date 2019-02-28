@@ -64,6 +64,14 @@ function run_plugin()
         ) );
     } );
 
+    //Get suppliers on a framework
+    add_action( 'rest_api_init', function () {
+        register_rest_route( 'ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-.]+)/suppliers', array(
+            'methods' => 'GET',
+            'callback' => 'get_framework_suppliers',
+        ) );
+    } );
+
     //Get upcoming deals
     add_action( 'rest_api_init', function () {
         register_rest_route( 'ccs/v1', '/upcoming-deals', array(

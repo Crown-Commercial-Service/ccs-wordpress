@@ -320,6 +320,39 @@ class FrameworkRepository extends AbstractRepository {
         return $modelCollection;
     }
 
+    /**
+     * Find all rows based on a query, with pagination
+     *
+     * @param $sql
+     * @param bool $paginate
+     * @param int $limit
+     * @param int $page
+     * @return mixed
+     */
+    public function findAll($sql = null, $paginate = false, $limit = 20, $page = 0)
+    {
+        if ($paginate)
+        {
+            $sql = $this->addPaginationQuery($sql, $limit, $page);
+        }
+        try {
+            $query = $this->connection->prepare($sql);
+
+            $query->execute();
+
+            $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
+
+        if (empty($results)) {
+            return false;
+        }
+
+        $modelCollection = $this->translateResultsToModels($results);
+        return $modelCollection;
+    }
+
 
     /**
      * Find a row with a certain condition

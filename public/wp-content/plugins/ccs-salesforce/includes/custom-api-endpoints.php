@@ -177,6 +177,38 @@ function get_individual_framework(WP_REST_Request $request) {
     return rest_ensure_response($frameworkData);
 }
 
+/**
+ * Endpoint that returns the suppliers corresponding to an individual framework in a json format
+ *
+ * @param WP_REST_Request $request
+ * @return WP_REST_Response | WP_Error
+ */
+function get_framework_suppliers(WP_REST_Request $request) {
+
+    if (!isset($request['rm_number'])) {
+        return new WP_Error( 'bad_request', 'request is invalid', array('status' => 400) );
+
+    }
+
+    $rmNumber = $request['rm_number'];
+
+    $lotRepository = new LotRepository();
+
+    // @todo Move the SQL into the framework repository
+    $queryCondition = 'SELECT l.salesforce_id FROM `ccs_frameworks` f
+JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
+WHERE f.rm_number = \'' . $rmNumber  . '\'';
+
+    // @todo Get an array of ids from the findAll() and not objects
+    $lotSalesforceIds = $lotRepository->findAll($queryCondition);
+
+    var_dump($lotSalesforceIds[0]->getSalesforceId());
+    die();
+
+//    $frameworkData = $framework->toArray();
+//    $frameworkData['lots'] = [];
+}
+
 
 /**
  * Endpoint that returns a paginated list of upcoming deals in a json format

@@ -50,8 +50,14 @@ function get_frameworks(WP_REST_Request $request)
 
     $category = false;
 
+    $pillar = false;
+
     if (isset($request['category'])) {
         $category = $request['category'];
+    }
+
+    if (isset($request['pillar'])) {
+        $pillar = $request['pillar'];
     }
 
     $queryCondition = 'published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
@@ -59,6 +65,11 @@ function get_frameworks(WP_REST_Request $request)
     //If the category search parameter is defined, add it in the SQL query
     if($category){
         $queryCondition = 'category = \'' . $category . '\' AND ' . $queryCondition;
+    }
+
+    //If the pillar search parameter is defined, add it in the SQL query
+    if($pillar){
+        $queryCondition = 'pillar = \'' . $pillar . '\' AND ' . $queryCondition;
     }
 
     $frameworkRepository = new FrameworkRepository();

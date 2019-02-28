@@ -49,7 +49,7 @@ class Import
         ];
 
         $salesforceApi = new SalesforceApi();
-        
+
         // Lets generate an access token
         $accessTokenRequest = $salesforceApi->generateToken();
         if (!empty($accessTokenRequest->access_token))
@@ -58,12 +58,14 @@ class Import
             $salesforceApi->setupHeaders($accessToken);
         }
 
+        // Get all frameworks from Salesforce
         $frameworks = $salesforceApi->getAllFrameworks();
 
         $frameworkRepository = new FrameworkRepository();
         $lotRepository = new LotRepository();
 
         foreach ($frameworks as $index => $framework) {
+            // Save framework to DB (ccs_frameworks)
             if (!$frameworkRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
               $framework->getSalesforceId(), $framework)) {
                 WP_CLI::error('Framework ' . $index . ' not imported.');
@@ -71,14 +73,16 @@ class Import
                 continue;
             }
 
+            // Read in framework data from DB (ccs_frameworks)
             $framework = $frameworkRepository->findById($framework->getSalesforceId(), 'salesforce_id');
 
             WP_CLI::success('Framework ' . $index . ' imported.');
             $importCount['frameworks']++;
 
+            // Create or update framework title in WordPress
             $this->createFrameworkInWordpress($framework);
 
-
+            // Read lots for framework for Salesforce
             $lots = $salesforceApi->getFrameworkLots($framework->getSalesforceId());
 
             foreach ($lots as $lot) {

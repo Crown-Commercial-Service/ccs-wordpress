@@ -153,5 +153,81 @@ class SupplierRepository extends AbstractRepository
         return $query;
     }
 
+    /**
+     * Find all suppliers for lots based on all lot ids, with pagination
+     *
+     * @param $lotIds
+     * @param bool $paginate
+     * @param int $limit
+     * @param int $page
+     * @return mixed
+     */
+    public function findLotSuppliers($lotIds, $paginate = false, $limit = 20, $page = 0) {
 
+        $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name FROM `ccs_suppliers` s
+JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
+WHERE ls.lot_id IN (\'' . $lotIds . '\')
+ORDER BY s.name';
+
+        return $this->findAllSuppliers($sql, $paginate, $limit, $page);
+}
+
+    /**
+     * Find all rows based on a query, with pagination
+     *
+     * @param $sql
+     * @param bool $paginate
+     * @param int $limit
+     * @param int $page
+     * @return mixed
+     */
+    public function findAllSuppliers($sql = null, $paginate = false, $limit = 20, $page = 0)
+    {
+        if ($paginate)
+        {
+            $sql = $this->addPaginationQuery($sql, $limit, $page);
+        }
+        try {
+            $query = $this->connection->prepare($sql);
+
+            $query->execute();
+
+            $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
+
+        if (empty($results)) {
+            return false;
+        }
+
+        $modelCollection = $this->translateResultsToModels($results);
+        return $modelCollection;
+    }
+
+    /**
+     * Count all unique suppliers for lots
+     *
+     * @param $lotIds
+     * @return mixed
+     */
+    public function countAllSuppliers($lotIds)
+    {
+        $sql = 'SELECT count(DISTINCT s.id) as count FROM `ccs_suppliers` s
+JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
+WHERE ls.lot_id IN (\'' . $lotIds . '\')';
+
+        $query = $this->connection->prepare($sql);
+        $query->execute();
+
+        $results = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if (!isset($results['count']))
+        {
+            return 0;
+        }
+
+        return (int) $results['count'];
+    }
 }

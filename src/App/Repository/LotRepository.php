@@ -165,6 +165,21 @@ class LotRepository extends AbstractRepository
     }
 
     /**
+     * Find all lots for framework by the id
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function findFrameworkLots($id){
+
+        $sql = 'SELECT l.salesforce_id FROM `ccs_frameworks` f
+JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
+WHERE f.rm_number = \'' . $id  . '\'';
+
+        return $this->findAllLots($sql);
+    }
+
+    /**
      * Find all rows based on a query, with pagination
      *
      * @param $sql
@@ -173,7 +188,7 @@ class LotRepository extends AbstractRepository
      * @param int $page
      * @return mixed
      */
-    public function findAll($sql = null, $paginate = false, $limit = 20, $page = 0)
+    public function findAllLots($sql = null, $paginate = false, $limit = 20, $page = 0)
     {
         if ($paginate)
         {

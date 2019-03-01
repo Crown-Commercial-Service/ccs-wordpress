@@ -285,41 +285,39 @@ class FrameworkRepository extends AbstractRepository {
         return $query;
     }
 
+
     /**
-     * Find all rows with a certain condition
+     * Find the eligible Framework by id
      *
-     * @param $condition
-     * @param bool $paginate
-     * @param int $limit
-     * @param int $page
+     * @param $id
      * @return mixed
      */
-    public function findAllWhere($condition = null, $paginate = false, $limit = 20, $page = 0)
-    {
-        $sql = 'SELECT * from ' . $this->tableName . ' where ' . $condition ;
+    public function findLiveFramework($id) {
 
-        if ($paginate)
-        {
-            $sql = $this->addPaginationQuery($sql, $limit, $page);
-        }
-        try {
-            $query = $this->connection->prepare($sql);
+        $query = 'rm_number = \'' . $id . '\' AND published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
 
-            $query->execute();
+        return $this->findWhere($query);
 
-            $results = $query->fetchAll(\PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
-        }
-
-        if (empty($results)) {
-            return false;
-        }
-
-        $modelCollection = $this->translateResultsToModels($results);
-        return $modelCollection;
     }
 
+    /**
+     * Find all live frameworks for a supplier, based on the supplier id
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function findSupplierLiveFrameworks($id){
+
+        $query = 'SELECT rm_number, title FROM `ccs_frameworks` 
+WHERE salesforce_id IN
+        (SELECT `framework_id` FROM `ccs_lots`
+	WHERE salesforce_id IN
+        (SELECT `lot_id` FROM `ccs_lot_supplier`
+		WHERE supplier_id= \'' . $id  . '\'))
+AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
+
+        return $this->findAll($query);
+}
     /**
      * Find all rows based on a query, with pagination
      *

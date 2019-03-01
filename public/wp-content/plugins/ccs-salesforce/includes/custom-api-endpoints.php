@@ -114,14 +114,13 @@ function get_individual_framework(WP_REST_Request $request) {
         return new WP_Error( 'bad_request', 'request is invalid', array('status' => 400) );
 
     }
-    $frameworkId = $request['rm_number'];
+    $rmNumber = $request['rm_number'];
 
     $frameworkRepository = new FrameworkRepository();
 
-    // @todo Move the SQL into the framework repository
-    $queryCondition = 'rm_number = \'' . $frameworkId . '\' AND published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
+    //Retrieve the framework data
+    $framework = $frameworkRepository->findLiveFramework($rmNumber);
 
-    $framework = $frameworkRepository->findWhere($queryCondition);
     if ($framework === false) {
         return new WP_Error('rest_invalid_param', 'framework not found', array('status' => 404));
     }
@@ -145,6 +144,7 @@ function get_individual_framework(WP_REST_Request $request) {
 
             // Find all suppliers for the retrieved lots
             $suppliers = $supplierRepository->findAllWhere('salesforce_id IN (SELECT supplier_id FROM ccs_lot_supplier where lot_id=\'' . $lot->getSalesforceId() . '\')', false);
+
             if ($suppliers !== false) {
                 foreach ($suppliers as $supplier) {
                     $suppliersData[] = $supplier->toArray();
@@ -169,6 +169,7 @@ function get_individual_framework(WP_REST_Request $request) {
     // Get unique count of lot suppliers for a framework
     $uniqueSuppliers = count(array_unique($uniqueSuppliers));
 
+    //Populate the framework array with data
     $frameworkData = $framework->toArray();
     $frameworkData['lots'] = $lotsData;
     $frameworkData['total_suppliers'] = $uniqueSuppliers;
@@ -185,28 +186,90 @@ function get_individual_framework(WP_REST_Request $request) {
  */
 function get_framework_suppliers(WP_REST_Request $request) {
 
+    if (isset($request['limit'])) {
+        $limit = (int)$request['limit'];
+    }
+    $limit = $limit ?? 4;
+
+    if (isset($request['page'])) {
+        $page = (int)$request['page'];
+    }
+    $page = $page ?? 0;
+
+
     if (!isset($request['rm_number'])) {
         return new WP_Error( 'bad_request', 'request is invalid', array('status' => 400) );
-
     }
 
     $rmNumber = $request['rm_number'];
 
+    $frameworkRepository = new FrameworkRepository();
+    //Retrieve the live framework data
+    $framework = $frameworkRepository->findLiveFramework($rmNumber);
+
+    if ($framework === false) {
+        return new WP_Error('rest_invalid_param', 'framework not found', array('status' => 404));
+    }
+
     $lotRepository = new LotRepository();
+    //Retrieve all lots for a corresponding framework, based on the rm number
+    $lots = $lotRepository->findFrameworkLots($rmNumber);
 
-    // @todo Move the SQL into the framework repository
-    $queryCondition = 'SELECT l.salesforce_id FROM `ccs_frameworks` f
-JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
-WHERE f.rm_number = \'' . $rmNumber  . '\'';
+    $lotSalesforceIds = [];
 
-    // @todo Get an array of ids from the findAll() and not objects
-    $lotSalesforceIds = $lotRepository->findAll($queryCondition);
+    if ($lots !== false) {
+        foreach ($lots as $lot) {
+            $lotSalesforceIds[] = $lot->getSalesforceId();
+        }
+    }
 
-    var_dump($lotSalesforceIds[0]->getSalesforceId());
-    die();
+    $lotIds = implode ("', '", $lotSalesforceIds);
 
-//    $frameworkData = $framework->toArray();
-//    $frameworkData['lots'] = [];
+    $supplierRepository = new SupplierRepository();
+    $suppliersCount = $supplierRepository->countAllSuppliers($lotIds);
+    //Retrieve all suppliers for specific lots, based on their salesforce id
+    $suppliers = $supplierRepository->findLotSuppliers($lotIds, true, $limit, $page);
+
+    $suppliersData = [];
+
+    if ($suppliers !== false) {
+        foreach ($suppliers as $index => $supplier) {
+
+            $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
+            $liveFrameworks = [];
+
+            foreach ($frameworks as $counter => $framework) {
+                $liveFrameworks[$counter] =
+                    ['title' => $framework->getTitle(),
+                     'rm_number' => $framework->getRmNumber()
+                    ] ;
+            }
+
+            $suppliersData[$index] =
+                [
+                    'supplier_name' => $supplier->getName(),
+                    'supplier_id' => $supplier->getId(),
+                    'live_frameworks' => $liveFrameworks
+                ];
+        }
+    }
+
+    $frameworkData = $framework->toArray();
+    $finalData =
+        [ 'framework_title' => $frameworkData['title'],
+          'framework_rm_number' => $frameworkData['rm_number'],
+        ];
+
+    $meta = [
+        'total_results' => $suppliersCount,
+        'limit'         => $limit,
+        'results'       => count($suppliers),
+        'page'          => $page == 0 ? 1 : $page
+    ];
+
+
+    header('Content-Type: application/json');
+    return rest_ensure_response(['meta' => $meta, 'frameworks' => $finalData, 'suppliers' => $suppliersData]);
 }
 
 

@@ -272,7 +272,6 @@ function get_framework_suppliers(WP_REST_Request $request) {
     return rest_ensure_response(['meta' => $meta, 'frameworks' => $finalData, 'suppliers' => $suppliersData]);
 }
 
-
 /**
  * Endpoint that returns a paginated list of upcoming deals in a json format
  *

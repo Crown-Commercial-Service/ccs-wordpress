@@ -88,7 +88,7 @@ function run_plugin()
 
     //Get suppliers on a lot
     add_action( 'rest_api_init', function () use ($lotApi) {
-        register_rest_route( 'ccs/v1', '/lot-suppliers/(?P<rm_number>[a-zA-Z0-9-.]+):(?P<lot_number>[\d+])', array(
+        register_rest_route( 'ccs/v1', '/lot-suppliers/(?P<rm_number>[a-zA-Z0-9-.]+):(?P<lot_number>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
             'callback' => [$lotApi, 'get_lot_suppliers']
         ) );

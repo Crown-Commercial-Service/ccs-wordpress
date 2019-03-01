@@ -12,7 +12,6 @@ class CustomLotAPI
      */
     public function get_lot_suppliers(WP_REST_Request $request)
     {
-var_dump('hello');
 //        header('Content-Type: application/json');
 //        return rest_ensure_response(['meta' => $meta, 'frameworks' => $finalData, 'suppliers' => $suppliersData]);
     }

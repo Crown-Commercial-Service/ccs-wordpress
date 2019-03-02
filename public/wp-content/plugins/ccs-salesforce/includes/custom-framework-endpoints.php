@@ -158,7 +158,7 @@ function get_individual_framework(WP_REST_Request $request) {
     }
 
     // Natural sort lots array
-    $lotNumbers = array_keys($lotsData);
+    $lotNumbers = array_keys($lotsData); // @todo remove this reliance so we can duplidate
     natsort($lotNumbers);
     $lotsDataCopy = $lotsData;
     $lotsData = [];
@@ -255,21 +255,18 @@ function get_framework_suppliers(WP_REST_Request $request) {
     }
 
     $frameworkData = $framework->toArray();
-    $finalData =
-        [ 'framework_title' => $frameworkData['title'],
-          'framework_rm_number' => $frameworkData['rm_number'],
-        ];
 
     $meta = [
         'total_results' => $suppliersCount,
         'limit'         => $limit,
         'results'       => count($suppliers),
-        'page'          => $page == 0 ? 1 : $page
+        'page'          => $page == 0 ? 1 : $page,
+        'framework_title' => $frameworkData['title'],
+        'framework_rm_number' => $frameworkData['rm_number'],
     ];
 
-
     header('Content-Type: application/json');
-    return rest_ensure_response(['meta' => $meta, 'frameworks' => $finalData, 'suppliers' => $suppliersData]);
+    return rest_ensure_response(['meta' => $meta, 'results' => $suppliersData]);
 }
 
 /**

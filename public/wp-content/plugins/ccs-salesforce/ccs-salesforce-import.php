@@ -20,6 +20,7 @@ if (!defined('WPINC')) {
  */
 if (class_exists('WP_CLI')) {
     require __DIR__ . '/includes/cli-commands.php';
+    require __DIR__ . '/includes/SyncText.php';
 }
 
 require __DIR__ . '/includes/PluginCore.php';

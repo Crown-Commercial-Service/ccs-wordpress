@@ -323,4 +323,38 @@ abstract class AbstractRepository implements RepositoryInterface {
         return $this->createModel($result);
     }
 
+    /**
+     * Update only certain fields based on a search field (e.g. wordpress_id)
+     *
+     * @param array $fields Array of column names => values
+     * @param $searchField Field column name to update data on
+     * @param $searchValue Field value to update data on
+     * @return mixed
+     */
+    public function updateFields(array $fields, $searchField, $searchValue)
+    {
+        // Build the bindings PDO statement
+        $sql = 'UPDATE ' . $this->tableName . ' SET ';
+        $count = 1;
+        foreach ($fields as $column => $value) {
+            $sql .= '`' . $column . '` = :' . $column;
+            if ($count < count($fields)) {
+                $sql .= ', ';
+            } else {
+                $sql .= ' ';
+            }
+            $count++;
+        }
+
+        $sql .= 'WHERE ' . $searchField . ' = :searchValue';
+        $query = $this->connection->prepare($sql);
+
+        $query->bindParam(':searchValue', $searchValue);
+        foreach ($fields as $column => $value) {
+            $query->bindParam(':' . $column, $value);
+        }
+
+        return $query->execute();
+    }
+
 }

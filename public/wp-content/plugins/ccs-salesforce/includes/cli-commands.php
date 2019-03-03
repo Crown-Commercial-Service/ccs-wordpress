@@ -2,6 +2,9 @@
 /**
  * Salesforce importer
  *
+ * Example commands:
+ * wp cli salesforce import sync-text-from-wordpress
+ *
  * @see https://make.wordpress.org/cli/handbook/commands-cookbook/
  *
  */
@@ -145,6 +148,36 @@ class Import
 
 
     /**
+     * Syncs frameworks & lots rich text from WordPress to custom ccs_ tables
+     *
+     * Useful to use after the initial import from Drupal 7 to WP
+     *
+     * Usage:
+     * wp salesforce import syncText
+     */
+    public function syncText()
+    {
+        $sync = new SyncText();
+
+        // Sync content for frameworks
+        $wordpress = $sync->getFrameworksFromWordPress();
+        WP_CLI::success(sprintf('Read in %d frameworks from WordPress', count($wordpress)));
+        $custom = $sync->getFrameworksFromCustomTables();
+        WP_CLI::success(sprintf('Read in %d frameworks from custom database table', count($custom)));
+        $results = $sync->syncTextContent('frameworks', $wordpress, $custom);
+        WP_CLI::success(sprintf('Text content for %d frameworks synced from WordPress to custom table', $results));
+
+        // Sync content for lots - need to add description to WordPress lots content type first
+        $wordpress = $sync->getLotsFromWordPress();
+        WP_CLI::success(sprintf('Read in %d lots from WordPress', count($wordpress)));
+        $custom = $sync->getLotsFromCustomTables();
+        WP_CLI::success(sprintf('Read in %d lots from custom database table', count($custom)));
+        $results = $sync->syncFromWordpressToCustomTables('lots', $wordpress, $custom);
+        WP_CLI::success(sprintf('Text content for %d lots synced from WordPress to custom table', $results));
+    }
+
+
+    /**
      * @param \App\Model\LotSupplier $lotSupplier
      * @param $contactDetails
      * @return \App\Model\LotSupplier
@@ -274,6 +307,7 @@ class Import
 
         return $wordpressId;
     }
+
 }
 
 

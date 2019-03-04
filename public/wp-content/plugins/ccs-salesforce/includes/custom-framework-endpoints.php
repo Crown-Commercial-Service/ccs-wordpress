@@ -204,8 +204,10 @@ function get_framework_suppliers(WP_REST_Request $request) {
     $rmNumber = $request['rm_number'];
 
     $frameworkRepository = new FrameworkRepository();
-    //Retrieve the live framework data
+
+    // Retrieve the live framework data
     $framework = $frameworkRepository->findLiveFramework($rmNumber);
+    $frameworkData = $framework->toArray();
 
     if ($framework === false) {
         return new WP_Error('rest_invalid_param', 'framework not found', array('status' => 404));
@@ -253,8 +255,6 @@ function get_framework_suppliers(WP_REST_Request $request) {
                 ];
         }
     }
-
-    $frameworkData = $framework->toArray();
 
     $meta = [
         'total_results' => $suppliersCount,

@@ -316,7 +316,7 @@ WHERE salesforce_id IN
 		WHERE supplier_id= \'' . $id  . '\'))
 AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
 
-        return $this->findAll($query);
+        return $this->findAllFrameworks($query);
 }
     /**
      * Find all rows based on a query, with pagination
@@ -327,7 +327,7 @@ AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
      * @param int $page
      * @return mixed
      */
-    public function findAll($sql = null, $paginate = false, $limit = 20, $page = 0)
+    public function findAllFrameworks($sql = null, $paginate = false, $limit = 20, $page = 0)
     {
         if ($paginate)
         {

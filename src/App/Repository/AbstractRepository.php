@@ -154,6 +154,29 @@ abstract class AbstractRepository implements RepositoryInterface {
     }
 
     /**
+     * Find a row based on a custom query
+     *
+     * @param $sql
+     * @return mixed
+     */
+    public function findSingleRow($sql = null)
+    {
+        try {
+            $query = $this->connection->prepare($sql);
+            $query->execute();
+
+            $result = $query->fetch(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
+        if (empty($result)) {
+            return false;
+        }
+
+        return $this->translateSingleResultToModel($result);
+    }
+
+    /**
      * Find a row with a certain Id
      *
      * @param string $fieldName

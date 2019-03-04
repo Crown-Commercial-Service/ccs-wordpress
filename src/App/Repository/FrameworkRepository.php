@@ -294,9 +294,9 @@ class FrameworkRepository extends AbstractRepository {
      */
     public function findLiveFramework($id) {
 
-        $query = 'rm_number = \'' . $id . '\' AND published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
+        $sql = 'SELECT * from `ccs_frameworks` WHERE rm_number = \'' . $id . '\' AND published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
 
-        return $this->findWhere($query);
+        return $this->findSingleRow($sql);
 
     }
 
@@ -349,34 +349,5 @@ AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
 
         $modelCollection = $this->translateResultsToModels($results);
         return $modelCollection;
-    }
-
-
-    /**
-     * Find a row with a certain condition
-     *
-     * @param $condition
-     * @return mixed
-     */
-    public function findWhere($condition = null)
-    {
-        $sql = 'SELECT * from ' . $this->tableName . ' where ' . $condition ;
-
-        try {
-            $query = $this->connection->prepare($sql);
-
-            $query->execute();
-
-            $result = $query->fetch(\PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
-        }
-
-        if (empty($result)) {
-            return false;
-        }
-
-        return $this->translateSingleResultToModel($result);
-
     }
 }

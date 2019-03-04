@@ -317,7 +317,21 @@ WHERE salesforce_id IN
 AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
 
         return $this->findAllFrameworks($query);
-}
+    }
+
+    /**
+     * Find the upcoming deals frameworks
+     *
+     * @return mixed
+     */
+    public function findUpcomingDeals() {
+
+        $sql = 'SELECT * from `ccs_frameworks` WHERE published_status = \'publish\' AND (status = \'Live\' OR status = \'Future (Pipeline)\' OR status = \'Planned (Pipeline)\' OR status = \'Underway (Pipeline)\' OR status = \'Awarded (Pipeline)\') AND start_date >= DATE_ADD(NOW(), INTERVAL -3 MONTH)';
+
+        return $this->findAllFrameworks($sql);
+
+    }
+
     /**
      * Find all rows based on a query, with pagination
      *
@@ -335,7 +349,6 @@ AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
         }
         try {
             $query = $this->connection->prepare($sql);
-
             $query->execute();
 
             $results = $query->fetchAll(\PDO::FETCH_ASSOC);

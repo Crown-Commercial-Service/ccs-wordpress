@@ -291,47 +291,54 @@ function get_upcoming_deals(WP_REST_Request $request)
 //    $page = $page ?? 0;
 
     $frameworkRepository = new FrameworkRepository();
-    $frameworks = $frameworkRepository->findAll(false);
+    $frameworks = $frameworkRepository->findUpcomingDeals();
 
     $futureFrameworks = [];
     $plannedFrameworks = [];
     $underwayFrameworks = [];
     $awardedFrameworks = [];
+    $dynamicFrameworks = [];
 
 
     foreach ($frameworks as $framework)
     {
      if(!empty($framework->getStatus())) {
 
-        if($framework->getStatus() === 'Future (Pipeline)'){
+        if($framework->getStatus() === 'Future (Pipeline)') {
             $futureFrameworks[] = $framework->toArray();
         }
 
-         if($framework->getStatus() === 'Planned (Pipeline)'){
+         if($framework->getStatus() === 'Planned (Pipeline)') {
              $plannedFrameworks[] = $framework->toArray();
          }
 
-         if($framework->getStatus() === 'Underway (Pipeline)'){
+         if($framework->getStatus() === 'Underway (Pipeline)') {
              $underwayFrameworks[] = $framework->toArray();
          }
 
-         if($framework->getStatus() === 'Awarded (Pipeline)'){
+         if($framework->getStatus() === 'Awarded (Pipeline)' || ($framework->getStatus() === 'Live' &&
+            $framework->getTerms() !== 'DPS')) {
              $awardedFrameworks[] = $framework->toArray();
+         }
+
+         if($framework->getStatus() === 'Live' && $framework->getTerms() === 'DPS'){
+             $dynamicFrameworks[] = $framework->toArray();
          }
      }
 
     }
 
     $meta = [
-        'future pipline results' => count($futureFrameworks),
-        'planned pipline results'         => count($plannedFrameworks),
-        'underway pipline results'       => count($underwayFrameworks),
-        'awarded pipline results'          => count($awardedFrameworks)
+        'awarded pipline results'            => count($awardedFrameworks),
+        'underway pipline results'           => count($underwayFrameworks),
+        'dynamic purchasing systems results' => count($dynamicFrameworks),
+        'planned pipline results'            => count($plannedFrameworks),
+        'future pipline results'             => count($futureFrameworks)
     ];
 
     header('Content-Type: application/json');
 
-    return rest_ensure_response(['meta' => $meta,'Future pipeline' => $futureFrameworks, 'Planned pipeline' => $plannedFrameworks,'Underway pipeline' => $underwayFrameworks, 'Awarded pipeline' => $awardedFrameworks ]);
+    return rest_ensure_response(['meta' => $meta,  'Procurements recently awarded' => $awardedFrameworks,'Procurements in progress' => $underwayFrameworks,'Dynamic Purchasing Systems currently open' => $dynamicFrameworks, 'Planned procurements' => $plannedFrameworks, 'Future pipeline' => $futureFrameworks]);
 }
 
 

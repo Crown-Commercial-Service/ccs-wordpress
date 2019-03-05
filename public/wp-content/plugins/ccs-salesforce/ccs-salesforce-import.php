@@ -109,6 +109,13 @@ function run_plugin()
         ) );
     } );
 
+    //Get an individual supplier
+    add_action( 'rest_api_init', function () use ($supplierApi) {
+        register_rest_route( 'ccs/v1', '/suppliers/(?P<id>[a-zA-Z0-9-.]+)/(?P<supplier_name>[a-zA-Z0-9-.]+)', array(
+            'methods' => 'GET',
+            'callback' => [$supplierApi, 'get_individual_supplier']
+        ) );
+    } );
 
     //Saving wordpress data into the custom database
     add_action( 'save_post', 'save_post_acf' );

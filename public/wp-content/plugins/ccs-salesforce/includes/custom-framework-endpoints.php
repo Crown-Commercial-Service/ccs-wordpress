@@ -125,7 +125,7 @@ function get_individual_framework(WP_REST_Request $request) {
         return new WP_Error('rest_invalid_param', 'framework not found', array('status' => 404));
     }
 
-    $lotRepository = new lotRepository();
+    $lotRepository = new LotRepository();
     $supplierRepository = new SupplierRepository();
 
     // Find all lots for the retrieved framework
@@ -329,16 +329,16 @@ function get_upcoming_deals(WP_REST_Request $request)
     }
 
     $meta = [
-        'awarded pipline results'            => count($awardedFrameworks),
-        'underway pipline results'           => count($underwayFrameworks),
-        'dynamic purchasing systems results' => count($dynamicFrameworks),
-        'planned pipline results'            => count($plannedFrameworks),
-        'future pipline results'             => count($futureFrameworks)
+        'awarded_pipeline_results'            => count($awardedFrameworks),
+        'underway_pipeline_results'           => count($underwayFrameworks),
+        'dynamic_purchasing_systems_results' => count($dynamicFrameworks),
+        'planned_pipeline_results'            => count($plannedFrameworks),
+        'future_pipeline_results'             => count($futureFrameworks)
     ];
 
     header('Content-Type: application/json');
 
-    return rest_ensure_response(['meta' => $meta,  'Procurements recently awarded' => $awardedFrameworks,'Procurements in progress' => $underwayFrameworks,'Dynamic Purchasing Systems currently open' => $dynamicFrameworks, 'Planned procurements' => $plannedFrameworks, 'Future pipeline' => $futureFrameworks]);
+    return rest_ensure_response(['meta' => $meta,  'awarded_pipeline' => $awardedFrameworks,'underway_pipeline' => $underwayFrameworks,'dynamic_purchasing_systems' => $dynamicFrameworks, 'planned_pipeline' => $plannedFrameworks, 'future_pipeline' => $futureFrameworks]);
 }
 
 

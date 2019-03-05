@@ -294,7 +294,11 @@ class FrameworkRepository extends AbstractRepository {
      */
     public function findLiveFramework($id) {
 
-        $sql = 'SELECT * from `ccs_frameworks` WHERE rm_number = \'' . $id . '\' AND published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
+        $sql = 'SELECT * from `ccs_frameworks` 
+WHERE rm_number = \'' . $id . '\' 
+AND published_status = \'publish\' 
+AND (status = \'Live\' 
+    OR status = \'Expired - Data Still Received\')';
 
         return $this->findSingleRow($sql);
 
@@ -326,7 +330,16 @@ AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
      */
     public function findUpcomingDeals() {
 
-        $sql = 'SELECT * from `ccs_frameworks` WHERE published_status = \'publish\' AND (status = \'Live\' OR status = \'Future (Pipeline)\' OR status = \'Planned (Pipeline)\' OR status = \'Underway (Pipeline)\' OR status = \'Awarded (Pipeline)\') AND start_date >= DATE_ADD(NOW(), INTERVAL -3 MONTH)';
+        $sql = 'SELECT * from `ccs_frameworks` 
+WHERE published_status = \'publish\' 
+AND (status = \'Future (Pipeline)\' 
+    OR status = \'Planned (Pipeline)\' 
+    OR status = \'Underway (Pipeline)\' 
+    OR (status = \'Awarded (Pipeline)\' 
+        OR (status = \'Live\' 
+            AND start_date >= DATE_ADD(NOW(), INTERVAL -3 MONTH) 
+            AND terms <> \'DPS\')) 
+    OR (status = \'Live\' AND terms = \'DPS\'))';
 
         return $this->findAllFrameworks($sql);
 
@@ -352,6 +365,7 @@ AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
             $query->execute();
 
             $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+
         } catch (PDOException $e) {
             trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
         }

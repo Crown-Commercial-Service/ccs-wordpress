@@ -277,6 +277,18 @@ EOD;
      *
      * @todo Read all entries in Master_Framework_Lot_Contact__c, Contact then loop through this (perhaps in a temporary table?)
      *
+     * Suggested SOQL:
+     * Table the following (Master Framework Lot Contact):
+     * SELECT Email__c,Id,Master_Framework_Lot__c,Organisation_Name__c,Phone__c,Website_Contact__c FROM Master_Framework_Lot_Contact__c
+     *
+     * Table the following (Master Framework Lot)
+     * SELECT Id,Master_Framework__c FROM Master_Framework_Lot__c
+     *
+     * Table the following (Framework Supplier)
+     * SELECT Framework__c,Id,Status__c,Supplier__c,Trading_Name__c FROM Framework_Supplier__c
+     *
+     * Then use the ID's from each to create a join table which will display on the website.
+     *
      * @param $lotId
      * @param $supplierId
      * @return mixed

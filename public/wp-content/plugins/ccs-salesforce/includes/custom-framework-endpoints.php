@@ -132,10 +132,8 @@ function get_individual_framework(WP_REST_Request $request) {
     $lots = $lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');
     $lotsData = [];
 
-    if ($lots === false) {
-        $lotsData = [];
+    if ($lots !== false) {
 
-    } else {
         $uniqueSuppliers = [];
 
         foreach ($lots as $lot) {
@@ -331,7 +329,7 @@ function get_upcoming_deals(WP_REST_Request $request)
     $meta = [
         'awarded_pipeline_results'            => count($awardedFrameworks),
         'underway_pipeline_results'           => count($underwayFrameworks),
-        'dynamic_purchasing_systems_results' => count($dynamicFrameworks),
+        'dynamic_purchasing_systems_results'  => count($dynamicFrameworks),
         'planned_pipeline_results'            => count($plannedFrameworks),
         'future_pipeline_results'             => count($futureFrameworks)
     ];

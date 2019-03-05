@@ -318,7 +318,8 @@ WHERE salesforce_id IN
 	WHERE salesforce_id IN
         (SELECT `lot_id` FROM `ccs_lot_supplier`
 		WHERE supplier_id= \'' . $id  . '\'))
-AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
+AND (status = \'Live\' OR status = \'Expired - Data Still Received\')
+ORDER BY title';
 
         return $this->findAllFrameworks($query);
     }

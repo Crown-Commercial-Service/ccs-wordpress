@@ -69,74 +69,56 @@ class CustomSupplierApi
      * @param WP_REST_Request $request
      * @return WP_REST_Response | WP_Error
      */
-    function get_individual_supplier(WP_REST_Request $request) {
+    function get_individual_supplier(WP_REST_Request $request)
+    {
+        if (filter_var($request['supplier_name'], FILTER_SANITIZE_STRING) === false) {
+            return new WP_Error('supplier name must be an valid string', array('status' => 400));
+        }
 
         if (!isset($request['id'])) {
-            return new WP_Error( 'bad_request', 'request is invalid', array('status' => 400) );
-
+            return new WP_Error('bad_request', 'request is invalid', array('status' => 400));
         }
+
         $supplierId = $request['id'];
 
         $supplierRepository = new SupplierRepository();
 
-        //Retrieve the framework data
+        //Retrieve the supplier data
         $supplier = $supplierRepository->findById($supplierId);
 
         if ($supplier === false) {
             return new WP_Error('rest_invalid_param', 'supplier not found', array('status' => 404));
         }
 
-        $lotRepository = new LotRepository();
         $frameworkRepository = new FrameworkRepository();
+        $lotRepository = new LotRepository();
 
+        // Find all frameworks for the retrieved supplier
+        $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
+        $frameworksData = [];
 
-        // Find all lots for the retrieved supplier
-        $lots = $lotRepository->find();
-        $lotsData = [];
+        if ($frameworks !== false) {
+            foreach ($frameworks as $index => $framework) {
+                $frameworksData[$index] = $framework->toArray();
+                $lotsData = [];
 
-        if ($lots === false) {
-            $lotsData = [];
+                // Find all lots for the retrieved frameworks
+                $lots = $lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');
 
-        } else {
-            $uniqueSuppliers = [];
-
-            foreach ($lots as $lot) {
-                $lotData = $lot->toArray();
-                $suppliersData = [];
-
-                // Find all suppliers for the retrieved lots
-                $suppliers = $supplierRepository->findAllWhere('salesforce_id IN (SELECT supplier_id FROM ccs_lot_supplier where lot_id=\'' . $lot->getSalesforceId() . '\')', false);
-
-                if ($suppliers !== false) {
-                    foreach ($suppliers as $supplier) {
-                        $suppliersData[] = $supplier->toArray();
-                        $uniqueSuppliers[] = $supplier->getId();
+                if ($lots !== false) {
+                    foreach ($lots as $lot) {
+                        $lotsData[] = $lot->toArray();
                     }
                 }
-
-                $lotData['suppliers'] = $suppliersData;
-                $lotsData[$lot->getLotNumber()] = $lotData;
+                $frameworksData[$index]['lots'] = $lotsData;
             }
         }
 
-        // Natural sort lots array
-        $lotNumbers = array_keys($lotsData); // @todo remove this reliance so we can duplidate
-        natsort($lotNumbers);
-        $lotsDataCopy = $lotsData;
-        $lotsData = [];
-        foreach ($lotNumbers as $number) {
-            $lotsData[] = $lotsDataCopy[$number];
-        }
-
-        // Get unique count of lot suppliers for a framework
-        $uniqueSuppliers = count(array_unique($uniqueSuppliers));
-
         //Populate the framework array with data
-        $frameworkData = $framework->toArray();
-        $frameworkData['lots'] = $lotsData;
-        $frameworkData['total_suppliers'] = $uniqueSuppliers;
+        $supplierData = $supplier->toArray();
+        $supplierData['frameworks'] = $frameworksData;
 
         header('Content-Type: application/json');
-        return rest_ensure_response($frameworkData);
+        return rest_ensure_response($supplierData);
     }
 }

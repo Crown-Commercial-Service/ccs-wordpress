@@ -29,8 +29,9 @@ require __DIR__ . '/includes/custom-framework-endpoints.php';
 
 require __DIR__ . '/includes/merging-wp-data.php';
 
-require __DIR__ . '/includes/CustomLotAPI.php';
+require __DIR__ . '/includes/CustomLotApi.php';
 
+require __DIR__ . '/includes/CustomSupplierApi.php';
 
 
 /**
@@ -46,13 +47,17 @@ function run_plugin()
 {
     $plugin = new PluginCore();
 
-    $lotApi = new CustomLotAPI();
 
     register_activation_hook(__FILE__, array('PluginCore', 'activate'));
     register_deactivation_hook(__FILE__, array('PluginCore', 'deactivate'));
 
 
     $api = new CCS_Rest_Api();
+
+    $lotApi = new CustomLotApi();
+
+    $supplierApi = new CustomSupplierApi();
+
 
     //Get all frameworks
     add_action( 'rest_api_init', function () {
@@ -94,6 +99,16 @@ function run_plugin()
             'callback' => [$lotApi, 'get_lot_suppliers']
         ) );
     } );
+
+
+    //Get all suppliers
+    add_action( 'rest_api_init', function () use ($supplierApi) {
+        register_rest_route( 'ccs/v1', '/suppliers', array(
+            'methods' => 'GET',
+            'callback' => [$supplierApi, 'get_suppliers']
+        ) );
+    } );
+
 
     //Saving wordpress data into the custom database
     add_action( 'save_post', 'save_post_acf' );

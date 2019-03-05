@@ -4,7 +4,7 @@ use App\Repository\FrameworkRepository;
 use App\Repository\LotRepository;
 use App\Repository\SupplierRepository;
 
-class CustomLotAPI
+class CustomLotApi
 {
 
     /**

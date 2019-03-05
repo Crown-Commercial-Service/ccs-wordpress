@@ -6,3 +6,4 @@ properties:
   title: Name
   status: Status__c
   expiryDate: Expiry_Date__c
+#  publishOnWebsite: Hide_this_Lot_from_Website__c

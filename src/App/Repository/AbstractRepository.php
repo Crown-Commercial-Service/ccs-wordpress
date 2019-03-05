@@ -72,7 +72,6 @@ abstract class AbstractRepository implements RepositoryInterface {
     public function countAll($condition = null)
     {
         $sql = 'SELECT count(*) as count from  ' . $this->tableName . ' where ' . $condition;
-
         $query = $this->connection->prepare($sql);
         $query->execute();
 

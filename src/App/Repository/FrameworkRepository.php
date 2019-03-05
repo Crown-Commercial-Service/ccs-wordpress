@@ -308,7 +308,7 @@ class FrameworkRepository extends AbstractRepository {
      */
     public function findSupplierLiveFrameworks($id){
 
-        $query = 'SELECT rm_number, title FROM `ccs_frameworks` 
+        $query = 'SELECT * FROM `ccs_frameworks` 
 WHERE salesforce_id IN
         (SELECT `framework_id` FROM `ccs_lots`
 	WHERE salesforce_id IN

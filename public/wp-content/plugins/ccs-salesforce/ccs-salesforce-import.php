@@ -20,13 +20,17 @@ if (!defined('WPINC')) {
  */
 if (class_exists('WP_CLI')) {
     require __DIR__ . '/includes/cli-commands.php';
+    require __DIR__ . '/includes/SyncText.php';
 }
 
 require __DIR__ . '/includes/PluginCore.php';
 
-require __DIR__ . '/includes/custom-api-endpoints.php';
+require __DIR__ . '/includes/custom-framework-endpoints.php';
 
 require __DIR__ . '/includes/merging-wp-data.php';
+
+require __DIR__ . '/includes/CustomLotAPI.php';
+
 
 
 /**
@@ -41,6 +45,8 @@ require __DIR__ . '/includes/merging-wp-data.php';
 function run_plugin()
 {
     $plugin = new PluginCore();
+
+    $lotApi = new CustomLotAPI();
 
     register_activation_hook(__FILE__, array('PluginCore', 'activate'));
     register_deactivation_hook(__FILE__, array('PluginCore', 'deactivate'));
@@ -66,7 +72,7 @@ function run_plugin()
 
     //Get suppliers on a framework
     add_action( 'rest_api_init', function () {
-        register_rest_route( 'ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-.]+)/suppliers', array(
+        register_rest_route( 'ccs/v1', '/framework-suppliers/(?P<rm_number>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
             'callback' => 'get_framework_suppliers',
         ) );
@@ -78,6 +84,14 @@ function run_plugin()
             'methods' => 'GET',
             'callback' => 'get_upcoming_deals',
 
+        ) );
+    } );
+
+    //Get suppliers on a lot
+    add_action( 'rest_api_init', function () use ($lotApi) {
+        register_rest_route( 'ccs/v1', '/lot-suppliers/(?P<rm_number>[a-zA-Z0-9-.]+):(?P<lot_number>[a-zA-Z0-9-.]+)', array(
+            'methods' => 'GET',
+            'callback' => [$lotApi, 'get_lot_suppliers']
         ) );
     } );
 

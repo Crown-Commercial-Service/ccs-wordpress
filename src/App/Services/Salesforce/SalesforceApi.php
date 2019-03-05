@@ -270,6 +270,13 @@ EOD;
 
 
     /**
+     * Get the Lot contact details for a supplier
+     *
+     * Master_Framework_Lot_Contact__c = Linking table, links to a contact and a lot
+     * Contact = Supplier contact table
+     *
+     * @todo Read all entries in Master_Framework_Lot_Contact__c, Contact then loop through this (perhaps in a temporary table?)
+     *
      * @param $lotId
      * @param $supplierId
      * @return mixed
@@ -305,6 +312,13 @@ EOD;
 
         return null;
     }
+
+    /**
+     * Select trading name for a supplier on a framework
+     *
+     * @todo SOQL: SELECT Framework__c, Id, Name, RM_Number__c, Status__c, Supplier__c, Trading_Name__c FROM Framework_Supplier__c
+     *
+     */
 
 
 }

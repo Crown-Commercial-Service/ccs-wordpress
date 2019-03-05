@@ -180,6 +180,22 @@ WHERE f.rm_number = \'' . $id  . '\'';
     }
 
     /**
+     * Find the lot for framework by framework id and lot number
+     *
+     * @param $id
+     * @param $lotNumber
+     * @return mixed
+     */
+    public function findSingleFrameworkLot($id, $lotNumber) {
+
+        $sql = 'SELECT l.* FROM `ccs_frameworks` f
+JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
+WHERE f.rm_number = \'' . $id . '\' AND lot_number=\'' . $lotNumber . '\'';
+
+        return $this->findSingleRow($sql);
+    }
+
+    /**
      * Find all rows based on a query, with pagination
      *
      * @param $sql

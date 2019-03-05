@@ -164,7 +164,7 @@ class SupplierRepository extends AbstractRepository
      */
     public function findLotSuppliers($lotIds, $paginate = false, $limit = 20, $page = 0) {
 
-        $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name FROM `ccs_suppliers` s
+        $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, s.trading_name FROM `ccs_suppliers` s
 JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
 WHERE ls.lot_id IN (\'' . $lotIds . '\')
 ORDER BY s.name';
@@ -217,6 +217,31 @@ ORDER BY s.name';
         $sql = 'SELECT count(DISTINCT s.id) as count FROM `ccs_suppliers` s
 JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
 WHERE ls.lot_id IN (\'' . $lotIds . '\')';
+
+        $query = $this->connection->prepare($sql);
+        $query->execute();
+
+        $results = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if (!isset($results['count']))
+        {
+            return 0;
+        }
+
+        return (int) $results['count'];
+    }
+
+    /**
+     * Count all suppliers existing in the db for a single lot
+     *
+     * @param $lotId
+     * @return mixed
+     */
+    public function countSuppliersForLot($lotId)
+    {
+        $sql = 'SELECT count(*) as count FROM `ccs_suppliers` s
+JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
+WHERE ls.lot_id =\'' . $lotId . '\'';
 
         $query = $this->connection->prepare($sql);
         $query->execute();

@@ -84,8 +84,9 @@ function run_plugin()
     } );
 
     //Get upcoming deals
+    // @todo Had to append "0" to end of URL since Frontend uses getOne() method which expects an ID, to review
     add_action( 'rest_api_init', function () {
-        register_rest_route( 'ccs/v1', '/upcoming-deals', array(
+        register_rest_route( 'ccs/v1', '/upcoming-deals/0', array(
             'methods' => 'GET',
             'callback' => 'get_upcoming_deals',
 

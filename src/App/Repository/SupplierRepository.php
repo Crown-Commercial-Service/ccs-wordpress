@@ -210,6 +210,23 @@ ORDER BY s.name';
     }
 
     /**
+     * Find the eligible Supplier for live frameworks
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function findLiveSupplier($id) {
+
+        $sql = 'SELECT * from `ccs_suppliers` 
+WHERE id = \'' . $id . '\' 
+AND on_live_frameworks = TRUE ';
+
+        return $this->findSingleRow($sql);
+
+    }
+
+
+    /**
      * Count all unique suppliers for lots
      *
      * @param $lotIds

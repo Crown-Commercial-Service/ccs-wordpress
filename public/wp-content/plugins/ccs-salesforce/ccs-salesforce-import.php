@@ -47,7 +47,6 @@ function run_plugin()
 {
     $plugin = new PluginCore();
 
-
     register_activation_hook(__FILE__, array('PluginCore', 'activate'));
     register_deactivation_hook(__FILE__, array('PluginCore', 'deactivate'));
 

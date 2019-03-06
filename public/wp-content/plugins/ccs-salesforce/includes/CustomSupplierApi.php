@@ -25,8 +25,10 @@ class CustomSupplierApi
         $page = $page ?? 0;
 
         $supplierRepository = new SupplierRepository();
-        $supplierCount = $supplierRepository->countAll('true');
-        $suppliers = $supplierRepository->findAll(true, $limit, $page);
+
+        $condition = 'on_live_frameworks = TRUE';
+        $supplierCount = $supplierRepository->countAll($condition);
+        $suppliers = $supplierRepository->findAllWhere($condition, true, $limit, $page);
 
         $frameworkRepository = new FrameworkRepository();
 
@@ -71,10 +73,6 @@ class CustomSupplierApi
      */
     function get_individual_supplier(WP_REST_Request $request)
     {
-        if (filter_var($request['supplier_name'], FILTER_SANITIZE_STRING) === false) {
-            return new WP_Error('supplier name must be an valid string', array('status' => 400));
-        }
-
         if (!isset($request['id'])) {
             return new WP_Error('bad_request', 'request is invalid', array('status' => 400));
         }
@@ -84,7 +82,7 @@ class CustomSupplierApi
         $supplierRepository = new SupplierRepository();
 
         //Retrieve the supplier data
-        $supplier = $supplierRepository->findById($supplierId);
+        $supplier = $supplierRepository->findLiveSupplier($supplierId);
 
         if ($supplier === false) {
             return new WP_Error('rest_invalid_param', 'supplier not found', array('status' => 404));

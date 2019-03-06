@@ -305,7 +305,7 @@ AND (status = \'Live\'
     }
 
     /**
-     * Count all live frameworks for a supplier, based on the supplier id
+     * Count all live and published frameworks for a supplier, based on the supplier id
      *
      * @param $id
      * @return mixed
@@ -318,7 +318,8 @@ WHERE salesforce_id IN
 	WHERE salesforce_id IN
         (SELECT `lot_id` FROM `ccs_lot_supplier`
 		WHERE supplier_id= \'' . $id  . '\'))
-AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
+AND (status = \'Live\' OR status = \'Expired - Data Still Received\')
+AND published_status = \'publish\'';
 
         $query = $this->connection->prepare($sql);
         $query->execute();
@@ -334,7 +335,7 @@ AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
     }
 
     /**
-     * Find all live frameworks for a supplier, based on the supplier id
+     * Find all live and published frameworks for a supplier, based on the supplier id
      *
      * @param $id
      * @return mixed
@@ -348,6 +349,7 @@ WHERE salesforce_id IN
         (SELECT `lot_id` FROM `ccs_lot_supplier`
 		WHERE supplier_id= \'' . $id  . '\'))
 AND (status = \'Live\' OR status = \'Expired - Data Still Received\')
+AND published_status = \'publish\' 
 ORDER BY title';
 
         return $this->findAllFrameworks($query);

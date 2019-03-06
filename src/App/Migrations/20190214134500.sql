@@ -10,5 +10,7 @@ CREATE TABLE `ccs_suppliers` (
   `postcode` varchar(255) DEFAULT NULL,
   `website` varchar(255) DEFAULT NULL,
   `trading_name` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `on_live_frameworks` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `salesforce_id` (`salesforce_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -6,5 +6,7 @@ CREATE TABLE `ccs_lot_supplier` (
   `contact_email` varchar(255) DEFAULT NULL,
   `website_contact` tinyint(1) NOT NULL DEFAULT '0',
   `trading_name` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `lot_id` (`lot_id`),
+  KEY `supplier_id` (`supplier_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

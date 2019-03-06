@@ -268,7 +268,6 @@ EOD;
         return $supplier;
     }
 
-
     /**
      * Get the Lot contact details for a supplier
      *

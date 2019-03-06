@@ -305,6 +305,35 @@ AND (status = \'Live\'
     }
 
     /**
+     * Count all live frameworks for a supplier, based on the supplier id
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function countAllSupplierLiveFrameworks($id){
+
+        $sql = 'SELECT COUNT(*) as count FROM `ccs_frameworks` 
+WHERE salesforce_id IN
+        (SELECT `framework_id` FROM `ccs_lots`
+	WHERE salesforce_id IN
+        (SELECT `lot_id` FROM `ccs_lot_supplier`
+		WHERE supplier_id= \'' . $id  . '\'))
+AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
+
+        $query = $this->connection->prepare($sql);
+        $query->execute();
+
+        $results = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if (!isset($results['count']))
+        {
+            return 0;
+        }
+
+        return (int) $results['count'];
+    }
+
+    /**
      * Find all live frameworks for a supplier, based on the supplier id
      *
      * @param $id

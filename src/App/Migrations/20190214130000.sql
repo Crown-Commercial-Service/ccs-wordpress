@@ -9,5 +9,6 @@ CREATE TABLE `ccs_lots` (
   `description` varchar(255) DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
   `hide_suppliers` varchar(255) DEFAULT '0',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `framework_id` (`framework_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -22,5 +22,6 @@ CREATE TABLE `ccs_frameworks` (
   `publish_on_website` tinyint(1) NOT NULL DEFAULT '0',
   `published_status` varchar(100) DEFAULT NULL,
   `keywords` varchar(1000) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `rm_number` (`rm_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -8,16 +8,17 @@ class SupplierRepository extends AbstractRepository
 {
 
     protected $databaseBindings = [
-      'salesforce_id' => ':salesforce_id',
-      'duns_number'   => ':duns_number',
-      'name'          => ':name',
-      'phone_number'  => ':phone_number',
-      'street'        => ':street',
-      'city'          => ':city',
-      'country'       => ':country',
-      'postcode'      => ':postcode',
-      'website'       => ':website',
-      'trading_name'  => ':trading_name',
+      'salesforce_id'       => ':salesforce_id',
+      'duns_number'         => ':duns_number',
+      'name'                => ':name',
+      'phone_number'        => ':phone_number',
+      'street'              => ':street',
+      'city'                => ':city',
+      'country'             => ':country',
+      'postcode'            => ':postcode',
+      'website'             => ':website',
+      'trading_name'        => ':trading_name',
+      'on_live_frameworks'  => ':on_live_frameworks',
     ];
 
     /**
@@ -38,9 +39,6 @@ class SupplierRepository extends AbstractRepository
      */
     public function create(Supplier $supplier)
     {
-
-
-
         // Build the bindings PDO statement
         $columns = implode(", ", array_keys($this->databaseBindings));
         $fieldParams = implode(", ", array_values($this->databaseBindings));
@@ -148,6 +146,11 @@ class SupplierRepository extends AbstractRepository
         if (isset($databaseBindings['trading_name'])) {
             $tradingName = $supplier->getTradingName();
             $query->bindParam(':trading_name', $tradingName, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['on_live_frameworks'])) {
+            $onLiveFrameworks = $supplier->isOnLiveFrameworks();
+            $query->bindParam(':on_live_frameworks', $onLiveFrameworks, \PDO::PARAM_STR);
         }
 
         return $query;

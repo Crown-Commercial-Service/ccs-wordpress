@@ -37,6 +37,8 @@ class Import
 
     public function all()
     {
+        $start = microtime(true);
+
         WP_CLI::success('Starting Import');
 
         $importCount = [
@@ -109,8 +111,7 @@ class Import
                 $lotSupplierRepository = new LotSupplierRepository();
 
                 // Remove all the current relationships to this lot, and create fresh ones.
-                $lotSupplierRepository->deleteById($lot->getSalesforceId(),
-                  'lot_id');
+                $lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
 
                 foreach ($suppliers as $supplier) {
                     if (!$supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
@@ -139,6 +140,12 @@ class Import
 
             }
         }
+
+        //Mark whether a supplier has any live frameworks
+        $this->checkSupplierLiveFrameworks();
+
+        $timer = round(microtime(true) - $start, 2);
+        WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
 
         return $response = [
           'importCount' => $importCount,
@@ -311,6 +318,33 @@ class Import
         return $wordpressId;
     }
 
+
+    /**
+     * Check if a supplier has any live frameworks
+     *
+     */
+    public function checkSupplierLiveFrameworks() {
+
+        $frameworkRepository = new FrameworkRepository();
+        $supplierRepository = new SupplierRepository();
+
+        $suppliers = $supplierRepository->findAll();
+
+        foreach ($suppliers as $supplier) {
+
+            $liveFrameworksCount = $frameworkRepository->countAllSupplierLiveFrameworks($supplier->getSalesforceId());
+
+            if ($liveFrameworksCount > 0) {
+                //Update the Supplier model with the flag true for live frameworks
+                $supplier->setOnLiveFrameworks(true);
+
+                // Save the Supplier back into the custom database.
+                $supplierRepository->update('salesforce_id', $supplier->getSalesforceId(), $supplier);
+            }
+        }
+
+        return;
+    }
 }
 
 

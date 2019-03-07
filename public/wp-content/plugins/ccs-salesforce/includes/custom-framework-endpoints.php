@@ -125,6 +125,24 @@ function get_individual_framework(WP_REST_Request $request) {
         return new WP_Error('rest_invalid_param', 'framework not found', array('status' => 404));
     }
 
+    //Get framework documents content from Wordpress
+    $currentFramework = get_post($framework->getWordpressId());
+    $currentFrameworkId = $currentFramework->ID;
+    $frameworkDocuments = [];
+
+    if(have_rows('framework_documents', $currentFrameworkId)) {
+        while(have_rows('framework_documents', $currentFrameworkId)): the_row();
+
+            $mediaId = get_sub_field('framework_documents_framework_documents_document');
+            $attachment = acf_get_attachment($mediaId);
+            $frameworkDocuments[] = [
+                'title' => $attachment["title"],
+                'url' => $attachment["url"]
+            ];
+
+        endwhile;
+    }
+
     $lotRepository = new LotRepository();
     $supplierRepository = new SupplierRepository();
 
@@ -170,6 +188,7 @@ function get_individual_framework(WP_REST_Request $request) {
     //Populate the framework array with data
     $frameworkData = $framework->toArray();
     $frameworkData['lots'] = $lotsData;
+    $frameworkData['documents'] = $frameworkDocuments;
     $frameworkData['total_suppliers'] = $uniqueSuppliers;
 
     header('Content-Type: application/json');

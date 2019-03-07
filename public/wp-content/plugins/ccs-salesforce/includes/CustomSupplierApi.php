@@ -114,7 +114,7 @@ class CustomSupplierApi
 
         //Populate the framework array with data
         $supplierData = $supplier->toArray();
-        $supplierData['frameworks'] = $frameworksData;
+        $supplierData['live_frameworks'] = $frameworksData;
 
         header('Content-Type: application/json');
         return rest_ensure_response($supplierData);

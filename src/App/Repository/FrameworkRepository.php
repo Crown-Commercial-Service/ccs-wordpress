@@ -23,6 +23,7 @@ class FrameworkRepository extends AbstractRepository {
       'expected_live_date'  => ':expected_live_date',
       'expected_award_date' => ':expected_award_date',
       'description'         => ':description',
+      'updates'             => ':updates',
       'summary'             => ':summary',
       'benefits'            => ':benefits',
       'how_to_buy'          => ':how_to_buy',
@@ -47,6 +48,7 @@ class FrameworkRepository extends AbstractRepository {
     protected $wordpressDataFields = [
       'wordpress_id',
       'description',
+      'updates',
       'summary',
       'benefits',
       'how_to_buy',
@@ -238,6 +240,12 @@ class FrameworkRepository extends AbstractRepository {
         {
             $description = $framework->getDescription();
             $query->bindParam(':description', $description, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['updates']))
+        {
+            $updates = $framework->getUpdates();
+            $query->bindParam(':updates', $updates, \PDO::PARAM_STR);
         }
 
         if (isset($databaseBindings['summary']))

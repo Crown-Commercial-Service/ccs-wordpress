@@ -49,6 +49,11 @@ function save_framework_data ($post_id) {
         $framework->setDescription(sanitize_text_field(get_field('framework_description')));
     }
 
+    if(!empty(get_field('framework_updates')))
+    {
+        $framework->setUpdates(sanitize_text_field(get_field('framework_updates')));
+    }
+
     if(!empty(get_field('framework_benefits')))
     {
         $framework->setBenefits(sanitize_text_field(get_field('framework_benefits')));

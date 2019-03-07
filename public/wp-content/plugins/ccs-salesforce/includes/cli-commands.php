@@ -128,6 +128,7 @@ class Import
                       'supplier_id' => $supplier->getSalesforceId()
                     ]);
 
+//                    $salesforceApi->getTradingName();
 //                    $contactDetails = $salesforceApi->getContact($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
 //
 //                    if (!empty($contactDetails))

@@ -148,6 +148,7 @@ class Framework extends AbstractModel {
 
     /**
      * @param string $rmNumber
+     * @return Framework
      */
     public function setRmNumber(?string $rmNumber): Framework
     {

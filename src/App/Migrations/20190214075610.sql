@@ -15,6 +15,7 @@ CREATE TABLE `ccs_frameworks` (
   `expected_live_date` date DEFAULT NULL,
   `expected_award_date` date DEFAULT NULL,
   `description` text,
+  `updates` text,
   `summary` text,
   `benefits` text,
   `how_to_buy` text,

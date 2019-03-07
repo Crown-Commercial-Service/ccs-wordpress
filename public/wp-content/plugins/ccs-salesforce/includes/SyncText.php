@@ -17,15 +17,16 @@ class SyncText
      */
     protected $fieldsToSync = [
         'frameworks' => [
-            'framework_summary'     => 'summary',
-            'framework_updates'     => 'document_updates',
-            'framework_description' => 'description',
-            'framework_benefits'    => 'benefits',
-            'framework_how_to_buy'  => 'how_to_buy',
-            'framework_keywords'    => 'keywords',
+            'framework_summary'             => 'summary',
+            'framework_updates'             => 'updates',
+            'framework_description'         => 'description',
+            'framework_benefits'            => 'benefits',
+            'framework_how_to_buy'          => 'how_to_buy',
+            'framework_documents_updates'   => 'document_updates',
+            'framework_keywords'            => 'keywords',
         ],
         'lots' => [
-            'lot_description'       => 'description',
+            'lot_description'               => 'description',
         ]
     ];
 
@@ -126,7 +127,7 @@ class SyncText
     {
         $data = [];
         $repository = new FrameworkRepository();
-        $results = $repository->findAll('SELECT * FROM ccs_frameworks');
+        $results = $repository->findAll();
 
         foreach ($results as $item) {
             $item = $item->toArray();
@@ -177,8 +178,8 @@ class SyncText
     public function getLotsFromCustomTables(): array
     {
         $data = [];
-        $repository = new FrameworkRepository();
-        $results = $repository->findAll('SELECT * FROM ccs_lots');
+        $repository = new LotRepository();
+        $results = $repository->findAll();
 
         foreach ($results as $item) {
             $item = $item->toArray();

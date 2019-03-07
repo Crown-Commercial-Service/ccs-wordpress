@@ -330,6 +330,10 @@ EOD;
      * @todo SOQL: SELECT Framework__c, Id, Name, RM_Number__c, Status__c, Supplier__c, Trading_Name__c FROM Framework_Supplier__c
      *
      */
-
+//    public function getTradingName() {
+//        $potentialTradingName = $this->query("SELECT Framework__c, Id, RM_Number__c, Status__c, Supplier__c, Trading_Name__c FROM Framework_Supplier__c ");
+//
+//        var_dump($potentialTradingName);
+//    }
 
 }

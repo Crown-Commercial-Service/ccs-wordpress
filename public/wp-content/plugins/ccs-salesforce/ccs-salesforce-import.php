@@ -25,13 +25,13 @@ if (class_exists('WP_CLI')) {
 
 require __DIR__ . '/includes/PluginCore.php';
 
-require __DIR__ . '/includes/custom-framework-endpoints.php';
-
 require __DIR__ . '/includes/merging-wp-data.php';
 
-require __DIR__ . '/includes/CustomLotApi.php';
+require __DIR__ . '/includes/wp-rest-api/CustomFrameworkApi.php';
 
-require __DIR__ . '/includes/CustomSupplierApi.php';
+require __DIR__ . '/includes/wp-rest-api/CustomLotApi.php';
+
+require __DIR__ . '/includes/wp-rest-api/CustomSupplierApi.php';
 
 
 /**
@@ -50,44 +50,41 @@ function run_plugin()
     register_activation_hook(__FILE__, array('PluginCore', 'activate'));
     register_deactivation_hook(__FILE__, array('PluginCore', 'deactivate'));
 
-
-    $api = new CCS_Rest_Api();
-
+    $frameworkApi = new CustomFrameworkApi();
     $lotApi = new CustomLotApi();
-
     $supplierApi = new CustomSupplierApi();
 
 
     //Get all frameworks
-    add_action( 'rest_api_init', function () {
+    add_action( 'rest_api_init', function () use ($frameworkApi) {
         register_rest_route( 'ccs/v1', '/frameworks', array(
             'methods' => 'GET',
-            'callback' => 'get_frameworks',
+            'callback' => [$frameworkApi, 'get_frameworks']
         ) );
     } );
 
     //Get an individual framework
-    add_action( 'rest_api_init', function () {
+    add_action( 'rest_api_init', function () use ($frameworkApi) {
         register_rest_route( 'ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
-            'callback' => 'get_individual_framework',
+            'callback' => [$frameworkApi, 'get_individual_framework']
         ) );
     } );
 
     //Get suppliers on a framework
-    add_action( 'rest_api_init', function () {
+    add_action( 'rest_api_init', function () use ($frameworkApi) {
         register_rest_route( 'ccs/v1', '/framework-suppliers/(?P<rm_number>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
-            'callback' => 'get_framework_suppliers',
+            'callback' => [$frameworkApi, 'get_framework_suppliers']
         ) );
     } );
 
     //Get upcoming deals
     // @todo Had to append "0" to end of URL since Frontend uses getOne() method which expects an ID, to review
-    add_action( 'rest_api_init', function () {
+    add_action( 'rest_api_init', function () use ($frameworkApi) {
         register_rest_route( 'ccs/v1', '/upcoming-deals/0', array(
             'methods' => 'GET',
-            'callback' => 'get_upcoming_deals',
+            'callback' => [$frameworkApi, 'get_upcoming_deals']
 
         ) );
     } );

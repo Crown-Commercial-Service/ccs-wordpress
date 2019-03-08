@@ -39,6 +39,15 @@ function save_framework_data ($post_id) {
 
     $framework = $frameworkRepository->findById($post_id, 'wordpress_id');
 
+    //Get the framework taxonomies and save them in the db
+    $terms = wp_get_post_terms($post_id, 'framework_type');
+
+    if (!empty($terms)) {
+        foreach ($terms as $term) {
+            $framework->setType($term->name);
+        }
+    }
+
     if(!empty(get_field('framework_summary')))
     {
         $framework->setSummary(sanitize_text_field(get_field('framework_summary')));
@@ -72,6 +81,11 @@ function save_framework_data ($post_id) {
     if(!empty(get_field('framework_keywords')))
     {
         $framework->setKeywords(sanitize_text_field(get_field('framework_keywords')));
+    }
+
+    if(!empty(get_field('framework_upcoming_deal_details')))
+    {
+        $framework->setUpcomingDealDetails(sanitize_text_field(get_field('framework_upcoming_deal_details')));
     }
 
     $framework->setPublishedStatus(sanitize_text_field(get_post_status($post_id)));

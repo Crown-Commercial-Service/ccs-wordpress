@@ -4,6 +4,7 @@ CREATE TABLE `ccs_frameworks` (
   `wordpress_id` varchar(20) DEFAULT NULL,
   `salesforce_id` varchar(20) DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
+  `type` varchar(255) DEFAULT NULL,
   `terms` varchar(255) DEFAULT NULL,
   `pillar` varchar(255) DEFAULT NULL,
   `category` varchar(255) DEFAULT NULL,
@@ -23,6 +24,7 @@ CREATE TABLE `ccs_frameworks` (
   `publish_on_website` tinyint(1) NOT NULL DEFAULT '0',
   `published_status` varchar(100) DEFAULT NULL,
   `keywords` varchar(1000) DEFAULT NULL,
+  `upcoming_deal_details` text,
   PRIMARY KEY (`id`),
   KEY `rm_number` (`rm_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

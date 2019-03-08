@@ -8,29 +8,31 @@ use PDOException;
 class FrameworkRepository extends AbstractRepository {
 
     protected $databaseBindings = [
-      'rm_number'           => ':rm_number',
-      'wordpress_id'        => ':wordpress_id',
-      'salesforce_id'       => ':salesforce_id',
-      'title'               => ':title',
-      'terms'               => ':terms',
-      'pillar'              => ':pillar',
-      'category'            => ':category',
-      'status'              => ':status',
-      'start_date'          => ':start_date',
-      'end_date'            => ':end_date',
-      'tenders_open_date'   => ':tenders_open_date',
-      'tenders_close_date'  => ':tenders_close_date',
-      'expected_live_date'  => ':expected_live_date',
-      'expected_award_date' => ':expected_award_date',
-      'description'         => ':description',
-      'updates'             => ':updates',
-      'summary'             => ':summary',
-      'benefits'            => ':benefits',
-      'how_to_buy'          => ':how_to_buy',
-      'document_updates'    => ':document_updates',
-      'publish_on_website'  => ':publish_on_website',
-      'published_status'    => ':published_status',
-      'keywords'            => ':keywords'
+      'rm_number'               => ':rm_number',
+      'wordpress_id'            => ':wordpress_id',
+      'salesforce_id'           => ':salesforce_id',
+      'title'                   => ':title',
+      'type'                    => ':type',
+      'terms'                   => ':terms',
+      'pillar'                  => ':pillar',
+      'category'                => ':category',
+      'status'                  => ':status',
+      'start_date'              => ':start_date',
+      'end_date'                => ':end_date',
+      'tenders_open_date'       => ':tenders_open_date',
+      'tenders_close_date'      => ':tenders_close_date',
+      'expected_live_date'      => ':expected_live_date',
+      'expected_award_date'     => ':expected_award_date',
+      'description'             => ':description',
+      'updates'                 => ':updates',
+      'summary'                 => ':summary',
+      'benefits'                => ':benefits',
+      'how_to_buy'              => ':how_to_buy',
+      'document_updates'        => ':document_updates',
+      'publish_on_website'      => ':publish_on_website',
+      'published_status'        => ':published_status',
+      'keywords'                => ':keywords',
+      'upcoming_deal_details'   => ':upcoming_deal_details',
     ];
 
      /**
@@ -47,6 +49,7 @@ class FrameworkRepository extends AbstractRepository {
      */
     protected $wordpressDataFields = [
       'wordpress_id',
+      'type',
       'description',
       'updates',
       'summary',
@@ -54,7 +57,8 @@ class FrameworkRepository extends AbstractRepository {
       'how_to_buy',
       'document_updates',
       'published_status',
-      'keywords'
+      'keywords',
+      'upcoming_deal_details'
     ];
 
     public function createModel($data = null)
@@ -156,6 +160,12 @@ class FrameworkRepository extends AbstractRepository {
         {
             $terms = $framework->getTerms();
             $query->bindParam(':terms', $terms, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['type']))
+        {
+            $type = $framework->getType();
+            $query->bindParam(':type', $type, \PDO::PARAM_STR);
         }
 
         if (isset($databaseBindings['pillar']))
@@ -288,6 +298,12 @@ class FrameworkRepository extends AbstractRepository {
         {
             $keywords = $framework->getKeywords();
             $query->bindParam(':keywords', $keywords, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['upcoming_deal_details']))
+        {
+            $upcomingDealDetails = $framework->getUpcomingDealDetails();
+            $query->bindParam(':upcoming_deal_details', $upcomingDealDetails, \PDO::PARAM_STR);
         }
 
         return $query;

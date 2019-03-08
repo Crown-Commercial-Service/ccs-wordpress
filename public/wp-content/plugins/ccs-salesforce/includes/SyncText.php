@@ -17,16 +17,18 @@ class SyncText
      */
     protected $fieldsToSync = [
         'frameworks' => [
-            'framework_summary'             => 'summary',
-            'framework_updates'             => 'updates',
-            'framework_description'         => 'description',
-            'framework_benefits'            => 'benefits',
-            'framework_how_to_buy'          => 'how_to_buy',
-            'framework_documents_updates'   => 'document_updates',
-            'framework_keywords'            => 'keywords',
+            'framework_type'                    => 'type',
+            'framework_summary'                 => 'summary',
+            'framework_updates'                 => 'updates',
+            'framework_description'             => 'description',
+            'framework_benefits'                => 'benefits',
+            'framework_how_to_buy'              => 'how_to_buy',
+            'framework_documents_updates'       => 'document_updates',
+            'framework_keywords'                => 'keywords',
+            'framework_upcoming_deal_details'   => 'upcoming_deal_details',
         ],
         'lots' => [
-            'lot_description'               => 'description',
+            'lot_description'                   => 'description',
         ]
     ];
 
@@ -54,7 +56,12 @@ class SyncText
 
             foreach ($this->fieldsToSync[$type] as $wpField => $customField) {
 
+                if (!isset($wordpressData[$id][$wpField])) {
+                    continue;
+                }
+
                 $wpData = $wordpressData[$id][$wpField];
+
                 if (empty($wpData)) {
                     continue;
                 }
@@ -110,7 +117,14 @@ class SyncText
             $itemData = [];
 
             foreach ($this->fieldsToSync['frameworks'] as $wpField => $customField) {
-                $itemData[$wpField] = get_field($wpField);
+
+                if($wpField === 'framework_type') {
+                    foreach (wp_get_post_terms($id, $wpField) as $term){
+                        $itemData[$wpField] = $term->name;
+                    }
+                } else {
+                    $itemData[$wpField] = get_field($wpField);
+                }
             }
             $data[$id] = $itemData;
         }

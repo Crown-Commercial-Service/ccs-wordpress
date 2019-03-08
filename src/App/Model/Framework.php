@@ -31,6 +31,10 @@ class Framework extends AbstractModel {
     /**
      * @var string
      */
+    protected $type;
+    /**
+     * @var string
+     */
     protected $summary;
     /**
      * @var string
@@ -118,6 +122,11 @@ class Framework extends AbstractModel {
      * @var string
      */
     protected $publishUpcomingDeals;
+
+    /**
+     * @var string
+     */
+    protected $upcomingDealDetails;
 
 
     /**
@@ -207,6 +216,24 @@ class Framework extends AbstractModel {
     public function setTitle(?string $title): Framework
     {
         $this->title = $title;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param string $type
+     * @return Framework
+     */
+    public function setType(?string $type): Framework
+    {
+        $this->type = $type;
         return $this;
     }
 
@@ -655,7 +682,7 @@ class Framework extends AbstractModel {
     /**
      * @return string
      */
-    public function getPublishUpcomingDeals(): string
+    public function getPublishUpcomingDeals(): ?string
     {
         return $this->publishUpcomingDeals;
     }
@@ -664,12 +691,29 @@ class Framework extends AbstractModel {
      * @param string $publishUpcomingDeals
      * @return Framework
      */
-    public function setPublishUpcomingDeals(string $publishUpcomingDeals): Framework
+    public function setPublishUpcomingDeals(?string $publishUpcomingDeals): Framework
     {
         $this->publishUpcomingDeals = $publishUpcomingDeals;
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getUpcomingDealDetails(): ?string
+    {
+        return $this->upcomingDealDetails;
+    }
+
+    /**
+     * @param string $upcomingDealDetails
+     * @return Framework
+     */
+    public function setUpcomingDealDetails(?string $upcomingDealDetails): Framework
+    {
+        $this->upcomingDealDetails = $upcomingDealDetails;
+        return $this;
+    }
 
 
     /**
@@ -680,31 +724,33 @@ class Framework extends AbstractModel {
     public function toArray()
     {
         return [
-          'id'                  => $this->getId(),
-          'rm_number'           => $this->getRmNumber(),
-          'wordpress_id'        => $this->getWordpressId(),
-          'salesforce_id'       => $this->getSalesforceId(),
-          'title'               => $this->getTitle(),
-          'summary'             => $this->getSummary(),
-          'description'         => $this->getDescription(),
-          'updates'             => $this->getUpdates(),
-          'benefits'            => $this->getBenefits(),
-          'how_to_buy'          => $this->getHowToBuy(),
-          'terms'               => $this->getTerms(),
-          'pillar'              => $this->getPillar(),
-          'category'            => $this->getCategory(),
-          'status'              => $this->getStatus(),
-          'start_date'          => !empty($this->getStartDate()) ? $this->getStartDate()->format('Y-m-d') : null,
-          'end_date'            => !empty($this->getEndDate()) ? $this->getEndDate()->format('Y-m-d') : null,
-          'tenders_open_date'   => !empty($this->getTendersOpenDate()) ? $this->getTendersOpenDate()->format('Y-m-d') : null,
-          'tenders_close_date'  => !empty($this->getTendersCloseDate()) ? $this->getTendersCloseDate()->format('Y-m-d') : null,
-          'expected_live_date'  => !empty($this->getExpectedLiveDate()) ? $this->getExpectedLiveDate()->format('Y-m-d') : null,
-          'expected_award_date' => !empty($this->getExpectedAwardDate()) ? $this->getExpectedAwardDate()->format('Y-m-d') : null,
-          'document_updates'    => $this->getDocumentUpdates(),
-          'lots'                => 'not yet supported in this method',
-          'documents'           => 'not yet supported in this method',
-          'published_status'    => $this->getPublishedStatus(),
-          'keywords'            => $this->getKeywords(),
+          'id'                      => $this->getId(),
+          'rm_number'               => $this->getRmNumber(),
+          'wordpress_id'            => $this->getWordpressId(),
+          'salesforce_id'           => $this->getSalesforceId(),
+          'title'                   => $this->getTitle(),
+          'type'                    => $this->getType(),
+          'summary'                 => $this->getSummary(),
+          'description'             => $this->getDescription(),
+          'updates'                 => $this->getUpdates(),
+          'benefits'                => $this->getBenefits(),
+          'how_to_buy'              => $this->getHowToBuy(),
+          'terms'                   => $this->getTerms(),
+          'pillar'                  => $this->getPillar(),
+          'category'                => $this->getCategory(),
+          'status'                  => $this->getStatus(),
+          'start_date'              => !empty($this->getStartDate()) ? $this->getStartDate()->format('Y-m-d') : null,
+          'end_date'                => !empty($this->getEndDate()) ? $this->getEndDate()->format('Y-m-d') : null,
+          'tenders_open_date'       => !empty($this->getTendersOpenDate()) ? $this->getTendersOpenDate()->format('Y-m-d') : null,
+          'tenders_close_date'      => !empty($this->getTendersCloseDate()) ? $this->getTendersCloseDate()->format('Y-m-d') : null,
+          'expected_live_date'      => !empty($this->getExpectedLiveDate()) ? $this->getExpectedLiveDate()->format('Y-m-d') : null,
+          'expected_award_date'     => !empty($this->getExpectedAwardDate()) ? $this->getExpectedAwardDate()->format('Y-m-d') : null,
+          'document_updates'        => $this->getDocumentUpdates(),
+          'lots'                    => 'not yet supported in this method',
+          'documents'               => 'not yet supported in this method',
+          'published_status'        => $this->getPublishedStatus(),
+          'keywords'                => $this->getKeywords(),
+          'upcoming_deal_details'   => $this->getUpcomingDealDetails(),
         ];
     }
 

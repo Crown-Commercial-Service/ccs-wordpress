@@ -50,17 +50,17 @@ function save_framework_data ($post_id) {
 
     if(!empty(get_field('framework_summary')))
     {
-        $framework->setSummary(sanitize_text_field(get_field('framework_summary')));
+        $framework->setSummary(get_field('framework_summary'));
     }
 
     if(!empty(get_field('framework_description')))
     {
-        $framework->setDescription(sanitize_text_field(get_field('framework_description')));
+        $framework->setDescription(get_field('framework_description'));
     }
 
     if(!empty(get_field('framework_updates')))
     {
-        $framework->setUpdates(sanitize_text_field(get_field('framework_updates')));
+        $framework->setUpdates(get_field('framework_updates'));
     }
 
     if(!empty(get_field('framework_benefits')))
@@ -70,25 +70,25 @@ function save_framework_data ($post_id) {
 
     if(!empty(get_field('framework_how_to_buy')))
     {
-        $framework->setHowToBuy(sanitize_text_field(get_field('framework_how_to_buy')));
+        $framework->setHowToBuy(get_field('framework_how_to_buy'));
     }
 
     if(!empty(get_field('framework_documents_updates')))
     {
-        $framework->setDocumentUpdates(sanitize_text_field(get_field('framework_documents_updates')));
+        $framework->setDocumentUpdates(get_field('framework_documents_updates'));
     }
 
     if(!empty(get_field('framework_keywords')))
     {
-        $framework->setKeywords(sanitize_text_field(get_field('framework_keywords')));
+        $framework->setKeywords(get_field('framework_keywords'));
     }
 
     if(!empty(get_field('framework_upcoming_deal_details')))
     {
-        $framework->setUpcomingDealDetails(sanitize_text_field(get_field('framework_upcoming_deal_details')));
+        $framework->setUpcomingDealDetails(get_field('framework_upcoming_deal_details'));
     }
 
-    $framework->setPublishedStatus(sanitize_text_field(get_post_status($post_id)));
+    $framework->setPublishedStatus(get_post_status($post_id));
 
     //Save the Wordpress data back into the custom database
     $frameworkRepository->update('wordpress_id', $framework->getWordpressId(), $framework);

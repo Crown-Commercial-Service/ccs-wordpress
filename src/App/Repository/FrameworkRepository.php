@@ -402,6 +402,70 @@ AND (status = \'Future (Pipeline)\'
     }
 
     /**
+     * Find all rows based on the keyword text search, with pagination
+     *
+     * @param $keyword
+     * @return mixed
+     */
+    public function performKeywordSearch($keyword, $limit, $page)
+    {
+        $sql = 'SELECT f.* 
+FROM ccs_frameworks f
+JOIN ccs_lots l ON l.framework_id = f.salesforce_id
+WHERE (f.title LIKE \'%' . $keyword . '%\'
+      OR f.summary LIKE \'%' . $keyword . '%\'
+      OR f.description LIKE \'%' . $keyword . '%\'
+      OR f.keywords LIKE \'%' . $keyword . '%\'
+      OR l.title LIKE \'%' . $keyword . '%\'
+      OR l.description LIKE \'%' . $keyword . '%\')
+AND f.published_status = \'publish\' 
+AND (f.status = \'Live\' 
+    OR f.status = \'Expired - Data Still Received\')
+GROUP BY f.id
+ORDER by f.title ASC;';
+
+        return $this->findAllFrameworks($sql, true, $limit, $page);
+
+    }
+
+    /**
+     * Count all results of live and published frameworks based on the search keyword
+     *
+     * @param $keyword
+     * @return mixed
+     */
+    public function countSearchResults($keyword){
+
+        $sql = 'SELECT COUNT(*) as count FROM 
+(SELECT f.* 
+FROM ccs_frameworks f
+JOIN ccs_lots l ON l.framework_id = f.salesforce_id
+WHERE (f.title LIKE \'%' . $keyword . '%\'
+      OR f.summary LIKE \'%' . $keyword . '%\'
+      OR f.description LIKE \'%' . $keyword . '%\'
+      OR f.keywords LIKE \'%' . $keyword . '%\'
+      OR l.title LIKE \'%' . $keyword . '%\'
+      OR l.description LIKE \'%' . $keyword . '%\')
+AND f.published_status = \'publish\' 
+AND (f.status = \'Live\' 
+    OR f.status = \'Expired - Data Still Received\')
+GROUP BY f.id
+ORDER by f.title ASC) SearchTableAlias';
+
+        $query = $this->connection->prepare($sql);
+        $query->execute();
+
+        $results = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if (!isset($results['count']))
+        {
+            return 0;
+        }
+
+        return (int) $results['count'];
+    }
+
+    /**
      * Find all rows based on a query, with pagination
      *
      * @param $sql
@@ -433,4 +497,5 @@ AND (status = \'Future (Pipeline)\'
         $modelCollection = $this->translateResultsToModels($results);
         return $modelCollection;
     }
+
 }

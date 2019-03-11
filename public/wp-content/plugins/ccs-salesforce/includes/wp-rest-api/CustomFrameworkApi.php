@@ -51,12 +51,23 @@ class CustomFrameworkApi
 
         $pillar = false;
 
+        $searchKeyword = false;
+
         if (isset($request['category'])) {
             $category = $request['category'];
         }
 
         if (isset($request['pillar'])) {
             $pillar = $request['pillar'];
+        }
+
+        if (isset($request['keyword'])) {
+            $searchKeyword = $request['keyword'];
+        }
+
+        //List all frameworks by the search keyword
+        if($searchKeyword) {
+          return $this->get_frameworks_by_search($searchKeyword, $limit, $page);
         }
 
         $queryCondition = 'published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
@@ -381,5 +392,56 @@ class CustomFrameworkApi
         }
 
         return $lotsData;
+    }
+
+
+    /**
+     * Keyword search functionality for all frameworks
+     *
+     * @param $keyword
+     * @param $limit
+     * @param $page
+     * @return mixed|WP_REST_Response
+     */
+    public function get_frameworks_by_search($keyword, $limit, $page) {
+
+        $frameworkRepository = new FrameworkRepository();
+
+        //Match the rm number of the framework
+        $singleFramework = $frameworkRepository->findLiveFramework($keyword);
+
+        if ($singleFramework !== false) {
+            $frameworks = $singleFramework->toArray();
+            $frameworkCount = 1;
+        } //If it doesn't match, perform the keyword search text
+        else {
+            $frameworkCount = $frameworkRepository->countSearchResults($keyword);
+
+            $frameworks = $frameworkRepository->performKeywordSearch($keyword, $limit, $page);
+
+            if ($frameworks === false) {
+                $frameworks = [];
+
+            } else {
+                foreach ($frameworks as $index => $framework) {
+
+                    $frameworks[$index] = $framework->toArray();
+                    //Delete the last 3 elements from the frameworks array
+                    unset($frameworks[$index]['document_updates'], $frameworks[$index]['lots'], $frameworks[$index]['documents']);
+
+                }
+            }
+        }
+
+        $meta = [
+            'total_results' => $frameworkCount,
+            'limit'         => $limit,
+            'results'       => $singleFramework ?  1 : count($frameworks),
+            'page'          => $page == 0 ? 1 : $page
+        ];
+
+        header('Content-Type: application/json');
+
+        return rest_ensure_response(['meta' => $meta, 'results' => $frameworks]);
     }
 }

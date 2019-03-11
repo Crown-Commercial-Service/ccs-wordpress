@@ -157,7 +157,7 @@ class Enable_Media_Replace extends Integration {
 		}
 
 		$is_doing_upload = false;
-		$callers         = debug_backtrace();
+		$callers         = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 50 );
 
 		foreach ( $callers as $caller ) {
 			if ( isset( $caller['function'] ) && 'upload_attachment' === $caller['function'] ) {
@@ -171,8 +171,7 @@ class Enable_Media_Replace extends Integration {
 		}
 
 		// Get attachment folder time
-		$time = $this->as3cf->get_attachment_folder_time( $attachment_id );
-		$time = date( 'Y/m', $time );
+		$time = $this->as3cf->get_attachment_folder_year_month( $attachment_id );
 
 		// Update the file prefix to generate new object versioning string
 		$prefix   = $this->as3cf->get_file_prefix( $time );

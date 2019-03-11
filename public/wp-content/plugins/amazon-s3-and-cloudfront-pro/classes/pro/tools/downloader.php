@@ -73,8 +73,8 @@ class Downloader extends Modal_Tool {
 	protected function get_tool_js_strings() {
 		$strings = array(
 			'tool_title'                        => __( 'Downloading Media Library from bucket', 'amazon-s3-and-cloudfront' ),
-			'zero_files_processed'              => _x( 'Files Processed', 'Number of files downloaded from bucket', 'amazon-s3-and-cloudfront' ),
-			'files_processed'                   => _x( '%1$d of %2$d Files Downloaded', 'Number of files out of total downloaded from bucket', 'amazon-s3-and-cloudfront' ),
+			'zero_files_processed'              => _x( 'Media Library Items Processed', 'Number of media library items downloaded from bucket', 'amazon-s3-and-cloudfront' ),
+			'files_processed'                   => _x( '%1$d of %2$d Media Library Items Downloaded', 'Number of media library items out of total downloaded from bucket', 'amazon-s3-and-cloudfront' ),
 			'completed_with_some_errors'        => __( 'Download completed with some errors', 'amazon-s3-and-cloudfront' ),
 			'partial_complete_with_some_errors' => __( 'Download partially completed with some errors', 'amazon-s3-and-cloudfront' ),
 			'cancelling_process'                => _x( 'Cancelling download', 'The download is being cancelled', 'amazon-s3-and-cloudfront' ),

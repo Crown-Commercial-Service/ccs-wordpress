@@ -52,8 +52,8 @@ class Uploader extends Modal_Tool {
 	protected function get_tool_js_strings() {
 		$strings = array(
 			'tool_title'                        => __( 'Offloading Media Library', 'amazon-s3-and-cloudfront' ),
-			'zero_files_processed'              => _x( 'Files Offloaded', 'Number of files offloaded to bucket', 'amazon-s3-and-cloudfront' ),
-			'files_processed'                   => _x( '%1$d of %2$d Files Offloaded', 'Number of files out of total offloaded to bucket', 'amazon-s3-and-cloudfront' ),
+			'zero_files_processed'              => _x( 'Media Library Items Offloaded', 'Number of media library items offloaded to bucket', 'amazon-s3-and-cloudfront' ),
+			'files_processed'                   => _x( '%1$d of %2$d Media Library Items Offloaded', 'Number of media library items out of total offloaded to bucket', 'amazon-s3-and-cloudfront' ),
 			'completed_with_some_errors'        => __( 'Offload completed with some errors', 'amazon-s3-and-cloudfront' ),
 			'partial_complete_with_some_errors' => __( 'Offload partially completed with some errors', 'amazon-s3-and-cloudfront' ),
 			'cancelling_process'                => _x( 'Cancelling offload', 'The offload is being cancelled', 'amazon-s3-and-cloudfront' ),

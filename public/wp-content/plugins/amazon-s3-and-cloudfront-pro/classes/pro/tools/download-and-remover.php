@@ -49,8 +49,8 @@ class Download_And_Remover extends Downloader {
 	protected function get_tool_js_strings() {
 		$strings = array(
 			'tool_title'                        => __( 'Removing Media Library from bucket', 'amazon-s3-and-cloudfront' ),
-			'zero_files_processed'              => _x( 'Files Processed', 'Number of files removed from bucket', 'amazon-s3-and-cloudfront' ),
-			'files_processed'                   => _x( '%1$d of %2$d Files Removed', 'Number of files out of total removed from bucket', 'amazon-s3-and-cloudfront' ),
+			'zero_files_processed'              => _x( 'Media Library Items Processed', 'Number of media library items removed from bucket', 'amazon-s3-and-cloudfront' ),
+			'files_processed'                   => _x( '%1$d of %2$d Media Library Items Removed', 'Number of media library items out of total removed from bucket', 'amazon-s3-and-cloudfront' ),
 			'completed_with_some_errors'        => __( 'Removal completed with some errors', 'amazon-s3-and-cloudfront' ),
 			'partial_complete_with_some_errors' => __( 'Removal partially completed with some errors', 'amazon-s3-and-cloudfront' ),
 			'cancelling_process'                => _x( 'Cancelling removal', 'The removal is being cancelled', 'amazon-s3-and-cloudfront' ),

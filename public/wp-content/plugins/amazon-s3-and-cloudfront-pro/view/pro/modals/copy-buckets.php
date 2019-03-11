@@ -2,6 +2,10 @@
 	<?php
 	if ( ! empty( $_GET['prev_action'] ) && 'change-bucket' === $_GET['prev_action'] ) {
 		$back_args = array( 'action' => 'change-bucket' );
+
+		if ( ! empty( $_GET['orig_provider'] ) ) {
+			$back_args['orig_provider'] = $_GET['orig_provider'];
+		}
 		echo '<a href="' . $this->get_plugin_page_url( $back_args ) . '">' . __( '&laquo;&nbsp;Back', 'amazon-s3-and-cloudfront' ) . '</a>';
 	}
 	?>

@@ -8,7 +8,7 @@
 
 	<div class="progress-info-wrapper clearfix">
 		<div class="progress-text"><?php _e( 'Initiating', 'amazon-s3-and-cloudfront' ); ?>&hellip;</div>
-		<div class="upload-progress">0 <?php _e( 'Files Processed', 'amazon-s3-and-cloudfront' ); ?></div>
+		<div class="upload-progress">0 <?php _e( 'Media Library Items Processed', 'amazon-s3-and-cloudfront' ); ?></div>
 	</div>
 	<div class="clearfix"></div>
 	<div class="progress-bar-wrapper">

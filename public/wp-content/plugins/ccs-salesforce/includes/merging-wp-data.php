@@ -114,7 +114,7 @@ function save_lot_data ($post_id) {
 
     if (!empty(get_post_field('post_content', $post_id))){
 
-        $lot->setDescription(sanitize_text_field(get_post_field('post_content', $post_id)));
+        $lot->setDescription(get_post_field('post_content', $post_id));
 
     }
     //Save the Wordpress data back into the custom database

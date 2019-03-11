@@ -14,3 +14,5 @@ include('library/fewbricks-settings.php');
 include('library/expose-lot-fields.php');
 include('library/user-roles-fix.php');
 include('library/s3-modifications.php');
+include('library/remove-inline-styles-from-wysiwyg-images.php');
+include('library/responsive-oembed-videos.php');

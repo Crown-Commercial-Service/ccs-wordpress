@@ -65,7 +65,7 @@ function save_framework_data ($post_id) {
 
     if(!empty(get_field('framework_benefits')))
     {
-        $framework->setBenefits(sanitize_text_field(get_field('framework_benefits')));
+        $framework->setBenefits(get_field('framework_benefits'));
     }
 
     if(!empty(get_field('framework_how_to_buy')))

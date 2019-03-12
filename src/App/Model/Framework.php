@@ -112,7 +112,7 @@ class Framework extends AbstractModel {
     /**
      * @var string
      */
-    protected $publishedStatus;
+    protected $publishedStatus = 'draft';
     /**
      * @var string
      */

@@ -222,7 +222,6 @@ WHERE id = \'' . $id . '\'
 AND on_live_frameworks = TRUE ';
 
         return $this->findSingleRow($sql);
-
     }
 
 
@@ -274,5 +273,67 @@ WHERE ls.lot_id =\'' . $lotId . '\'';
         }
 
         return (int) $results['count'];
+    }
+
+    /**
+     * Find the Supplier by the duns number
+     *
+     * @param $number
+     * @return mixed
+     */
+    public function searchByDunsNumber($number) {
+
+        $sql = 'SELECT * from `ccs_suppliers` 
+WHERE duns_number = \'' . $number . '\' 
+AND on_live_frameworks = TRUE ';
+
+        return $this->findSingleRow($sql);
+    }
+
+    /**
+     * Find all rows based on the rm number search, with pagination
+     *
+     * @param $keyword
+     * @return mixed
+     */
+    public function searchByRmNumber($rmNumber, $limit, $page)
+    {
+        $sql = 'SELECT s.* 
+FROM ccs_suppliers s
+JOIN ccs_lot_supplier ls ON ls.supplier_id = s.salesforce_id
+JOIN ccs_lots l ON l.salesforce_id = ls.lot_id
+JOIN ccs_frameworks f ON f.salesforce_id = l.framework_id
+WHERE f.rm_number = \'' . $rmNumber . '\'
+AND s.on_live_frameworks = TRUE 
+GROUP BY s.id
+ORDER by s.name ASC;';
+
+        return $this->findAllSuppliers($sql, true, $limit, $page);
+
+    }
+
+    /**
+     * Find all rows based on the keyword text search, with pagination
+     *
+     * @param $keyword
+     * @return mixed
+     */
+    public function performKeywordSearch($keyword, $limit, $page)
+    {
+        $sql = 'SELECT s.* 
+FROM ccs_suppliers s
+JOIN ccs_lot_supplier ls ON ls.supplier_id = s.salesforce_id
+JOIN ccs_lots l ON l.salesforce_id = ls.lot_id
+JOIN ccs_frameworks f ON f.salesforce_id = l.framework_id
+WHERE (s.name LIKE \'%' . $keyword . '%\'
+      OR s.trading_name LIKE \'%' . $keyword . '%\'
+      OR s.city LIKE \'%' . $keyword . '%\'
+      OR s.postcode LIKE \'%' . $keyword . '%\')
+AND s.on_live_frameworks = TRUE 
+GROUP BY s.id
+ORDER by s.name ASC;';
+
+        return $this->findAllSuppliers($sql, true, $limit, $page);
+
     }
 }

@@ -128,7 +128,12 @@ class Import
                       'supplier_id' => $supplier->getSalesforceId()
                     ]);
 
-//                    $salesforceApi->getTradingName();
+                    if ($tradingName = $salesforceApi->getTradingName($framework->getSalesforceId(), $supplier->getSalesforceId()))
+                    {
+                        WP_CLI::success('Framework supplier trading name found.');
+                        $lotSupplier->setTradingName($tradingName);
+                    }
+
 //                    $contactDetails = $salesforceApi->getContact($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
 //
 //                    if (!empty($contactDetails))

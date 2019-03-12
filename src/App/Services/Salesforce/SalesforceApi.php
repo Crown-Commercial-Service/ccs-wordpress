@@ -330,10 +330,20 @@ EOD;
      * @todo SOQL: SELECT Framework__c, Id, Name, RM_Number__c, Status__c, Supplier__c, Trading_Name__c FROM Framework_Supplier__c
      *
      */
-//    public function getTradingName() {
-//        $potentialTradingName = $this->query("SELECT Framework__c, Id, RM_Number__c, Status__c, Supplier__c, Trading_Name__c FROM Framework_Supplier__c ");
-//
-//        var_dump($potentialTradingName);
-//    }
+    public function getTradingName($frameworkId, $supplierId) {
+        $queryResponse = $this->query("SELECT Trading_Name__c FROM Framework_Supplier__c WHERE Framework__c = '" . $frameworkId . "' AND Supplier__c = '" . $supplierId . "' ");
+
+        if ($queryResponse->totalSize == 0)
+        {
+            return false;
+        }
+
+        if (empty($queryResponse->records[0]->Trading_Name__c))
+        {
+            return false;
+        }
+
+        return $accountId = $queryResponse->records[0]->Trading_Name__c;
+    }
 
 }

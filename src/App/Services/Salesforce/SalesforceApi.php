@@ -22,7 +22,6 @@ class SalesforceApi
      */
     protected $client;
 
-
     /**
      * @var \GuzzleHttp\Psr7\Response
      */
@@ -266,6 +265,51 @@ EOD;
         $supplier->setMappedFields($this->getResponseContent());
 
         return $supplier;
+    }
+
+
+    /**
+     * Get all contacts possible per request
+     *
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getContacts()
+    {
+        $contacts = $this->query("SELECT Id, AccountId FROM Contact");
+
+        return $contacts;
+    }
+
+
+    /**
+     * Get all contacts possible per request
+     *
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getMasterFrameworkLotContacts()
+    {
+        $contacts = $this->query("SELECT Contact_Name__c,Email__c,Master_Framework_Lot__c,Supplier_Contact__c,Website_Contact__c FROM Master_Framework_Lot_Contact__c");
+
+        return $contacts;
+    }
+
+
+    /**
+     * Gets the next records using a special internal Id from a paginated list returned from Salesforce
+     *
+     * @param $nextRecordsId
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getNextRecords($nextRecordsId)
+    {
+        $this->response = $this->client->request('GET', 'query/' . $nextRecordsId, [
+          'headers' => $this->headers,
+        ]);
+
+        return $this->getResponseContent();
     }
 
     /**

@@ -24,6 +24,17 @@ class CustomSupplierApi
         }
         $page = $page ?? 0;
 
+        $searchKeyword = false;
+
+        if (isset($request['keyword'])) {
+            $searchKeyword = $request['keyword'];
+        }
+
+        //List all suppliers by the search keyword
+        if($searchKeyword) {
+            return $this->get_suppliers_by_search($searchKeyword, $limit, $page);
+        }
+
         $supplierRepository = new SupplierRepository();
 
         $condition = 'on_live_frameworks = TRUE';
@@ -118,5 +129,55 @@ class CustomSupplierApi
 
         header('Content-Type: application/json');
         return rest_ensure_response($supplierData);
+    }
+
+    /**
+     * Keyword search functionality for all suppliers
+     *
+     * @param $keyword
+     * @param $limit
+     * @param $page
+     * @return mixed|WP_REST_Response
+     */
+    public function get_suppliers_by_search($keyword, $limit, $page) {
+
+        $supplierRepository = new SupplierRepository();
+
+        //Match the DUNS number of the supplier
+        $singleSupplier = $supplierRepository->searchByDunsNumber($keyword);
+
+//        if ($singleSupplier !== false) {
+//            $suppliers = $singleSupplier->toArray();
+//            $supplierCount = 1;
+//        } //If it doesn't match, perform the keyword search text
+//        else {
+//            $supplierCount = $supplierRepository->countSearchResults($keyword);
+//
+//            $suppliers = $supplierRepository->performKeywordSearch($keyword, $limit, $page);
+//
+//            if ($suppliers === false) {
+//                $suppliers = [];
+//
+//            } else {
+//                foreach ($suppliers as $index => $supplier) {
+//
+//                    $suppliers[$index] = $supplier->toArray();
+//                    //Delete the last 3 elements from the frameworks array
+//                    unset($suppliers[$index]['document_updates'], $suppliers[$index]['lots'], $frameworks[$index]['documents']);
+//
+//                }
+//            }
+//        }
+//
+//        $meta = [
+//            'total_results' => $frameworkCount,
+//            'limit'         => $limit,
+//            'results'       => $singleFramework ?  1 : count($frameworks),
+//            'page'          => $page == 0 ? 1 : $page
+//        ];
+//
+//        header('Content-Type: application/json');
+//
+//        return rest_ensure_response(['meta' => $meta, 'results' => $frameworks]);
     }
 }

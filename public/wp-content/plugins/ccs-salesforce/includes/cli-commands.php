@@ -11,6 +11,7 @@
 
 namespace CCS\SFI;
 
+use App\Services\Database\DatabaseConnection;
 use \WP_CLI;
 
 use App\Model\LotSupplier;
@@ -24,6 +25,72 @@ WP_CLI::add_command('salesforce import', 'CCS\SFI\Import');
 
 class Import
 {
+
+    public function fetchTempData()
+    {
+        $start = microtime(true);
+
+        WP_CLI::success('Starting temp data import');
+
+        $salesforceApi = new SalesforceApi();
+
+        // Lets generate an access token
+        $accessTokenRequest = $salesforceApi->generateToken();
+        if (!empty($accessTokenRequest->access_token))
+        {
+            $accessToken = $accessTokenRequest->access_token;
+            $salesforceApi->setupHeaders($accessToken);
+        }
+
+        // Get the first batch of contacts
+        $contacts = $salesforceApi->getContacts();
+        WP_CLI::success(count($contacts->records) . ' contacts returned.');
+        $allContactsReturned = $contacts->done;
+
+        $this->saveContactsToTempTable($contacts->records);
+
+        while (!$allContactsReturned) {
+
+            $nextRecordsId = substr($contacts->nextRecordsUrl, strrpos($contacts->nextRecordsUrl, "/") + 1);
+            $contacts = $salesforceApi->getNextRecords($nextRecordsId);
+
+            WP_CLI::success(count($contacts->records) . ' contacts returned.');
+
+            $this->saveContactsToTempTable($contacts->records);
+
+            $allContactsReturned = $contacts->done;
+        }
+
+        WP_CLI::success('All Contacts saved to temp DB.');
+
+
+
+
+        // Get the first batch of lot contacts
+        $contacts = $salesforceApi->getMasterFrameworkLotContacts();
+        WP_CLI::success(count($contacts->records) . ' master framework lot contacts returned.');
+        $allContactsReturned = $contacts->done;
+
+        $this->saveMasterFrameworkLotContactsToTempTable($contacts->records);
+
+        while (!$allContactsReturned) {
+
+            $nextRecordsId = substr($contacts->nextRecordsUrl, strrpos($contacts->nextRecordsUrl, "/") + 1);
+            $contacts = $salesforceApi->getNextRecords($nextRecordsId);
+
+            WP_CLI::success(count($contacts->records) . ' master framework lot contacts returned.');
+
+            $this->saveMasterFrameworkLotContactsToTempTable($contacts->records);
+
+            $allContactsReturned = $contacts->done;
+        }
+
+        WP_CLI::success('All Contacts saved to temp DB.');
+
+
+
+
+    }
 
     /**
      * Imports Salesforce objects into Wordpress database
@@ -128,7 +195,12 @@ class Import
                       'supplier_id' => $supplier->getSalesforceId()
                     ]);
 
-//                    $salesforceApi->getTradingName();
+                    if ($tradingName = $salesforceApi->getTradingName($framework->getSalesforceId(), $supplier->getSalesforceId()))
+                    {
+                        WP_CLI::success('Framework supplier trading name found.');
+                        $lotSupplier->setTradingName($tradingName);
+                    }
+
 //                    $contactDetails = $salesforceApi->getContact($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
 //
 //                    if (!empty($contactDetails))
@@ -345,6 +417,71 @@ class Import
         }
 
         return;
+    }
+
+
+    /**
+     * Saves all contacts to a temporary table.
+     *
+     * @param $contacts
+     * @throws \Exception
+     */
+    public function saveContactsToTempTable($contacts)
+    {
+        $dbConnection = new DatabaseConnection();
+
+        foreach ($contacts as $contact)
+        {
+            $sql = "INSERT INTO temp_contact (salesforce_id, account_id) VALUES (:id, :accountId);";
+
+            $query = $dbConnection->connection->prepare($sql);
+
+            $query->bindParam(':id', $contact->Id, \PDO::PARAM_STR);
+            $query->bindParam(':accountId', $contact->AccountId, \PDO::PARAM_STR);
+
+            $response = $query->execute();
+
+            if (!$response)
+            {
+                throw new \Exception('Data could not be saved to database correctly.');
+            }
+
+        }
+    }
+
+
+
+    /**
+     * Saves all contacts to a temporary table.
+     *
+     * @param $contacts
+     * @throws \Exception
+     */
+    public function saveMasterFrameworkLotContactsToTempTable($contacts)
+    {
+        $dbConnection = new DatabaseConnection();
+
+        foreach ($contacts as $contact)
+        {
+            $sql = "INSERT INTO temp_master_framework_lot_contact (contact_name, contact_email, website_contact, master_framework_lot_salesforce_id, supplier_contact_salesforce_id) VALUES (:contactName, :contactEmail, :websiteContact, :mflsId, :scsId);";
+
+            $query = $dbConnection->connection->prepare($sql);
+
+            $query->bindParam(':contactName', $contact->Contact_Name__c, \PDO::PARAM_STR);
+            $query->bindParam(':contactEmail', $contact->Email__c, \PDO::PARAM_STR);
+            $query->bindParam(':websiteContact', $contact->Website_Contact__c, \PDO::PARAM_INT);
+            $query->bindParam(':mflsId', $contact->Master_Framework_Lot__c, \PDO::PARAM_STR);
+            $query->bindParam(':scsId', $contact->Supplier_Contact__c, \PDO::PARAM_STR);
+
+            $response = $query->execute();
+
+            if (!$response)
+            {
+                print_r($query->errorInfo());
+                throw new \Exception('Data could not be saved to database correctly.');
+            }
+
+        }
     }
 }
 

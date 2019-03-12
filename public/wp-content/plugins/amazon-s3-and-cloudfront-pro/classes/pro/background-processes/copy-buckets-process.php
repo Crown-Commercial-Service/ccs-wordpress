@@ -55,7 +55,7 @@ class Copy_Buckets_Process extends Background_Tool_Process {
 			return;
 		}
 
-		$keys = $this->get_provider_keys( $attachments );
+		$keys = $this->as3cf->get_provider_keys( $attachments );
 
 		if ( empty( $keys ) ) {
 			return;

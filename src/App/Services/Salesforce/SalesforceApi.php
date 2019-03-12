@@ -22,7 +22,6 @@ class SalesforceApi
      */
     protected $client;
 
-
     /**
      * @var \GuzzleHttp\Psr7\Response
      */
@@ -268,6 +267,51 @@ EOD;
         return $supplier;
     }
 
+
+    /**
+     * Get all contacts possible per request
+     *
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getContacts()
+    {
+        $contacts = $this->query("SELECT Id, AccountId FROM Contact");
+
+        return $contacts;
+    }
+
+
+    /**
+     * Get all contacts possible per request
+     *
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getMasterFrameworkLotContacts()
+    {
+        $contacts = $this->query("SELECT Contact_Name__c,Email__c,Master_Framework_Lot__c,Supplier_Contact__c,Website_Contact__c FROM Master_Framework_Lot_Contact__c");
+
+        return $contacts;
+    }
+
+
+    /**
+     * Gets the next records using a special internal Id from a paginated list returned from Salesforce
+     *
+     * @param $nextRecordsId
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getNextRecords($nextRecordsId)
+    {
+        $this->response = $this->client->request('GET', 'query/' . $nextRecordsId, [
+          'headers' => $this->headers,
+        ]);
+
+        return $this->getResponseContent();
+    }
+
     /**
      * Get the Lot contact details for a supplier
      *
@@ -330,10 +374,20 @@ EOD;
      * @todo SOQL: SELECT Framework__c, Id, Name, RM_Number__c, Status__c, Supplier__c, Trading_Name__c FROM Framework_Supplier__c
      *
      */
-//    public function getTradingName() {
-//        $potentialTradingName = $this->query("SELECT Framework__c, Id, RM_Number__c, Status__c, Supplier__c, Trading_Name__c FROM Framework_Supplier__c ");
-//
-//        var_dump($potentialTradingName);
-//    }
+    public function getTradingName($frameworkId, $supplierId) {
+        $queryResponse = $this->query("SELECT Trading_Name__c FROM Framework_Supplier__c WHERE Framework__c = '" . $frameworkId . "' AND Supplier__c = '" . $supplierId . "' ");
+
+        if ($queryResponse->totalSize == 0)
+        {
+            return false;
+        }
+
+        if (empty($queryResponse->records[0]->Trading_Name__c))
+        {
+            return false;
+        }
+
+        return $accountId = $queryResponse->records[0]->Trading_Name__c;
+    }
 
 }

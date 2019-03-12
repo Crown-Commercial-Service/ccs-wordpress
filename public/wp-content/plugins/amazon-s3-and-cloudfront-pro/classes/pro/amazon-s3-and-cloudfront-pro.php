@@ -259,7 +259,10 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	public function media_action_strings( $strings ) {
 		$strings['copy']               = __( 'Copy to Bucket', 'amazon-s3-and-cloudfront' );
 		$strings['remove']             = __( 'Remove from Bucket', 'amazon-s3-and-cloudfront' );
+		$strings['remove_local']       = __( 'Remove from Server', 'amazon-s3-and-cloudfront' );
 		$strings['download']           = __( 'Copy to Server from Bucket', 'amazon-s3-and-cloudfront' );
+		$strings['private_acl']        = __( 'Make Private in Bucket', 'amazon-s3-and-cloudfront' );
+		$strings['public_acl']         = __( 'Make Public in Bucket', 'amazon-s3-and-cloudfront' );
 		$strings['local_warning']      = __( 'This file does not exist locally so removing it from the bucket will result in broken links on your site. Are you sure you want to continue?', 'amazon-s3-and-cloudfront' );
 		$strings['bulk_local_warning'] = __( 'Some files do not exist locally so removing them from the bucket will result in broken links on your site. Are you sure you want to continue?', 'amazon-s3-and-cloudfront' );
 		$strings['change_to_private']  = __( 'Click to set as Private in the bucket', 'amazon-s3-and-cloudfront' );
@@ -582,12 +585,17 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 			return $actions;
 		}
 
+		// We've already tested provider credentials, but is license ok?
 		if ( $this->is_pro_plugin_setup( true ) ) {
-			$actions['copy']       = array( 'singular', 'bulk' );
-			$actions['download']   = array( 'singular', 'bulk' );
-			$actions['update_acl'] = array( 'singular' );
+			$actions['copy']         = array( 'singular', 'bulk' );
+			$actions['download']     = array( 'singular', 'bulk' );
+			$actions['update_acl']   = array( 'singular' );
+			$actions['private_acl']  = array( 'singular', 'bulk' );
+			$actions['public_acl']   = array( 'singular', 'bulk' );
+			$actions['remove_local'] = array( 'singular', 'bulk' );
 		}
 
+		// Remove from Bucket should still be available even if license exceeded/invalid.
 		$actions['remove'] = array( 'singular', 'bulk' );
 
 		if ( $scope ) {
@@ -654,34 +662,34 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	}
 
 	/**
-	 * Conditionally adds copy, remove and download S3 action links for an
-	 * attachment on the Media library list view
+	 * Conditionally adds media action links for an attachment on the Media library list view.
 	 *
 	 * @param array       $actions
 	 * @param WP_Post|int $post
 	 *
 	 * @return array
 	 */
-	function add_media_row_actions( $actions = array(), $post ) {
+	function add_media_row_actions( Array $actions, $post ) {
 		$available_actions = $this->get_available_media_actions( 'singular' );
 
 		if ( ! $available_actions ) {
 			return $actions;
 		}
 
-		$post_id     = ( is_object( $post ) ) ? $post->ID : $post;
-		$file        = get_attached_file( $post_id, true );
-		$file_exists = file_exists( $file );
+		$post_id       = ( is_object( $post ) ) ? $post->ID : $post;
+		$file          = get_attached_file( $post_id, true );
+		$file_exists   = file_exists( $file );
+		$provider_info = $this->get_attachment_provider_info( $post_id );
 
 		// If offloaded to another provider can not do anything.
-		if ( $this->get_attachment_provider_info( $post_id ) && ! $this->is_attachment_served_by_provider( $post_id, true ) ) {
+		if ( $provider_info && ! $this->is_attachment_served_by_provider( $post_id, true ) ) {
 			$actions['as3cfpro_wrong_provider'] = '<span title="' . __( 'Offloaded to a different provider than currently configured.', 'amazon-s3-and-cloudfront' ) . '">' . __( 'Wrong Provider', 'amazon-s3-and-cloudfront' ) . '</span>';
 
 			return $actions;
 		}
 
 		// If not offloaded at all, or offloaded to current provider, can use copy.
-		if ( in_array( 'copy', $available_actions ) && $file_exists && ( ! $this->get_attachment_provider_info( $post_id ) || $this->is_attachment_served_by_provider( $post_id, true ) ) ) {
+		if ( in_array( 'copy', $available_actions ) && $file_exists && ( ! $provider_info || $this->is_attachment_served_by_provider( $post_id, true ) ) ) {
 			$this->add_media_row_action( $actions, $post_id, 'copy' );
 		}
 
@@ -696,6 +704,18 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 
 		if ( in_array( 'download', $available_actions ) && ! $file_exists ) {
 			$this->add_media_row_action( $actions, $post_id, 'download' );
+		}
+
+		if ( in_array( 'private_acl', $available_actions ) && ( empty( $provider_info['acl'] ) || $this->get_provider()->get_private_acl() !== $provider_info['acl'] ) ) {
+			$this->add_media_row_action( $actions, $post_id, 'private_acl' );
+		}
+
+		if ( in_array( 'public_acl', $available_actions ) && ! empty( $provider_info['acl'] ) && $this->get_provider()->get_private_acl() === $provider_info['acl'] ) {
+			$this->add_media_row_action( $actions, $post_id, 'public_acl' );
+		}
+
+		if ( in_array( 'remove_local', $available_actions ) && $file_exists ) {
+			$this->add_media_row_action( $actions, $post_id, 'remove_local' );
 		}
 
 		return $actions;
@@ -824,11 +844,11 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	}
 
 	/**
-	 * Wrapper for S3 actions
+	 * Wrapper for media actions
 	 *
-	 * @param       $action              type of S3 action, copy, remove, download
-	 * @param array $ids                 attachment IDs
-	 * @param bool  $doing_bulk_action   flag for multiple attachments, if true then we need to
+	 * @param string $action             type of media action, copy, remove, download, remove_local
+	 * @param array  $ids                attachment IDs
+	 * @param bool   $doing_bulk_action  flag for multiple attachments, if true then we need to
 	 *                                   perform a check for each attachment
 	 *
 	 * @return bool|array on success array with success count and error count
@@ -844,6 +864,15 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 				break;
 			case 'download':
 				$result = $this->maybe_download_attachments_from_provider( $ids, $doing_bulk_action );
+				break;
+			case 'private_acl':
+				$result = $this->maybe_update_acls_to_private( $ids, $doing_bulk_action );
+				break;
+			case 'public_acl':
+				$result = $this->maybe_update_acls_to_public( $ids, $doing_bulk_action );
+				break;
+			case 'remove_local':
+				$result = $this->maybe_remove_local_files_for_attachments( $ids, $doing_bulk_action );
 				break;
 			default:
 				// not one of our actions, remove
@@ -938,20 +967,35 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	function get_messages() {
 		if ( is_null( $this->messages ) ) {
 			$this->messages = array(
-				'copy'     => array(
+				'copy'         => array(
 					'success' => __( 'Media successfully copied to bucket.', 'amazon-s3-and-cloudfront' ),
 					'partial' => __( 'Media copied to bucket with some errors.', 'amazon-s3-and-cloudfront' ),
 					'error'   => __( 'There were errors when copying the media to bucket.', 'amazon-s3-and-cloudfront' ),
 				),
-				'remove'   => array(
+				'remove'       => array(
 					'success' => __( 'Media successfully removed from bucket.', 'amazon-s3-and-cloudfront' ),
 					'partial' => __( 'Media removed from bucket, with some errors.', 'amazon-s3-and-cloudfront' ),
 					'error'   => __( 'There were errors when removing the media from bucket.', 'amazon-s3-and-cloudfront' ),
 				),
-				'download' => array(
+				'download'     => array(
 					'success' => __( 'Media successfully downloaded from bucket.', 'amazon-s3-and-cloudfront' ),
 					'partial' => __( 'Media downloaded from bucket, with some errors.', 'amazon-s3-and-cloudfront' ),
 					'error'   => __( 'There were errors when downloading the media from bucket.', 'amazon-s3-and-cloudfront' ),
+				),
+				'private_acl'  => array(
+					'success' => __( 'Media successfully set as private in bucket.', 'amazon-s3-and-cloudfront' ),
+					'partial' => __( 'Media set as private in bucket, with some errors.', 'amazon-s3-and-cloudfront' ),
+					'error'   => __( 'There were errors when setting the media as private in bucket.', 'amazon-s3-and-cloudfront' ),
+				),
+				'public_acl'   => array(
+					'success' => __( 'Media successfully set as public in bucket.', 'amazon-s3-and-cloudfront' ),
+					'partial' => __( 'Media set as public in bucket, with some errors.', 'amazon-s3-and-cloudfront' ),
+					'error'   => __( 'There were errors when setting the media as public in bucket.', 'amazon-s3-and-cloudfront' ),
+				),
+				'remove_local' => array(
+					'success' => __( 'Media successfully removed from server.', 'amazon-s3-and-cloudfront' ),
+					'partial' => __( 'Media removed from server, with some errors.', 'amazon-s3-and-cloudfront' ),
+					'error'   => __( 'There were errors when removing the media from server.', 'amazon-s3-and-cloudfront' ),
 				),
 			);
 		}
@@ -1115,6 +1159,144 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 		);
 
 		return $result;
+	}
+
+	/**
+	 * Wrapper for removing multiple attachments from from server if offloaded
+	 *
+	 * @param array $post_ids            attachment IDs
+	 * @param bool  $doing_bulk_action   flag for multiple attachments, if true then we need to
+	 *                                   perform a check for each attachment to make sure it has
+	 *                                   been uploaded to bucket before trying to delete it
+	 *
+	 * @return array
+	 * @throws Exception
+	 */
+	function maybe_remove_local_files_for_attachments( $post_ids, $doing_bulk_action = false ) {
+		$error_count   = 0;
+		$deleted_count = 0;
+
+		foreach ( $post_ids as $key => $post_id ) {
+			if ( ! $this->is_attachment_served_by_provider( $post_id, true ) ) {
+				unset( $post_ids[ $key ] );
+				$error_count++;
+				continue;
+			}
+
+			if ( ! $this->attachment_exist_locally( $post_id ) ) {
+				unset( $post_ids[ $key ] );
+				$deleted_count++;
+				continue;
+			}
+		}
+
+		if ( ! empty( $post_ids ) ) {
+			$keys = $this->get_provider_keys( $post_ids );
+
+			foreach ( $post_ids as $post_id ) {
+				$this->delete_local_attachment( $post_id, $keys );
+
+				if ( ! $this->attachment_exist_locally( $post_id ) ) {
+					$deleted_count++;
+				} else {
+					$error_count++;
+				}
+			}
+		}
+
+		$result = array(
+			'errors' => $error_count,
+			'count'  => $deleted_count,
+		);
+
+		return $result;
+	}
+
+	/**
+	 * Wrapper for updating the ACLs for multiple attachments on provider
+	 *
+	 * @param array $post_ids            Attachment IDs
+	 * @param bool  $doing_bulk_action   Flag for multiple attachments, if true then we need to
+	 *                                   perform a check for each attachment to make sure it has
+	 *                                   been uploaded to the current provider
+	 * @param bool  $private             Setting to private ACL? Default is public.
+	 *
+	 * @return array|WP_Error
+	 * @throws Exception
+	 */
+	private function maybe_update_acls( $post_ids, $doing_bulk_action = false, $private = false ) {
+		$error_count   = 0;
+		$updated_count = 0;
+
+		$provider_key = $this->get_provider()->get_provider_key_name();
+
+		if ( true === $private ) {
+			$acl = $this->get_provider()->get_private_acl();
+		} else {
+			$acl = $this->get_provider()->get_default_acl();
+		}
+
+		foreach ( $post_ids as $post_id ) {
+			$provider_info = $this->get_attachment_provider_info( $post_id );
+
+			if ( false === $provider_info || ! is_array( $provider_info ) ) {
+				$error_count++;
+				continue;
+			}
+
+			if ( $doing_bulk_action ) {
+				if ( $provider_key !== $provider_info['provider'] ) {
+					$error_count++;
+					continue;
+				}
+			}
+
+			$provider_info = $this->set_attachment_acl_on_provider( $post_id, $provider_info, $acl );
+
+			if ( is_wp_error( $provider_info ) ) {
+				$error_count++;
+				continue;
+			}
+
+			$updated_count++;
+		}
+
+		$result = array(
+			'errors' => $error_count,
+			'count'  => $updated_count,
+		);
+
+		return $result;
+	}
+
+	/**
+	 * Wrapper for updating the ACLs to private for multiple attachments on provider
+	 *
+	 * @param array $post_ids            Attachment IDs
+	 * @param bool  $doing_bulk_action   Flag for multiple attachments, if true then we need to
+	 *                                   perform a check for each attachment to make sure it has
+	 *                                   been uploaded to the current provider
+	 *
+	 * @return array|WP_Error
+	 * @throws Exception
+	 */
+	private function maybe_update_acls_to_private( $post_ids, $doing_bulk_action = false ) {
+		return $this->maybe_update_acls( $post_ids, $doing_bulk_action, true );
+	}
+
+	/**
+	 * Wrapper for updating the ACLs to public for multiple attachments on provider
+	 *
+	 * @param array $post_ids            Attachment IDs
+	 * @param bool  $doing_bulk_action   Flag for multiple attachments, if true then we need to
+	 *                                   perform a check for each attachment to make sure it has
+	 *                                   been uploaded to the current provider
+	 *
+	 * @return array|WP_Error
+	 * @throws Exception
+	 */
+	private function maybe_update_acls_to_public( $post_ids, $doing_bulk_action = false ) {
+		return $this->maybe_update_acls( $post_ids, $doing_bulk_action, false );
 	}
 
 	/**
@@ -1481,4 +1663,150 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 		) );
 	}
 
+	/**
+	 * Get object keys that exist on provider for attachments.
+	 *
+	 * It's possible that attachments belong to different buckets therefore they could have
+	 * different regions, so we have to build an array of clients and commands.
+	 *
+	 * @param array $attachments
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
+	public function get_provider_keys( $attachments ) {
+		$regions = array();
+
+		foreach ( $attachments as $attachment_id ) {
+			if ( ! $this->is_attachment_served_by_provider( $attachment_id, true ) ) {
+				continue;
+			}
+
+			$provider_info = $this->get_attachment_provider_info( $attachment_id );
+
+			$region = empty( $provider_info['region'] ) ? 'us-east-1' : $provider_info['region'];
+
+			if ( ! isset( $regions[ $region ]['provider_client'] ) ) {
+				$regions[ $region ]['provider_client'] = $this->get_provider_client( $region, true );
+			}
+
+			$regions[ $region ]['locations'][ $attachment_id ] = array(
+				'Bucket' => $provider_info['bucket'],
+				'Prefix' => AS3CF_Utils::strip_image_edit_suffix_and_extension( $provider_info['key'] ),
+			);
+		}
+
+		return Provider::get_keys_from_regions( $regions );
+	}
+
+	/**
+	 * Does attachment exist locally?
+	 *
+	 * @param int $attachment_id
+	 *
+	 * @return bool
+	 */
+	public function attachment_exist_locally( $attachment_id ) {
+		$paths = $this->get_attachment_local_paths( $attachment_id );
+
+		foreach ( $paths as $path ) {
+			if ( file_exists( $path ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Does file local file exist on Provider?
+	 *
+	 * @param string $path
+	 * @param array  $keys
+	 *
+	 * @return bool
+	 */
+	public function file_exists_on_provider( $path, $keys ) {
+		foreach ( $keys as $key ) {
+			if ( pathinfo( $path, PATHINFO_BASENAME ) === pathinfo( $key, PATHINFO_BASENAME ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get attachment local paths.
+	 *
+	 * @param int $attachment_id
+	 *
+	 * @return array
+	 */
+	public function get_attachment_local_paths( $attachment_id ) {
+		static $local_paths = array();
+
+		$blog_id = get_current_blog_id();
+
+		if ( isset( $local_paths[ $blog_id ][ $attachment_id ] ) ) {
+			return $local_paths[ $blog_id ][ $attachment_id ];
+		}
+
+		$file    = get_attached_file( $attachment_id, true );
+		$parts   = pathinfo( $file );
+		$meta    = wp_get_attachment_metadata( $attachment_id );
+		$backups = get_post_meta( $attachment_id, '_wp_attachment_backup_sizes', true );
+		$paths   = array( $file );
+
+		if ( ! empty( $meta['sizes'] ) ) {
+			foreach ( $meta['sizes'] as $size ) {
+				$paths[] = path_join( $parts['dirname'], $size['file'] );
+			}
+		}
+
+		if ( ! empty( $backups ) ) {
+			foreach ( $backups as $size ) {
+				$paths[] = path_join( $parts['dirname'], $size['file'] );
+			}
+		}
+
+		$local_paths[ $blog_id ][ $attachment_id ] = array_unique( $paths );
+
+		return $paths;
+	}
+
+	/**
+	 * Delete local attachment files.
+	 *
+	 * @param int   $attachment_id
+	 * @param array $keys
+	 */
+	public function delete_local_attachment( $attachment_id, $keys ) {
+		$paths = $this->get_attachment_local_paths( $attachment_id );
+		$keys  = isset( $keys[ $attachment_id ] ) ? $keys[ $attachment_id ] : array();
+
+		foreach ( $paths as $path ) {
+			if ( file_exists( $path ) && $this->file_exists_on_provider( $path, $keys ) ) {
+				$files_to_remove[] = $path;
+			}
+		}
+
+		// Delete the files and record original file's size before removal.
+		if ( ! empty( $files_to_remove ) ) {
+			// Get original file's size if still on disk.
+			$filesize = file_exists( $paths[0] ) ? filesize( $paths[0] ) : 0;
+
+			$this->remove_local_files( $files_to_remove, $attachment_id );
+
+			// Store filesize in the attachment meta data for use by WP
+			if ( 0 < $filesize && ( $data = wp_get_attachment_metadata( $attachment_id ) ) ) {
+				if ( empty( $data['filesize'] ) ) {
+					$data['filesize'] = $filesize;
+
+					// Update metadata with filesize
+					update_post_meta( $attachment_id, '_wp_attachment_metadata', $data );
+				}
+			}
+		}
+	}
 }

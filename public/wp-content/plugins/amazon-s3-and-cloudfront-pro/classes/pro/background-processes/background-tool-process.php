@@ -234,42 +234,6 @@ abstract class Background_Tool_Process extends AS3CF_Background_Process {
 	}
 
 	/**
-	 * Get object keys that exist on S3 for attachments.
-	 *
-	 * It's possible that attachments belong to different buckets therefore they could have
-	 * different regions, so we have to build an array of clients and commands.
-	 *
-	 * @param array $attachments
-	 *
-	 * @return array
-	 * @throws \Exception
-	 */
-	protected function get_provider_keys( $attachments ) {
-		$regions = array();
-
-		foreach ( $attachments as $attachment_id ) {
-			if ( ! $this->as3cf->is_attachment_served_by_provider( $attachment_id, true ) ) {
-				continue;
-			}
-
-			$provider_info = $this->as3cf->get_attachment_provider_info( $attachment_id );
-
-			$region = empty( $provider_info['region'] ) ? 'us-east-1' : $provider_info['region'];
-
-			if ( ! isset( $regions[ $region ]['provider_client'] ) ) {
-				$regions[ $region ]['provider_client'] = $this->as3cf->get_provider_client( $region, true );
-			}
-
-			$regions[ $region ]['locations'][ $attachment_id ] = array(
-				'Bucket' => $provider_info['bucket'],
-				'Prefix' => AS3CF_Utils::strip_image_edit_suffix_and_extension( $provider_info['key'] ),
-			);
-		}
-
-		return Provider::get_keys_from_regions( $regions );
-	}
-
-	/**
 	 * Record new error.
 	 *
 	 * @param int    $blog_id

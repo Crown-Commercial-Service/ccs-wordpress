@@ -18,7 +18,7 @@ abstract class AS3CF_Async_Request {
 	protected $identifier;
 
 	/**
-	 * @var Amazon_S3_And_CloudFront
+	 * @var Amazon_S3_And_CloudFront_Pro
 	 */
 	protected $as3cf;
 

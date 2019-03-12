@@ -2,9 +2,9 @@
 /*
 Plugin Name: WP Offload Media
 Plugin URI:  https://deliciousbrains.com/wp-offload-media/
-Description: Speed up your WordPress site by offloading your media and assets to Amazon S3 or DigitalOcean Spaces and a CDN.
+Description: Speed up your WordPress site by offloading your media and assets to Amazon S3, DigitalOcean Spaces or Google Cloud Storage and a CDN.
 Author: Delicious Brains
-Version: 2.0.2
+Version: 2.1
 Author URI: https://deliciousbrains.com/
 Network: True
 Text Domain: amazon-s3-and-cloudfront

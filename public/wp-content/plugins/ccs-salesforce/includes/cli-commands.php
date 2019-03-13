@@ -12,6 +12,7 @@
 namespace CCS\SFI;
 
 use App\Services\Database\DatabaseConnection;
+use App\Services\Logger\ImportLogger;
 use \WP_CLI;
 
 use App\Model\LotSupplier;
@@ -27,6 +28,19 @@ class Import
 {
 
     /**
+     * @var \App\Services\Logger\ImportLogger
+     */
+    protected $logger;
+
+    /**
+     * Import constructor.
+     */
+    public function __construct()
+    {
+        $this->logger = new ImportLogger();
+    }
+
+    /**
      * Fetches latest contact data from Salesforce and places it in a temporary database.
      *
      *       wp salesforce import tempData
@@ -35,9 +49,9 @@ class Import
      */
     public function tempData()
     {
+        $this->logger->info('Temp data refreshing');
         $start = microtime(true);
         $salesforceApi = new SalesforceApi();
-
         WP_CLI::success('Starting temp data import');
 
         // Lets generate an access token
@@ -105,6 +119,7 @@ class Import
 
     public function all()
     {
+        $this->logger->info('Salesforce import started');
         $start = microtime(true);
 
         $this->tempData();
@@ -143,7 +158,8 @@ class Import
             // Save framework to DB (ccs_frameworks)
             if (!$frameworkRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
               $framework->getSalesforceId(), $framework)) {
-                WP_CLI::error('Framework ' . $index . ' not imported.');
+                WP_CLI::error('Framework ' . $framework->getSalesforceId() . ' not imported.');
+                $this->logger->info('Framework ' . $framework->getSalesforceId() . ' not imported.');
                 $errorCount['frameworks']++;
                 continue;
             }
@@ -164,6 +180,7 @@ class Import
                 if (!$lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
                   $lot->getSalesforceId(), $lot)) {
                     WP_CLI::error('Lot not imported.');
+                    $this->logger->info('Lot ' . $lot->getSalesforceId() . ' not imported.');
                     $errorCount['lots']++;
                     continue;
                 }
@@ -190,6 +207,7 @@ class Import
                     if (!$supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
                       $supplier->getSalesforceId(), $supplier)) {
                         WP_CLI::error('Supplier not imported.');
+                        $this->logger->info('Supplier ' . $supplier->getSalesforceId() . ' not imported.');
                         $errorCount['suppliers']++;
                         continue;
                     }
@@ -227,10 +245,14 @@ class Import
         $timer = round(microtime(true) - $start, 2);
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
 
-        return $response = [
+        $response = [
           'importCount' => $importCount,
           'errorCount'  => $errorCount
         ];
+
+        $this->logger->info('Import complete. Import took ' . $timer/60 . ' minutes to complete.', $response);
+
+        return $response;
     }
 
 

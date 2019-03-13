@@ -26,7 +26,14 @@ WP_CLI::add_command('salesforce import', 'CCS\SFI\Import');
 class Import
 {
 
-    public function fetchTempData()
+    /**
+     * Fetches latest contact data from Salesforce and places it in a temporary database.
+     *
+     *       wp salesforce import tempData
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function tempData()
     {
         $start = microtime(true);
         $salesforceApi = new SalesforceApi();
@@ -62,8 +69,6 @@ class Import
         WP_CLI::success('All Contacts saved to temp DB.');
 
 
-
-
         // Get the first batch of lot contacts
         $contacts = $salesforceApi->getMasterFrameworkLotContacts();
         WP_CLI::success(count($contacts->records) . ' master framework lot contacts returned.');
@@ -86,7 +91,6 @@ class Import
 
         $timer = round(microtime(true) - $start, 2);
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
-
     }
 
     /**

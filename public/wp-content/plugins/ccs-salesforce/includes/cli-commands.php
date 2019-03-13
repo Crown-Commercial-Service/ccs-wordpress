@@ -175,12 +175,15 @@ class Import
                 $this->createLotInWordpress($lot);
 
 
+                WP_CLI::success('Retrieving Lot Suppliers.');
                 $suppliers = $salesforceApi->getLotSuppliers($lot->getSalesforceId());
+                WP_CLI::success(count($suppliers) . ' Lot Suppliers found.');
 
                 $supplierRepository = new SupplierRepository();
                 $lotSupplierRepository = new LotSupplierRepository();
 
                 // Remove all the current relationships to this lot, and create fresh ones.
+                WP_CLI::success('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
                 $lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
 
                 foreach ($suppliers as $supplier) {

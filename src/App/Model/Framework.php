@@ -633,7 +633,7 @@ class Framework extends AbstractModel {
      */
     public function setPublishOnWebsite(?bool $publishOnWebsite): Framework
     {
-        if (!empty($websiteContact))
+        if (!empty($publishOnWebsite))
         {
             $this->publishOnWebsite = $publishOnWebsite;
         } else {

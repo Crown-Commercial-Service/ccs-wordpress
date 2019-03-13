@@ -107,6 +107,8 @@ class Import
     {
         $start = microtime(true);
 
+        $this->tempData();
+
         WP_CLI::success('Starting Import');
 
         $importCount = [
@@ -202,12 +204,13 @@ class Import
                         $lotSupplier->setTradingName($tradingName);
                     }
 
-//                    $contactDetails = $salesforceApi->getContact($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
-//
-//                    if (!empty($contactDetails))
-//                    {
-//                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
-//                    }
+                    WP_CLI::success('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());
+                    $contactDetails = $this->findContactDetails($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
+                    if ($contactDetails)
+                    {
+                        WP_CLI::success('Contact details found....');
+                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
+                    }
 
                     $lotSupplierRepository->create($lotSupplier);
                 }
@@ -225,6 +228,45 @@ class Import
           'importCount' => $importCount,
           'errorCount'  => $errorCount
         ];
+    }
+
+
+
+    protected function findContactDetails($lotId, $supplierId) {
+
+        $dbConnection = new DatabaseConnection();
+
+        $sql = "SELECT * FROM temp_master_framework_lot_contact WHERE master_framework_lot_salesforce_id = '" . $lotId . "';";
+        $query = $dbConnection->connection->prepare($sql);
+        $query->execute();
+        
+        $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (empty($results)) {
+            return false;
+        }
+
+        foreach ($results as $result)
+        {
+            $sql = "SELECT * FROM temp_contact WHERE salesforce_id = '" . $result['supplier_contact_salesforce_id'] . "';";
+            
+            $query = $dbConnection->connection->prepare($sql);
+            $query->execute();
+            
+            $contactResult = $query->fetch(\PDO::FETCH_ASSOC);
+
+            if (empty($contactResult))
+            {
+                continue;
+            }
+
+            if ($supplierId == $contactResult['account_id'])
+            {
+                return $result;
+            }
+        }
+
+        return false;
     }
 
 
@@ -268,16 +310,16 @@ class Import
      */
     protected function addContactDetailsToLotSupplier(LotSupplier $lotSupplier, $contactDetails) {
 
-        if (isset($contactDetails->Contact_Name__c)) {
-            $lotSupplier->setContactName($contactDetails->Contact_Name__c);
+        if (isset($contactDetails['contact_name'])) {
+            $lotSupplier->setContactName($contactDetails['contact_name']);
         }
 
-        if (isset($contactDetails->Email__c)) {
-            $lotSupplier->setContactEmail($contactDetails->Email__c);
+        if (isset($contactDetails['contact_email'])) {
+            $lotSupplier->setContactEmail($contactDetails['contact_email']);
         }
 
-        if (isset($contactDetails->Website_Contact__c)) {
-            $lotSupplier->setWebsiteContact($contactDetails->Website_Contact__c);
+        if (isset($contactDetails['website_contact'])) {
+            $lotSupplier->setWebsiteContact($contactDetails['website_contact']);
         }
 
         return $lotSupplier;

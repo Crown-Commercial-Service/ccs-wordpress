@@ -29,10 +29,9 @@ class Import
     public function fetchTempData()
     {
         $start = microtime(true);
+        $salesforceApi = new SalesforceApi();
 
         WP_CLI::success('Starting temp data import');
-
-        $salesforceApi = new SalesforceApi();
 
         // Lets generate an access token
         $accessTokenRequest = $salesforceApi->generateToken();
@@ -46,18 +45,17 @@ class Import
         $contacts = $salesforceApi->getContacts();
         WP_CLI::success(count($contacts->records) . ' contacts returned.');
         $allContactsReturned = $contacts->done;
-
         $this->saveContactsToTempTable($contacts->records);
+        $importCount = count($contacts->records);
+        WP_CLI::success($importCount . ' contacts imported.');
 
         while (!$allContactsReturned) {
-
             $nextRecordsId = substr($contacts->nextRecordsUrl, strrpos($contacts->nextRecordsUrl, "/") + 1);
             $contacts = $salesforceApi->getNextRecords($nextRecordsId);
-
             WP_CLI::success(count($contacts->records) . ' contacts returned.');
-
             $this->saveContactsToTempTable($contacts->records);
-
+            $importCount += count($contacts->records);
+            WP_CLI::success($importCount . ' contacts imported.');
             $allContactsReturned = $contacts->done;
         }
 
@@ -70,25 +68,24 @@ class Import
         $contacts = $salesforceApi->getMasterFrameworkLotContacts();
         WP_CLI::success(count($contacts->records) . ' master framework lot contacts returned.');
         $allContactsReturned = $contacts->done;
-
         $this->saveMasterFrameworkLotContactsToTempTable($contacts->records);
+        $importCount = count($contacts->records);
+        WP_CLI::success($importCount . ' master framework lot contacts imported.');
 
         while (!$allContactsReturned) {
-
             $nextRecordsId = substr($contacts->nextRecordsUrl, strrpos($contacts->nextRecordsUrl, "/") + 1);
             $contacts = $salesforceApi->getNextRecords($nextRecordsId);
-
             WP_CLI::success(count($contacts->records) . ' master framework lot contacts returned.');
-
             $this->saveMasterFrameworkLotContactsToTempTable($contacts->records);
-
+            $importCount += count($contacts->records);
+            WP_CLI::success($importCount . ' master framework lot contacts imported.');
             $allContactsReturned = $contacts->done;
         }
 
-        WP_CLI::success('All Contacts saved to temp DB.');
+        WP_CLI::success('All master framework lot contacts saved to temp DB.');
 
-
-
+        $timer = round(microtime(true) - $start, 2);
+        WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
 
     }
 

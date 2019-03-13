@@ -66,7 +66,7 @@ class CustomSupplierApi
         $meta = [
             'total_results' => $supplierCount,
             'limit' => $limit,
-            'results' => count($suppliers),
+            'results' => $suppliers ? count($suppliers) : 0,
             'page' => $page == 0 ? 1 : $page
         ];
 

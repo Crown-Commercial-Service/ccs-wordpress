@@ -18,6 +18,7 @@ include('library/theme-support.php');
 include('library/remove-inline-styles-from-wysiwyg-images.php');
 include('library/responsive-oembed-videos.php');
 include('library/headless-cms.php');
+include('library/options-page.php');
 
 // the following can be used to customise the registration email sent to new users
 //include('library/registration-email-customisation.php');

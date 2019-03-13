@@ -449,6 +449,8 @@ class Import
 
         $suppliers = $supplierRepository->findAll();
 
+        WP_CLI::success(count($suppliers) . ' Suppliers found');
+
         foreach ($suppliers as $supplier) {
 
             $liveFrameworksCount = $frameworkRepository->countAllSupplierLiveFrameworks($supplier->getSalesforceId());

@@ -2,6 +2,7 @@
 
 use App\Repository\FrameworkRepository;
 use App\Repository\LotRepository;
+use App\Repository\SupplierRepository;
 
 
 /**
@@ -92,6 +93,18 @@ function save_framework_data ($post_id) {
 
     //Save the Wordpress data back into the custom database
     $frameworkRepository->update('wordpress_id', $framework->getWordpressId(), $framework);
+
+    $supplierRepository = new SupplierRepository();
+    $suppliers = $supplierRepository->fetchSuppliersOnLiveFrameworksViaFrameworkId($framework->getSalesforceId());
+
+    foreach ($suppliers as $supplier)
+    {
+        //Update the Supplier model with the flag true for live frameworks
+        $supplier->setOnLiveFrameworks(true);
+
+        // Save the Supplier back into the custom database.
+        $supplierRepository->update('salesforce_id', $supplier->getSalesforceId(), $supplier);
+    }
 
 }
 

@@ -336,4 +336,26 @@ ORDER by s.name ASC;';
         return $this->findAllSuppliers($sql, true, $limit, $page);
 
     }
+
+    /**
+     * Return a list of suppliers from a Framework Id
+     *
+     * @param $frameworkId
+     * @return mixed
+     */
+    public function fetchSuppliersOnLiveFrameworksViaFrameworkId($frameworkId)
+    {
+        $sql = 'SELECT s.* 
+        FROM ccs_suppliers s
+        JOIN ccs_lot_supplier ls ON ls.supplier_id = s.salesforce_id
+        JOIN ccs_lots l ON l.salesforce_id = ls.lot_id
+        JOIN ccs_frameworks f ON f.salesforce_id = l.framework_id
+        WHERE f.salesforce_id = \'' . $frameworkId . '\'
+        AND s.on_live_frameworks = FALSE 
+        AND (f.status = \'Live\' OR f.status = \'Expired - Data Still Received\')
+        GROUP BY s.id
+        ORDER by s.name ASC;';
+
+        return $this->findAllSuppliers($sql);
+    }
 }

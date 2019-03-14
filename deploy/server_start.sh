@@ -9,4 +9,7 @@ sudo systemctl is-enabled --quiet httpd \
 sudo systemctl is-active --quiet httpd \
     || sudo systemctl start httpd
 
+sudo systemctl is-active --quiet cavalcaderunner \
+    || sudo systemctl start cavalcaderunner
+
 echo "Codedeploy server_start.sh complete."

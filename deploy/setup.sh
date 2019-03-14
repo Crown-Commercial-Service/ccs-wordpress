@@ -24,10 +24,9 @@ function rollback {
 
 # Update existing software
 cd /root
-sudo yum update -y || rollback
+sudo yum update -y --security || rollback
 
 # Ensure we have a clean webroot to deploy into
-# @TODO check we can recover an in-place instance (move web root out the way rather than trashing it)
 
 # Move the existing web root out the way & recreate
 if [ -e "$WEB_CURRENT" ]; then
@@ -41,7 +40,7 @@ sudo rm -f "$DEPLOY_PATH/appspec.yml"
 sudo rm -rf "$DEPLOY_PATH/deploy"
 sudo mv -f "$DEPLOY_PATH/.env" "$DEPLOY_PATH/"* "$WEB_CURRENT"
 sudo ln -s "$WEB_CURRENT/public" "$WEB_CURRENT/html"
-sudo chown -R apache:apache /var/www
+sudo chown -R apache:apache "$WEB_CURRENT"
 
 # Cleanup
 if [ -e "$DEPLOY_PATH" ]; then

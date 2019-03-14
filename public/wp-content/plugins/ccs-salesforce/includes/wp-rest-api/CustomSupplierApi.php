@@ -106,13 +106,12 @@ class CustomSupplierApi
                 if ($lots !== false) {
                     foreach ($lots as $lot) {
                         $currentLotData = $lot->toArray();
-                        $currentLotData['supplier_contact_details'] = null;
                         if ($lotSupplier = $lotSupplierRepository->findByLotIdAndSupplierId($lot->getSalesforceId(), $supplier->getSalesforceId()))
                         {
-                            $currentLotData['supplier_contact_details']['contact_name'] = $lotSupplier->getContactName();
-                            $currentLotData['supplier_contact_details']['contact_email'] = $lotSupplier->getContactEmail();
-                            $currentLotData['supplier_contact_details']['trading_name'] = $lotSupplier->getTradingName();
-                            $currentLotData['supplier_contact_details']['website_contact'] = $lotSupplier->isWebsiteContact();
+                            $currentLotData['supplier_contact_name'] = $lotSupplier->getContactName();
+                            $currentLotData['supplier_contact_email'] = $lotSupplier->getContactEmail();
+                            $currentLotData['supplier_trading_name'] = $lotSupplier->getTradingName();
+                            $currentLotData['supplier_website_contact'] = $lotSupplier->isWebsiteContact();
                         }
 
                         $lotsData[] = $currentLotData;

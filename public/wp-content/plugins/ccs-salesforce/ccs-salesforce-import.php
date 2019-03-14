@@ -10,6 +10,8 @@
 */
 
 // If this file is called directly, abort.
+use CCS\SFI\Import;
+
 if (!defined('WPINC')) {
     throw new Exception('You cannot access this file directly');
 }
@@ -129,6 +131,33 @@ function run_plugin()
     add_action( 'save_post', 'update_post_details', 4);
     add_action( 'publish_framework', 'update_post_details');
 
+    add_action( 'ccs_salesforce_import_cron_hook', 'import_all' );
+    register_activation_hook( __FILE__, 'ccs_salesforce_activate' );
+    register_uninstall_hook( __FILE__, 'ccs_salesforce_deactivate' );
+    register_deactivation_hook( __FILE__, 'ccs_salesforce_deactivate' );
+}
+
+/**
+ * Schedule the cron job when we enable the plugin
+ */
+function ccs_salesforce_activate()
+{
+    wp_schedule_event(time(), 'hourly', 'ccs_salesforce_import_cron_hook');
+}
+
+
+/**
+ * Disable the cron job when we deactivate or uninstall the plugin
+ */
+function ccs_salesforce_deactivate()
+{
+    wp_clear_scheduled_hook('ccs_salesforce_import_cron_hook');
+}
+
+function import_all()
+{
+    $import = new Import();
+    return $import->all();
 }
 
 run_plugin();

@@ -191,6 +191,11 @@ class Import
 
                 $this->createLotInWordpress($lot);
 
+                //Hide the suppliers on this lot on website
+                if($lot->isHideSuppliers()){
+                    WP_CLI::success('Hiding suppliers for this Lot.');
+                    continue;
+                }
 
                 WP_CLI::success('Retrieving Lot Suppliers.');
                 $suppliers = $salesforceApi->getLotSuppliers($lot->getSalesforceId());
@@ -264,7 +269,7 @@ class Import
         $sql = "SELECT * FROM temp_master_framework_lot_contact WHERE master_framework_lot_salesforce_id = '" . $lotId . "';";
         $query = $dbConnection->connection->prepare($sql);
         $query->execute();
-        
+
         $results = $query->fetchAll(\PDO::FETCH_ASSOC);
 
         if (empty($results)) {
@@ -274,10 +279,10 @@ class Import
         foreach ($results as $result)
         {
             $sql = "SELECT * FROM temp_contact WHERE salesforce_id = '" . $result['supplier_contact_salesforce_id'] . "';";
-            
+
             $query = $dbConnection->connection->prepare($sql);
             $query->execute();
-            
+
             $contactResult = $query->fetch(\PDO::FETCH_ASSOC);
 
             if (empty($contactResult))

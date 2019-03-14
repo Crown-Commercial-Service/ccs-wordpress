@@ -273,8 +273,6 @@ class Supplier extends AbstractModel {
         return $this;
     }
 
-
-
     /**
      * Returns a simple text array representing the object
      *

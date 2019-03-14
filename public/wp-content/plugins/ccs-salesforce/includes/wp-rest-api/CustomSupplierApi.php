@@ -112,6 +112,11 @@ class CustomSupplierApi
                             $currentLotData['supplier_contact_email'] = $lotSupplier->getContactEmail();
                             $currentLotData['supplier_trading_name'] = $lotSupplier->getTradingName();
                             $currentLotData['supplier_website_contact'] = $lotSupplier->isWebsiteContact();
+                        }  else {
+                            $currentLotData['supplier_contact_name'] = null;
+                            $currentLotData['supplier_contact_email'] = null;
+                            $currentLotData['supplier_trading_name'] = null;
+                            $currentLotData['supplier_website_contact'] = null;
                         }
 
                         $lotsData[] = $currentLotData;

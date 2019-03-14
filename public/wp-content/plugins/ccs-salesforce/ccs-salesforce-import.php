@@ -126,7 +126,9 @@ function run_plugin()
     } );
 
     //Saving wordpress data into the custom database
-    add_action( 'save_post', 'save_post_acf' );
+    add_action( 'save_post', 'update_post_details', 4);
+    add_action( 'publish_framework', 'update_post_details');
+
 }
 
 run_plugin();

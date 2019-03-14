@@ -6,12 +6,12 @@ use App\Repository\SupplierRepository;
 
 
 /**
- * Method that saves the submitted Wordpress post acf data into the custom database,
+ * Method that updates the submitted Wordpress post data into the custom database,
  * Only for frameworks and lots
  *
  * @param $post_id
  */
-function save_post_acf($post_id) {
+function update_post_details($post_id) {
 
     $post_type = get_post_type($post_id);
 
@@ -95,17 +95,20 @@ function save_framework_data ($post_id) {
     $frameworkRepository->update('wordpress_id', $framework->getWordpressId(), $framework);
 
     $supplierRepository = new SupplierRepository();
-    $suppliers = $supplierRepository->fetchSuppliersOnLiveFrameworksViaFrameworkId($framework->getSalesforceId());
 
-    foreach ($suppliers as $supplier)
-    {
-        //Update the Supplier model with the flag true for live frameworks
-        $supplier->setOnLiveFrameworks(true);
+    if(get_post_status($post_id) === 'publish') {
 
-        // Save the Supplier back into the custom database.
-        $supplierRepository->update('salesforce_id', $supplier->getSalesforceId(), $supplier);
+        $suppliers = $supplierRepository->fetchSuppliersOnLiveFrameworksViaFrameworkId($framework->getSalesforceId());
+
+        foreach ($suppliers as $supplier)
+        {
+            //Update the Supplier model with the flag true for live frameworks
+            $supplier->setOnLiveFrameworks(true);
+
+            // Save the Supplier back into the custom database.
+            $supplierRepository->update('salesforce_id', $supplier->getSalesforceId(), $supplier);
+        }
     }
-
 }
 
 /**

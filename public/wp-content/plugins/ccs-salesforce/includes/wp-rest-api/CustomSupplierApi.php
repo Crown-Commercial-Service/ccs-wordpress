@@ -2,6 +2,7 @@
 
 use App\Repository\FrameworkRepository;
 use App\Repository\LotRepository;
+use App\Repository\LotSupplierRepository;
 use App\Repository\SupplierRepository;
 
 class CustomSupplierApi
@@ -88,6 +89,7 @@ class CustomSupplierApi
 
         $frameworkRepository = new FrameworkRepository();
         $lotRepository = new LotRepository();
+        $lotSupplierRepository = new LotSupplierRepository();
 
         // Find all frameworks for the retrieved supplier
         $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
@@ -103,7 +105,16 @@ class CustomSupplierApi
 
                 if ($lots !== false) {
                     foreach ($lots as $lot) {
-                        $lotsData[] = $lot->toArray();
+                        $currentLotData = $lot->toArray();
+                        if ($lotSupplier = $lotSupplierRepository->findByLotIdAndSupplierId($lot->getSalesforceId(), $supplier->getSalesforceId()))
+                        {
+                            $currentLotData['supplier_contact_name'] = $lotSupplier->getContactName();
+                            $currentLotData['supplier_contact_email'] = $lotSupplier->getContactEmail();
+                            $currentLotData['supplier_trading_name'] = $lotSupplier->getTradingName();
+                            $currentLotData['supplier_website_contact'] = $lotSupplier->isWebsiteContact();
+                        }
+
+                        $lotsData[] = $currentLotData;
                     }
                 }
                 $frameworksData[$index]['lots'] = $lotsData;

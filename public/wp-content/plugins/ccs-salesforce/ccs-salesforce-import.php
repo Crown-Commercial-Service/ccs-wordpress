@@ -33,6 +33,8 @@ require __DIR__ . '/includes/wp-rest-api/CustomLotApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/CustomSupplierApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/CustomTrainingApi.php';
+
 
 /**
  * Begins execution of the plugin.
@@ -53,6 +55,7 @@ function run_plugin()
     $frameworkApi = new CustomFrameworkApi();
     $lotApi = new CustomLotApi();
     $supplierApi = new CustomSupplierApi();
+    $trainingApi = new CustomTrainingApi();
 
 
     //Get all frameworks
@@ -111,6 +114,14 @@ function run_plugin()
         register_rest_route( 'ccs/v1', '/suppliers/(?P<id>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
             'callback' => [$supplierApi, 'get_individual_supplier']
+        ) );
+    } );
+
+    //Get the training dates requeired for the eSourcing Training form
+    add_action( 'rest_api_init', function () use ($trainingApi) {
+        register_rest_route( 'ccs/v1', '/esourcing-dates', array(
+            'methods' => 'GET',
+            'callback' => [$trainingApi, 'get_esourcing_dates']
         ) );
     } );
 

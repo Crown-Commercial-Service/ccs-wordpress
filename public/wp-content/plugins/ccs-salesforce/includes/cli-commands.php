@@ -321,15 +321,12 @@ class Import
         WP_CLI::success(sprintf('Text content for %d frameworks synced from WordPress to custom table', $results));
 
         // Sync content for lots
-        // @todo need to add description to WordPress lots content type first
-        /*
         $wordpress = $sync->getLotsFromWordPress();
         WP_CLI::success(sprintf('Read in %d lots from WordPress', count($wordpress)));
         $custom = $sync->getLotsFromCustomTables();
         WP_CLI::success(sprintf('Read in %d lots from custom database table', count($custom)));
-        $results = $sync->syncFromWordpressToCustomTables('lots', $wordpress, $custom);
+        $results = $sync->syncTextContent('lots', $wordpress, $custom);
         WP_CLI::success(sprintf('Text content for %d lots synced from WordPress to custom table', $results));
-        */
     }
 
 

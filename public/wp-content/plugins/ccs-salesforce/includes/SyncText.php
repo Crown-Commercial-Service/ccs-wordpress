@@ -176,7 +176,7 @@ class SyncText
             $itemData = [];
 
             foreach ($this->fieldsToSync['lots'] as $wpField => $customField) {
-                $itemData[$wpField] = get_field($wpField);
+                $itemData[$wpField] = get_post_field('post_content', $id);
             }
             $data[$id] = $itemData;
         }

@@ -35,14 +35,16 @@ class CustomTrainingApi
         $buyerDates = [];
         if (have_rows('buyer_dates', 'option')):
             while (have_rows('buyer_dates', 'option')): the_row();
-                $buyerDates[] = ['date' => get_sub_field('buyer_dates__date')];
+                $date = date_create_from_format('d/m/Y g:i a' , get_sub_field('buyer_dates__date'))->format('Y-m-d H:i:s');
+                $buyerDates[] = ['date' => $date];
             endwhile;
         endif;
 
         $supplierDates = [];
         if (have_rows('supplier_dates', 'option')):
             while (have_rows('supplier_dates', 'option')): the_row();
-                $supplierDates[] = ['date' => get_sub_field('supplier_dates_date')];
+                $date = date_create_from_format('d/m/Y g:i a', get_sub_field('supplier_dates_date'))->format('Y-m-d H:i:s');
+                $supplierDates[] = ['date' => $date];
             endwhile;
         endif;
 

@@ -119,7 +119,7 @@ function run_plugin()
 
     //Get the training dates requeired for the eSourcing Training form
     add_action( 'rest_api_init', function () use ($trainingApi) {
-        register_rest_route( 'ccs/v1', '/esourcing-dates', array(
+        register_rest_route( 'ccs/v1', '/esourcing-dates/0', array(
             'methods' => 'GET',
             'callback' => [$trainingApi, 'get_esourcing_dates']
         ) );

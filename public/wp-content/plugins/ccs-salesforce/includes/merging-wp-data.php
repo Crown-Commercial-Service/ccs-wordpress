@@ -2,33 +2,50 @@
 
 use App\Repository\FrameworkRepository;
 use App\Repository\LotRepository;
-
+use App\Repository\SupplierRepository;
 
 /**
- * Method that saves the submitted Wordpress post acf data into the custom database,
+ * Method that updates the submitted Wordpress post data into the custom database,
  * Only for frameworks and lots
  *
  * @param $post_id
  */
-function save_post_acf($post_id) {
+function updated_post_details($post_id, $post_after, $post_before) {
 
     $post_type = get_post_type($post_id);
 
     if ($post_type == 'framework' ) {
-        save_framework_data($post_id);
+        save_framework_nonacf_data($post_id, $post_after);
     }
 
     if ($post_type == 'lot' ) {
-        save_lot_data($post_id);
+        save_lot_nonacf_data($post_id, $post_after);
     }
+
 }
 
 /**
- * Saving user input framework data into the custom database
+ * Method that updates the submitted Wordpress ACF data into the custom database,
+ * Only for frameworks and lots
  *
  * @param $post_id
  */
-function save_framework_data ($post_id) {
+function updated_post_meta($post_id) {
+
+    $post_type = get_post_type($post_id);
+
+    if ($post_type == 'framework' ) {
+        save_framework_acf_data($post_id);
+    }
+
+}
+
+/**
+ * Saving user input framework (default WP ) data into the custom database
+ *
+ * @param $post_id
+ */
+function save_framework_nonacf_data ($post_id, $post_data) {
 
     $frameworkRepository = new FrameworkRepository();
 
@@ -40,59 +57,115 @@ function save_framework_data ($post_id) {
     $framework = $frameworkRepository->findById($post_id, 'wordpress_id');
 
     //Get the framework taxonomies and save them in the db
-    $terms = wp_get_post_terms($post_id, 'framework_type');
+    $term_ids = $_POST['radio_tax_input']['framework_type'];
 
-    if (!empty($terms)) {
-        foreach ($terms as $term) {
+    if (!empty($term_ids)) {
+        foreach ($term_ids as $term_id) {
+            $term = get_term_by( 'id' , $term_id, 'framework_type');
             $framework->setType($term->name);
         }
     }
 
-    if(!empty(get_field('framework_summary')))
-    {
-        $framework->setSummary(get_field('framework_summary'));
-    }
-
-    if(!empty(get_field('framework_description')))
-    {
-        $framework->setDescription(get_field('framework_description'));
-    }
-
-    if(!empty(get_field('framework_updates')))
-    {
-        $framework->setUpdates(get_field('framework_updates'));
-    }
-
-    if(!empty(get_field('framework_benefits')))
-    {
-        $framework->setBenefits(get_field('framework_benefits'));
-    }
-
-    if(!empty(get_field('framework_how_to_buy')))
-    {
-        $framework->setHowToBuy(get_field('framework_how_to_buy'));
-    }
-
-    if(!empty(get_field('framework_documents_updates')))
-    {
-        $framework->setDocumentUpdates(get_field('framework_documents_updates'));
-    }
-
-    if(!empty(get_field('framework_keywords')))
-    {
-        $framework->setKeywords(get_field('framework_keywords'));
-    }
-
-    if(!empty(get_field('framework_upcoming_deal_details')))
-    {
-        $framework->setUpcomingDealDetails(get_field('framework_upcoming_deal_details'));
-    }
-
-    $framework->setPublishedStatus(get_post_status($post_id));
+    $framework->setPublishedStatus($post_data->post_status);
 
     //Save the Wordpress data back into the custom database
     $frameworkRepository->update('wordpress_id', $framework->getWordpressId(), $framework);
 
+    $supplierRepository = new SupplierRepository();
+
+    if(get_post_status($post_id) === 'publish') {
+
+        $suppliers = $supplierRepository->fetchSuppliersOnLiveFrameworksViaFrameworkId($framework->getSalesforceId());
+
+        if (!empty($suppliers)) {
+            foreach ($suppliers as $supplier)
+            {
+                //Update the Supplier model with the flag true for live frameworksOK
+                $supplier->setOnLiveFrameworks(true);
+
+                // Save the Supplier back into the custom database.
+                $supplierRepository->update('salesforce_id', $supplier->getSalesforceId(), $supplier);
+            }
+        }
+    }
+}
+
+/**
+ * Saving user input framework ACF data into the custom database
+ *
+ * @param $post_id
+ */
+function save_framework_acf_data ($post_id) {
+
+    $frameworkRepository = new FrameworkRepository();
+
+    if (!$frameworkRepository->findById($post_id, 'wordpress_id')) {
+        //add error
+        return;
+    }
+
+    $framework = $frameworkRepository->findById($post_id, 'wordpress_id');
+
+    if(get_field('framework_summary') !== null)
+    {
+        $framework->setSummary(get_field('framework_summary'));
+    }
+
+    if(get_field('framework_description') !== null)
+    {
+        $framework->setDescription(get_field('framework_description'));
+    }
+
+    if(get_field('framework_updates') !== null)
+    {
+        $framework->setUpdates(get_field('framework_updates'));
+    }
+
+    if(get_field('framework_benefits') !== null)
+    {
+        $framework->setBenefits(get_field('framework_benefits'));
+    }
+
+    if(get_field('framework_how_to_buy') !== null)
+    {
+        $framework->setHowToBuy(get_field('framework_how_to_buy'));
+    }
+
+    if(get_field('framework_documents_updates') !== null)
+    {
+        $framework->setDocumentUpdates(get_field('framework_documents_updates'));
+    }
+
+    if(get_field('framework_keywords') !== null)
+    {
+        $framework->setKeywords(get_field('framework_keywords'));
+    }
+
+    if(get_field('framework_upcoming_deal_details') !== null)
+    {
+        $framework->setUpcomingDealDetails(get_field('framework_upcoming_deal_details'));
+    }
+
+    //Save the Wordpress data back into the custom database
+    $frameworkRepository->update('wordpress_id', $framework->getWordpressId(), $framework);
+
+    $supplierRepository = new SupplierRepository();
+
+    if(get_post_status($post_id) === 'publish') {
+
+        $suppliers = $supplierRepository->fetchSuppliersOnLiveFrameworksViaFrameworkId($framework->getSalesforceId());
+
+        if (!empty($suppliers)) {
+            foreach ($suppliers as $supplier)
+            {
+                //Update the Supplier model with the flag true for live frameworksOK
+                $supplier->setOnLiveFrameworks(true);
+
+                // Save the Supplier back into the custom database.
+                $supplierRepository->update('salesforce_id', $supplier->getSalesforceId(), $supplier);
+            }
+        }
+    }
 }
 
 /**
@@ -101,7 +174,7 @@ function save_framework_data ($post_id) {
  *
  * @param $post_id
  */
-function save_lot_data ($post_id) {
+function save_lot_nonacf_data ($post_id, $post_data) {
 
     $lotRepository = new LotRepository();
 
@@ -112,9 +185,9 @@ function save_lot_data ($post_id) {
 
     $lot = $lotRepository->findById($post_id, 'wordpress_id');
 
-    if (!empty(get_post_field('post_content', $post_id))){
+    if ($post_data->post_content !== null){
 
-        $lot->setDescription(get_post_field('post_content', $post_id));
+        $lot->setDescription($post_data->post_content);
 
     }
     //Save the Wordpress data back into the custom database

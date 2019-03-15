@@ -12,6 +12,7 @@
 namespace CCS\SFI;
 
 use App\Services\Database\DatabaseConnection;
+use App\Services\Logger\ImportLogger;
 use \WP_CLI;
 
 use App\Model\LotSupplier;
@@ -26,13 +27,32 @@ WP_CLI::add_command('salesforce import', 'CCS\SFI\Import');
 class Import
 {
 
-    public function fetchTempData()
+    /**
+     * @var \App\Services\Logger\ImportLogger
+     */
+    protected $logger;
+
+    /**
+     * Import constructor.
+     */
+    public function __construct()
     {
+        $this->logger = new ImportLogger();
+    }
+
+    /**
+     * Fetches latest contact data from Salesforce and places it in a temporary database.
+     *
+     *       wp salesforce import tempData
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function tempData()
+    {
+        $this->logger->info('Temp data refreshing');
         $start = microtime(true);
-
-        WP_CLI::success('Starting temp data import');
-
         $salesforceApi = new SalesforceApi();
+        WP_CLI::success('Starting temp data import');
 
         // Lets generate an access token
         $accessTokenRequest = $salesforceApi->generateToken();
@@ -46,50 +66,45 @@ class Import
         $contacts = $salesforceApi->getContacts();
         WP_CLI::success(count($contacts->records) . ' contacts returned.');
         $allContactsReturned = $contacts->done;
-
         $this->saveContactsToTempTable($contacts->records);
+        $importCount = count($contacts->records);
+        WP_CLI::success($importCount . ' contacts imported.');
 
         while (!$allContactsReturned) {
-
             $nextRecordsId = substr($contacts->nextRecordsUrl, strrpos($contacts->nextRecordsUrl, "/") + 1);
             $contacts = $salesforceApi->getNextRecords($nextRecordsId);
-
             WP_CLI::success(count($contacts->records) . ' contacts returned.');
-
             $this->saveContactsToTempTable($contacts->records);
-
+            $importCount += count($contacts->records);
+            WP_CLI::success($importCount . ' contacts imported.');
             $allContactsReturned = $contacts->done;
         }
 
         WP_CLI::success('All Contacts saved to temp DB.');
-
-
 
 
         // Get the first batch of lot contacts
         $contacts = $salesforceApi->getMasterFrameworkLotContacts();
         WP_CLI::success(count($contacts->records) . ' master framework lot contacts returned.');
         $allContactsReturned = $contacts->done;
-
         $this->saveMasterFrameworkLotContactsToTempTable($contacts->records);
+        $importCount = count($contacts->records);
+        WP_CLI::success($importCount . ' master framework lot contacts imported.');
 
         while (!$allContactsReturned) {
-
             $nextRecordsId = substr($contacts->nextRecordsUrl, strrpos($contacts->nextRecordsUrl, "/") + 1);
             $contacts = $salesforceApi->getNextRecords($nextRecordsId);
-
             WP_CLI::success(count($contacts->records) . ' master framework lot contacts returned.');
-
             $this->saveMasterFrameworkLotContactsToTempTable($contacts->records);
-
+            $importCount += count($contacts->records);
+            WP_CLI::success($importCount . ' master framework lot contacts imported.');
             $allContactsReturned = $contacts->done;
         }
 
-        WP_CLI::success('All Contacts saved to temp DB.');
+        WP_CLI::success('All master framework lot contacts saved to temp DB.');
 
-
-
-
+        $timer = round(microtime(true) - $start, 2);
+        WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
     }
 
     /**
@@ -104,7 +119,10 @@ class Import
 
     public function all()
     {
+        $this->logger->info('Salesforce import started');
         $start = microtime(true);
+
+        $this->tempData();
 
         WP_CLI::success('Starting Import');
 
@@ -140,7 +158,8 @@ class Import
             // Save framework to DB (ccs_frameworks)
             if (!$frameworkRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
               $framework->getSalesforceId(), $framework)) {
-                WP_CLI::error('Framework ' . $index . ' not imported.');
+                WP_CLI::error('Framework ' . $framework->getSalesforceId() . ' not imported.');
+                $this->logger->info('Framework ' . $framework->getSalesforceId() . ' not imported.');
                 $errorCount['frameworks']++;
                 continue;
             }
@@ -161,6 +180,7 @@ class Import
                 if (!$lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
                   $lot->getSalesforceId(), $lot)) {
                     WP_CLI::error('Lot not imported.');
+                    $this->logger->info('Lot ' . $lot->getSalesforceId() . ' not imported.');
                     $errorCount['lots']++;
                     continue;
                 }
@@ -171,19 +191,28 @@ class Import
 
                 $this->createLotInWordpress($lot);
 
+                //Hide the suppliers on this lot on website
+                if($lot->isHideSuppliers()){
+                    WP_CLI::success('Hiding suppliers for this Lot.');
+                    continue;
+                }
 
+                WP_CLI::success('Retrieving Lot Suppliers.');
                 $suppliers = $salesforceApi->getLotSuppliers($lot->getSalesforceId());
+                WP_CLI::success(count($suppliers) . ' Lot Suppliers found.');
 
                 $supplierRepository = new SupplierRepository();
                 $lotSupplierRepository = new LotSupplierRepository();
 
                 // Remove all the current relationships to this lot, and create fresh ones.
+                WP_CLI::success('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
                 $lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
 
                 foreach ($suppliers as $supplier) {
                     if (!$supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
                       $supplier->getSalesforceId(), $supplier)) {
                         WP_CLI::error('Supplier not imported.');
+                        $this->logger->info('Supplier ' . $supplier->getSalesforceId() . ' not imported.');
                         $errorCount['suppliers']++;
                         continue;
                     }
@@ -201,12 +230,13 @@ class Import
                         $lotSupplier->setTradingName($tradingName);
                     }
 
-//                    $contactDetails = $salesforceApi->getContact($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
-//
-//                    if (!empty($contactDetails))
-//                    {
-//                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
-//                    }
+                    WP_CLI::success('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());
+                    $contactDetails = $this->findContactDetails($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
+                    if ($contactDetails)
+                    {
+                        WP_CLI::success('Contact details found....');
+                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
+                    }
 
                     $lotSupplierRepository->create($lotSupplier);
                 }
@@ -220,10 +250,53 @@ class Import
         $timer = round(microtime(true) - $start, 2);
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
 
-        return $response = [
+        $response = [
           'importCount' => $importCount,
           'errorCount'  => $errorCount
         ];
+
+        $this->logger->info('Import complete. Import took ' . $timer/60 . ' minutes to complete.', $response);
+
+        return $response;
+    }
+
+
+
+    protected function findContactDetails($lotId, $supplierId) {
+
+        $dbConnection = new DatabaseConnection();
+
+        $sql = "SELECT * FROM temp_master_framework_lot_contact WHERE master_framework_lot_salesforce_id = '" . $lotId . "';";
+        $query = $dbConnection->connection->prepare($sql);
+        $query->execute();
+
+        $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (empty($results)) {
+            return false;
+        }
+
+        foreach ($results as $result)
+        {
+            $sql = "SELECT * FROM temp_contact WHERE salesforce_id = '" . $result['supplier_contact_salesforce_id'] . "';";
+
+            $query = $dbConnection->connection->prepare($sql);
+            $query->execute();
+
+            $contactResult = $query->fetch(\PDO::FETCH_ASSOC);
+
+            if (empty($contactResult))
+            {
+                continue;
+            }
+
+            if ($supplierId == $contactResult['account_id'])
+            {
+                return $result;
+            }
+        }
+
+        return false;
     }
 
 
@@ -248,15 +321,12 @@ class Import
         WP_CLI::success(sprintf('Text content for %d frameworks synced from WordPress to custom table', $results));
 
         // Sync content for lots
-        // @todo need to add description to WordPress lots content type first
-        /*
         $wordpress = $sync->getLotsFromWordPress();
         WP_CLI::success(sprintf('Read in %d lots from WordPress', count($wordpress)));
         $custom = $sync->getLotsFromCustomTables();
         WP_CLI::success(sprintf('Read in %d lots from custom database table', count($custom)));
-        $results = $sync->syncFromWordpressToCustomTables('lots', $wordpress, $custom);
+        $results = $sync->syncTextContent('lots', $wordpress, $custom);
         WP_CLI::success(sprintf('Text content for %d lots synced from WordPress to custom table', $results));
-        */
     }
 
 
@@ -267,16 +337,16 @@ class Import
      */
     protected function addContactDetailsToLotSupplier(LotSupplier $lotSupplier, $contactDetails) {
 
-        if (isset($contactDetails->Contact_Name__c)) {
-            $lotSupplier->setContactName($contactDetails->Contact_Name__c);
+        if (isset($contactDetails['contact_name'])) {
+            $lotSupplier->setContactName($contactDetails['contact_name']);
         }
 
-        if (isset($contactDetails->Email__c)) {
-            $lotSupplier->setContactEmail($contactDetails->Email__c);
+        if (isset($contactDetails['contact_email'])) {
+            $lotSupplier->setContactEmail($contactDetails['contact_email']);
         }
 
-        if (isset($contactDetails->Website_Contact__c)) {
-            $lotSupplier->setWebsiteContact($contactDetails->Website_Contact__c);
+        if (isset($contactDetails['website_contact'])) {
+            $lotSupplier->setWebsiteContact($contactDetails['website_contact']);
         }
 
         return $lotSupplier;
@@ -402,6 +472,8 @@ class Import
         $supplierRepository = new SupplierRepository();
 
         $suppliers = $supplierRepository->findAll();
+
+        WP_CLI::success(count($suppliers) . ' Suppliers found');
 
         foreach ($suppliers as $supplier) {
 

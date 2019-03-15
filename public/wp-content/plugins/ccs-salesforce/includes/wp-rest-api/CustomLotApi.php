@@ -95,7 +95,7 @@ class CustomLotApi
         $meta = [
             'total_results' => $suppliersCount,
             'limit' => $limit,
-            'results' => count($suppliers),
+            'results' => $suppliers ? count($suppliers) : 0,
             'page' => $page == 0 ? 1 : $page,
             'framework_title' => $frameworkData['title'],
             'framework_rm_number' => $frameworkData['rm_number'],

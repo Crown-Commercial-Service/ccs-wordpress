@@ -46,11 +46,6 @@ class Lot extends AbstractModel {
     protected $expiryDate;
 
     /**
-     * @var string
-     */
-    protected $publishOnWebsite;
-
-    /**
      * @var bool
      */
     protected $hideSuppliers = false;
@@ -226,23 +221,6 @@ class Lot extends AbstractModel {
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getPublishOnWebsite(): ?string
-    {
-        return $this->publishOnWebsite;
-    }
-
-    /**
-     * @param string $publishOnWebsite
-     * @return Lot
-     */
-    public function setPublishOnWebsite(?string $publishOnWebsite): Lot
-    {
-        $this->publishOnWebsite = $publishOnWebsite;
-        return $this;
-    }
 
     /**
      * @return bool
@@ -268,16 +246,16 @@ class Lot extends AbstractModel {
     public function toArray()
     {
         return [
-            'id'                  => $this->getId(),
-            'framework_id'        => $this->getFrameworkId(),
-            'wordpress_id'        => $this->getWordpressId(),
-            'salesforce_id'       => $this->getSalesforceId(),
-            'lot_number'          => $this->getLotNumber(),
-            'title'               => $this->getTitle(),
-            'status'              => $this->getStatus(),
-            'description'         => $this->getDescription(),
-            'expiry_date'         => !empty($this->getExpiryDate()) ? $this->getExpiryDate()->format('Y-m-d') : null,
-            'suppliers'           => '',
+          'id'              => $this->getId(),
+          'framework_id'    => $this->getFrameworkId(),
+          'wordpress_id'    => $this->getWordpressId(),
+          'salesforce_id'   => $this->getSalesforceId(),
+          'lot_number'      => $this->getLotNumber(),
+          'title'           => $this->getTitle(),
+          'status'          => $this->getStatus(),
+          'description'     => $this->getDescription(),
+          'expiry_date'     => !empty($this->getExpiryDate()) ? $this->getExpiryDate()->format('Y-m-d') : null,
+          'suppliers'       => null,
         ];
     }
 }

@@ -10,6 +10,8 @@
 */
 
 // If this file is called directly, abort.
+use CCS\SFI\Import;
+
 if (!defined('WPINC')) {
     throw new Exception('You cannot access this file directly');
 }
@@ -33,6 +35,8 @@ require __DIR__ . '/includes/wp-rest-api/CustomLotApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/CustomSupplierApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/CustomTrainingApi.php';
+
 
 /**
  * Begins execution of the plugin.
@@ -53,6 +57,7 @@ function run_plugin()
     $frameworkApi = new CustomFrameworkApi();
     $lotApi = new CustomLotApi();
     $supplierApi = new CustomSupplierApi();
+    $trainingApi = new CustomTrainingApi();
 
 
     //Get all frameworks
@@ -114,8 +119,45 @@ function run_plugin()
         ) );
     } );
 
+    //Get the training dates requeired for the eSourcing Training form
+    add_action( 'rest_api_init', function () use ($trainingApi) {
+        register_rest_route( 'ccs/v1', '/esourcing-dates/0', array(
+            'methods' => 'GET',
+            'callback' => [$trainingApi, 'get_esourcing_dates']
+        ) );
+    } );
+
     //Saving wordpress data into the custom database
-    add_action( 'save_post', 'save_post_acf' );
+    add_action( 'post_updated', 'updated_post_details', 20, 3);
+    add_action('acf/save_post', 'updated_post_meta', 20, 1);
+
+    add_action( 'ccs_salesforce_import_cron_hook', 'import_all' );
+    register_activation_hook( __FILE__, 'ccs_salesforce_activate' );
+    register_uninstall_hook( __FILE__, 'ccs_salesforce_deactivate' );
+    register_deactivation_hook( __FILE__, 'ccs_salesforce_deactivate' );
+}
+
+/**
+ * Schedule the cron job when we enable the plugin
+ */
+function ccs_salesforce_activate()
+{
+    wp_schedule_event(time(), 'hourly', 'ccs_salesforce_import_cron_hook');
+}
+
+
+/**
+ * Disable the cron job when we deactivate or uninstall the plugin
+ */
+function ccs_salesforce_deactivate()
+{
+    wp_clear_scheduled_hook('ccs_salesforce_import_cron_hook');
+}
+
+function import_all()
+{
+    $import = new Import();
+    return $import->all();
 }
 
 run_plugin();

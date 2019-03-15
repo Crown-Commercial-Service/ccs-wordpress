@@ -126,5 +126,34 @@ class LotSupplierRepository extends AbstractRepository
         return $query;
     }
 
+    /**
+     * Find a row by supplying a lot ID and supplier ID
+     *
+     * @param $lotId
+     * @param $supplierId
+     * @return bool
+     */
+    public function findByLotIdAndSupplierId($lotId, $supplierId)
+    {
+        $sql = 'SELECT * from ' . $this->tableName . ' where lot_id = :lot_id AND supplier_id = :supplier_id';
+
+        try {
+            $query = $this->connection->prepare($sql);
+            $query->bindParam(':lot_id', $lotId, \PDO::PARAM_STR);
+            $query->bindParam(':supplier_id', $supplierId, \PDO::PARAM_STR);
+
+            $query->execute();
+
+            $result = $query->fetch(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
+        if (empty($result)) {
+            return false;
+        }
+
+        return $this->translateSingleResultToModel($result);
+    }
+
 
 }

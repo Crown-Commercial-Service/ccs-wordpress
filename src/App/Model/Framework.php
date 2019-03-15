@@ -633,7 +633,7 @@ class Framework extends AbstractModel {
      */
     public function setPublishOnWebsite(?bool $publishOnWebsite): Framework
     {
-        if (!empty($websiteContact))
+        if (!empty($publishOnWebsite))
         {
             $this->publishOnWebsite = $publishOnWebsite;
         } else {
@@ -746,8 +746,8 @@ class Framework extends AbstractModel {
           'expected_live_date'      => !empty($this->getExpectedLiveDate()) ? $this->getExpectedLiveDate()->format('Y-m-d') : null,
           'expected_award_date'     => !empty($this->getExpectedAwardDate()) ? $this->getExpectedAwardDate()->format('Y-m-d') : null,
           'document_updates'        => $this->getDocumentUpdates(),
-          'lots'                    => 'not yet supported in this method',
-          'documents'               => 'not yet supported in this method',
+          'lots'                    => null,
+          'documents'               => null,
           'published_status'        => $this->getPublishedStatus(),
           'keywords'                => $this->getKeywords(),
           'upcoming_deal_details'   => $this->getUpcomingDealDetails(),

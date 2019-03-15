@@ -293,7 +293,9 @@ AND on_live_frameworks = TRUE ';
     /**
      * Find all rows based on the rm number search, with pagination
      *
-     * @param $keyword
+     * @param $rmNumber
+     * @param int $limit
+     * @param int $page
      * @return mixed
      */
     public function searchByRmNumber($rmNumber, $limit, $page)
@@ -313,9 +315,42 @@ ORDER by s.name ASC;';
     }
 
     /**
+     * Count all results of suppliers that are on live frameworks based on the search rm number
+     * @param $rmNumber
+     * @return mixed
+     */
+    public function countSearchByRmNumberResults($rmNumber){
+
+        $sql = 'SELECT COUNT(*) as count FROM 
+(SELECT s.* 
+FROM ccs_suppliers s
+JOIN ccs_lot_supplier ls ON ls.supplier_id = s.salesforce_id
+JOIN ccs_lots l ON l.salesforce_id = ls.lot_id
+JOIN ccs_frameworks f ON f.salesforce_id = l.framework_id
+WHERE f.rm_number = \'' . $rmNumber . '\'
+AND s.on_live_frameworks = TRUE 
+GROUP BY s.id
+ORDER by s.name ASC) SearchRmNumberAlias';
+
+        $query = $this->connection->prepare($sql);
+        $query->execute();
+
+        $results = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if (!isset($results['count']))
+        {
+            return 0;
+        }
+
+        return (int) $results['count'];
+    }
+
+    /**
      * Find all rows based on the keyword text search, with pagination
      *
      * @param $keyword
+     * @param int $limit
+     * @param int $page
      * @return mixed
      */
     public function performKeywordSearch($keyword, $limit, $page)
@@ -336,4 +371,62 @@ ORDER by s.name ASC;';
         return $this->findAllSuppliers($sql, true, $limit, $page);
 
     }
+
+    /**
+     * Return a list of suppliers from a Framework Id
+     *
+     * @param $frameworkId
+     * @return mixed
+     */
+    public function fetchSuppliersOnLiveFrameworksViaFrameworkId($frameworkId)
+    {
+        $sql = 'SELECT s.* 
+        FROM ccs_suppliers s
+        JOIN ccs_lot_supplier ls ON ls.supplier_id = s.salesforce_id
+        JOIN ccs_lots l ON l.salesforce_id = ls.lot_id
+        JOIN ccs_frameworks f ON f.salesforce_id = l.framework_id
+        WHERE f.salesforce_id = \'' . $frameworkId . '\'
+        AND s.on_live_frameworks = FALSE 
+        AND (f.status = \'Live\' OR f.status = \'Expired - Data Still Received\')
+        GROUP BY s.id
+        ORDER by s.name ASC;';
+
+        return $this->findAllSuppliers($sql);
+    }
+
+    /**
+     * Count all results of suppliers that are on live frameworks based on the search keyword
+     *
+     * @param $keyword
+     * @return mixed
+     */
+    public function countSearchResults($keyword){
+
+        $sql = 'SELECT COUNT(*) as count FROM 
+(SELECT s.* 
+FROM ccs_suppliers s
+JOIN ccs_lot_supplier ls ON ls.supplier_id = s.salesforce_id
+JOIN ccs_lots l ON l.salesforce_id = ls.lot_id
+JOIN ccs_frameworks f ON f.salesforce_id = l.framework_id
+WHERE (s.name LIKE \'%' . $keyword . '%\'
+      OR s.trading_name LIKE \'%' . $keyword . '%\'
+      OR s.city LIKE \'%' . $keyword . '%\'
+      OR s.postcode LIKE \'%' . $keyword . '%\')
+AND s.on_live_frameworks = TRUE 
+GROUP BY s.id
+ORDER by s.name ASC) SearchTableAlias';
+
+        $query = $this->connection->prepare($sql);
+        $query->execute();
+
+        $results = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if (!isset($results['count']))
+        {
+            return 0;
+        }
+
+        return (int) $results['count'];
+    }
+
 }

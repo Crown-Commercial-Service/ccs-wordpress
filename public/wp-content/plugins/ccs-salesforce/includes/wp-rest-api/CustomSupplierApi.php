@@ -2,6 +2,7 @@
 
 use App\Repository\FrameworkRepository;
 use App\Repository\LotRepository;
+use App\Repository\LotSupplierRepository;
 use App\Repository\SupplierRepository;
 
 class CustomSupplierApi
@@ -46,27 +47,14 @@ class CustomSupplierApi
         $suppliersData = [];
 
         if ($suppliers !== false) {
-            foreach ($suppliers as $index => $supplier) {
 
-                $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
-                $liveFrameworks = [];
-
-                if ($frameworks !== false) {
-                    foreach ($frameworks as $counter => $framework) {
-                        $liveFrameworks[$counter] = $framework->toArray();
-                    }
-                }
-
-                $suppliersData[$index] = $supplier->toArray();
-                $suppliersData[$index]['live_frameworks'] = $liveFrameworks;
-
-            }
+            $suppliersData = $this->build_supplier_array($frameworkRepository, $suppliers);
         }
 
         $meta = [
             'total_results' => $supplierCount,
             'limit' => $limit,
-            'results' => count($suppliers),
+            'results' => $suppliers ? count($suppliers) : 0,
             'page' => $page == 0 ? 1 : $page
         ];
 
@@ -101,6 +89,7 @@ class CustomSupplierApi
 
         $frameworkRepository = new FrameworkRepository();
         $lotRepository = new LotRepository();
+        $lotSupplierRepository = new LotSupplierRepository();
 
         // Find all frameworks for the retrieved supplier
         $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
@@ -116,7 +105,21 @@ class CustomSupplierApi
 
                 if ($lots !== false) {
                     foreach ($lots as $lot) {
-                        $lotsData[] = $lot->toArray();
+                        $currentLotData = $lot->toArray();
+                        if ($lotSupplier = $lotSupplierRepository->findByLotIdAndSupplierId($lot->getSalesforceId(), $supplier->getSalesforceId()))
+                        {
+                            $currentLotData['supplier_contact_name'] = $lotSupplier->getContactName();
+                            $currentLotData['supplier_contact_email'] = $lotSupplier->getContactEmail();
+                            $currentLotData['supplier_trading_name'] = $lotSupplier->getTradingName();
+                            $currentLotData['supplier_website_contact'] = $lotSupplier->isWebsiteContact();
+                        }  else {
+                            $currentLotData['supplier_contact_name'] = null;
+                            $currentLotData['supplier_contact_email'] = null;
+                            $currentLotData['supplier_trading_name'] = null;
+                            $currentLotData['supplier_website_contact'] = null;
+                        }
+
+                        $lotsData[] = $currentLotData;
                     }
                 }
                 $frameworksData[$index]['lots'] = $lotsData;
@@ -139,45 +142,91 @@ class CustomSupplierApi
      * @param $page
      * @return mixed|WP_REST_Response
      */
-    public function get_suppliers_by_search($keyword, $limit, $page) {
+    public function get_suppliers_by_search($keyword, $limit, $page)
+    {
 
         $supplierRepository = new SupplierRepository();
+        $frameworkRepository = new FrameworkRepository();
 
         //Match the DUNS number of the supplier
         $singleSupplier = $supplierRepository->searchByDunsNumber($keyword);
 
-//        if ($singleSupplier !== false) {
-//            $suppliers = $singleSupplier->toArray();
-//            $supplierCount = 1;
-//        } //If it doesn't match, perform the keyword search text
-//        else {
-//            $supplierCount = $supplierRepository->countSearchResults($keyword);
-//
-//            $suppliers = $supplierRepository->performKeywordSearch($keyword, $limit, $page);
-//
-//            if ($suppliers === false) {
-//                $suppliers = [];
-//
-//            } else {
-//                foreach ($suppliers as $index => $supplier) {
-//
-//                    $suppliers[$index] = $supplier->toArray();
-//                    //Delete the last 3 elements from the frameworks array
-//                    unset($suppliers[$index]['document_updates'], $suppliers[$index]['lots'], $frameworks[$index]['documents']);
-//
-//                }
-//            }
-//        }
-//
-//        $meta = [
-//            'total_results' => $frameworkCount,
-//            'limit'         => $limit,
-//            'results'       => $singleFramework ?  1 : count($frameworks),
-//            'page'          => $page == 0 ? 1 : $page
-//        ];
-//
-//        header('Content-Type: application/json');
-//
-//        return rest_ensure_response(['meta' => $meta, 'results' => $frameworks]);
+        if ($singleSupplier !== false) {
+            $supplierCount = 1;
+
+            $frameworks = $frameworkRepository->findSupplierLiveFrameworks($singleSupplier->getSalesforceId());
+            $liveFrameworks = [];
+
+            if ($frameworks !== false) {
+                foreach ($frameworks as $counter => $framework) {
+                    $liveFrameworks[$counter] = $framework->toArray();
+                }
+            }
+
+            $suppliersData = [$singleSupplier->toArray()];
+            $suppliersData['live_frameworks'] = $liveFrameworks;
+
+
+        } else {
+            // If it doesn't match, perform the rm number search
+            $suppliersData = [];
+
+            $supplierCount = $supplierRepository->countSearchByRmNumberResults($keyword);
+            $suppliers = $supplierRepository->searchByRmNumber($keyword, $limit, $page);
+
+            if ($suppliers !== false) {
+                $suppliersData = $this->build_supplier_array($frameworkRepository, $suppliers);
+
+            } else {
+                // If the rm number doesn't match, perform the keyword search text
+                $supplierCount = $supplierRepository->countSearchResults($keyword);
+                $suppliers = $supplierRepository->performKeywordSearch($keyword, $limit, $page);
+
+                if ($suppliers === false) {
+                    $suppliers = [];
+                } else {
+                    $suppliersData = $this->build_supplier_array($frameworkRepository, $suppliers);
+                }
+            }
+        }
+
+        $meta = [
+            'total_results' => $supplierCount,
+            'limit' => $limit,
+            'results' => $singleSupplier ? 1 : count($suppliers),
+            'page' => $page == 0 ? 1 : $page
+        ];
+
+        header('Content-Type: application/json');
+
+        return rest_ensure_response(['meta' => $meta, 'results' => $suppliersData]);
+    }
+
+    /**
+     * Build the supplier data and its corresponding live frameworks array
+     *
+     * @param $frameworkRepository
+     * @param $suppliers
+     * @return array
+     */
+    public function build_supplier_array($frameworkRepository, $suppliers) {
+
+        $suppliersData = [];
+
+        foreach ($suppliers as $index => $supplier) {
+            $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
+            $liveFrameworks = [];
+
+            if ($frameworks !== false) {
+                foreach ($frameworks as $counter => $framework) {
+                    $liveFrameworks[$counter] = $framework->toArray();
+                }
+            }
+
+            $suppliersData[$index] = $supplier->toArray();
+            $suppliersData[$index]['live_frameworks'] = $liveFrameworks;
+        }
+
+        return $suppliersData;
     }
 }

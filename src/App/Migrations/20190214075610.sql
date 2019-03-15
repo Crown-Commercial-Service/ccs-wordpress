@@ -22,7 +22,7 @@ CREATE TABLE `ccs_frameworks` (
   `how_to_buy` text,
   `document_updates` text,
   `publish_on_website` tinyint(1) NOT NULL DEFAULT '0',
-  `published_status` varchar(100) DEFAULT NULL,
+  `published_status` varchar(100) NOT NULL DEFAULT 'draft',
   `keywords` varchar(1000) DEFAULT NULL,
   `upcoming_deal_details` text,
   PRIMARY KEY (`id`),

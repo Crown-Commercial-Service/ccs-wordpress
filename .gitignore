@@ -19,6 +19,7 @@ public/readme.html
 public/sitemap.xml
 public/sitemap.xml.gz
 
+var/log/*.log
 
 .env.*.php
 .env.php

@@ -106,42 +106,42 @@ function save_framework_acf_data ($post_id) {
 
     $framework = $frameworkRepository->findById($post_id, 'wordpress_id');
 
-    if(!empty(get_field('framework_summary')))
+    if(get_field('framework_summary') !== null)
     {
         $framework->setSummary(get_field('framework_summary'));
     }
 
-    if(!empty(get_field('framework_description')))
+    if(get_field('framework_description') !== null)
     {
         $framework->setDescription(get_field('framework_description'));
     }
 
-    if(!empty(get_field('framework_updates')))
+    if(get_field('framework_updates') !== null)
     {
         $framework->setUpdates(get_field('framework_updates'));
     }
 
-    if(!empty(get_field('framework_benefits')))
+    if(get_field('framework_benefits') !== null)
     {
         $framework->setBenefits(get_field('framework_benefits'));
     }
 
-    if(!empty(get_field('framework_how_to_buy')))
+    if(get_field('framework_how_to_buy') !== null)
     {
         $framework->setHowToBuy(get_field('framework_how_to_buy'));
     }
 
-    if(!empty(get_field('framework_documents_updates')))
+    if(get_field('framework_documents_updates') !== null)
     {
         $framework->setDocumentUpdates(get_field('framework_documents_updates'));
     }
 
-    if(!empty(get_field('framework_keywords')))
+    if(get_field('framework_keywords') !== null)
     {
         $framework->setKeywords(get_field('framework_keywords'));
     }
 
-    if(!empty(get_field('framework_upcoming_deal_details')))
+    if(get_field('framework_upcoming_deal_details') !== null)
     {
         $framework->setUpcomingDealDetails(get_field('framework_upcoming_deal_details'));
     }

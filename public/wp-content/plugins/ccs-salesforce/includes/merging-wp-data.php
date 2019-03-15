@@ -185,7 +185,7 @@ function save_lot_nonacf_data ($post_id, $post_data) {
 
     $lot = $lotRepository->findById($post_id, 'wordpress_id');
 
-    if (!empty($post_data->post_content)){
+    if ($post_data->post_content !== null){
 
         $lot->setDescription($post_data->post_content);
 

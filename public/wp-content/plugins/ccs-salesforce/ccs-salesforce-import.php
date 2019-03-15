@@ -128,8 +128,8 @@ function run_plugin()
     } );
 
     //Saving wordpress data into the custom database
-    add_action( 'save_post', 'update_post_details', 4);
-    add_action( 'publish_framework', 'update_post_details');
+    add_action( 'post_updated', 'updated_post_details', 20, 3);
+    add_action('acf/save_post', 'updated_post_meta', 20, 1);
 
     add_action( 'ccs_salesforce_import_cron_hook', 'import_all' );
     register_activation_hook( __FILE__, 'ccs_salesforce_activate' );

@@ -234,7 +234,7 @@ function copy_post($post, $to=null, $parent_id=null, $status='draft') {
 
     if (is_acf_post() && is_acf_fields_different($to, $post)) {
       // this will force WP to create a new revision. 
-      add_filter('wp_save_post_revision_post_has_changed', '__return_true');
+      add_filter('wp_  save_post_revision_post_has_changed', '__return_true');
     }
 
     $revision_before = get_latest_wp_revision($new_id);

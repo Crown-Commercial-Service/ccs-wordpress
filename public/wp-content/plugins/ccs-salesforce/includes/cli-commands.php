@@ -50,6 +50,10 @@ class Import
     public function tempData()
     {
         $this->logger->info('Temp data refreshing');
+
+        WP_CLI::success('Truncating temp tables');
+        $this->truncateTempTables();
+
         $start = microtime(true);
         $salesforceApi = new SalesforceApi();
         WP_CLI::success('Starting temp data import');
@@ -119,6 +123,7 @@ class Import
 
     public function all()
     {
+        WP_CLI::success('Salesforce import started');
         $this->logger->info('Salesforce import started');
         $start = microtime(true);
 
@@ -489,6 +494,35 @@ class Import
         }
 
         return;
+    }
+
+
+    /**
+     * Saves all contacts to a temporary table.
+     *
+     * @throws \Exception
+     */
+    public function truncateTempTables()
+    {
+        $dbConnection = new DatabaseConnection();
+
+        $sql = "TRUNCATE TABLE temp_contact;";
+        $query = $dbConnection->connection->prepare($sql);
+        $response = $query->execute();
+
+        if (!$response)
+        {
+            throw new \Exception('Temp table temp_contact could not be truncated.');
+        }
+
+        $sql = "TRUNCATE TABLE temp_master_framework_lot_contact;";
+        $query = $dbConnection->connection->prepare($sql);
+        $response = $query->execute();
+
+        if (!$response)
+        {
+            throw new \Exception('Temp table temp_contact could not be truncated.');
+        }
     }
 
 

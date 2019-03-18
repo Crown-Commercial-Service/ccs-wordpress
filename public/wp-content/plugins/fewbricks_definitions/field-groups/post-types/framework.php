@@ -84,7 +84,6 @@ $fg3->register();
 $fg4 = ( new fewacf\field_group( 'Upcoming Deal Details', '201903081626a', $location, 30 ));
 
 $fg4->add_field( new acf_fields\wysiwyg( 'Upcoming Deal Details', 'framework_upcoming_deal_details', '201903081627a', [
-    'instructions' => 'Optionally enter some keywords (separated by comma\'s) which will be used to help ensure accurate search output (maximum combined length, 1000 character)'
 ] ) );
 
 $fg4->register();

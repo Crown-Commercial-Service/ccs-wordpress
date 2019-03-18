@@ -397,7 +397,14 @@ AND (status = \'Future (Pipeline)\'
             AND terms <> \'DPS\')) 
     OR (status = \'Live\' AND terms = \'DPS\'))';
 
-        return $this->findAllFrameworks($sql);
+        $upcomingDeals = $this->findAllFrameworks($sql);
+
+        if (!$upcomingDeals)
+        {
+            return [];
+        }
+
+        return $upcomingDeals;
 
     }
 

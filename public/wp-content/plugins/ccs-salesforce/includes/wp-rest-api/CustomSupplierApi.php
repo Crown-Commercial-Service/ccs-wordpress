@@ -163,12 +163,12 @@ class CustomSupplierApi
                 }
             }
 
-            $suppliersData = $singleSupplier->toArray();
+            $suppliersData = [$singleSupplier->toArray()];
             $suppliersData['live_frameworks'] = $liveFrameworks;
 
 
-        } //If it doesn't match, perform the rm number search
-        else {
+        } else {
+            // If it doesn't match, perform the rm number search
             $suppliersData = [];
 
             $supplierCount = $supplierRepository->countSearchByRmNumberResults($keyword);
@@ -177,8 +177,8 @@ class CustomSupplierApi
             if ($suppliers !== false) {
                 $suppliersData = $this->build_supplier_array($frameworkRepository, $suppliers);
 
-            } //If the rm number doesn't match, perform the keyword search text
-            else {
+            } else {
+                // If the rm number doesn't match, perform the keyword search text
                 $supplierCount = $supplierRepository->countSearchResults($keyword);
                 $suppliers = $supplierRepository->performKeywordSearch($keyword, $limit, $page);
 

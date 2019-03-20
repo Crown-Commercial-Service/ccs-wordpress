@@ -116,6 +116,3 @@ if ( ! defined( 'ABSPATH' ) )
 require_once ABSPATH . 'wp-settings.php';
 //Disable File Edits
 define('DISALLOW_FILE_EDIT', true);
-
-ini_set( 'upload_max_size' , '20M' );
-ini_set( 'post_max_size', '20M');

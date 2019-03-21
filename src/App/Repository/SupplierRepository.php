@@ -167,7 +167,7 @@ class SupplierRepository extends AbstractRepository
      */
     public function findLotSuppliers($lotIds, $paginate = false, $limit = 20, $page = 0) {
 
-        $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, s.trading_name FROM `ccs_suppliers` s
+        $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, ls.trading_name FROM `ccs_suppliers` s
 JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
 WHERE ls.lot_id IN (\'' . $lotIds . '\')
 ORDER BY s.name';

@@ -127,7 +127,7 @@ class Import
         $this->logger->info('Salesforce import started');
         $start = microtime(true);
 
-        $this->tempData();
+//        $this->tempData();
 
         WP_CLI::success('Starting Import');
 
@@ -155,6 +155,10 @@ class Import
 
         // Get all frameworks from Salesforce
         $frameworks = $salesforceApi->getAllFrameworks();
+        
+        $syncText = new SyncText();
+        $wordpressFrameworks = $syncText->getFrameworksFromWordPress();
+        $wordpressLots = $syncText->getLotsFromWordPress();
 
         $frameworkRepository = new FrameworkRepository();
         $lotRepository = new LotRepository();
@@ -176,7 +180,7 @@ class Import
             $importCount['frameworks']++;
 
             // Create or update framework title in WordPress
-            $this->createFrameworkInWordpress($framework);
+            $this->createFrameworkInWordpress($framework, $wordpressFrameworks);
 
             // Read lots for framework for Salesforce
             $lots = $salesforceApi->getFrameworkLots($framework->getSalesforceId());
@@ -194,7 +198,7 @@ class Import
                 WP_CLI::success('Lot imported.');
                 $importCount['lots']++;
 
-                $this->createLotInWordpress($lot);
+                $this->createLotInWordpress($lot, $wordpressLots);
 
                 //Hide the suppliers on this lot on website
                 if($lot->isHideSuppliers()){
@@ -362,11 +366,24 @@ class Import
      * Determine if we need to create a new 'Framework' post in Wordpress, then (if we do) - create one.
      *
      * @param $framework
+     * @param array $wordpressFrameworks
      */
-    protected function createFrameworkInWordpress($framework)
+    protected function createFrameworkInWordpress($framework, array $wordpressFrameworks)
     {
         if (!empty($framework->getWordpressId()))
         {
+            // This framework already has a Wordpress ID assigned
+            if (isset($wordpressFrameworks[$framework->getWordpressId()]))
+            {
+                // We get the current post from the wordpress post array and compare it's title
+                $post = $wordpressFrameworks[$framework->getWordpressId()];
+                if ($post['framework_title'] == $framework->getTitle())
+                {
+                    // The title hasn't changed from what we already have, so we don't need to update the DB.
+                    return;
+                }
+            }
+
             // This framework already has a Wordpress ID assigned, so we need to update the Title.
             $this->updatePostTitle($framework, 'framework');
             WP_CLI::success('Updated Framework Title in Wordpress.');
@@ -388,12 +405,23 @@ class Import
      * Determine if we need to create a new 'Lot' post in Wordpress, then (if we do) - create one.
      *
      * @param $lot
+     * @param array $wordpressLots
      */
-    protected function createLotInWordpress($lot)
+    protected function createLotInWordpress($lot, array $wordpressLots)
     {
         if (!empty($lot->getWordpressId()))
         {
-            // This lot already has a Wordpress ID assigned, so we need to update the Title.
+            // This framework already has a Wordpress ID assigned
+            if (isset($wordpressFrameworks[$lot->getWordpressId()])) {
+                // We get the current post from the wordpress post array and compare it's title
+                $post = $wordpressLots[$lot->getWordpressId()];
+                if ($post['lot_title'] == $lot->getTitle()) {
+                    // The title hasn't changed from what we already have, so we don't need to update the DB.
+                    return;
+                }
+            }
+            // This lot already has a Wordpress ID assigned, so we need to update the Title if it has changed.
+            // Fetch the current post then compare the title
             $this->updatePostTitle($lot, 'lot');
             WP_CLI::success('Updated Lot Title in Wordpress.');
             return;

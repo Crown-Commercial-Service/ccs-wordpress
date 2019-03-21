@@ -318,11 +318,13 @@ class FrameworkRepository extends AbstractRepository {
      */
     public function findLiveFramework($id) {
 
-        $sql = 'SELECT * from `ccs_frameworks` 
-WHERE rm_number = \'' . $id . '\' 
-AND published_status = \'publish\' 
-AND (status = \'Live\' 
-    OR status = \'Expired - Data Still Received\')';
+        $sql = <<<EOD
+SELECT * from `ccs_frameworks` 
+WHERE rm_number = '$id' 
+AND published_status = 'publish' 
+AND (status = 'Live' 
+    OR status = 'Expired - Data Still Received')
+EOD;
 
         return $this->findSingleRow($sql);
 

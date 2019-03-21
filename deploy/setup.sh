@@ -41,7 +41,13 @@ sudo rm -f "$DEPLOY_PATH/appspec.yml"
 sudo rm -rf "$DEPLOY_PATH/deploy"
 sudo mv -f "$DEPLOY_PATH/.env" "$DEPLOY_PATH/"* "$WEB_CURRENT"
 sudo ln -s "$WEB_CURRENT/public" "$WEB_CURRENT/html"
-sudo chown -R apache:apache /var/www
+sudo mkdir "$WEB_CURRENT/public/wp-content/uploads"
+
+# Set permissions
+sudo chown -R ec2-user:ec2-user /var/www
+sudo chown -R apache:apache "$WEB_CURRENT/public/wp-content/uploads"
+sudo chown -R ec2-user:apache "$WEB_CURRENT/var/log"
+sudo chmod -R og+w "$WEB_CURRENT/var/log"
 
 # Cleanup
 if [ -e "$DEPLOY_PATH" ]; then

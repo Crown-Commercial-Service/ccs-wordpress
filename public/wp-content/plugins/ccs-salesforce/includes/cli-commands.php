@@ -127,7 +127,7 @@ class Import
         $this->logger->info('Salesforce import started');
         $start = microtime(true);
 
-//        $this->tempData();
+        $this->tempData();
 
         WP_CLI::success('Starting Import');
 

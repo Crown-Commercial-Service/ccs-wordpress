@@ -311,21 +311,43 @@ class FrameworkRepository extends AbstractRepository {
 
 
     /**
-     * Find the eligible Framework by id
+     * Find Framework by id that is published in Wordpress and has status live or expired - data still received
      *
      * @param $id
      * @return mixed
      */
     public function findLiveFramework($id) {
 
-        $sql = 'SELECT * from `ccs_frameworks` 
-WHERE rm_number = \'' . $id . '\' 
-AND published_status = \'publish\' 
-AND (status = \'Live\' 
-    OR status = \'Expired - Data Still Received\')';
-
+        $sql = <<<EOD
+SELECT * from `ccs_frameworks` 
+WHERE rm_number = '$id' 
+AND published_status = 'publish' 
+AND (status = 'Live' 
+    OR status = 'Expired - Data Still Received')
+EOD;
         return $this->findSingleRow($sql);
+    }
 
+    /**
+     * Find Framework by id that is published in Wordpress and has status live or expired - data still received or upcoming
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function findLiveOrUpcomingFramework($id) {
+
+        $sql = <<<EOD
+SELECT * from `ccs_frameworks` 
+WHERE rm_number = '$id' 
+AND published_status = 'publish' 
+AND (status = 'Live' 
+    OR status = 'Expired - Data Still Received'
+    OR status = 'Future (Pipeline)' 
+    OR status = 'Planned (Pipeline)' 
+    OR status = 'Underway (Pipeline)' 
+    OR status = 'Awarded (Pipeline)')
+EOD;
+        return $this->findSingleRow($sql);
     }
 
     /**

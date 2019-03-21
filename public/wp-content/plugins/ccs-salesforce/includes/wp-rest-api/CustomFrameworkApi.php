@@ -129,7 +129,7 @@ class CustomFrameworkApi
         $frameworkRepository = new FrameworkRepository();
 
         //Retrieve the framework data
-        $framework = $frameworkRepository->findLiveFramework($rmNumber);
+        $framework = $frameworkRepository->findLiveOrUpcomingFramework($rmNumber);
 
         if ($framework === false) {
             return new WP_Error('rest_invalid_param', 'framework not found', array('status' => 404));
@@ -144,11 +144,9 @@ class CustomFrameworkApi
         // Find all lots for the retrieved framework
         $lots = $lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');
         $lotsData = [];
+        $uniqueSuppliers = [];
 
         if ($lots !== false) {
-
-            $uniqueSuppliers = [];
-
             foreach ($lots as $lot) {
                 $singleLotData = $lot->toArray();
                 $suppliersData = [];
@@ -176,6 +174,7 @@ class CustomFrameworkApi
 
         //Populate the framework array with data
         $frameworkData = $framework->toArray();
+
         $frameworkData['lots'] = $sortedLotsData;
         $frameworkData['documents'] = $frameworkDocuments;
         $frameworkData['total_suppliers'] = $uniqueSuppliers;

@@ -16,9 +16,12 @@ abstract class AbstractModel implements ModelInterface {
             return;
         }
 
-        foreach ($data as $key => $value)
-        {
-            $this->{'set' . Str::toCamelCase($key)}($value);
+        // Set data to the model
+        foreach ($data as $key => $value) {
+            $method = 'set' . Str::toCamelCase($key);
+            if (method_exists($this, $method)) {
+                $this->$method($value);
+            }
         }
     }
 

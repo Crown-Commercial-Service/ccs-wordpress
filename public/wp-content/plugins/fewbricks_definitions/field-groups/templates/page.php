@@ -43,3 +43,16 @@ $fg6->add_field(( new acf_fields\repeater('Accordion', 'page_accordion', '201903
 );
 
 $fg6->register();
+
+
+
+$fg8 = ( new fewacf\field_group( 'Full width content', '201903201810a', $location, 5, [
+    'names_of_items_to_hide_on_screen' => [
+    ]
+] ));
+
+$fg8->add_field( new acf_fields\wysiwyg( 'Full width content', 'full_width_content', '201903201810b', [
+    'instructions' => 'Optionally enter some content to display at the full-width of the page template',
+] ) );
+
+$fg8->register();

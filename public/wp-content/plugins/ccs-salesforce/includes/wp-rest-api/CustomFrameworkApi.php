@@ -70,7 +70,7 @@ class CustomFrameworkApi
           return $this->get_frameworks_by_search($searchKeyword, $limit, $page);
         }
 
-        $queryCondition = 'published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\')';
+        $queryCondition = 'published_status = \'publish\' AND (status = \'Live\' OR status = \'Expired - Data Still Received\') ORDER BY title';
 
         //If the category search parameter is defined, add it in the SQL query
         if($category){

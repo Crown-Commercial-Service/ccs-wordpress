@@ -73,8 +73,8 @@ $fg2->register();
 $fg3 = ( new fewacf\field_group( 'Keywords', '201902201440a', $location, 30 ));
 
 $fg3->add_field( new acf_fields\textarea( 'Keywords', 'framework_keywords', '201902201448a', [
-    'instructions' => 'Optionally enter some keywords (separated by comma\'s) which will be used to help ensure accurate search output (maximum combined length, 1000 character)',
-    'maxlength' => 1000
+    'instructions' => 'Optionally enter some keywords (separated by comma\'s) which will be used to help ensure accurate search output (maximum combined length, 3000 characters)',
+    'maxlength' => 3000
 ] ) );
 
 $fg3->register();
@@ -84,7 +84,6 @@ $fg3->register();
 $fg4 = ( new fewacf\field_group( 'Upcoming Deal Details', '201903081626a', $location, 30 ));
 
 $fg4->add_field( new acf_fields\wysiwyg( 'Upcoming Deal Details', 'framework_upcoming_deal_details', '201903081627a', [
-    'instructions' => 'Optionally enter some keywords (separated by comma\'s) which will be used to help ensure accurate search output (maximum combined length, 1000 character)'
 ] ) );
 
 $fg4->register();

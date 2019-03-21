@@ -114,6 +114,7 @@ class SyncText
         while ($loop->have_posts()) {
             $loop->the_post();
             $id = get_the_ID();
+            $title = the_title('', '', false);
             $itemData = [];
 
             foreach ($this->fieldsToSync['frameworks'] as $wpField => $customField) {
@@ -127,6 +128,7 @@ class SyncText
                 }
             }
             $data[$id] = $itemData;
+            $data[$id]['framework_title'] = $title;
         }
 
         return $data;
@@ -173,12 +175,14 @@ class SyncText
         while ($loop->have_posts()) {
             $loop->the_post();
             $id = get_the_ID();
+            $title = the_title('', '', false);
             $itemData = [];
 
             foreach ($this->fieldsToSync['lots'] as $wpField => $customField) {
                 $itemData[$wpField] = get_post_field('post_content', $id);
             }
             $data[$id] = $itemData;
+            $data[$id]['lot_title'] = $title;
         }
 
         return $data;

@@ -163,8 +163,9 @@ class CustomSupplierApi
                 }
             }
 
-            $suppliersData = [$singleSupplier->toArray()];
+            $suppliersData = $singleSupplier->toArray();
             $suppliersData['live_frameworks'] = $liveFrameworks;
+            $suppliersData = [$suppliersData];
 
 
         } else {

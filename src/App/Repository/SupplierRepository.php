@@ -329,6 +329,7 @@ JOIN ccs_lot_supplier ls ON ls.supplier_id = s.salesforce_id
 JOIN ccs_lots l ON l.salesforce_id = ls.lot_id
 JOIN ccs_frameworks f ON f.salesforce_id = l.framework_id
 WHERE f.rm_number = \'' . $rmNumber . '\'
+AND f.published_status = \'publish\'
 AND s.on_live_frameworks = TRUE 
 GROUP BY s.id
 ORDER by s.name ASC) SearchRmNumberAlias';

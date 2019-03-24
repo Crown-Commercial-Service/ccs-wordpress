@@ -17,6 +17,7 @@ include('library/s3-modifications.php');
 include('library/theme-support.php');
 include('library/remove-inline-styles-from-wysiwyg-images.php');
 include('library/responsive-oembed-videos.php');
+include('library/image-sizes.php');
 include('library/headless-cms.php');
 include('library/options-page.php');
 include('library/usersnap.php');

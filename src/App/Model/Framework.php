@@ -437,7 +437,10 @@ class Framework extends AbstractModel {
     {
         if (!$startDate instanceof \DateTime)
         {
-            $startDate = date_create_from_format($format, $startDate);
+            if (!$startDate = date_create_from_format($format, $startDate))
+            {
+                $startDate = null;
+            }
         }
 
         $this->startDate = $startDate;
@@ -464,7 +467,10 @@ class Framework extends AbstractModel {
     {
         if (!$endDate instanceof \DateTime)
         {
-            $endDate = date_create_from_format($format, $endDate);
+            if (!$endDate = date_create_from_format($format, $endDate))
+            {
+                $endDate = null;
+            }
         }
 
         $this->endDate = $endDate;
@@ -491,7 +497,10 @@ class Framework extends AbstractModel {
     {
         if (!$tendersOpenDate instanceof \DateTime)
         {
-            $tendersOpenDate = date_create_from_format($format, $tendersOpenDate);
+            if (!$tendersOpenDate = date_create_from_format($format, $tendersOpenDate))
+            {
+                $tendersOpenDate = null;
+            }
         }
 
         $this->tendersOpenDate = $tendersOpenDate;
@@ -518,7 +527,10 @@ class Framework extends AbstractModel {
     {
         if (!$tendersCloseDate instanceof \DateTime)
         {
-            $tendersCloseDate = date_create_from_format($format, $tendersCloseDate);
+            if (!$tendersCloseDate = date_create_from_format($format, $tendersCloseDate))
+            {
+                $tendersCloseDate = null;
+            }
         }
 
         $this->tendersCloseDate = $tendersCloseDate;
@@ -545,7 +557,10 @@ class Framework extends AbstractModel {
     {
         if (!$expectedLiveDate instanceof \DateTime)
         {
-            $expectedLiveDate = date_create_from_format($format, $expectedLiveDate);
+            if (!$expectedLiveDate = date_create_from_format($format, $expectedLiveDate))
+            {
+                $expectedLiveDate = null;
+            }
         }
 
         $this->expectedLiveDate = $expectedLiveDate;
@@ -572,7 +587,10 @@ class Framework extends AbstractModel {
     {
         if (!$expectedAwardDate instanceof \DateTime)
         {
-            $expectedAwardDate = date_create_from_format($format, $expectedAwardDate);
+            if (!$expectedAwardDate = date_create_from_format($format, $expectedAwardDate))
+            {
+                $expectedAwardDate = null;
+            }
         }
 
         $this->expectedAwardDate = $expectedAwardDate;

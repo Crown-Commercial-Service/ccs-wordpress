@@ -38,7 +38,7 @@ class CustomSupplierApi
 
         $supplierRepository = new SupplierRepository();
 
-        $condition = 'on_live_frameworks = TRUE';
+        $condition = 'on_live_frameworks = TRUE ORDER BY name';
         $supplierCount = $supplierRepository->countAll($condition);
         $suppliers = $supplierRepository->findAllWhere($condition, true, $limit, $page);
 

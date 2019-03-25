@@ -214,7 +214,10 @@ class Lot extends AbstractModel {
     {
         if (!$expiryDate instanceof \DateTime)
         {
-            $expiryDate = date_create_from_format($format, $expiryDate);
+            if (!$expiryDate = date_create_from_format($format, $expiryDate))
+            {
+                $expiryDate = null;
+            }
         }
 
         $this->expiryDate = $expiryDate;

@@ -237,7 +237,7 @@ EOD;
 
     public function getLotSuppliers($lotId)
     {
-        $suppliersToDisplay = $this->query("SELECT Id, Supplier__c from Supplier_Framework_Lot__c WHERE Master_Framework_Lot__c = '" . $lotId . "' AND (Status__c = 'Live' OR Status__c = 'Suspended')");
+        $suppliersToDisplay = $this->query("SELECT Id, Supplier__c from Supplier_Framework_Lot__c WHERE Master_Framework_Lot__c = '" . $lotId . "' AND Status__c = 'Live'");
 
         $suppliers = [];
         foreach ($suppliersToDisplay->records as $supplierToDisplay)

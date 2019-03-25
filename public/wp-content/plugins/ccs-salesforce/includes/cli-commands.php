@@ -127,7 +127,7 @@ class Import
         $this->logger->info('Salesforce import started');
         $start = microtime(true);
 
-//        $this->tempData();
+        $this->tempData();
 
         WP_CLI::success('Starting Import');
 
@@ -186,6 +186,9 @@ class Import
             $lots = $salesforceApi->getFrameworkLots($framework->getSalesforceId());
 
             foreach ($lots as $lot) {
+                $lotWordPressId = $this->getLotWordpressIdBySalesforceId($lot->getSalesforceId());
+                $lot->setWordpressId($lotWordPressId);
+
                 if (!$lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
                   $lot->getSalesforceId(), $lot)) {
                     WP_CLI::error('Lot not imported.');
@@ -411,8 +414,8 @@ class Import
     {
         if (!empty($lot->getWordpressId()))
         {
-            // This framework already has a Wordpress ID assigned
-            if (isset($wordpressFrameworks[$lot->getWordpressId()])) {
+            // This lot already has a Wordpress ID assigned
+            if (isset($wordpressLots[$lot->getWordpressId()])) {
                 // We get the current post from the wordpress post array and compare it's title
                 $post = $wordpressLots[$lot->getWordpressId()];
                 if ($post['lot_title'] == $lot->getTitle()) {
@@ -581,6 +584,27 @@ class Import
             }
 
         }
+    }
+
+
+
+    public function getLotWordpressIdBySalesforceId(?string $salesforceId)
+    {
+        $lotWordpressId = null;
+
+        $sql = "SELECT wordpress_id FROM ccs_lots WHERE salesforce_id = '" . $salesforceId . "';";
+
+        $dbConnection = new DatabaseConnection();
+        $query = $dbConnection->connection->prepare($sql);
+        $query->execute();
+
+        $sqlData = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if(!empty($sqlData['wordpress_id'])) {
+            $lotWordpressId = $sqlData['wordpress_id'];
+        }
+
+        return $lotWordpressId;
     }
 
 

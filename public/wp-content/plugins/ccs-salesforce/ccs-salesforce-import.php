@@ -131,10 +131,28 @@ function run_plugin()
     add_action( 'post_updated', 'updated_post_details', 20, 3);
     add_action('acf/save_post', 'updated_post_meta', 20, 1);
 
+    // Adding cron schedule and import
+    add_filter( 'cron_schedules', 'ccs_salesforce_create_cron_interval');
     add_action( 'ccs_salesforce_import_cron_hook', 'import_all' );
+
     register_activation_hook( __FILE__, 'ccs_salesforce_activate' );
     register_uninstall_hook( __FILE__, 'ccs_salesforce_deactivate' );
     register_deactivation_hook( __FILE__, 'ccs_salesforce_deactivate' );
+}
+
+/**
+ * Create the necessary cron interval needed for this cron job
+ * @param $schedules
+ * @return mixed
+ */
+function ccs_salesforce_create_cron_interval($schedules)
+{
+    $schedules['three_hours'] = array(
+        'interval' => 10800,
+        'display'  => esc_html__('Every Three Hours'),
+    );
+
+    return $schedules;
 }
 
 /**
@@ -142,7 +160,8 @@ function run_plugin()
  */
 function ccs_salesforce_activate()
 {
-    wp_schedule_event(time(), 'hourly', 'ccs_salesforce_import_cron_hook');
+
+    wp_schedule_event(time(), 'three_hours', 'ccs_salesforce_import_cron_hook');
 }
 
 

@@ -140,8 +140,7 @@ class Import
         WP_CLI::success('Salesforce import started');
         $this->logger->info('Salesforce import started');
 
-        // Todo: Re-enable this before committing
-        //$this->tempData();
+        $this->tempData();
 
         $this->startTime = microtime(true);
 

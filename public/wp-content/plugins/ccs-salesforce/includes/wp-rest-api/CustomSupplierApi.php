@@ -38,7 +38,7 @@ class CustomSupplierApi
 
         $supplierRepository = new SupplierRepository();
 
-        $condition = 'on_live_frameworks = TRUE';
+        $condition = 'on_live_frameworks = TRUE ORDER BY name';
         $supplierCount = $supplierRepository->countAll($condition);
         $suppliers = $supplierRepository->findAllWhere($condition, true, $limit, $page);
 
@@ -174,6 +174,14 @@ class CustomSupplierApi
 
             $supplierCount = $supplierRepository->countSearchByRmNumberResults($keyword);
             $suppliers = $supplierRepository->searchByRmNumber($keyword, $limit, $page);
+
+            if ($supplierCount == 0)
+            {
+                // If nothing was found, lets try searching adding 'RM' to the start of the string
+                // This solves the issue where a user may have searched with just the integer of the RM number
+                $supplierCount = $supplierRepository->countSearchByRmNumberResults('RM'.$keyword);
+                $suppliers = $supplierRepository->searchByRmNumber('RM'.$keyword, $limit, $page);
+            }
 
             if ($suppliers !== false) {
                 $suppliersData = $this->build_supplier_array($frameworkRepository, $suppliers);

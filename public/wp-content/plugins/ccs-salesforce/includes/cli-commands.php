@@ -161,10 +161,9 @@ class Import
         $supplierRepository = new SupplierRepository();
         $lotSupplierRepository = new LotSupplierRepository();
 
-        WP_CLI::success('Salesforce import started');
-        $this->logger->info('Salesforce import started');
+        $this->addSuccess('Salesforce import started', null, true);
 
-        $this->processTempData();
+//        $this->processTempData();
 
         $this->startTime = microtime(true);
 
@@ -179,6 +178,7 @@ class Import
         // Get all frameworks from Salesforce
         try {
             $frameworks = $salesforceApi->getAllFrameworks();
+            $this->addSuccess(count($frameworks) . ' Frameworks successfully returned from Salesforce', null, true);
         } catch (\Exception $e)
         {
             $this->addError('Error fetching Frameworks from Salesforce. Error: ' . $e->getMessage());
@@ -203,7 +203,7 @@ class Import
             // How much time has elapsed
             $elapsedTime = round(microtime(true) - $this->startTime, 2);
             // What is the estimated remaining time in minutes.
-            $this->timeRemaining = round((($elapsedTime/$index)*count($frameworks))/60, 0);
+            $this->timeRemaining = round((($elapsedTime/$index)*count($frameworks)-$index)/60, 0);
 
 
             try {
@@ -265,49 +265,66 @@ class Import
 
                 //Hide the suppliers on this lot on website
                 if($lot->isHideSuppliers()){
-                    WP_CLI::success('Hiding suppliers for this Lot.');
+                    $this->addSuccess('Hiding suppliers for this Lot.');
                     continue;
                 }
 
-                WP_CLI::success('Retrieving Lot Suppliers.');
-                $suppliers = $salesforceApi->getLotSuppliers($lot->getSalesforceId());
-                WP_CLI::success(count($suppliers) . ' Lot Suppliers found.');
+
+                $this->addSuccess('Retrieving Lot Suppliers.');
+                try {
+                    $suppliers = $salesforceApi->getLotSuppliers($lot->getSalesforceId());
+                    $this->addSuccess(count($suppliers) . ' Lot Suppliers found.');
+                } catch (\Exception $e)
+                {
+                    $this->addError('Lot Suppliers for Lot ' . $lot->getSalesforceId() . ' not saved to Wordpress. Error: ' . $e->getMessage(), 'suppliers');
+                    continue;
+                }
+
 
                 // Remove all the current relationships to this lot, and create fresh ones.
-                WP_CLI::success('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
+                $this->addSuccess('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
                 $lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
 
                 foreach ($suppliers as $supplier) {
-                    if (!$supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
-                      $supplier->getSalesforceId(), $supplier)) {
-                        WP_CLI::error('Supplier not imported.');
-                        $this->logger->info('Supplier ' . $supplier->getSalesforceId() . ' not imported.');
-                        $errorCount['suppliers']++;
+                    if (!$supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $supplier->getSalesforceId(), $supplier)) {
+                        $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. Error: ' . $e->getMessage(), 'suppliers');
                         continue;
                     }
 
-                    WP_CLI::success('Supplier imported.'  . ' Estimated time remaining: ' . $this->timeRemaining . ' minutes.');
-                    $importCount['suppliers']++;
                     $lotSupplier = new LotSupplier([
                       'lot_id' => $lot->getSalesforceId(),
                       'supplier_id' => $supplier->getSalesforceId()
                     ]);
 
+
                     if ($tradingName = $salesforceApi->getTradingName($framework->getSalesforceId(), $supplier->getSalesforceId()))
                     {
-                        WP_CLI::success('Framework supplier trading name found.');
+                        $this->addSuccess('Framework supplier trading name found.');
                         $lotSupplier->setTradingName($tradingName);
                     }
 
-                    WP_CLI::success('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());
-                    $contactDetails = $this->findContactDetails($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
-                    if ($contactDetails)
+                    $this->addSuccess('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());
+
+                    try {
+                        $contactDetails = $this->findContactDetails($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
+                        if ($contactDetails)
+                        {
+                            $this->addSuccess('Contact details found....');
+                            $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
+                        }
+                    } catch (\Exception $e)
                     {
-                        WP_CLI::success('Contact details found....');
-                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
+                        $this->addError('Supplier contact details for Lot ' . $lotSupplier->getLotId() . ' and Supplier ' . $lotSupplier->getSupplierId() . ' not found. Error: ' . $e->getMessage(), 'suppliers');
                     }
 
-                    $lotSupplierRepository->create($lotSupplier);
+
+                    try {
+                        $lotSupplierRepository->create($lotSupplier);
+                    } catch (\Exception $e)
+                    {
+                        $this->addError('Error saving Lot Supplier for Lot ' . $lotSupplier->getLotId() . ' and Supplier ' . $lotSupplier->getSupplierId() . ' Error: ' . $e->getMessage(), 'suppliers');
+                    }
+
                 }
 
             }
@@ -320,8 +337,8 @@ class Import
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
 
         $response = [
-          'importCount' => $importCount,
-          'errorCount'  => $errorCount
+          'importCount' => $this->importCount,
+          'errorCount'  => $this->errorCount
         ];
 
         $this->logger->info('Import complete. Import took ' . $timer/60 . ' minutes to complete.', $response);
@@ -387,14 +404,18 @@ class Import
     /**
      * @param $message the error message to report
      * @param $type framework, lot, supplier
+     * @param bool $log
      */
-    protected function addSuccess($message, $type = null)
+    protected function addSuccess($message, $type = null, $log = false)
     {
         WP_CLI::success($message . ' Estimated time remaining: ' . $this->timeRemaining . ' minutes.');
-        $this->logger->info($message);
 
-        if ($type)
-        {
+        if ($log) {
+            $this->logger->info($message);
+        }
+
+
+        if ($type) {
             $this->importCount[$type]++;
         }
 

@@ -50,6 +50,10 @@ $fg1->add_field( new acf_fields\wysiwyg( 'How to buy', 'framework_how_to_buy', '
     'instructions' => '',
 ] ) );
 
+$fg1->add_field( new acf_fields\wysiwyg( 'Information and documents for suppliers', 'framework_info_docs_for_suppliers', '201903211125a', [
+    'instructions' => 'Only displayed for DPS Frameworks'
+] ) );
+
 $fg1->register();
 
 

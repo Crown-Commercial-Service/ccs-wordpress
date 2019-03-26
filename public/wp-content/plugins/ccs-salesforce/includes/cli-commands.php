@@ -163,7 +163,7 @@ class Import
 
         $this->addSuccess('Salesforce import started', null, true);
 
-//        $this->processTempData();
+        $this->processTempData();
 
         $this->startTime = microtime(true);
 

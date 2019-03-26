@@ -376,7 +376,7 @@ class Import
                 continue;
             }
 
-            if ($supplierId == $contactResult['account_id'])
+            if ($supplierId == $contactResult['account_id'] && $contactResult['website_contact'] == 1)
             {
                 return $result;
             }

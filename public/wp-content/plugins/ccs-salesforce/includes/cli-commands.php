@@ -352,7 +352,7 @@ class Import
 
         $dbConnection = new DatabaseConnection();
 
-        $sql = "SELECT * FROM temp_master_framework_lot_contact WHERE master_framework_lot_salesforce_id = '" . $lotId . "';";
+        $sql = "SELECT * FROM temp_master_framework_lot_contact WHERE website_contact = 1 AND master_framework_lot_salesforce_id = '" . $lotId . "';";
         $query = $dbConnection->connection->prepare($sql);
         $query->execute();
 
@@ -376,7 +376,7 @@ class Import
                 continue;
             }
 
-            if ($supplierId == $contactResult['account_id'] && $contactResult['website_contact'] == 1)
+            if ($supplierId == $contactResult['account_id'])
             {
                 return $result;
             }

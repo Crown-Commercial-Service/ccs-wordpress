@@ -542,7 +542,7 @@ class Framework extends AbstractModel {
      */
     public function getExpectedLiveDate(): ?\DateTime
     {
-        if (!$this->tendersCloseDate) {
+        if (!$this->expectedLiveDate) {
             return null;
         }
         return $this->expectedLiveDate;

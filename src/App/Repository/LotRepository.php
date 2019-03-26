@@ -196,6 +196,26 @@ WHERE f.rm_number = \'' . $id . '\' AND lot_number=\'' . $lotNumber . '\'';
     }
 
     /**
+     * Find all lots by the framework id and supplier id
+     *
+     * @param $frameworkId
+     * @param $supplierId
+     * @return bool
+     */
+    public function findAllByFrameworkIdSupplierId($frameworkId, $supplierId) {
+
+        $sql = <<<EOD
+SELECT l.* 
+FROM ccs_frameworks f
+JOIN ccs_lots l ON l.framework_id = f.salesforce_id
+JOIN ccs_lot_supplier ls ON ls.lot_id = l.salesforce_id
+WHERE f.salesforce_id = '$frameworkId'
+AND ls.supplier_id = '$supplierId'
+EOD;
+        return $this->findAllLots($sql);
+    }
+
+    /**
      * Find all rows based on a query, with pagination
      *
      * @param $sql

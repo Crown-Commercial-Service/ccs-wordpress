@@ -7,3 +7,13 @@ function ccs_tiny_mce_remove_unused_formats( $initFormats ) {
     return $initFormats;
 }
 add_filter( 'tiny_mce_before_init', 'ccs_tiny_mce_remove_unused_formats' );
+
+// Add help text beneath framework & lot title
+add_action( 'edit_form_after_title', function(WP_Post $post) {
+    if ($post->post_type == 'framework') {
+        echo '<div style="padding: 5px 10px; color: rgb(102,102,102);"><strong>Note:</strong> Framework title is not used on the frontend site and is only for informational purposes</div>';
+    }
+    if ($post->post_type == 'lot') {
+        echo '<div style="padding: 5px 10px; color: rgb(102,102,102);"><strong>Note:</strong> Lot title is not used on the frontend site and is only for informational purposes</div>';
+    }
+});

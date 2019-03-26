@@ -33,6 +33,36 @@ class Import
     protected $logger;
 
     /**
+     * Import time remaining
+     *
+     * @var int
+     */
+    protected $timeRemaining = 0;
+
+    /**
+     * @var int
+     */
+    protected $startTime = 0;
+
+    /**
+     * @var array
+     */
+    protected $importCount = [
+      'frameworks' => 0,
+      'lots'       => 0,
+      'suppliers'  => 0
+    ];
+
+    /**
+     * @var array
+     */
+    protected $errorCount = [
+      'frameworks' => 0,
+      'lots'       => 0,
+      'suppliers'  => 0
+    ];
+
+    /**
      * Import constructor.
      */
     public function __construct()
@@ -47,14 +77,14 @@ class Import
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function tempData()
+    public function processTempData()
     {
         $this->logger->info('Temp data refreshing');
 
         WP_CLI::success('Truncating temp tables');
         $this->truncateTempTables();
 
-        $start = microtime(true);
+        $this->startTime = microtime(true);
         $salesforceApi = new SalesforceApi();
         WP_CLI::success('Starting temp data import');
 
@@ -107,8 +137,10 @@ class Import
 
         WP_CLI::success('All master framework lot contacts saved to temp DB.');
 
-        $timer = round(microtime(true) - $start, 2);
+        $timer = round(microtime(true) - $this->startTime, 2);
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
+
+        $this->logger->info('Temp data refresh complete.');
     }
 
     /**
@@ -123,27 +155,17 @@ class Import
 
     public function all()
     {
-        WP_CLI::success('Salesforce import started');
-        $this->logger->info('Salesforce import started');
-        $start = microtime(true);
-
-        $this->tempData();
-
-        WP_CLI::success('Starting Import');
-
-        $importCount = [
-          'frameworks' => 0,
-          'lots'       => 0,
-          'suppliers'  => 0
-        ];
-
-        $errorCount = [
-          'frameworks' => 0,
-          'lots'       => 0,
-          'suppliers'  => 0
-        ];
-
         $salesforceApi = new SalesforceApi();
+        $frameworkRepository = new FrameworkRepository();
+        $lotRepository = new LotRepository();
+        $supplierRepository = new SupplierRepository();
+        $lotSupplierRepository = new LotSupplierRepository();
+
+        $this->addSuccess('Salesforce import started', null, true);
+
+        $this->processTempData();
+
+        $this->startTime = microtime(true);
 
         // Lets generate an access token
         $accessTokenRequest = $salesforceApi->generateToken();
@@ -154,100 +176,155 @@ class Import
         }
 
         // Get all frameworks from Salesforce
-        $frameworks = $salesforceApi->getAllFrameworks();
-        
-        $syncText = new SyncText();
-        $wordpressFrameworks = $syncText->getFrameworksFromWordPress();
-        $wordpressLots = $syncText->getLotsFromWordPress();
+        try {
+            $frameworks = $salesforceApi->getAllFrameworks();
+            $this->addSuccess(count($frameworks) . ' Frameworks successfully returned from Salesforce', null, true);
+        } catch (\Exception $e)
+        {
+            $this->addError('Error fetching Frameworks from Salesforce. Error: ' . $e->getMessage());
+            $this->addError('Process can not complete without Framework data');
+            die('Process can not complete without Framework data');
+        }
 
-        $frameworkRepository = new FrameworkRepository();
-        $lotRepository = new LotRepository();
+        try {
+            $syncText = new SyncText();
+            $wordpressFrameworks = $syncText->getFrameworksFromWordPress();
+            $wordpressLots = $syncText->getLotsFromWordPress();
+        } catch (\Exception $e)
+        {
+            $this->addError('Error fetching existing frameworks and lots from Wordpress. Error: ' . $e->getMessage());
+            $this->addError('Process can not complete without Framework and Lot data from Wordpress');
+            die('Process can not complete without Framework and Lot data from Wordpress');
+        }
+
 
         foreach ($frameworks as $index => $framework) {
-            // Save framework to DB (ccs_frameworks)
-            if (!$frameworkRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
-              $framework->getSalesforceId(), $framework)) {
-                WP_CLI::error('Framework ' . $framework->getSalesforceId() . ' not imported.');
-                $this->logger->info('Framework ' . $framework->getSalesforceId() . ' not imported.');
-                $errorCount['frameworks']++;
+
+            // How much time has elapsed
+            $elapsedTime = round(microtime(true) - $this->startTime, 2);
+            // What is the estimated remaining time in minutes.
+            $this->timeRemaining = round((($elapsedTime/$index)*count($frameworks)-$index)/60, 0);
+
+
+            try {
+                // Save framework to DB (ccs_frameworks)
+                $frameworkRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $framework->getSalesforceId(), $framework);
+            } catch (\Exception $e) {
+                $this->addError('Error saving Framework. Framework ' . $framework->getSalesforceId() . ' not imported. Error: ' . $e->getMessage(), 'frameworks');
                 continue;
             }
 
-            // Read in framework data from DB (ccs_frameworks)
-            $framework = $frameworkRepository->findById($framework->getSalesforceId(), 'salesforce_id');
 
-            WP_CLI::success('Framework ' . $index . ' imported.');
-            $importCount['frameworks']++;
+            try {
+                // Read in framework data from DB (ccs_frameworks)
+                $framework = $frameworkRepository->findById($framework->getSalesforceId(), 'salesforce_id');
+            } catch (\Exception $e) {
+                $this->addError('Framework ' . $framework->getSalesforceId() . ' not imported. Error: ' . $e->getMessage(), 'frameworks');
+            }
+
+            $this->addSuccess('Framework ' . $index . ' imported. ' . 'SF ID: ' . $framework->getSalesforceId(), 'frameworks');
 
             // Create or update framework title in WordPress
-            $this->createFrameworkInWordpress($framework, $wordpressFrameworks);
+            try {
+                $this->createFrameworkInWordpress($framework, $wordpressFrameworks);
+            } catch (\Exception $e)
+            {
+                $this->addError('Framework ' . $framework->getSalesforceId() . ' not saved to Wordpress. Error: ' . $e->getMessage(), 'frameworks');
+            }
+
 
             // Read lots for framework for Salesforce
-            $lots = $salesforceApi->getFrameworkLots($framework->getSalesforceId());
+            try {
+                $lots = $salesforceApi->getFrameworkLots($framework->getSalesforceId());
+            } catch (\Exception $e)
+            {
+                $this->addError('Error fetching Lots from Salesforce. Error: ' . $e->getMessage(), 'lots');
+                continue;
+            }
+
 
             foreach ($lots as $lot) {
-                if (!$lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
-                  $lot->getSalesforceId(), $lot)) {
-                    WP_CLI::error('Lot not imported.');
-                    $this->logger->info('Lot ' . $lot->getSalesforceId() . ' not imported.');
-                    $errorCount['lots']++;
+                $lotWordPressId = $this->getLotWordpressIdBySalesforceId($lot->getSalesforceId());
+                $lot->setWordpressId($lotWordPressId);
+
+                if (!$lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $lot->getSalesforceId(), $lot)) {
+                    $this->addError('Lot ' . $lot->getSalesforceId() . ' not imported.', 'lots');
                     continue;
                 }
                 $lot = $lotRepository->findById($lot->getSalesforceId(), 'salesforce_id');
 
-                WP_CLI::success('Lot imported.');
-                $importCount['lots']++;
+                $this->addSuccess('Lot ' . $lot->getSalesforceId() . ' imported.', 'lots');
 
-                $this->createLotInWordpress($lot, $wordpressLots);
+                try {
+                    $this->createLotInWordpress($lot, $wordpressLots);
+                } catch (\Exception $e)
+                {
+                    $this->addError('Lot ' . $framework->getSalesforceId() . ' not saved to Wordpress. Error: ' . $e->getMessage(), 'lots');
+                }
+
 
                 //Hide the suppliers on this lot on website
                 if($lot->isHideSuppliers()){
-                    WP_CLI::success('Hiding suppliers for this Lot.');
+                    $this->addSuccess('Hiding suppliers for this Lot.');
                     continue;
                 }
 
-                WP_CLI::success('Retrieving Lot Suppliers.');
-                $suppliers = $salesforceApi->getLotSuppliers($lot->getSalesforceId());
-                WP_CLI::success(count($suppliers) . ' Lot Suppliers found.');
 
-                $supplierRepository = new SupplierRepository();
-                $lotSupplierRepository = new LotSupplierRepository();
+                $this->addSuccess('Retrieving Lot Suppliers.');
+                try {
+                    $suppliers = $salesforceApi->getLotSuppliers($lot->getSalesforceId());
+                    $this->addSuccess(count($suppliers) . ' Lot Suppliers found.');
+                } catch (\Exception $e)
+                {
+                    $this->addError('Lot Suppliers for Lot ' . $lot->getSalesforceId() . ' not saved to Wordpress. Error: ' . $e->getMessage(), 'suppliers');
+                    continue;
+                }
+
 
                 // Remove all the current relationships to this lot, and create fresh ones.
-                WP_CLI::success('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
+                $this->addSuccess('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
                 $lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
 
                 foreach ($suppliers as $supplier) {
-                    if (!$supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
-                      $supplier->getSalesforceId(), $supplier)) {
-                        WP_CLI::error('Supplier not imported.');
-                        $this->logger->info('Supplier ' . $supplier->getSalesforceId() . ' not imported.');
-                        $errorCount['suppliers']++;
+                    if (!$supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $supplier->getSalesforceId(), $supplier)) {
+                        $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. Error: ' . $e->getMessage(), 'suppliers');
                         continue;
                     }
 
-                    WP_CLI::success('Supplier imported.');
-                    $importCount['suppliers']++;
                     $lotSupplier = new LotSupplier([
                       'lot_id' => $lot->getSalesforceId(),
                       'supplier_id' => $supplier->getSalesforceId()
                     ]);
 
+
                     if ($tradingName = $salesforceApi->getTradingName($framework->getSalesforceId(), $supplier->getSalesforceId()))
                     {
-                        WP_CLI::success('Framework supplier trading name found.');
+                        $this->addSuccess('Framework supplier trading name found.');
                         $lotSupplier->setTradingName($tradingName);
                     }
 
-                    WP_CLI::success('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());
-                    $contactDetails = $this->findContactDetails($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
-                    if ($contactDetails)
+                    $this->addSuccess('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());
+
+                    try {
+                        $contactDetails = $this->findContactDetails($lotSupplier->getLotId(), $lotSupplier->getSupplierId());
+                        if ($contactDetails)
+                        {
+                            $this->addSuccess('Contact details found....');
+                            $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
+                        }
+                    } catch (\Exception $e)
                     {
-                        WP_CLI::success('Contact details found....');
-                        $lotSupplier = $this->addContactDetailsToLotSupplier($lotSupplier, $contactDetails);
+                        $this->addError('Supplier contact details for Lot ' . $lotSupplier->getLotId() . ' and Supplier ' . $lotSupplier->getSupplierId() . ' not found. Error: ' . $e->getMessage(), 'suppliers');
                     }
 
-                    $lotSupplierRepository->create($lotSupplier);
+
+                    try {
+                        $lotSupplierRepository->create($lotSupplier);
+                    } catch (\Exception $e)
+                    {
+                        $this->addError('Error saving Lot Supplier for Lot ' . $lotSupplier->getLotId() . ' and Supplier ' . $lotSupplier->getSupplierId() . ' Error: ' . $e->getMessage(), 'suppliers');
+                    }
+
                 }
 
             }
@@ -256,12 +333,12 @@ class Import
         //Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
 
-        $timer = round(microtime(true) - $start, 2);
+        $timer = round(microtime(true) - $this->startTime, 2);
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
 
         $response = [
-          'importCount' => $importCount,
-          'errorCount'  => $errorCount
+          'importCount' => $this->importCount,
+          'errorCount'  => $this->errorCount
         ];
 
         $this->logger->info('Import complete. Import took ' . $timer/60 . ' minutes to complete.', $response);
@@ -275,7 +352,7 @@ class Import
 
         $dbConnection = new DatabaseConnection();
 
-        $sql = "SELECT * FROM temp_master_framework_lot_contact WHERE master_framework_lot_salesforce_id = '" . $lotId . "';";
+        $sql = "SELECT * FROM temp_master_framework_lot_contact WHERE website_contact = 1 AND master_framework_lot_salesforce_id = '" . $lotId . "';";
         $query = $dbConnection->connection->prepare($sql);
         $query->execute();
 
@@ -306,6 +383,42 @@ class Import
         }
 
         return false;
+    }
+
+    /**
+     * @param $message the error message to report
+     * @param $type framework, lot, supplier
+     */
+    protected function addError($message, $type = null)
+    {
+        WP_CLI::error($message . ' Estimated time remaining: ' . $this->timeRemaining . ' minutes.');
+        $this->logger->error($message);
+
+        if ($type)
+        {
+            $this->errorCount[$type]++;
+        }
+
+    }
+
+    /**
+     * @param $message the error message to report
+     * @param $type framework, lot, supplier
+     * @param bool $log
+     */
+    protected function addSuccess($message, $type = null, $log = false)
+    {
+        WP_CLI::success($message . ' Estimated time remaining: ' . $this->timeRemaining . ' minutes.');
+
+        if ($log) {
+            $this->logger->info($message);
+        }
+
+
+        if ($type) {
+            $this->importCount[$type]++;
+        }
+
     }
 
 
@@ -372,21 +485,6 @@ class Import
     {
         if (!empty($framework->getWordpressId()))
         {
-            // This framework already has a Wordpress ID assigned
-            if (isset($wordpressFrameworks[$framework->getWordpressId()]))
-            {
-                // We get the current post from the wordpress post array and compare it's title
-                $post = $wordpressFrameworks[$framework->getWordpressId()];
-                if ($post['framework_title'] == $framework->getTitle())
-                {
-                    // The title hasn't changed from what we already have, so we don't need to update the DB.
-                    return;
-                }
-            }
-
-            // This framework already has a Wordpress ID assigned, so we need to update the Title.
-            $this->updatePostTitle($framework, 'framework');
-            WP_CLI::success('Updated Framework Title in Wordpress.');
             return;
         }
 
@@ -411,19 +509,6 @@ class Import
     {
         if (!empty($lot->getWordpressId()))
         {
-            // This framework already has a Wordpress ID assigned
-            if (isset($wordpressFrameworks[$lot->getWordpressId()])) {
-                // We get the current post from the wordpress post array and compare it's title
-                $post = $wordpressLots[$lot->getWordpressId()];
-                if ($post['lot_title'] == $lot->getTitle()) {
-                    // The title hasn't changed from what we already have, so we don't need to update the DB.
-                    return;
-                }
-            }
-            // This lot already has a Wordpress ID assigned, so we need to update the Title if it has changed.
-            // Fetch the current post then compare the title
-            $this->updatePostTitle($lot, 'lot');
-            WP_CLI::success('Updated Lot Title in Wordpress.');
             return;
         }
 
@@ -436,23 +521,6 @@ class Import
         // Save the Lot back into the custom database.
         $lotRepository = new LotRepository();
         $lotRepository->update('salesforce_id', $lot->getSalesforceId(), $lot);
-    }
-
-
-    /**
-     * Update the title of a Wordpress post
-     *
-     * @param $model
-     * @param $type
-     */
-    public function updatePostTitle($model, $type)
-    {
-       wp_update_post(array(
-            'ID' => $model->getWordpressId(),
-            'post_title' => $model->getTitle(),
-            'post_type' => $type
-        ));
-
     }
 
     /**
@@ -585,6 +653,27 @@ class Import
 
 
 
+    public function getLotWordpressIdBySalesforceId(?string $salesforceId)
+    {
+        $lotWordpressId = null;
+
+        $sql = "SELECT wordpress_id FROM ccs_lots WHERE salesforce_id = '" . $salesforceId . "';";
+
+        $dbConnection = new DatabaseConnection();
+        $query = $dbConnection->connection->prepare($sql);
+        $query->execute();
+
+        $sqlData = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if(!empty($sqlData['wordpress_id'])) {
+            $lotWordpressId = $sqlData['wordpress_id'];
+        }
+
+        return $lotWordpressId;
+    }
+
+
+
     /**
      * Saves all contacts to a temporary table.
      *
@@ -616,6 +705,11 @@ class Import
             }
 
         }
+    }
+
+    protected function updateTimeRemaining()
+    {
+
     }
 }
 

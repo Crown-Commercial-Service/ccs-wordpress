@@ -212,11 +212,12 @@ class CustomFrameworkApi
 
         // Retrieve the live framework data
         $framework = $frameworkRepository->findLiveFramework($rmNumber);
-        $frameworkData = $framework->toArray();
 
         if ($framework === false) {
             return new WP_Error('rest_invalid_param', 'framework not found', array('status' => 404));
         }
+
+        $frameworkData = $framework->toArray();
 
         $lotRepository = new LotRepository();
         //Retrieve all lots for a corresponding framework, based on the rm number

@@ -211,6 +211,7 @@ JOIN ccs_lots l ON l.framework_id = f.salesforce_id
 JOIN ccs_lot_supplier ls ON ls.lot_id = l.salesforce_id
 WHERE f.salesforce_id = '$frameworkId'
 AND ls.supplier_id = '$supplierId'
+ORDER BY l.lot_number
 EOD;
         return $this->findAllLots($sql);
     }

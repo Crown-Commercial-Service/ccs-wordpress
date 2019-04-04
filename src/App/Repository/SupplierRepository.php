@@ -167,7 +167,7 @@ class SupplierRepository extends AbstractRepository
      */
     public function findLotSuppliers($lotIds, $paginate = false, $limit = 20, $page = 0) {
 
-        $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, s.trading_name FROM `ccs_suppliers` s
+        $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, ls.trading_name FROM `ccs_suppliers` s
 JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
 WHERE ls.lot_id IN (\'' . $lotIds . '\')
 ORDER BY s.name';
@@ -306,6 +306,7 @@ JOIN ccs_lot_supplier ls ON ls.supplier_id = s.salesforce_id
 JOIN ccs_lots l ON l.salesforce_id = ls.lot_id
 JOIN ccs_frameworks f ON f.salesforce_id = l.framework_id
 WHERE f.rm_number = \'' . $rmNumber . '\'
+AND f.published_status = \'publish\'
 AND s.on_live_frameworks = TRUE 
 GROUP BY s.id
 ORDER by s.name ASC;';
@@ -328,6 +329,7 @@ JOIN ccs_lot_supplier ls ON ls.supplier_id = s.salesforce_id
 JOIN ccs_lots l ON l.salesforce_id = ls.lot_id
 JOIN ccs_frameworks f ON f.salesforce_id = l.framework_id
 WHERE f.rm_number = \'' . $rmNumber . '\'
+AND f.published_status = \'publish\'
 AND s.on_live_frameworks = TRUE 
 GROUP BY s.id
 ORDER by s.name ASC) SearchRmNumberAlias';

@@ -61,97 +61,76 @@ function run_plugin()
 
 
     //Get all frameworks
-    add_action( 'rest_api_init', function () use ($frameworkApi) {
-        register_rest_route( 'ccs/v1', '/frameworks', array(
+    add_action('rest_api_init', function () use ($frameworkApi) {
+        register_rest_route('ccs/v1', '/frameworks', array(
             'methods' => 'GET',
             'callback' => [$frameworkApi, 'get_frameworks']
-        ) );
-    } );
+        ));
+    });
 
     //Get an individual framework
-    add_action( 'rest_api_init', function () use ($frameworkApi) {
-        register_rest_route( 'ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-.]+)', array(
+    add_action('rest_api_init', function () use ($frameworkApi) {
+        register_rest_route('ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
             'callback' => [$frameworkApi, 'get_individual_framework']
-        ) );
-    } );
+        ));
+    });
 
     //Get suppliers on a framework
-    add_action( 'rest_api_init', function () use ($frameworkApi) {
-        register_rest_route( 'ccs/v1', '/framework-suppliers/(?P<rm_number>[a-zA-Z0-9-.]+)', array(
+    add_action('rest_api_init', function () use ($frameworkApi) {
+        register_rest_route('ccs/v1', '/framework-suppliers/(?P<rm_number>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
             'callback' => [$frameworkApi, 'get_framework_suppliers']
-        ) );
-    } );
+        ));
+    });
 
     //Get upcoming deals
     // @todo Had to append "0" to end of URL since Frontend uses getOne() method which expects an ID, to review
-    add_action( 'rest_api_init', function () use ($frameworkApi) {
-        register_rest_route( 'ccs/v1', '/upcoming-deals/0', array(
+    add_action('rest_api_init', function () use ($frameworkApi) {
+        register_rest_route('ccs/v1', '/upcoming-deals/0', array(
             'methods' => 'GET',
             'callback' => [$frameworkApi, 'get_upcoming_deals']
 
-        ) );
-    } );
+        ));
+    });
 
     //Get suppliers on a lot
-    add_action( 'rest_api_init', function () use ($lotApi) {
-        register_rest_route( 'ccs/v1', '/lot-suppliers/(?P<rm_number>[a-zA-Z0-9-.]+)/lot/(?P<lot_number>[a-zA-Z0-9-.]+)', array(
+    add_action('rest_api_init', function () use ($lotApi) {
+        register_rest_route('ccs/v1', '/lot-suppliers/(?P<rm_number>[a-zA-Z0-9-.]+)/lot/(?P<lot_number>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
             'callback' => [$lotApi, 'get_lot_suppliers']
-        ) );
-    } );
+        ));
+    });
 
 
     //Get all suppliers
-    add_action( 'rest_api_init', function () use ($supplierApi) {
-        register_rest_route( 'ccs/v1', '/suppliers', array(
+    add_action('rest_api_init', function () use ($supplierApi) {
+        register_rest_route('ccs/v1', '/suppliers', array(
             'methods' => 'GET',
             'callback' => [$supplierApi, 'get_suppliers']
-        ) );
-    } );
+        ));
+    });
 
     //Get an individual supplier
-    add_action( 'rest_api_init', function () use ($supplierApi) {
-        register_rest_route( 'ccs/v1', '/suppliers/(?P<id>[a-zA-Z0-9-.]+)', array(
+    add_action('rest_api_init', function () use ($supplierApi) {
+        register_rest_route('ccs/v1', '/suppliers/(?P<id>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
             'callback' => [$supplierApi, 'get_individual_supplier']
-        ) );
-    } );
+        ));
+    });
 
     //Get the training dates requeired for the eSourcing Training form
-    add_action( 'rest_api_init', function () use ($trainingApi) {
-        register_rest_route( 'ccs/v1', '/esourcing-dates/0', array(
+    add_action('rest_api_init', function () use ($trainingApi) {
+        register_rest_route('ccs/v1', '/esourcing-dates/0', array(
             'methods' => 'GET',
             'callback' => [$trainingApi, 'get_esourcing_dates']
-        ) );
-    } );
+        ));
+    });
 
     //Saving wordpress data into the custom database
-    add_action( 'post_updated', 'updated_post_details', 20, 3);
+    add_action('post_updated', 'updated_post_details', 20, 3);
     add_action('acf/save_post', 'updated_post_meta', 20, 1);
 
-    add_action( 'ccs_salesforce_import_cron_hook', 'import_all' );
-    register_activation_hook( __FILE__, 'ccs_salesforce_activate' );
-    register_uninstall_hook( __FILE__, 'ccs_salesforce_deactivate' );
-    register_deactivation_hook( __FILE__, 'ccs_salesforce_deactivate' );
-}
-
-/**
- * Schedule the cron job when we enable the plugin
- */
-function ccs_salesforce_activate()
-{
-    wp_schedule_event(time(), 'hourly', 'ccs_salesforce_import_cron_hook');
-}
-
-
-/**
- * Disable the cron job when we deactivate or uninstall the plugin
- */
-function ccs_salesforce_deactivate()
-{
-    wp_clear_scheduled_hook('ccs_salesforce_import_cron_hook');
 }
 
 function import_all()

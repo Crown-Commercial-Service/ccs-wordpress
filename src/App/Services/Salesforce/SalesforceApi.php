@@ -157,14 +157,7 @@ class SalesforceApi
         //Build the query for getting all frameworks
         $sql = <<<EOD
 SELECT {$fieldsToReturn} from {$frameworkMappings['objectName']}
-WHERE (
-  (
-      Status__c = 'Future (Pipeline)' OR  Status__c = 'Planned (Pipeline)' OR 
-      Status__c = 'Underway (Pipeline)' OR Status__c = 'Awarded (Pipeline)'
-  ) 
-      AND Don_t_publish_on_website__c = FALSE
-  )
-OR  Don_t_publish_as_Framework_on_website__c = FALSE
+WHERE Don_t_publish_on_website__c = FALSE
 EOD;
         // Make API Request
         $response = $this->query($sql);
@@ -237,7 +230,7 @@ EOD;
 
     public function getLotSuppliers($lotId)
     {
-        $suppliersToDisplay = $this->query("SELECT Id, Supplier__c from Supplier_Framework_Lot__c WHERE Master_Framework_Lot__c = '" . $lotId . "' AND (Status__c = 'Live' OR Status__c = 'Suspended')");
+        $suppliersToDisplay = $this->query("SELECT Id, Supplier__c from Supplier_Framework_Lot__c WHERE Master_Framework_Lot__c = '" . $lotId . "' AND Status__c = 'Live'");
 
         $suppliers = [];
         foreach ($suppliersToDisplay->records as $supplierToDisplay)

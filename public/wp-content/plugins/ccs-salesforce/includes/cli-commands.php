@@ -290,6 +290,7 @@ class Import
                         $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. Error: ' . $e->getMessage(), 'suppliers');
                         continue;
                     }
+                    $this->addSuccess('Supplier ' . $supplier->getSalesforceId() . ' imported.', 'suppliers');
 
                     $lotSupplier = new LotSupplier([
                       'lot_id' => $lot->getSalesforceId(),
@@ -393,7 +394,7 @@ class Import
 
     /**
      * @param $message the error message to report
-     * @param $type framework, lot, supplier
+     * @param $type frameworks, lots, suppliers
      */
     protected function addError($message, $type = null)
     {
@@ -409,7 +410,7 @@ class Import
 
     /**
      * @param $message the error message to report
-     * @param $type framework, lot, supplier
+     * @param $type frameworks, lots, suppliers
      * @param bool $log
      */
     protected function addSuccess($message, $type = null, $log = false)
@@ -589,10 +590,13 @@ class Import
             if ($liveFrameworksCount > 0) {
                 //Update the Supplier model with the flag true for live frameworks
                 $supplier->setOnLiveFrameworks(true);
-
-                // Save the Supplier back into the custom database.
-                $supplierRepository->update('salesforce_id', $supplier->getSalesforceId(), $supplier);
+            } else {
+                //Update the Supplier model with the flag false
+                $supplier->setOnLiveFrameworks(false);
             }
+
+            // Save the Supplier back into the custom database.
+            $supplierRepository->update('salesforce_id', $supplier->getSalesforceId(), $supplier);
         }
 
         return;

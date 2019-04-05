@@ -100,7 +100,7 @@ class CustomSupplierApi
                 $frameworksData[$index] = $framework->toArray();
                 $lotsData = [];
 
-                // Find all lots for the retrieved frameworks and the curernt individual supplier
+                // Find all lots for the retrieved frameworks and the current individual supplier
                 $lots = $lotRepository->findAllByFrameworkIdSupplierId($framework->getSalesforceId(), $supplier->getSalesforceId());
 
                 if ($lots !== false) {

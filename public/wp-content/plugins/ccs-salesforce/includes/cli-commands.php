@@ -333,6 +333,12 @@ class Import
         //Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
 
+        //Update framework titles in WordPress to include the RM number
+        $this->updateFrameworkTitleInWordpress();
+
+        //Update lot titles in WordPress to include the RM number and the lot number
+        $this->updateLotTitleInWordpress();
+
         $timer = round(microtime(true) - $this->startTime, 2);
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
 
@@ -704,6 +710,62 @@ class Import
                 throw new \Exception('Data could not be saved to database correctly.');
             }
 
+        }
+    }
+
+    /**
+     * Updates all framework titles in WordPress to include the RM Number
+     *
+     * @throws \Exception
+     */
+    public function updateFrameworkTitleInWordpress()
+    {
+
+        $dbConnection = new DatabaseConnection();
+
+        $sql = <<<EOD
+UPDATE ccs_15423_posts p SET p.post_title = 
+(SELECT CONCAT(f.rm_number,': ', f.title)
+FROM ccs_frameworks f 
+WHERE f.wordpress_id = p.id)
+WHERE post_type='framework'
+EOD;
+        $query = $dbConnection->connection->prepare($sql);
+        $response = $query->execute();
+
+        if (!$response)
+        {
+            print_r($query->errorInfo());
+            throw new \Exception('Framework title could not be updated in the database.');
+        }
+
+    }
+
+    /**
+     * Updates all lot titles in WordPress to include the RM Number and the lot number
+     *
+     * @throws \Exception
+     */
+    public function updateLotTitleInWordpress()
+    {
+
+        $dbConnection = new DatabaseConnection();
+
+        $sql = <<<EOD
+UPDATE ccs_15423_posts p SET p.post_title = 
+(SELECT CONCAT(f.rm_number, ' Lot ', l.lot_number, ': ', l.title)
+FROM ccs_lots l, ccs_frameworks f
+WHERE l.wordpress_id = p.id
+AND f.salesforce_id = l.framework_id)
+WHERE post_type='lot'
+EOD;
+        $query = $dbConnection->connection->prepare($sql);
+        $response = $query->execute();
+
+        if (!$response)
+        {
+            print_r($query->errorInfo());
+            throw new \Exception('Lot title could not be updated in the database.');
         }
     }
 

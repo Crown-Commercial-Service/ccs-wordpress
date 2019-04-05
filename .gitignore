@@ -16,7 +16,7 @@ public/wp-content/uploads/
 public/wp-content/mu-plugins/
 public/wp-content/wp-cache-config.php
 public/wp-content/plugins/hello.php
-public/wp-content/plugins/disable-emails
+#public/wp-content/plugins/disable-emails
 
 public/license.txt
 public/readme.html

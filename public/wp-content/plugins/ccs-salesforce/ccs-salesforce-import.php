@@ -131,6 +131,10 @@ function run_plugin()
     add_action('post_updated', 'updated_post_details', 20, 3);
     add_action('acf/save_post', 'updated_post_meta', 20, 1);
 
+    // Save WordPress data when Revisionize posts are "merged" back into their parent post
+    add_action('revisionize_after_publish', 'updated_post_details', 20, 1);
+    add_action('revisionize_after_publish', 'updated_post_meta', 20, 1);
+
 }
 
 function import_all()

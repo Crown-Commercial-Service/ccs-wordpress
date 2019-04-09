@@ -10,7 +10,10 @@ use App\Repository\SupplierRepository;
  *
  * @param $post_id
  */
-function updated_post_details($post_id, $post_after, $post_before) {
+function updated_post_details($post_id, $post_after = null, $post_before = null) {
+    if($post_after == null) {
+        $post_after = get_post($post_id);
+    }
 
     $post_type = get_post_type($post_id);
 

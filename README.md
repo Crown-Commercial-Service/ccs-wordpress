@@ -31,7 +31,6 @@ Post launch, we will have a number of deployment checks before merging new code 
 
 ## Installation
 
-
 A step-by-step guide to get a development environment running on your machine.
 
 ### Database

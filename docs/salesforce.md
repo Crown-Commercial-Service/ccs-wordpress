@@ -23,4 +23,12 @@ This should automatically inject the new Access Token and Instance Url into the 
 
 ## Running the import
 
+### Running a complete import
+
 The import can be run with the command `wp salesforce import all` when in the `/public` folder.
+
+### Importing a single Framework
+
+You can import a single Framework, and any attached lots, and suppliers by running the following command:
+
+`wp salesforce import single a04b000000XUJxmAAH` where `a04b000000XUJxmAAH` is the Salesforce Framework ID.

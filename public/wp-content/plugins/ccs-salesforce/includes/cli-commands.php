@@ -383,6 +383,11 @@ class Import
             }
             $lot = $this->lotRepository->findById($lot->getSalesforceId(), 'salesforce_id');
 
+            if (!$lot) {
+                $this->addError('Lot ' . $lot->getSalesforceId() . ' not found in the database.', 'lots');
+                continue;
+            }
+
             $this->addSuccess('Lot ' . $lot->getSalesforceId() . ' imported.', 'lots');
 
             try {

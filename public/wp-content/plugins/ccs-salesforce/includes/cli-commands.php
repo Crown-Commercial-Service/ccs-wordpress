@@ -264,7 +264,7 @@ class Import
         // Lets generate an access token
         $this->generateSalesforceToken();
 
-        //$this->processTempData();
+        $this->processTempData();
         $this->startTime = microtime(true);
 
         // Get all frameworks from Salesforce

@@ -264,7 +264,7 @@ class Import
         // Lets generate an access token
         $this->generateSalesforceToken();
 
-        $this->processTempData();
+        //$this->processTempData();
         $this->startTime = microtime(true);
 
         // Get all frameworks from Salesforce
@@ -371,20 +371,25 @@ class Import
             return;
         }
 
+        $this->addSuccess(count($lots) . ' Framework lots found for Framework with SF ID: ' . $framework->getSalesforceId());
 
         foreach ($lots as $lot) {
             $lotWordPressId = $this->getLotWordpressIdBySalesforceId($lot->getSalesforceId());
             $lot->setWordpressId($lotWordPressId);
 
-            if (!$this->lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
-              $lot->getSalesforceId(), $lot)) {
-                $this->addError('Lot ' . $lot->getSalesforceId() . ' not imported.', 'lots');
+            $lotSalesforceId = $lot->getSalesforceId();
+
+            $this->addSuccess('Attempting to import Lot with SF ID: ' . $lotSalesforceId);
+
+            if (!$this->lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $lotSalesforceId, $lot)) {
+                $this->addError('Lot ' . $lotSalesforceId . ' not imported.', 'lots');
                 continue;
             }
-            $lot = $this->lotRepository->findById($lot->getSalesforceId(), 'salesforce_id');
+
+            $lot = $this->lotRepository->findById($lotSalesforceId, 'salesforce_id');
 
             if (!$lot) {
-                $this->addError('Lot ' . $lot->getSalesforceId() . ' not found in the database.', 'lots');
+                $this->addError('Lot ' . $lotSalesforceId . ' not found in the database.', 'lots');
                 continue;
             }
 

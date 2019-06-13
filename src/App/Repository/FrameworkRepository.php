@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Exception\DbException;
 use App\Model\Framework;
 use PDOException;
 
@@ -82,7 +83,14 @@ class FrameworkRepository extends AbstractRepository {
 
         $query = $this->bindValues($this->databaseBindings, $query, $framework);
 
-        return $query->execute();
+        $result = $query->execute();
+        if ($result === false) {
+            // @see https://www.php.net/manual/en/pdo.errorinfo.php
+            $info = $query->errorInfo();
+            throw new DbException(sprintf('Create framework record failed. Error %s: %s', $info[0], $info[2]));
+        }
+
+        return $result;
     }
 
     /**
@@ -118,7 +126,13 @@ class FrameworkRepository extends AbstractRepository {
 
         $query = $this->bindValues($this->databaseBindings, $query, $framework);
 
-        return $query->execute();
+        $result = $query->execute();
+        if ($result === false) {
+            $info = $query->errorInfo();
+            throw new DbException(sprintf('Update framework record failed. Error %s: %s', $info[0], $info[2]));
+        }
+
+        return $result;
     }
 
 
@@ -284,8 +298,8 @@ class FrameworkRepository extends AbstractRepository {
 
         if (isset($databaseBindings['publish_on_website']))
         {
-            $publishOnWeb = $framework->isPublishOnWebsite();
-            $query->bindParam(':publish_on_website', $publishOnWeb, \PDO::PARAM_STR);
+            $publishOnWeb = ($framework->isPublishOnWebsite()) ? 1 : 0;
+            $query->bindParam(':publish_on_website', $publishOnWeb, \PDO::PARAM_INT);
         }
 
         if (isset($databaseBindings['published_status']))

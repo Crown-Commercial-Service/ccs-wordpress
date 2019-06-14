@@ -424,8 +424,8 @@ class Import
             $this->lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
 
             foreach ($suppliers as $supplier) {
-                if (!$this->supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $supplier->getSalesforceId(), $supplier)) {
-                        $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. Error: ' . $e->getMessage(), 'suppliers');
+                if (!$this->supplierRepository->createOrUpdateExcludingLiveFrameworkField('salesforce_id', $supplier->getSalesforceId(), $supplier)) {
+                        $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
                         continue;
                     }
                     $this->addSuccess('Supplier ' . $supplier->getSalesforceId() . ' imported.', 'suppliers');
@@ -434,7 +434,6 @@ class Import
                   'lot_id'      => $lot->getSalesforceId(),
                   'supplier_id' => $supplier->getSalesforceId()
                 ]);
-
 
                 if ($tradingName = $this->salesforceApi->getTradingName($framework->getSalesforceId(),
                   $supplier->getSalesforceId())) {

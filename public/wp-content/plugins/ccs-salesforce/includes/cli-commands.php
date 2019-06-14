@@ -197,12 +197,19 @@ class Import
      */
     public function single($args)
     {
+        if (!empty($args)) {
+            $frameworkId = $args[0];
+        }
+
+        if (!isset($frameworkId) || empty($frameworkId)) {
+            $this->addError('No Framework ID was provided, please enter a Framework ID in the command.', 'framework');
+            exit;
+        }
+
         $this->addSuccess('Salesforce single Framework import started', null, true);
 
         // Lets hardcode this on average, it's correct.
         $this->timeRemaining = 'Less than 2';
-
-        $frameworkId = $args[0];
 
         // Lets generate an access token
         $this->generateSalesforceToken();
@@ -304,7 +311,6 @@ class Import
 
             $this->importSingleFramework($framework);
         }
-
 
         //Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();

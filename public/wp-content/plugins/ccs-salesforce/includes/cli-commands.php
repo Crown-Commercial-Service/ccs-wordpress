@@ -233,8 +233,14 @@ class Import
         // Import this Framework
         $this->importSingleFramework($framework);
 
-        //Mark whether a supplier has any live frameworks
+        // Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
+
+        // Update framework titles in WordPress to include the RM number
+        $this->updateFrameworkTitleInWordpress();
+
+        // Update lot titles in WordPress to include the RM number and the lot number
+        $this->updateLotTitleInWordpress();
 
         $response = [
           'importCount' => $this->importCount,

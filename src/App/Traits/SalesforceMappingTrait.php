@@ -24,7 +24,7 @@ trait SalesforceMappingTrait {
     public function setMappedFields($data)
     {
         $className = (new \ReflectionClass($this))->getShortName();
-        
+
         if (empty($this->mappings)) {
             $this->mappings = YamlLoader::loadMappings($className);
         }
@@ -32,7 +32,10 @@ trait SalesforceMappingTrait {
         foreach ($this->mappings['properties'] as $classProperty => $salesforceProperty)
         {
             $method = "set" . ucfirst($classProperty);
-            $this->$method($data->$salesforceProperty);
+            if (isset($data->$salesforceProperty))
+            {
+                $this->$method($data->$salesforceProperty);
+            }
         }
     }
 

@@ -37,11 +37,12 @@ class CustomLotApi
 
         // Retrieve the live framework data
         $framework = $frameworkRepository->findLiveFramework($rmNumber);
-        $frameworkData = $framework->toArray();
 
         if ($framework === false) {
             return new WP_Error('rest_invalid_param', 'framework not found', array('status' => 404));
         }
+
+        $frameworkData = $framework->toArray();
 
         if (!isset($request['lot_number'])) {
             return new WP_Error('bad_request', 'request is invalid', array('status' => 400));
@@ -52,11 +53,12 @@ class CustomLotApi
         $lotRepository = new LotRepository();
         //Retrieve the lot for a corresponding framework, based on the rm number and lot number
         $lot = $lotRepository->findSingleFrameworkLot($rmNumber, $lotNumber);
-        $lotData = $lot->toArray();
 
         if ($lot === false) {
             return new WP_Error('rest_invalid_param', 'lot not found', array('status' => 404));
         }
+
+        $lotData = $lot->toArray();
 
         $supplierRepository = new SupplierRepository();
         $suppliersCount = $supplierRepository->countSuppliersForLot($lot->getSalesforceId());
@@ -71,11 +73,13 @@ class CustomLotApi
                 $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
                 $liveFrameworks = [];
 
-                foreach ($frameworks as $counter => $framework) {
-                    $liveFrameworks[$counter] =
-                        ['title' => $framework->getTitle(),
-                            'rm_number' => $framework->getRmNumber()
-                        ];
+                if ($frameworks !== false) {
+                    foreach ($frameworks as $counter => $framework) {
+                        $liveFrameworks[$counter] =
+                            ['title'     => $framework->getTitle(),
+                             'rm_number' => $framework->getRmNumber()
+                            ];
+                    }
                 }
 
                 $suppliersData[$index] =

@@ -246,11 +246,13 @@ class CustomFrameworkApi
                 $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
                 $liveFrameworks = [];
 
-                foreach ($frameworks as $counter => $framework) {
-                    $liveFrameworks[$counter] =
-                        ['title' => $framework->getTitle(),
-                            'rm_number' => $framework->getRmNumber()
-                        ] ;
+                if ($frameworks !== false) {
+                    foreach ($frameworks as $counter => $framework) {
+                        $liveFrameworks[$counter] =
+                            ['title'     => $framework->getTitle(),
+                             'rm_number' => $framework->getRmNumber()
+                            ];
+                    }
                 }
 
                 $suppliersData[$index] =

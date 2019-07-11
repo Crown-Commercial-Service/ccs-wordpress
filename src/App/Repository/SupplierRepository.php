@@ -34,6 +34,30 @@ class SupplierRepository extends AbstractRepository
     }
 
     /**
+     * This method excludes the Wordpress Id, so it will not be overwritten with new (or null) data.
+     * Create the the current data object in the database or update it if it already exists
+     *
+     * @param $searchField
+     * @param $searchValue
+     * @param $object
+     * @return mixed
+     */
+    public function createOrUpdateExcludingLiveFrameworkField($searchField, $searchValue, $object)
+    {
+        $originalDataBindings = $this->databaseBindings;
+
+        if (isset($this->databaseBindings['on_live_frameworks'])) {
+            unset($this->databaseBindings['on_live_frameworks']);
+        }
+
+        $response = $this->createOrUpdate($searchField, $searchValue, $object);
+
+        $this->databaseBindings = $originalDataBindings;
+
+        return $response;
+    }
+
+    /**
      * @param \App\Model\Supplier $supplier
      * @return mixed
      */

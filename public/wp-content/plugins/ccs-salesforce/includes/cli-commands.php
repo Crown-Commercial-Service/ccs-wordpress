@@ -197,12 +197,19 @@ class Import
      */
     public function single($args)
     {
+        if (!empty($args)) {
+            $frameworkId = $args[0];
+        }
+
+        if (!isset($frameworkId) || empty($frameworkId)) {
+            $this->addError('No Framework ID was provided, please enter a Framework ID in the command.', 'framework');
+            exit;
+        }
+
         $this->addSuccess('Salesforce single Framework import started', null, true);
 
         // Lets hardcode this on average, it's correct.
         $this->timeRemaining = 'Less than 2';
-
-        $frameworkId = $args[0];
 
         // Lets generate an access token
         $this->generateSalesforceToken();
@@ -233,8 +240,14 @@ class Import
         // Import this Framework
         $this->importSingleFramework($framework);
 
-        //Mark whether a supplier has any live frameworks
+        // Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
+
+        // Update framework titles in WordPress to include the RM number
+        $this->updateFrameworkTitleInWordpress();
+
+        // Update lot titles in WordPress to include the RM number and the lot number
+        $this->updateLotTitleInWordpress();
 
         $response = [
           'importCount' => $this->importCount,
@@ -298,7 +311,6 @@ class Import
 
             $this->importSingleFramework($framework);
         }
-
 
         //Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
@@ -371,20 +383,25 @@ class Import
             return;
         }
 
+        $this->addSuccess(count($lots) . ' Framework lots found for Framework with SF ID: ' . $framework->getSalesforceId());
 
         foreach ($lots as $lot) {
             $lotWordPressId = $this->getLotWordpressIdBySalesforceId($lot->getSalesforceId());
             $lot->setWordpressId($lotWordPressId);
 
-            if (!$this->lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id',
-              $lot->getSalesforceId(), $lot)) {
-                $this->addError('Lot ' . $lot->getSalesforceId() . ' not imported.', 'lots');
+            $lotSalesforceId = $lot->getSalesforceId();
+
+            $this->addSuccess('Attempting to import Lot with SF ID: ' . $lotSalesforceId);
+
+            if (!$this->lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $lotSalesforceId, $lot)) {
+                $this->addError('Lot ' . $lotSalesforceId . ' not imported.', 'lots');
                 continue;
             }
-            $lot = $this->lotRepository->findById($lot->getSalesforceId(), 'salesforce_id');
+
+            $lot = $this->lotRepository->findById($lotSalesforceId, 'salesforce_id');
 
             if (!$lot) {
-                $this->addError('Lot ' . $lot->getSalesforceId() . ' not found in the database.', 'lots');
+                $this->addError('Lot ' . $lotSalesforceId . ' not found in the database.', 'lots');
                 continue;
             }
 
@@ -395,6 +412,11 @@ class Import
             } catch (\Exception $e) {
                 $this->addError('Lot ' . $framework->getSalesforceId() . ' not saved to Wordpress. Error: ' . $e->getMessage(), 'lots');
             }
+
+
+            // Remove all the current relationships to this lot, and create fresh ones.
+            $this->addSuccess('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
+            $this->lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
 
 
             //Hide the suppliers on this lot on website
@@ -413,14 +435,10 @@ class Import
                 continue;
             }
 
-
-            // Remove all the current relationships to this lot, and create fresh ones.
-            $this->addSuccess('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
-            $this->lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
-
+            // Re-add new lot supplier connections.
             foreach ($suppliers as $supplier) {
-                if (!$this->supplierRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $supplier->getSalesforceId(), $supplier)) {
-                        $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. Error: ' . $e->getMessage(), 'suppliers');
+                if (!$this->supplierRepository->createOrUpdateExcludingLiveFrameworkField('salesforce_id', $supplier->getSalesforceId(), $supplier)) {
+                        $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
                         continue;
                     }
                     $this->addSuccess('Supplier ' . $supplier->getSalesforceId() . ' imported.', 'suppliers');
@@ -429,7 +447,6 @@ class Import
                   'lot_id'      => $lot->getSalesforceId(),
                   'supplier_id' => $supplier->getSalesforceId()
                 ]);
-
 
                 if ($tradingName = $this->salesforceApi->getTradingName($framework->getSalesforceId(),
                   $supplier->getSalesforceId())) {

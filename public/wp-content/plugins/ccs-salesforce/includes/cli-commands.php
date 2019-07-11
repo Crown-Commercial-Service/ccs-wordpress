@@ -414,6 +414,11 @@ class Import
             }
 
 
+            // Remove all the current relationships to this lot, and create fresh ones.
+            $this->addSuccess('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
+            $this->lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
+
+
             //Hide the suppliers on this lot on website
             if ($lot->isHideSuppliers()) {
                 $this->addSuccess('Hiding suppliers for this Lot.');
@@ -430,11 +435,7 @@ class Import
                 continue;
             }
 
-
-            // Remove all the current relationships to this lot, and create fresh ones.
-            $this->addSuccess('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
-            $this->lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
-
+            // Re-add new lot supplier connections.
             foreach ($suppliers as $supplier) {
                 if (!$this->supplierRepository->createOrUpdateExcludingLiveFrameworkField('salesforce_id', $supplier->getSalesforceId(), $supplier)) {
                         $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');

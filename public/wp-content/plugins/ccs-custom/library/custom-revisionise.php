@@ -21,14 +21,13 @@ function checkForRevisions($post) {
 
 function hideRevisioniseFromPostRow($actions, $post) {
 
-	if (!checkForRevisions($post)) {
-		return $actions;
-	}
+	if (checkForRevisions($post)) {
 
-	// Revision found, so remove the option.
+		// Revision found, so remove the option.
+		if (isset($actions['create_revision'])) {
+			unset($actions['create_revision']);
+		}
 
-	if (isset($actions['create_revision'])) {
-		unset($actions['create_revision']);
 	}
 
 	return $actions;

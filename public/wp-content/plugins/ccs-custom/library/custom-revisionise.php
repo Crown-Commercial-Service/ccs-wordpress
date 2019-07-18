@@ -27,7 +27,10 @@ function hideRevisioniseFromPostRow($actions, $post) {
 
 	// Revision found, so remove the option.
 
-	unset($actions['create_revision']);
+	if (isset($actions['create_revision'])) {
+		unset($actions['create_revision']);
+	}
+
 	return $actions;
 }
 
@@ -48,5 +51,23 @@ function hideRevisioniseButton($post) {
 }
 
 add_action('post_submitbox_start','hideRevisioniseButton',100,1);
+
+
+
+// Admin bar
+
+function hideRevisioniseAdminBar($admin_bar) {
+
+	$post = new StdClass;
+	$post->ID = get_the_ID();
+
+	if (checkForRevisions($post) ) {
+		// Revision found, so remove the link
+		$admin_bar->remove_menu('revisionize');
+	}
+	return $admin_bar;
+}
+
+add_action('admin_bar_menu','hideRevisioniseAdminBar',200,1);
 
 

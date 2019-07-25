@@ -11,17 +11,31 @@ function checkForRevisions($post) {
     ));
 
 	$rowcount = $wpdb->num_rows;
-
 	return ($rowcount > 0) ? true : false;
 
 }
 
+function isViableForRevisionise($post) {
+
+	// Disallow revisionise on archived posts.
+	if ($post->post_status == 'archived') { 
+		return false; 
+	}
+
+	// If post already has revisions, disable access.
+	if (checkForRevisions($post)) {
+		return false;
+	}
+
+	return true;
+
+}
 
 // Post row (on listing)
 
 function hideRevisioniseFromPostRow($actions, $post) {
 
-	if (checkForRevisions($post)) {
+	if (!isViableForRevisionise($post)) {
 
 		// Revision found, so remove the option.
 		if (isset($actions['create_revision'])) {
@@ -42,7 +56,7 @@ add_filter('post_row_actions', 'hideRevisioniseFromPostRow', 100, 2);
 
 function hideRevisioniseButton($post) {
 
-	if (checkForRevisions($post)) {
+	if (!isViableForRevisionise($post)) {
 		// Revision found, so remove the button.
 		remove_action('post_submitbox_start','Revisionize\post_button',200,0);
 	}
@@ -57,10 +71,9 @@ add_action('post_submitbox_start','hideRevisioniseButton',100,1);
 
 function hideRevisioniseAdminBar($admin_bar) {
 
-	$post = new StdClass;
-	$post->ID = get_the_ID();
+	$post = get_post();
 
-	if (checkForRevisions($post) ) {
+	if (!isViableForRevisionise($post) ) {
 		// Revision found, so remove the link
 		$admin_bar->remove_menu('revisionize');
 	}

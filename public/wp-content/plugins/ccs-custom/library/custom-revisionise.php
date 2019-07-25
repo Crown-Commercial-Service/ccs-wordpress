@@ -1,5 +1,6 @@
 <?php
-
+// Revisionise adjustments
+//
 // Hooks to remove revisionise options if a post already has a revision. Aims to solve issue where multiple revisions were leading to duplicate pages being published.
 
 function checkForRevisions($post) {
@@ -17,12 +18,23 @@ function checkForRevisions($post) {
 
 function isViableForRevisionise($post) {
 
+
 	// Disallow revisionise on archived posts.
 	if ($post->post_status == 'archived') { 
 		return false; 
 	}
 
-	// If post already has revisions, disable access.
+	// Disallow revisionise on pending posts.
+	if ($post->post_status == 'pending') { 
+		return false; 
+	}
+
+	// If post has a parent, and isn't published, remove option.
+	if ($post->post_parent > 0 && $post->post_status != 'publish') {
+		return false;
+	}
+
+	// If post already has revisions, disable revisionise option.
 	if (checkForRevisions($post)) {
 		return false;
 	}
@@ -30,6 +42,8 @@ function isViableForRevisionise($post) {
 	return true;
 
 }
+
+// Wordpress Hooks
 
 // Post row (on listing)
 
@@ -72,6 +86,10 @@ add_action('post_submitbox_start','hideRevisioniseButton',100,1);
 function hideRevisioniseAdminBar($admin_bar) {
 
 	$post = get_post();
+
+	if (!$post) { 
+		return $admin_bar; 
+	}
 
 	if (!isViableForRevisionise($post) ) {
 		// Revision found, so remove the link

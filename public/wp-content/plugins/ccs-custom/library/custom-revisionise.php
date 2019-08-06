@@ -72,12 +72,21 @@ function hideRevisioniseButton($post) {
 
 	if (!isViableForRevisionise($post)) {
 		// Revision found, so remove the button.
-		remove_action('post_submitbox_start','Revisionize\post_button',200,0);
+
+		// Since the revisionize plugin adds the button by directly outputting to the page, we can't use remove_action. 
+		// Instead we've decided to strip it out via CSS.
+		?>
+		<style>
+			a[href*="revisionize_create"] {
+				display:none!important;
+			}
+		</style>
+		<?php
 	}
 
 }
 
-add_action('post_submitbox_start','hideRevisioniseButton',100,1);
+add_action('post_submitbox_start','hideRevisioniseButton',200,1);
 
 
 

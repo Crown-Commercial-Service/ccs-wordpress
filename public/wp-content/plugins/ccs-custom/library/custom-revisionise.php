@@ -8,7 +8,7 @@ function checkForRevisions($post) {
 	global $wpdb;
 
     $check = $wpdb->get_results($wpdb->prepare("
-        SELECT * FROM ".$wpdb->base_prefix."posts WHERE post_status='draft' AND post_parent= %d", $post->ID
+        SELECT * FROM ".$wpdb->base_prefix."posts WHERE (post_status='in-progress' Or post_status='draft' OR post_status='pending') AND post_parent= %d", $post->ID
     ));
 
 	$rowcount = $wpdb->num_rows;

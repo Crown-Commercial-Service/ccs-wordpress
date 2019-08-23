@@ -43,6 +43,13 @@ class LotRepository extends AbstractRepository
      */
     public function create(Lot $lot) {
 
+        /**
+         * Don't import a lot if the Salesforce ID isn't set
+         */
+        if(!isset($this->databaseBindings['salesforce_id']) || empty($this->databaseBindings['salesforce_id'])) {
+            return false;
+        }
+
         // Build the bindings PDO statement
         $columns = implode(", ", array_keys($this->databaseBindings));
         $fieldParams = implode(", ", array_values($this->databaseBindings));

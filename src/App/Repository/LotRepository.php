@@ -43,6 +43,13 @@ class LotRepository extends AbstractRepository
      */
     public function create(Lot $lot) {
 
+        /**
+         * Don't import a lot if the Salesforce ID isn't set
+         */
+        if(!isset($this->databaseBindings['salesforce_id']) || empty($this->databaseBindings['salesforce_id'])) {
+            return false;
+        }
+
         // Build the bindings PDO statement
         $columns = implode(", ", array_keys($this->databaseBindings));
         $fieldParams = implode(", ", array_values($this->databaseBindings));
@@ -174,7 +181,8 @@ class LotRepository extends AbstractRepository
 
         $sql = 'SELECT l.salesforce_id FROM `ccs_frameworks` f
 JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
-WHERE f.rm_number = \'' . $id  . '\'';
+WHERE f.rm_number = \'' . $id  . '\'
+AND l.salesforce_id IS NOT NULL';
 
         return $this->findAllLots($sql);
     }
@@ -190,7 +198,8 @@ WHERE f.rm_number = \'' . $id  . '\'';
 
         $sql = 'SELECT l.* FROM `ccs_frameworks` f
 JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
-WHERE f.rm_number = \'' . $id . '\' AND lot_number=\'' . $lotNumber . '\'';
+WHERE f.rm_number = \'' . $id . '\' AND lot_number=\'' . $lotNumber . '\'
+AND l.salesforce_id IS NOT NULL';
 
         return $this->findSingleRow($sql);
     }
@@ -211,6 +220,7 @@ JOIN ccs_lots l ON l.framework_id = f.salesforce_id
 JOIN ccs_lot_supplier ls ON ls.lot_id = l.salesforce_id
 WHERE f.salesforce_id = '$frameworkId'
 AND ls.supplier_id = '$supplierId'
+AND l.salesforce_id IS NOT NULL
 ORDER BY cast(l.lot_number as unsigned)
 EOD;
         return $this->findAllLots($sql);

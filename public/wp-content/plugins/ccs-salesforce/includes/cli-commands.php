@@ -486,8 +486,6 @@ class Import
      */
     protected function findContactDetails($lotId, $supplierId) {
 
-        $this->dbConnection = new DatabaseConnection();
-
         $sql = "SELECT * FROM temp_master_framework_lot_contact WHERE website_contact = 1 AND master_framework_lot_salesforce_id = '" . $lotId . "';";
         $query = $this->dbConnection->connection->prepare($sql);
         $query->execute();
@@ -527,8 +525,9 @@ class Import
      */
     protected function addError($message, $type = null)
     {
-        WP_CLI::error($message . ' Estimated time remaining: ' . $this->timeRemaining . ' minutes.');
         $this->logger->error($message);
+
+        WP_CLI::error($message . ' Estimated time remaining: ' . $this->timeRemaining . ' minutes.', false);
 
         if ($type)
         {
@@ -741,8 +740,6 @@ class Import
      */
     public function truncateTempTables()
     {
-        $this->dbConnection = new DatabaseConnection();
-
         $sql = "TRUNCATE TABLE temp_contact;";
         $query = $this->dbConnection->connection->prepare($sql);
         $response = $query->execute();
@@ -771,8 +768,6 @@ class Import
      */
     public function saveContactsToTempTable($contacts)
     {
-        $this->dbConnection = new DatabaseConnection();
-
         foreach ($contacts as $contact)
         {
             $sql = "INSERT INTO temp_contact (salesforce_id, account_id) VALUES (:id, :accountId);";
@@ -803,7 +798,6 @@ class Import
 
         $sql = "SELECT wordpress_id FROM ccs_lots WHERE salesforce_id = '" . $salesforceId . "';";
 
-        $this->dbConnection = new DatabaseConnection();
         $query = $this->dbConnection->connection->prepare($sql);
         $query->execute();
 
@@ -872,9 +866,6 @@ class Import
      */
     public function updateFrameworkTitleInWordpress()
     {
-
-        $dbConnection = new DatabaseConnection();
-
         $sql = <<<EOD
 UPDATE ccs_15423_posts p 
 INNER JOIN ccs_frameworks f
@@ -882,7 +873,7 @@ ON f.wordpress_id = p.id
 SET p.post_title = (SELECT CONCAT(f.rm_number,': ', f.title) FROM ccs_frameworks f WHERE f.wordpress_id = p.id)
 WHERE p.post_type='framework'
 EOD;
-        $query = $dbConnection->connection->prepare($sql);
+        $query = $this->dbConnection->connection->prepare($sql);
         $response = $query->execute();
 
         if (!$response)
@@ -900,9 +891,6 @@ EOD;
      */
     public function updateLotTitleInWordpress()
     {
-
-        $dbConnection = new DatabaseConnection();
-
         $sql = <<<EOD
 UPDATE ccs_15423_posts p SET p.post_title = 
 (SELECT CONCAT(f.rm_number, ' Lot ', l.lot_number, ': ', l.title)
@@ -911,7 +899,7 @@ WHERE l.wordpress_id = p.id
 AND f.salesforce_id = l.framework_id)
 WHERE post_type='lot'
 EOD;
-        $query = $dbConnection->connection->prepare($sql);
+        $query = $this->dbConnection->connection->prepare($sql);
         $response = $query->execute();
 
         if (!$response)

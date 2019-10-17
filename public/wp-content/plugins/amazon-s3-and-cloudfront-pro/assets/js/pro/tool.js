@@ -609,15 +609,23 @@
 				return;
 			}
 
-			var $notice = $( '#' + as3cfpro.settings.errors_key_prefix + id );
-			var tab = $( '#' + this.ID ).data( 'tab' );
+			var tab = $( '#' + id ).data( 'tab' );
 
-			if ( $notice.length ) {
-				$notice.remove();
-			}
+			_.each( notices, function( notice, index ) {
+				var $notice = $( '#' + notice.id );
 
-			$.each( notices, function( index, notice ) {
-				$( '#tab-' + tab ).prepend( notice );
+				if ( $notice.length ) {
+					var $content = $notice.find( '.as3cf-notice-toggle-content' ).first();
+
+					if ( 'undefined' !== typeof $content ) {
+						$content.html( notice.contents );
+					} else {
+						$notice.replaceWith( notice.html );
+					}
+				} else {
+					$( '#tab-' + tab ).prepend( notice.html );
+					$( document ).trigger( 'wp-updates-notice-added' ); // Hack to run WP Core's makeNoticesDismissible() function.
+				}
 			} );
 		},
 
@@ -1121,20 +1129,6 @@
 
 		// Store the HTML of the views
 		as3cfpro.tool.cloneViews();
-
-		// Listen for any URLs for triggering tools
-		as3cfpro.tool.openFromURL();
-
-		// Display Tool Modal
-		$( 'body' ).on( 'click', 'a.as3cf-pro-tool', function( e ) {
-			e.preventDefault();
-
-			if ( $( e.target ).hasClass( 'disabled' ) ) {
-				return;
-			}
-
-			as3cfpro.tool.open( $( this ).closest( '.block' ).attr( 'id' ) );
-		} );
 
 		// Handle Pause / Resumes clicks
 		$( 'body' ).on( 'click', '.progress-content .pause-resume', as3cfpro.tool.setPauseResumeButton.bind( as3cfpro.tool ) );

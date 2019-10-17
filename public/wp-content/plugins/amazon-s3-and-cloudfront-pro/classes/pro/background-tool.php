@@ -21,6 +21,12 @@ abstract class Background_Tool extends Tool {
 	 */
 	protected $background_process;
 
+	protected $actions = array(
+		'start',
+		'pause_resume',
+		'cancel',
+	);
+
 	/**
 	 * Initialize the tool.
 	 */
@@ -34,6 +40,8 @@ abstract class Background_Tool extends Tool {
 		add_action( "wp_ajax_as3cfpro_{$this->tool_key}_pause_resume", array( $this, 'ajax_handle_pause_resume' ) );
 
 		$this->background_process = $this->get_background_process_class();
+
+		$this->maybe_handle_action_url();
 	}
 
 	/**
@@ -42,6 +50,15 @@ abstract class Background_Tool extends Tool {
 	 * @return false|array
 	 */
 	protected function get_sidebar_block_args() {
+		return $this->default_sidebar_block_args();
+	}
+
+	/**
+	 * Get the default sidebar notice details
+	 *
+	 * @return false|array
+	 */
+	public function default_sidebar_block_args() {
 		return array(
 			'title'              => $this->get_title_text(),
 			'more_info'          => $this->get_more_info_text(),
@@ -51,7 +68,9 @@ abstract class Background_Tool extends Tool {
 			'is_queued'          => $this->is_queued(),
 			'is_paused'          => $this->is_paused(),
 			'is_cancelled'       => $this->is_cancelled(),
-			'progress_percent'   => $this->get_progress(),
+			'total_progress'     => $this->get_progress(),
+			'progress'           => $this->get_progress(),
+			'queue'              => $this->get_queue_counts(),
 		);
 	}
 
@@ -62,13 +81,16 @@ abstract class Background_Tool extends Tool {
 	 */
 	public function get_status() {
 		return array(
-			'should_render' => $this->should_render(),
-			'progress'      => $this->get_progress(),
-			'is_queued'     => $this->is_queued(),
-			'is_processing' => $this->is_processing(),
-			'is_paused'     => $this->is_paused(),
-			'is_cancelled'  => $this->is_cancelled(),
-			'description'   => $this->get_status_description(),
+			'should_render'  => $this->should_render(),
+			'total_progress' => $this->get_progress(),
+			'progress'       => $this->get_progress(),
+			'is_queued'      => $this->is_queued(),
+			'is_processing'  => $this->is_processing(),
+			'is_paused'      => $this->is_paused(),
+			'is_cancelled'   => $this->is_cancelled(),
+			'description'    => $this->get_status_description(),
+			'queue'          => $this->get_queue_counts(),
+			'notices'        => $this->get_notices(),
 		);
 	}
 
@@ -119,7 +141,7 @@ abstract class Background_Tool extends Tool {
 	 * @return array
 	 */
 	public function add_js_nonces( $js_nonces ) {
-		$js_nonces['tools'][ $this->tool_key ]            = $this->create_tool_nonces();
+		$js_nonces['tools'][ $this->tool_key ]            = $this->create_tool_nonces( $this->actions );
 		$js_nonces[ 'dismiss_errors_' . $this->tool_key ] = wp_create_nonce( 'dismiss-errors-' . $this->tool_slug );
 
 		return $js_nonces;
@@ -132,7 +154,7 @@ abstract class Background_Tool extends Tool {
 	 *
 	 * @return array
 	 */
-	protected function create_tool_nonces( $actions = array( 'start', 'pause_resume', 'cancel' ) ) {
+	protected function create_tool_nonces( $actions ) {
 		$nonces = array();
 
 		foreach ( $actions as $action ) {
@@ -140,6 +162,46 @@ abstract class Background_Tool extends Tool {
 		}
 
 		return $nonces;
+	}
+
+	/**
+	 * Get a valid URL that may trigger the given action for the tool.
+	 *
+	 * @param string $action One of 'start', 'pause_resume' or 'cancel'.
+	 *
+	 * @return string
+	 */
+	protected function get_action_url( $action ) {
+		if ( ! in_array( $action, $this->actions ) ) {
+			return '';
+		}
+
+		return $this->as3cf->get_plugin_page_url(
+			array(
+				'tool'   => $this->tool_key,
+				'action' => $action,
+				'nonce'  => wp_create_nonce( $this->tool_key . '_' . $action ),
+			)
+		);
+	}
+
+	/**
+	 * Check request for tool action and calls handler if all in order.
+	 */
+	protected function maybe_handle_action_url() {
+		if (
+			! empty( $_REQUEST['tool'] ) &&
+			$_REQUEST['tool'] === $this->tool_key &&
+			! empty( $_REQUEST['action'] ) &&
+			in_array( $_REQUEST['action'], $this->actions ) &&
+			! empty( $_REQUEST['nonce'] ) &&
+			method_exists( $this, 'ajax_handle_' . $_REQUEST['action'] ) &&
+			wp_verify_nonce( $_REQUEST['nonce'], $this->tool_key . '_' . $_REQUEST['action'] )
+		) {
+			call_user_func( array( $this, "handle_{$_REQUEST['action']}" ) );
+
+			wp_redirect( $this->as3cf->get_plugin_page_url() );
+		}
 	}
 
 	/**
@@ -172,6 +234,13 @@ abstract class Background_Tool extends Tool {
 	public function ajax_handle_cancel() {
 		check_ajax_referer( $this->tool_key . '_cancel', 'nonce' );
 
+		$this->handle_cancel();
+	}
+
+	/**
+	 * Handle cancel.
+	 */
+	public function handle_cancel() {
 		if ( ! $this->is_queued() ) {
 			return;
 		}
@@ -185,6 +254,13 @@ abstract class Background_Tool extends Tool {
 	public function ajax_handle_pause_resume() {
 		check_ajax_referer( $this->tool_key . '_pause_resume', 'nonce' );
 
+		$this->handle_pause_resume();
+	}
+
+	/**
+	 * Handle pause resume.
+	 */
+	public function handle_pause_resume() {
 		if ( ! $this->is_queued() || $this->is_cancelled() ) {
 			return;
 		}
@@ -233,7 +309,8 @@ abstract class Background_Tool extends Tool {
 			return 0;
 		}
 
-		$data = array_shift( $batch->data );
+		$data = $batch->data;
+		$data = array_shift( $data );
 
 		if ( empty( $data['total_attachments'] ) || ! isset( $data['processed_attachments'] ) ) {
 			return 0;
@@ -255,6 +332,36 @@ abstract class Background_Tool extends Tool {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get total and processed counts for queue.
+	 *
+	 * @return array
+	 */
+	public function get_queue_counts() {
+		$counts = array(
+			'total'     => 0,
+			'processed' => 0,
+		);
+
+		$batch = $this->get_batch();
+
+		if ( empty( $batch ) ) {
+			return $counts;
+		}
+
+		$data = $batch->data;
+		$data = array_shift( $data );
+
+		if ( ! isset( $data['total_attachments'] ) || ! isset( $data['processed_attachments'] ) ) {
+			return $counts;
+		}
+
+		$counts['total']     = $data['total_attachments'];
+		$counts['processed'] = $data['processed_attachments'];
+
+		return $counts;
 	}
 
 	/**
@@ -294,7 +401,12 @@ abstract class Background_Tool extends Tool {
 
 		if ( is_null( $batch ) ) {
 			$batch = $this->background_process->get_batches( 1 );
-			$batch = array_shift( $batch );
+
+			if ( empty( $batch ) ) {
+				$batch = array();
+			} else {
+				$batch = array_shift( $batch );
+			}
 		}
 
 		return $batch;

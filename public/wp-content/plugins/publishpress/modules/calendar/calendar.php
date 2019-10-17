@@ -68,6 +68,21 @@ if ( ! class_exists('PP_Calendar')) {
         const MENU_SLUG = 'pp-calendar';
 
         /**
+         * Time 12h-format without leading zeroes.
+         */
+        const TIME_FORMAT_12H_WO_LEADING_ZEROES = 'ga';
+
+        /**
+         * Time 12h-format with leading zeroes.
+         */
+        const TIME_FORMAT_12H_WITH_LEADING_ZEROES = 'ha';
+
+        /**
+         * Time 24h-format with leading zeroes.
+         */
+        const TIME_FORMAT_24H = 'H';
+
+        /**
          * [$module description]
          *
          * @var [type]
@@ -124,6 +139,13 @@ if ( ! class_exists('PP_Calendar')) {
         private static $post_li_html_cache_key = 'pp_calendar_post_li_html';
 
         /**
+         * Store default WordPress Date and Time formats for caching purposes.
+         *
+         * @var string
+         */
+        private $default_date_time_format = 'ha';
+
+        /**
          * Construct the PP_Calendar class
          */
         public function __construct()
@@ -140,10 +162,11 @@ if ( ! class_exists('PP_Calendar')) {
                 'slug'                  => 'calendar',
                 'post_type_support'     => 'pp_calendar',
                 'default_options'       => [
-                    'enabled'          => 'on',
-                    'post_types'       => $this->pre_select_all_post_types(),
-                    'ics_subscription' => 'on',
-                    'ics_secret_key'   => '',
+                    'enabled'                 => 'on',
+                    'post_types'              => $this->pre_select_all_post_types(),
+                    'ics_subscription'        => 'on',
+                    'ics_secret_key'          => wp_generate_password(),
+                    'show_posts_publish_time' => 'on',
                 ],
                 'messages'              => [
                     'post-date-updated'   => __('Post date updated.', 'publishpress'),
@@ -219,6 +242,16 @@ if ( ! class_exists('PP_Calendar')) {
             add_action('admin_init', [$this, 'handle_regenerate_calendar_feed_secret']);
 
             add_filter('post_date_column_status', [$this, 'filter_post_date_column_status'], 12, 4);
+
+            if ($this->showPostsPublishTime()) {
+                // Cache WordPress default date/time formats.
+                $this->default_date_time_format = get_option('date_format') . ' ' . get_option('time_format');
+            }
+
+            add_filter('pp_calendar_after_form_submission_sanitize_title', [$this, 'sanitize_text_input'], 10, 1);
+            add_filter('pp_calendar_after_form_submission_sanitize_content', [$this, 'sanitize_text_input'], 10, 1);
+            add_filter('pp_calendar_after_form_submission_sanitize_author', [$this, 'sanitize_author_input'], 10, 1);
+            add_filter('pp_calendar_after_form_submission_validate_author', [$this, 'validate_author_input'], 10, 1);
         }
 
         /**
@@ -750,8 +783,8 @@ if ( ! class_exists('PP_Calendar')) {
         /**
          * Get the user's filters for calendar, either with $_GET or from saved
          *
-         * @uses get_user_meta()
          * @return array $filters All of the set or saved calendar filters
+         * @uses get_user_meta()
          */
         public function get_filters()
         {
@@ -845,6 +878,8 @@ if ( ! class_exists('PP_Calendar')) {
 
             $supported_post_types = $this->get_post_types_for_module($this->module);
 
+            $show_posts_publish_time = $this->showPostsPublishTime();
+
             $dotw = [
                 'Sat',
                 'Sun',
@@ -885,6 +920,8 @@ if ( ! class_exists('PP_Calendar')) {
             // Get the custom description for this page
             $description = sprintf('%s <span class="time-range">%s</span>', __('Calendar', 'publishpress'),
                 $this->calendar_time_range());
+
+            $authors = pp_get_users_with_author_permissions();
 
             // Should we display the subscribe button?
             if ('on' == $this->module->options->ics_subscription && $this->module->options->ics_secret_key) {
@@ -1027,6 +1064,8 @@ if ( ! class_exists('PP_Calendar')) {
                         <tbody>
 
                         <?php
+                        $default_post_status = $this->get_default_post_status();
+
                         $current_month        = date_i18n('F', strtotime($filters['start_date']));
                         for ($current_week = 1; $current_week <= $this->total_weeks; $current_week++) :
                             // We need to set the object variable for our posts_where filter
@@ -1127,7 +1166,7 @@ if ( ! class_exists('PP_Calendar')) {
 
                                                     foreach ($week_posts[$week_single_date] as $num => $post) {
                                                         echo $this->generate_post_li_html($post, $week_single_date,
-                                                            $num);
+                                                            $num, $show_posts_publish_time);
                                                     }
                                                 } ?>
                                             </ul>
@@ -1173,6 +1212,47 @@ if ( ! class_exists('PP_Calendar')) {
                                                         </label>
                                                         <br/>
                                                     <?php endif; ?>
+
+                                                    <label for="post-insert-dialog-post-author">
+                                                        <?php echo __('Author', 'publishpress'); ?>
+                                                        <select id="post-insert-dialog-post-author"
+                                                                name="post-insert-dialog-post-author"
+                                                                class="post-insert-dialog-post-author">
+                                                            <?php foreach ($authors as $author): ?>
+                                                                <option value="<?php echo $author->ID; ?>">
+                                                                    <?php echo $author->display_name; ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                        <?php unset($author); ?>
+                                                    </label>
+
+                                                    <div>
+                                                        <label for="post-insert-dialog-post-status"><?php _e('Status', 'publishpress'); ?></label>
+                                                        <select
+                                                            id="post-insert-dialog-post-status"
+                                                            name="post-insert-dialog-post-status"
+                                                            class="post-insert-dialog-post-status"
+                                                        >
+                                                            <?php foreach ($this->get_post_statuses() as $status): ?>
+                                                            <option
+                                                                value="<?php echo $status->slug; ?>"
+                                                                <?php echo $status->slug === $default_post_status ? 'selected' : ''; ?>
+                                                            >
+                                                                <?php echo $status->name; ?>
+                                                            </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                    </div>
+                                                    <div style="display: none;">
+                                                        <label for="post-insert-dialog-post-publish-time"><?php _e('Publish Time', 'publishpress'); ?></label>
+                                                        <input
+                                                            type="time"
+                                                            id="post-insert-dialog-post-publish-time"
+                                                            name="post-insert-dialog-post-publish-time"
+                                                            class="post-insert-dialog-post-publish-time"
+                                                        />
+                                                    </div>
 
                                                     <?php /* translators: %s = post type name */ ?>
                                                     <input type="text" class="post-insert-dialog-post-title"
@@ -1227,13 +1307,13 @@ if ( ! class_exists('PP_Calendar')) {
         /**
          * Generates the HTML for a single post item in the calendar
          *
-         * @param  obj $post      The WordPress post in question
-         * @param  str $post_date The date of the post
-         * @param  int $num       The index of the post
+         * @param obj $post      The WordPress post in question
+         * @param str $post_date The date of the post
+         * @param int $num       The index of the post
          *
          * @return str HTML for a single post item
          */
-        public function generate_post_li_html($post, $post_date, $num = 0)
+        public function generate_post_li_html($post, $post_date, $num = 0, $show_posts_publish_time = false)
         {
             $can_modify = ($this->current_user_can_modify_post($post)) ? 'can_modify' : 'read_only';
             $cache_key  = $post->ID . $can_modify;
@@ -1249,6 +1329,18 @@ if ( ! class_exists('PP_Calendar')) {
 
             $post_id        = $post->ID;
             $edit_post_link = get_edit_post_link($post_id);
+
+            if ($show_posts_publish_time) {
+                $show_posts_publish_time = in_array($post->post_status, self::getStatusesEligibleToDisplayPublishTime());
+            }
+
+            if ($show_posts_publish_time) {
+                $post_publish_datetime       = get_the_date('c', $post);
+                $post_publish_date_timestamp = get_post_time('U', false, $post);
+                $posts_publish_time_format   = !isset($this->module->options->posts_publish_time_format) || is_null($this->module->options->posts_publish_time_format)
+                    ? self::TIME_FORMAT_12H_WO_LEADING_ZEROES
+                    : $this->module->options->posts_publish_time_format;
+            }
 
             $post_classes = [
                 'day-item',
@@ -1290,6 +1382,16 @@ if ( ! class_exists('PP_Calendar')) {
                             <?php $title = esc_html(_draft_or_post_title($post->ID)); ?>
 
                             <span class="item-headline post-title" title="<?php echo esc_attr($title); ?>">
+                                <?php if ($show_posts_publish_time): ?>
+                                    <time
+                                            class="item-headline-time"
+                                            datetime="<?php echo $post_publish_datetime; ?>"
+                                            title="<?php echo date_i18n($this->default_date_time_format,
+                                                $post_publish_date_timestamp); ?>"
+                                    >
+                                    <?php echo date_i18n($posts_publish_time_format, $post_publish_date_timestamp); ?>
+                                </time>
+                                <?php endif; ?>
                                 <strong><?php echo $title; ?></strong>
                             </span>
                         </div>
@@ -1367,9 +1469,9 @@ if ( ! class_exists('PP_Calendar')) {
          * has been separated out so various ajax functions can reload certain
          * parts of an inner html element.
          *
-         * @param  array   $pp_calendar_item_information_fields
-         * @param  WP_Post $post
-         * @param  array   $published_statuses
+         * @param array   $pp_calendar_item_information_fields
+         * @param WP_Post $post
+         * @param array   $published_statuses
          *
          * @since 0.8
          */
@@ -1501,11 +1603,11 @@ if ( ! class_exists('PP_Calendar')) {
         /**
          * Get the information fields to be presented with each post popup
          *
-         * @since 0.8
-         *
          * @param obj $post Post to gather information fields for
          *
          * @return array $information_fields All of the information fields to be presented
+         * @since 0.8
+         *
          */
         public function get_post_information_fields($post)
         {
@@ -1890,11 +1992,11 @@ if ( ! class_exists('PP_Calendar')) {
         /**
          * Check whether the current user should have the ability to modify the post
          *
-         * @since 0.7
-         *
          * @param object $post The post object we're checking
          *
          * @return bool $can Whether or not the current user can modify the post
+         * @since 0.7
+         *
          */
         public function current_user_can_modify_post($post)
         {
@@ -1940,6 +2042,20 @@ if ( ! class_exists('PP_Calendar')) {
             add_settings_field('ics_subscription', __('Subscription in iCal or Google Calendar', 'publishpress'),
                 [$this, 'settings_ics_subscription_option'], $this->module->options_group_name,
                 $this->module->options_group_name . '_general');
+            add_settings_field(
+                'show_posts_publish_time',
+                __('Display Posts publish time', 'publishpress'),
+                [$this, 'settings_show_posts_publish_time_option'],
+                $this->module->options_group_name,
+                $this->module->options_group_name . '_general'
+            );
+            add_settings_field(
+                'posts_publish_time_format',
+                __('Posts publish time format', 'publishpress'),
+                [$this, 'settings_posts_publish_time_format_option'],
+                $this->module->options_group_name,
+                $this->module->options_group_name . '_general'
+            );
         }
 
         /**
@@ -2005,6 +2121,91 @@ if ( ! class_exists('PP_Calendar')) {
         }
 
         /**
+         * Option that define either Posts publish times are displayed or not.
+         *
+         * @since 1.20.0
+         */
+        public function settings_show_posts_publish_time_option()
+        {
+            $VALUE_ON  = 'on';
+            $VALUE_OFF = 'off';
+
+            $options = [
+                $VALUE_ON  => __('Show publish times', 'publishpress'),
+                $VALUE_OFF => __('Hide them', 'publishpress'),
+            ];
+
+            $show_posts_publish_time = $this->getShowPostsPublishTimeOptionValue();
+            $field_name = esc_attr($this->module->options_group_name) . '[show_posts_publish_time]';
+
+            echo '<div class="c-input-group">';
+            foreach ($options as $optionValue => $optionLabel) {
+                printf('
+                    <div class="c-input-radio">
+                        <label class="c-input-radio__label">
+                            <input
+                                class="o-radio"
+                                type="radio"
+                                name="%s"
+                                value="%s"
+                                %s
+                            /> %s
+                        </label>
+                    </div>',
+                    $field_name,
+                    $optionValue,
+                    $show_posts_publish_time === $optionValue ? 'checked' : '',
+                    $optionLabel
+                );
+            }
+            echo '</div>';
+        }
+
+        /**
+         * Define the time format for Posts publish date.
+         *
+         * @since 1.20.0
+         */
+        public function settings_posts_publish_time_format_option()
+        {
+            $timeFormats = [
+                self::TIME_FORMAT_12H_WO_LEADING_ZEROES   => '1-12 am/pm',
+                self::TIME_FORMAT_12H_WITH_LEADING_ZEROES => '01-12 am/pm',
+                self::TIME_FORMAT_24H                     => '00-24',
+            ];
+
+            $posts_publish_time_format = !isset($this->module->options->posts_publish_time_format) || is_null($this->module->options->posts_publish_time_format)
+                ? self::TIME_FORMAT_12H_WO_LEADING_ZEROES
+                : $this->module->options->posts_publish_time_format;
+
+            echo '<div class="c-input-group c-pp-calendar-options-posts_publish_time_format">';
+
+            foreach ($timeFormats as $timeFormat => $timeMockValue) {
+                printf('
+                    <div style="max-width: 175px; display: flex; flex-direction: row; justify-content: space-between; margin-bottom: 5px;">
+                        <label>
+                            <input
+                                class="o-radio"
+                                type="radio"
+                                name="%s"
+                                value="%s"
+                                %s
+                            />
+                            <span>%s</span>
+                        </label>
+                        <code>%2$s</code>
+                    </div>',
+                    esc_attr($this->module->options_group_name) . '[posts_publish_time_format]',
+                    $timeFormat,
+                    $posts_publish_time_format === $timeFormat ? 'checked' : '',
+                    $timeMockValue
+                );
+            }
+
+            echo '</div>';
+        }
+
+        /**
          * Validate the data submitted by the user in calendar settings
          *
          * @since 0.7
@@ -2046,6 +2247,14 @@ if ( ! class_exists('PP_Calendar')) {
             } else {
                 $options['ics_subscription'] = 'on';
             }
+
+            $options['show_posts_publish_time'] = isset($new_options['show_posts_publish_time']) && $new_options['show_posts_publish_time'] === 'on'
+                ? 'on'
+                : 'off';
+
+            $options['posts_publish_time_format'] = isset($new_options['posts_publish_time_format'])
+                ? $new_options['posts_publish_time_format']
+                : self::TIME_FORMAT_12H_WO_LEADING_ZEROES;
 
             return $options;
         }
@@ -2103,8 +2312,12 @@ if ( ! class_exists('PP_Calendar')) {
             }
 
             // Sanitize post values
-            $post_title   = sanitize_text_field($_POST['pp_insert_title']);
-            $post_content = sanitize_text_field($_POST['pp_insert_content']);
+            $post_title   = apply_filters('pp_calendar_after_form_submission_sanitize_title',
+                $_POST['pp_insert_title']);
+            $post_content = apply_filters('pp_calendar_after_form_submission_sanitize_content',
+                $_POST['pp_insert_content']);
+            $post_author  = apply_filters('pp_calendar_after_form_submission_sanitize_author',
+                $_POST['pp_insert_author']);
 
             if ( ! $post_title) {
                 $post_title = __('Untitled', 'publishpress');
@@ -2113,17 +2326,60 @@ if ( ! class_exists('PP_Calendar')) {
                 $post_content = '';
             }
 
-            $post_date = sanitize_text_field($_POST['pp_insert_date']);
+            try {
+                $post_author = apply_filters('pp_calendar_after_form_submission_validate_author', $post_author);
+            } catch (\Exception $e) {
+                $this->print_ajax_response('error', $e->getMessage());
+            }
 
-            $post_status = $this->get_default_post_status();
+            if (empty($post_author)) {
+                $authorsPermissions = self::getAuthorPermissions();
+                $user               = wp_get_current_user();
+                if (count(array_intersect($authorsPermissions, $user->roles)) === 0) {
+                    $this->print_ajax_response(
+                        'error',
+                        __('You do not have necessary permissions to complete this action.', 'publishpress')
+                    );
+                }
+
+                $post_author = $user->ID;
+            }
+
+            $post_date = sanitize_text_field($_POST['pp_insert_date']);
+            $post_date_timestamp = strtotime($post_date);
+
+            $post_publish_time = sanitize_text_field(trim($_POST['pp_insert_publish_time']));
+            if (!empty($post_publish_time)) {
+                $post_publish_date_time = sprintf(
+                    '%s %s',
+                    $post_date,
+                    ((function_exists('mb_strlen') ? mb_strlen($post_publish_time) : strlen($post_publish_time)) === 5)
+                        ? "{$post_publish_time}:" . date('s', $post_date_timestamp)
+                        : date('H:i:s', $post_date_timestamp)
+                );
+            } else {
+                $post_publish_time = '';
+            }
+
+            $post_publish_date_time_instance = new DateTime("{$post_date}{$post_publish_time}");
+            if ($post_publish_date_time_instance === false) {
+                $this->print_ajax_response('error', __('Invalid Publish Date supplied.', 'publishpress'));
+            }
+            unset($post_publish_date_time_instance);
+
+            $post_status = sanitize_text_field($_POST['pp_insert_status']);
+            if (!$this->isPostStatusValid($post_status)) {
+                $this->print_ajax_response('error', __('Invalid Status supplied.', 'publishpress'));
+            }
 
             // Set new post parameters
             $post_placeholder = [
+                'post_author'       => $post_author,
                 'post_title'        => $post_title,
                 'post_content'      => $post_content,
                 'post_type'         => $post_type,
                 'post_status'       => $post_status,
-                'post_date'         => date('Y-m-d H:i:s', strtotime($post_date)),
+                'post_date'         => $post_publish_date_time,
                 'post_modified'     => current_time('mysql'),
                 'post_modified_gmt' => current_time('mysql', 1),
             ];
@@ -2132,7 +2388,7 @@ if ( ! class_exists('PP_Calendar')) {
             // If the user don't desires that to be the behavior, they can set the result of this filter to 'false'
             // With how WordPress works internally, setting 'post_date_gmt' will set the timestamp
             if (apply_filters('pp_calendar_allow_ajax_to_set_timestamp', true)) {
-                $post_placeholder['post_date_gmt'] = date('Y-m-d H:i:s', strtotime($post_date));
+                $post_placeholder['post_date_gmt'] = date('Y-m-d H:i:s', $post_date_timestamp);
             }
 
             // Create the post
@@ -2145,8 +2401,10 @@ if ( ! class_exists('PP_Calendar')) {
 
                 $post = get_post($post_id);
 
+                $show_posts_publish_time = $this->showPostsPublishTime();
+
                 // Generate the HTML for the post item so it can be injected
-                $post_li_html = $this->generate_post_li_html($post, $post_date);
+                $post_li_html = $this->generate_post_li_html($post, $post_date, 0, $show_posts_publish_time);
 
                 // announce success and send back the html to inject
                 $this->print_ajax_response('success', $post_li_html);
@@ -2155,14 +2413,25 @@ if ( ! class_exists('PP_Calendar')) {
             }
         }
 
+        private function isPostStatusValid($subject) {
+            foreach ($this->get_post_statuses() as $post_status) {
+                $is_status_valid = $subject === $post_status->slug;
+                if ($is_status_valid) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         /**
          * Allow to alter modified date when creating posts. WordPress by default
          * doesn't allow that. We need it to fix an issue where the post_modified
          * field is saved with the post_date value. That is a ptoblem when you save
          * a post with post_date to the future. For scheduled posts.
          *
-         * @param  array $data
-         * @param  array $postarr
+         * @param array $data
+         * @param array $postarr
          *
          * @return array
          */
@@ -2180,7 +2449,7 @@ if ( ! class_exists('PP_Calendar')) {
          * Returns the singular label for the posts that are
          * quick-created on the calendar
          *
-         * @param  mix $post_type_slug
+         * @param mix $post_type_slug
          *
          * @return str Singular label for a post-type
          */
@@ -2297,12 +2566,12 @@ if ( ! class_exists('PP_Calendar')) {
         /**
          * Sanitize a $_GET or similar filter being used on the calendar
          *
-         * @since 0.8
-         *
          * @param string $key         Filter being sanitized
          * @param string $dirty_value Value to be sanitized
          *
          * @return string $sanitized_value Safe to use value
+         * @since 0.8
+         *
          */
         public function sanitize_filter($key, $dirty_value)
         {
@@ -2484,6 +2753,133 @@ if ( ! class_exists('PP_Calendar')) {
             }
 
             return $status;
+        }
+
+        /**
+         * @since   1.20.1
+         *
+         * @access  private
+         *
+         * @return  string
+         */
+        private function getShowPostsPublishTimeOptionValue()
+        {
+            $valid_options = ['on', 'off'];
+
+            $publish_time = (function_exists('mb_strtolower'))
+            ? mb_strtolower($this->module->options->show_posts_publish_time)
+            : strtolower($this->module->options->show_posts_publish_time);
+
+            if (
+                !isset($this->module->options->show_posts_publish_time)
+                || empty($this->module->options->show_posts_publish_time)
+                || !in_array($publish_time, $valid_options)
+            ) {
+                return 'on';
+            }
+
+            return $publish_time;
+        }
+
+        /**
+         * @since   @todo
+         *
+         * @access  private
+         *
+         * @return  bool
+         */
+        private function showPostsPublishTime()
+        {
+            return $this->getShowPostsPublishTimeOptionValue() === 'on';
+        }
+
+        /**
+         * Sanitizes a given string input.
+         *
+         * @param string $input_value
+         *
+         * @return  string
+         */
+        public static function sanitize_text_input($input_value = '')
+        {
+            return sanitize_text_field($input_value);
+        }
+
+        /**
+         * Sanitizes a given author id.
+         *
+         * @param string $author_id
+         *
+         * @return  int
+         */
+        public static function sanitize_author_input($author_id = '')
+        {
+            return (int)sanitize_text_field($author_id);
+        }
+
+        /**
+         * @param string $post_author_id
+         *
+         * @return  int|null
+         *
+         * @throws  Exception
+         */
+        public static function validate_author_input($post_author_id = '')
+        {
+            if (empty($post_author_id)) {
+                return null;
+            }
+
+            $authorsPermissions = self::getAuthorPermissions();
+            $user               = get_user_by('id', $post_author_id);
+            if (count(array_intersect($authorsPermissions, $user->roles)) === 0) {
+                throw new \Exception(__("The selected user doesn't have enough permissions to be set as the post author.",
+                    'publishpress'));
+            }
+
+            return (int)$user->ID;
+        }
+
+        /**
+         * Retrieve a set of permissions that an Author user might have.
+         *
+         * @access  private
+         * @static
+         * @return  array
+         * @since   1.20.0
+         *
+         */
+        private static function getAuthorPermissions()
+        {
+            return [
+                'administrator',
+                'author',
+                'editor',
+                'contributor',
+            ];
+        }
+
+        /**
+         * @since   1.20.1
+         *
+         * @access  private
+         * @static
+         *
+         * @return  array
+         */
+        private static function getStatusesEligibleToDisplayPublishTime() {
+            $statuses = [
+                'publish',
+            ];
+
+            if (
+                class_exists('PP_Custom_Status')
+                && PP_Custom_Status::isModuleEnabled()
+            ) {
+                $statuses[] = PP_Custom_Status::STATUS_SCHEDULED;
+            }
+
+            return $statuses;
         }
     }
 }

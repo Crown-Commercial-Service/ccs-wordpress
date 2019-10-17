@@ -192,6 +192,10 @@ class Enable_Media_Replace extends Integration {
 	 * @return string
 	 */
 	public function ensure_unique_filename( $filename, $path, $id ) {
-		return $this->as3cf->filter_unique_filename( $filename, $id );
+		// Get extension.
+		$ext = pathinfo( $filename, PATHINFO_EXTENSION );
+		$ext = $ext ? ".$ext" : '';
+
+		return $this->as3cf->filter_unique_filename( $filename, $ext, $path, $id );
 	}
 }

@@ -63,6 +63,11 @@ abstract class Tool {
 	protected static $show_tool_constants = array();
 
 	/**
+	 * @var bool
+	 */
+	public static $assets_loaded = false;
+
+	/**
 	 * AS3CF_Tool constructor.
 	 *
 	 * @param \Amazon_S3_And_CloudFront_Pro $as3cf
@@ -78,11 +83,41 @@ abstract class Tool {
 	 * Initialize the tool.
 	 */
 	public function init() {
+		// Assets
+		add_action( 'as3cfpro_load_assets', array( $this, 'load_assets' ) );
+		add_filter( 'as3cfpro_js_settings', array( $this, 'add_js_settings' ) );
+
 		// Load sidebar block
 		add_action( 'as3cfpro_sidebar', array( $this, 'render_sidebar_block' ), $this->priority );
 
 		// Ajax notices
 		add_action( 'wp_ajax_as3cfpro_dismiss_errors_' . $this->tool_key, array( $this, 'ajax_dismiss_errors' ) );
+	}
+
+	/**
+	 * Load the assets for the tool once
+	 */
+	public function load_assets() {
+		if ( ! self::$assets_loaded ) {
+			$this->as3cf->enqueue_style( 'as3cf-pro-tool-styles', 'assets/css/pro/tool', array( 'as3cf-pro-styles' ) );
+			$this->as3cf->enqueue_script( 'as3cf-pro-tool-script', 'assets/js/pro/tool', array( 'as3cf-pro-script', 'underscore' ) );
+
+			self::$assets_loaded = true;
+		}
+	}
+
+	/**
+	 * Add settings for the Tools to the Javascript
+	 *
+	 * @param $settings
+	 *
+	 * @return mixed
+	 */
+	public function add_js_settings( $settings ) {
+		// Global settings
+		$settings['errors_key_prefix'] = $this->errors_key_prefix;
+
+		return $settings;
 	}
 
 	/**
@@ -287,31 +322,92 @@ abstract class Tool {
 	}
 
 	/**
-	 * Get error notices.
+	 * Get notices to be dynamically shown on settings page (where the tool "runs").
 	 *
 	 * @return bool|array
 	 */
-	public function get_error_notices() {
-		$notice = $this->as3cf->notices->find_notice_by_id( $this->errors_key );
+	public function get_notices() {
+		$notices = array();
 
-		if ( ! $notice ) {
-			return false;
+		$user_id           = get_current_user_id();
+		$dismissed_notices = get_user_meta( $user_id, 'as3cf_dismissed_notices', true );
+
+		if ( ! is_array( $dismissed_notices ) ) {
+			$dismissed_notices = array();
 		}
 
-		$data = array();
+		$notice_id = $this->get_tool_key() . '_completed';
 
-		ob_start();
-		$this->as3cf->render_view( 'notice', $notice );
-		$data['error_notice'] = ob_get_contents();
-		ob_end_clean();
+		$notice = $this->as3cf->notices->find_notice_by_id( $notice_id );
+
+		if ( $notice && ( $notice['only_show_to_user'] || ! in_array( $notice['id'], $dismissed_notices ) ) ) {
+			ob_start();
+			$this->as3cf->render_view( 'notice', $notice );
+			$notice_html = ob_get_contents();
+			ob_end_clean();
+
+			$notices[] = array(
+				'id'   => $notice['id'],
+				'html' => $notice_html,
+			);
+		}
+
+		if ( ! empty( $this->get_errors() ) ) {
+			$notice = $this->as3cf->notices->find_notice_by_id( $this->errors_key );
+
+			if ( $notice && ( $notice['only_show_to_user'] || ! in_array( $notice['id'], $dismissed_notices ) ) ) {
+				// Try and discourage dismissing the errors entirely on dynamically added error notices.
+				// It gets a bit messy otherwise with race conditions.
+				if ( $this->is_processing() ) {
+					$notice['dismissible'] = false;
+				}
+
+				ob_start();
+				$this->as3cf->render_view( 'notice', $notice );
+				$notice_html = ob_get_contents();
+				ob_end_clean();
+
+				ob_start();
+				$this->as3cf->render_tool_errors_callback( $this->tool_key );
+				$notice_contents = ob_get_contents();
+				ob_end_clean();
+
+				$notices[] = array(
+					'id'       => $notice['id'],
+					'html'     => $notice_html,
+					'contents' => $notice_contents,
+				);
+			}
+		}
 
 		$custom_notices = $this->get_custom_notices_to_update();
 
 		if ( ! empty( $custom_notices ) ) {
-			$data['custom_notices'] = $custom_notices;
+			foreach ( $custom_notices as $notice ) {
+				if ( $notice && ( $notice['only_show_to_user'] || ! in_array( $notice['id'], $dismissed_notices ) ) ) {
+					ob_start();
+					$this->as3cf->render_view( 'notice', $notice );
+					$notice_html = ob_get_contents();
+					ob_end_clean();
+
+					$notices[] = array(
+						'id'   => $notice['id'],
+						'html' => $notice_html,
+					);
+				}
+			}
 		}
 
-		return $data;
+		return $notices;
+	}
+
+	/**
+	 * Allow child classes to inject custom notices to be updated in the DOM
+	 *
+	 * @return array
+	 */
+	protected function get_custom_notices_to_update() {
+		return array();
 	}
 
 	/**
@@ -337,11 +433,12 @@ abstract class Tool {
 	 *
 	 * @return int
 	 */
-	protected function count_media_files() {
+	protected function count_offloaded_media_files() {
 		static $count;
 
 		if ( is_null( $count ) ) {
-			$count = $this->as3cf->get_media_library_provider_total( true );
+			$media_counts = $this->as3cf->media_counts();
+			$count        = $media_counts['offloaded'];
 		}
 
 		return $count;

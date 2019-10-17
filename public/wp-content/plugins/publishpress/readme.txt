@@ -1,12 +1,12 @@
-=== PublishPress - Professional publishing tools for WordPress ===
-Contributors: publishpress, andergmartins, stevejburge, pressshack, kevinb
+=== PublishPress Content Calendar and Notifications ===
+Contributors: publishpress, andergmartins, stevejburge, pressshack, kevinb, deenison
 Author: PublishPress, PressShack
 Author URI: https://publishpress.com
 Tags: notifications, Editorial Calendar, workflow, statuses, permissions
 Requires at least: 4.6
 Requires PHP: 5.4
-Tested up to: 5.1
-Stable tag: 1.19.4
+Tested up to: 5.2
+Stable tag: 1.20.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -116,7 +116,7 @@ You can install PublishPress through your WordPress admin area:
 = Where Can I Get Support? =
 
 You can ask for help via [the PublishPress contact form](https://publishpress.com/contact/).
-
+ph
 = Do I Need Coding Skills to Use PublishPress? =
 
 Not at all. You can set up everything your team needs without any coding knowledge. We made it super easy.
@@ -129,6 +129,93 @@ Not at all. You can set up everything your team needs without any coding knowled
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
+
+= [1.20.9] - 2019-09-11 =
+
+* Fixed: Too many Notifications sent for wc_admin_unsnooze_admin_notes posts created by WooCommerce Admin. Notifications were being sent for non supported post types;
+* Fixed: JavaScript breaks when Alledia framework object is not found;
+* Fixed: Notification workflows are not saving when ACF is installed;
+* Fixed: Wrong help text for [psppno_post] shortcode in the notification workflows;
+* Fixed: Missed rewrite rules for the post types: dashboard-note and psppnotif_workflow.
+* Fixed: Undefined index: REQUEST_METHOD for $_SERVER.
+* Fixed: The logo is missed on the Notification Workflows page.
+
+= [1.20.8] - 2019-08-19 =
+
+* Feature: Support post meta fields in notification body (also requires PublishPress Reminders 1.1.1)
+* Feature: Added general debug information and settings to the Site Health page
+* Feature: Added a list of installed modules to the Site Health page
+* Feature: Added a list of scheduled notifications ot the Site Health page
+* Changed: Convert debug panel to read only
+* Changed: symfony/polyfill-ctype library updated from 1.11.0 to 1.12.0
+* Fixed: If Async Notifications enabled and more than one workflow notification applies to a post, the additional notifications were not sent (corresponding fix in PublishPress Reminders 1.1.1)
+* Fixed: PHP warning "date() expects parameter 2 to be int, string given"
+* Fixed: Hidden calendar on datepicker fields in Gutenberg due to negative z-index
+* Fixed: The column "Last Updated" on content overview had a wrong date format
+* Fixed: Missed "use" statement for Dependency Injection on the custom status module
+
+= [1.20.7] - 2019-06-17 =
+
+* Fix fatal error in wp-admin when active alongside WPML or another plugin that uses an obsolete version of the Twig library
+* Fix alignment of stars on "please leave us a rating" footer
+* Fix redirect behavior on "Already reviewed" selection from "Please leave a review" notice
+* Fix PHP warning when a invalid taxonomy is loaded
+* Fix an empty space on the statuses screen
+* Add publish time field on New Post popup within Calendar
+* Add post status field on New Post popup within Calendar
+* Fix call-time passed-by-reference occurrences
+* Changed calendar to display or hide the publish time according to the post status
+* Add new PublishPress icon to the Settings screen
+* Update the menu icon
+* Fix calendar subscription after a fresh install, don't require saving the settings before it works
+* Fix the empty author list in the calendar popup
+* For PublishPress Reminders, support status selection in "Before Publication" workflow notifications
+* Fix double slash on some assets URLs
+
+= [1.20.6] - 2019-05-16 =
+* Fix fatal error on Edit Notification Workflow screen
+* Fix JS error in wp-admin (blocking other plugin JS) for sites running on localhost and Windows servers
+
+= [1.20.5] - 2019-05-15 =
+* Fix blacklisting taxonomies causing WSOD in some envs containing a lot of Terms
+* Fix Calendar displaying times on wrong Timezones
+* Fix Custom Statuses listing on Settings page not being reordable anymore
+
+= [1.20.4] - 2019-05-03 =
+* Fix JS error in wp-admin (blocking other plugin JS) for sites running on localhost and Windows servers
+
+= [1.20.3] - 2019-05-03 =
+
+* Fix fatal error in Calendar module: "undefined function mb_strtolower()" on servers that don't have PHP multibyte string extension
+* Fix PHP notice in Unpublished Content dashboard metabox
+
+= [1.20.2] - 2019-05-02 =
+
+* Partially adds support for Gutenberg-Ramp plugin
+* Fix PublishPress icon missing on admin sidebar in some envs
+* Fix PHP warnings on Calendar module
+* Fix issue on posts where MetaData date fields were losing their formats and values after saving
+* Fix Calendar date filter going back to 1970 if user edits filter value but doesn't change it
+* Fix PHP warnings on Notifications section on Posts form if WP_DEBUG is on
+* Add option to blacklist taxonomies-slugs on the taxonomies filter for adding New Notification Workflow
+
+= [1.20.1] - 2019-04-16 =
+
+* Fix PHP warning regarding missing variable reference
+* Fix custom statuses not being available for Quick/Bulk post editing
+* Fix publish time being displayed on any post regardless of its status on Calendar
+* Fix missing default value for the Display Publish Time calendar option
+* Fix a performance issue caused by duplicated DB queries calls on Calendar
+
+= [1.20.0] - 2019-04-08 =
+
+* Fix metadata not showing up on Content Overview;
+* Fix Content Overview Start Date filter not detecting current date;
+* Fix minor inconsistency on Content Overview datepicker filter output format;
+* Fix Custom Statuses table squeezing up content on settings page when a lot of custom post types are in use;
+* Add "new" to available statuses for notification workflow;
+* Add Author field on Calendar item pop up;
+* Add option to toggle posts/pages publish time on Calendar;
 
 = [1.19.4] - 2019-02-22 =
 

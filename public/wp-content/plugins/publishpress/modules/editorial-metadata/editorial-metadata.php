@@ -63,6 +63,13 @@ if (!class_exists('PP_Editorial_Metadata')) {
         private $editorial_metadata_terms_cache = [];
 
         /**
+         * Stores a chain of input-type handlers.
+         *
+         * @var Editorial_Metadata_Input_Handler $editorial_metadata_input_handler
+         */
+        private $editorial_metadata_input_handler = null;
+
+        /**
          * Construct the PP_Editorial_Metadata class
          */
         public function __construct()
@@ -111,6 +118,9 @@ if (!class_exists('PP_Editorial_Metadata')) {
 
             // Register the taxonomy we use for Editorial Metadata with WordPress core
             $this->register_taxonomy();
+
+            // Load the chain of input-type handlers.
+            $this->load_input_handlers();
 
             // Anything that needs to happen in the admin
             add_action('admin_init', [$this, 'action_admin_init']);
@@ -420,149 +430,32 @@ if (!class_exists('PP_Editorial_Metadata')) {
                 foreach ($terms as $term) {
                     $postmeta_key     = esc_attr($this->get_postmeta_key($term));
                     $current_metadata = esc_attr($this->get_postmeta_value($term, $post->ID));
-                    $type             = $term->type;
-                    $description      = $term->description;
-                    if ($description) {
-                        $description_span = "<span class='description'>$description</span>";
-                    } else {
-                        $description_span = '';
-                    }
-                    echo "<div class='" . esc_attr(self::metadata_taxonomy) . " " . esc_attr(self::metadata_taxonomy) . "_$type'>";
+
+                    echo "<div class='" . esc_attr(self::metadata_taxonomy) . " " . esc_attr(self::metadata_taxonomy) . "_$term->type'>";
 
                     // Check if the user can edit the metadata
                     $can_edit = apply_filters('pp_editorial_metadata_user_can_edit', true);
 
                     if ($can_edit) {
-                        switch ($type) {
-                            case "date":
-                                // TODO: Move this to a function
-                                if (!empty($current_metadata)) {
-                                    // Turn timestamp into a human-readable date
-                                    $current_metadata = $this->show_date_or_datetime(intval($current_metadata));
-                                }
-                                echo "<label for='$postmeta_key'>{$term->name}</label>";
-                                if ($description_span) {
-                                    echo "<label for='$postmeta_key'>$description_span</label>";
-                                }
-                                echo "<input id='$postmeta_key' name='$postmeta_key' type='text' class='date-time-pick' value='$current_metadata' />";
-                                break;
-                            case "location":
-                                echo "<label for='$postmeta_key'>{$term->name}</label>";
-                                if ($description_span) {
-                                    echo "<label for='$postmeta_key'>$description_span</label>";
-                                }
-                                echo "<input id='$postmeta_key' name='$postmeta_key' type='text' value='$current_metadata' />";
-                                if (!empty($current_metadata)) {
-                                    echo "<div><a href='http://maps.google.com/?q={$current_metadata}&t=m' target='_blank'>" . sprintf(__('View &#8220;%s&#8221; on Google Maps', 'publishpress'), $current_metadata) . "</a></div>";
-                                }
-                                break;
-                            case "text":
-                                echo "<label for='$postmeta_key'>{$term->name}$description_span</label>";
-                                echo "<input id='$postmeta_key' name='$postmeta_key' type='text' value='$current_metadata' />";
-                                break;
-                            case "paragraph":
-                                echo "<label for='$postmeta_key'>{$term->name}$description_span</label>";
-                                echo "<textarea id='$postmeta_key' name='$postmeta_key'>$current_metadata</textarea>";
-                                break;
-                            case "checkbox":
-                                echo "<label for='$postmeta_key'>{$term->name}$description_span</label>";
-                                echo "<input id='$postmeta_key' name='$postmeta_key' type='checkbox' value='1' " . checked($current_metadata, 1, false) . " />";
-                                break;
-                            case "user":
-                                echo "<label for='$postmeta_key'>{$term->name}$description_span</label>";
-                                $user_dropdown_args = [
-                                        'show_option_all' => __('-- Select a user --', 'publishpress'),
-                                        'name'     => $postmeta_key,
-                                        'selected' => $current_metadata,
-                                    ];
-                                $user_dropdown_args = apply_filters('pp_editorial_metadata_user_dropdown_args', $user_dropdown_args);
-                                wp_dropdown_users($user_dropdown_args);
-                                break;
-                            case "number":
-                                echo "<label for='$postmeta_key'>{$term->name}$description_span</label>";
-                                echo "<input id='$postmeta_key' name='$postmeta_key' type='text' value='$current_metadata' />";
-                                break;
-                            default:
-                                echo "<p>" . __('This editorial metadata type is not yet supported.', 'publishpress') . "</p>";
-                        }
+                        $this->editorial_metadata_input_handler->handleHtmlRendering(
+                            $term->type,
+                            [
+                                'name'  => $postmeta_key,
+                                'label' => $term->name,
+                                'description' => $term->description,
+                            ],
+                            $current_metadata
+                        );
                     } else {
-                        switch ($type) {
-                            case "date":
-                                // TODO: Move this to a function
-                                if (!empty($current_metadata)) {
-                                    // Turn timestamp into a human-readable date
-                                    $current_metadata = $this->show_date_or_datetime(intval($current_metadata));
-                                }
-                                echo "<label for='$postmeta_key'>{$term->name}</label>";
-                                if ($description_span) {
-                                    echo "<label for='$postmeta_key'>$description_span</label>";
-                                }
-                                if (! empty($current_metadata)) {
-                                    echo '<span class="pp_editorial_metadata_value">' . $current_metadata . '</span>';
-                                } else {
-                                    $this->echo_not_set_span();
-                                }
-                                break;
-                            case "location":
-                                echo "<label for='$postmeta_key'>{$term->name}</label>";
-                                if ($description_span) {
-                                    echo "<label for='$postmeta_key'>$description_span</label>";
-                                }
-                                echo '<span class="pp_editorial_metadata_value">' . $current_metadata . '</span>';
-                                if (!empty($current_metadata)) {
-                                    echo "<div><a href='http://maps.google.com/?q={$current_metadata}&t=m' target='_blank'>" . sprintf(__('View &#8220;%s&#8221; on Google Maps', 'publishpress'), $current_metadata) . "</a></div>";
-                                } else {
-                                    $this->echo_not_set_span();
-                                }
-                                break;
-                            case "text":
-                                echo "<label for='$postmeta_key'>{$term->name}$description_span</label>";
-                                if (! empty($current_metadata)) {
-                                    echo '<span class="pp_editorial_metadata_value">' . $current_metadata . '</span>';
-                                } else {
-                                    $this->echo_not_set_span();
-                                }
-                                break;
-                            case "paragraph":
-                                echo "<label for='$postmeta_key'>{$term->name}$description_span</label>";
-                                if (! empty($current_metadata)) {
-                                    echo '<span class="pp_editorial_metadata_value">' . $current_metadata . '</span>';
-                                } else {
-                                    $this->echo_not_set_span();
-                                }
-                                break;
-                            case "checkbox":
-                                echo "<label for='$postmeta_key'>{$term->name}$description_span</label>";
-                                if (! empty($current_metadata)) {
-                                    echo empty($current_metadata) ? __('No', 'publishpress-editorial-metadata')
-                                        : __('Yes', 'publishpress-editorial-metadata');
-                                } else {
-                                    $this->echo_not_set_span();
-                                }
-                                break;
-                            case "user":
-                                echo "<label for='$postmeta_key'>{$term->name}$description_span</label>";
-
-                                $user = get_user_by('ID', $current_metadata);
-                                if (is_object($user)) {
-                                    echo '<span class="pp_editorial_metadata_value">' . $user->user_nicename . '</span>';
-                                } else {
-                                    $this->echo_not_set_span();
-                                }
-
-                                break;
-                            case "number":
-                                echo "<label for='$postmeta_key'>{$term->name}$description_span</label>";
-                                if (! empty($current_metadata)) {
-                                    echo "<input id='$postmeta_key' name='$postmeta_key' type='text' value='$current_metadata' />";
-                                } else {
-                                    $this->echo_not_set_span();
-                                }
-                                break;
-                            default:
-                                echo "<p>" . __('This editorial metadata type is not yet supported.', 'publishpress') . "</p>";
-                        }
-                        echo "<input id='$postmeta_key' name='$postmeta_key' type='hidden' value='$current_metadata' />";
+                        $this->editorial_metadata_input_handler->handlePreviewRendering(
+                            $term->type,
+                            [
+                                'name'  => $postmeta_key,
+                                'label' => $term->name,
+                                'description' => $term->description,
+                            ],
+                            $current_metadata
+                        );
                     }
 
                     echo "</div>";
@@ -633,19 +526,12 @@ if (!class_exists('PP_Editorial_Metadata')) {
 
                     // TODO: Move this to a function
                     if ($type == 'date') {
-                        $date = DateTime::createFromFormat(__('M d Y', 'publishpress'), $new_metadata);
-
-                        // Check if the date is invalid. If it has specific time, we need another date format.
-                        if (false === $date) {
-                            // Try another format with time
-                            $date = DateTime::createFromFormat(__('M d Y H:i', 'publishpress'), $new_metadata);
-                        }
-
+                        $new_metadata = isset($_POST[$key . '_hidden']) ? $_POST[$key . '_hidden'] : '';
+                        $date = DateTime::createFromFormat('Y-m-d H:i', $new_metadata);
                         if (false !== $date) {
                             $new_metadata = $date->getTimestamp();
                         }
-                    }
-                    if ($type == 'number') {
+                    } elseif ($type == 'number') {
                         $new_metadata = (int)$new_metadata;
                     }
 
@@ -704,11 +590,11 @@ if (!class_exists('PP_Editorial_Metadata')) {
         /**
          * Get all of the editorial metadata terms as objects and sort by position
          *
-         * @todo Figure out what we should do with the filter...
-         *
          * @param array $filter_args Filter to specific arguments
          *
          * @return array $ordered_terms The terms as they should be ordered
+         *@todo Figure out what we should do with the filter...
+         *
          */
         public function get_editorial_metadata_terms($filter_args = [])
         {
@@ -730,7 +616,7 @@ if (!class_exists('PP_Editorial_Metadata')) {
             // Order the terms
             foreach ($terms as $key => $term) {
 
-                // Unencode and set all of our psuedo term meta because we need the position and viewable if they exists
+                // Unencode and set all of our pseudo term meta because we need the position and viewable if they exists
                 // First do an array_merge() on the term object to make sure the keys exist, then array_merge()
                 // any values that may already exist
                 $unencoded_description = $this->get_unencoded_description($term->description);
@@ -804,11 +690,12 @@ if (!class_exists('PP_Editorial_Metadata')) {
          * Register editorial metadata fields as columns in the manage posts view
          * Only adds columns for the currently active post types - logic controlled in $this->init()
          *
-         * @since 0.7
-         * @uses apply_filters('manage_posts_columns') in wp-admin/includes/class-wp-posts-list-table.php
-         *
          * @param array $posts_columns Existing post columns prepared by WP_List_Table
          * @param array $posts_columns Previous post columns with the new values
+         *
+         *@since 0.7
+         * @uses apply_filters('manage_posts_columns') in wp-admin/includes/class-wp-posts-list-table.php
+         *
          */
         public function filter_manage_posts_columns($posts_columns)
         {
@@ -828,11 +715,11 @@ if (!class_exists('PP_Editorial_Metadata')) {
         /**
          * Register any viewable date editorial metadata as a sortable column
          *
-         * @since 0.7.4
-         *
          * @param array $sortable_columns Any existing sortable columns (e.g. Title)
          *
          * @return array $sortable_columms Sortable columns with editorial metadata date fields added
+         *@since 0.7.4
+         *
          */
         public function filter_manage_posts_sortable_columns($sortable_columns)
         {
@@ -865,11 +752,12 @@ if (!class_exists('PP_Editorial_Metadata')) {
          * Handle the output of an editorial metadata custom column
          * Logic for the post types this is called on is controlled in $this->init()
          *
-         * @since 0.7
-         * @uses do_action('manage_posts_custom_column') in wp-admin/includes/class-wp-posts-list-table.php
-         *
          * @param string $column_name Unique string for the column
          * @param int $post_id ID for the post of the row
+         *
+         *@since 0.7
+         * @uses do_action('manage_posts_custom_column') in wp-admin/includes/class-wp-posts-list-table.php
+         *
          */
         public function action_manage_posts_custom_column($column_name, $post_id)
         {
@@ -889,13 +777,13 @@ if (!class_exists('PP_Editorial_Metadata')) {
         /**
          * If the PublishPress Calendar is enabled, add viewable Editorial Metadata terms
          *
-         * @since 0.7
-         * @uses apply_filters('pp_calendar_item_information_fields')
-         *
          * @param array $calendar_fields Additional data fields to include on the calendar
          * @param int $post_id Unique ID for the post data we're building
          *
          * @return array $calendar_fields Calendar fields with our viewable Editorial Metadata added
+         *@uses apply_filters('pp_calendar_item_information_fields')
+         *
+         * @since 0.7
          */
         public function filter_calendar_item_fields($calendar_fields, $post_id)
         {
@@ -927,12 +815,12 @@ if (!class_exists('PP_Editorial_Metadata')) {
         /**
          * If the PublishPress Content Overview is enabled, register our viewable terms as columns
          *
-         * @since 0.7
-         * @uses apply_filters('pp_story_budget_term_columns')
-         *
          * @param array $term_columns The existing columns on the content overview
          *
          * @return array $term_columns Term columns with viewable Editorial Metadata terms
+         *@since 0.7
+         * @uses apply_filters('pp_story_budget_term_columns')
+         *
          */
         public function filter_story_budget_term_columns($term_columns)
         {
@@ -950,12 +838,13 @@ if (!class_exists('PP_Editorial_Metadata')) {
         /**
          * If the PublishPress Content Overview is enabled,
          *
-         * @since 0.7
-         * @uses apply_filters('pp_story_budget_term_column_value')
-         *
          * @param object $post The post we're displaying
          * @param string $column_name Name of the column, as registered with PP_Story_Budget::register_term_columns
          * @param object $parent_term The parent term for the term column
+         *
+         *@uses apply_filters('pp_story_budget_term_column_value')
+         *
+         * @since 0.7
          */
         public function filter_story_budget_term_column_values($column_name, $post, $parent_term)
         {
@@ -982,70 +871,29 @@ if (!class_exists('PP_Editorial_Metadata')) {
         /**
          * Generate the presentational output for an editorial metadata term
          *
-         * @since 0.8
-         *
          * @param object      $term    The editorial metadata term
          *
          * @return string     $html    How the term should be rendered
+         *@since 0.8
+         *
          */
         private function generate_editorial_metadata_term_output($term, $pm_value)
         {
-            $output = '';
-            switch ($term->type) {
-                case "date":
-                    if (empty($pm_value)) {
-                        break;
-                    }
-
-                    // All day vs. day and time
-                    $date = date(get_option('date_format'), $pm_value);
-                    $time = date(get_option('time_format'), $pm_value);
-                    if (date('Hi', $pm_value) == '0000') {
-                        $pm_value = $date;
-                    } else {
-                        $pm_value = sprintf(__('%1$s at %2$s', 'publishpress'), $date, $time);
-                    }
-                    $output = esc_html($pm_value);
-                    break;
-                case "location":
-                case "text":
-                case "number":
-                case "paragraph":
-                    if ($pm_value) {
-                        $output = esc_html($pm_value);
-                    }
-                    break;
-                case "checkbox":
-                    if ($pm_value) {
-                        $output = __('Yes', 'publishpress');
-                    } else {
-                        $output = __('No', 'publishpress');
-                    }
-                    break;
-                case "user":
-                    if (empty($pm_value)) {
-                        break;
-                    }
-                    $userdata = get_user_by('id', $pm_value);
-                    if (is_object($userdata)) {
-                        $output = esc_html($userdata->display_name);
-                    }
-                    break;
-                default:
-                    break;
-            }
-            return $output;
+            return $this->editorial_metadata_input_handler->handleMetaValueHtmling(
+                $term->type,
+                $pm_value
+            );
         }
 
         /**
          * Update an existing editorial metadata term if the term_id exists
          *
-         * @since 0.7
-         *
          * @param int $term_id The term's unique ID
          * @param array $args Any values that need to be updated for the term
          *
          * @return object|WP_Error $updated_term The updated term or a WP_Error object if something disastrous happened
+         *@since 0.7
+         *
          */
         public function update_editorial_metadata_term($term_id, $args)
         {
@@ -1132,11 +980,11 @@ if (!class_exists('PP_Editorial_Metadata')) {
         /**
          * Delete an existing editorial metadata term
          *
-         * @since 0.7
-         *
          * @param int $term_id The term we want deleted
          *
          * @return bool $result Whether or not the term was deleted
+         *@since 0.7
+         *
          */
         public function delete_editorial_metadata_term($term_id)
         {
@@ -1151,11 +999,11 @@ if (!class_exists('PP_Editorial_Metadata')) {
         /**
          * Generate a link to one of the editorial metadata actions
          *
-         * @since 0.7
-         *
          * @param array $args (optional) Action and any query args to add to the URL
          *
          * @return string $link Direct link to complete the action
+         *@since 0.7
+         *
          */
         public function get_link($args = [])
         {
@@ -1501,11 +1349,11 @@ if (!class_exists('PP_Editorial_Metadata')) {
         /**
          * Validate data entered by the user
          *
-         * @since 0.7
-         *
          * @param array $new_options New values that have been entered by the user
          *
          * @return array $new_options Form values after they've been sanitized
+         *@since 0.7
+         *
          */
         public function settings_validate($new_options)
         {
@@ -1712,10 +1560,51 @@ if (!class_exists('PP_Editorial_Metadata')) {
                 <?php endif; ?>
                     </div>
                     </div>
-                </div>
+                </div>;
 
                 <?php
             endif;
+        }
+
+        /**
+         * Load the chain of input-type handlers.
+         *
+         * @since   1.20.0
+         */
+        public function load_input_handlers()
+        {
+            $handlers_base_path = dirname(__FILE__) . '/input-handlers';
+
+            require_once "{$handlers_base_path}/editorial-metadata-input-text-handler.php";
+            require_once "{$handlers_base_path}/editorial-metadata-input-paragraph-handler.php";
+            require_once "{$handlers_base_path}/editorial-metadata-input-number-handler.php";
+            require_once "{$handlers_base_path}/editorial-metadata-input-date-handler.php";
+            require_once "{$handlers_base_path}/editorial-metadata-input-checkbox-handler.php";
+            require_once "{$handlers_base_path}/editorial-metadata-input-user-handler.php";
+            require_once "{$handlers_base_path}/editorial-metadata-input-location-handler.php";
+
+            $handlers = [
+                new Editorial_Metadata_Input_Paragraph_Handler(),
+                new Editorial_Metadata_Input_Text_Handler(),
+                new Editorial_Metadata_Input_Number_Handler(),
+                new Editorial_Metadata_Input_Date_Handler(),
+                new Editorial_Metadata_Input_Checkbox_Handler(),
+                new Editorial_Metadata_Input_User_Handler(),
+                new Editorial_Metadata_Input_Location_Handler(),
+            ];
+
+            foreach ($handlers as $handler) {
+                if (is_null($this->editorial_metadata_input_handler)) {
+                    $this->editorial_metadata_input_handler = $handler;
+                    continue;
+                }
+
+                $this->editorial_metadata_input_handler->registerHandler($handler);
+
+                $handler_type = $handler->getType();
+
+                add_filter("pp_editorial_metadata_{$handler_type}_render_value_html", [get_class($handler), 'getMetaValueHtml']);
+            }
         }
     }
 }
@@ -1775,10 +1664,11 @@ class PP_Editorial_Metadata_List_Table extends WP_List_Table
     /**
      * Prepare a single row of Editorial Metadata
      *
-     * @since 0.7
-     *
      * @param object $term The current term we're displaying
      * @param int $level Level is always zero because it isn't a parent-child tax
+     *
+     *@since 0.7
+     *
      */
     public function single_row($term, $level = 0)
     {
@@ -1794,10 +1684,11 @@ class PP_Editorial_Metadata_List_Table extends WP_List_Table
     /**
      * Handle the column output when there's no method for it
      *
-     * @since 0.7
-     *
      * @param object $item Editorial Metadata term as an object
      * @param string $column_name How the column was registered at birth
+     *
+     *@since 0.7
+     *
      */
     public function column_default($item, $column_name)
     {
@@ -1848,9 +1739,10 @@ class PP_Editorial_Metadata_List_Table extends WP_List_Table
     /**
      * Column for displaying the term's name and associated actions
      *
-     * @since 0.7
-     *
      * @param object $item Editorial Metadata term as an object
+     *
+     *@since 0.7
+     *
      */
     public function column_name($item)
     {

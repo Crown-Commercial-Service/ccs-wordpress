@@ -28,6 +28,8 @@
  * along with PublishPress.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+use PublishPress\Notifications\Traits\Dependency_Injector;
+
 if ( ! class_exists('PP_Custom_Status')) {
     /**
      * class PP_Custom_Status
@@ -40,7 +42,14 @@ if ( ! class_exists('PP_Custom_Status')) {
      */
     class PP_Custom_Status extends PP_Module
     {
+        use Dependency_Injector;
+
+        const MODULE_NAME = 'custom_status';
         const SETTINGS_SLUG = 'pp-custom-status-settings';
+
+        const STATUS_PUBLISH = 'publish';
+        const STATUS_PRIVATE = 'private';
+        const STATUS_SCHEDULED = 'future';
 
         public $module;
 
@@ -97,7 +106,7 @@ if ( ! class_exists('PP_Custom_Status')) {
                     'publishpress'),
                 'options_page'          => true,
             ];
-            $this->module = PublishPress()->register_module('custom_status', $args);
+            $this->module = PublishPress()->register_module(self::MODULE_NAME, $args);
         }
 
         /**
@@ -399,7 +408,7 @@ if ( ! class_exists('PP_Custom_Status')) {
                 wp_enqueue_script('jquery-ui-sortable');
                 wp_enqueue_script('publishpress-custom-status-configure',
                     $this->module_url . 'lib/custom-status-configure.js',
-                    ['jquery', 'jquery-ui-sortable', 'publishpress-settings-js'], PUBLISHPRESS_VERSION, true);
+                    ['jquery', 'jquery-ui-sortable'], PUBLISHPRESS_VERSION, true);
 
                 wp_localize_script(
                     'publishpress-custom-status-configure',
@@ -418,13 +427,19 @@ if ( ! class_exists('PP_Custom_Status')) {
 
             // Custom javascript to modify the post status dropdown where it shows up
             if ($this->is_whitelisted_page()) {
+                wp_enqueue_script(
+                    'publishpress-custom_status',
+                    $this->module_url . 'lib/custom-status.js',
+                    ['jquery', 'post'],
+                    PUBLISHPRESS_VERSION,
+                    true
+                );
+
                 if ($publishpress->isBlockEditorActive()) {
                     wp_enqueue_style('publishpress-custom_status-block',
                         $this->module_url . 'lib/custom-status-block-editor.css', false,
                         PUBLISHPRESS_VERSION, 'all');
                 } else {
-                    wp_enqueue_script('publishpress-custom_status', $this->module_url . 'lib/custom-status.js',
-                        ['jquery', 'post'], PUBLISHPRESS_VERSION, true);
                     wp_enqueue_style('publishpress-custom_status', $this->module_url . 'lib/custom-status.css', false,
                         PUBLISHPRESS_VERSION, 'all');
                 }
@@ -826,7 +841,7 @@ if ( ! class_exists('PP_Custom_Status')) {
 
             // The some default statuses from WordPress
             $status = (object)[
-                'term_id'     => 'publish',
+                'term_id'     => self::STATUS_PUBLISH,
                 'name'        => __('Published', 'publishpress'),
                 'slug'        => 'publish',
                 'description' => '-',
@@ -843,7 +858,7 @@ if ( ! class_exists('PP_Custom_Status')) {
 
 
             $status = (object)[
-                'term_id'     => 'private',
+                'term_id'     => self::STATUS_PRIVATE,
                 'name'        => __('Privately Published', 'publishpress'),
                 'slug'        => 'private',
                 'description' => '-',
@@ -860,7 +875,7 @@ if ( ! class_exists('PP_Custom_Status')) {
 
 
             $status = (object)[
-                'term_id'     => 'future',
+                'term_id'     => self::STATUS_SCHEDULED,
                 'name'        => __('Scheduled', 'publishpress'),
                 'slug'        => 'future',
                 'description' => '-',
@@ -1853,7 +1868,7 @@ if ( ! class_exists('PP_Custom_Status')) {
                 $wp_list_table->prepare_items(); ?>
 
                 <div id='col-right'>
-                    <div class='col-wrap'>
+                    <div class='col-wrap' style="overflow: auto;">
                         <?php $wp_list_table->display(); ?>
                         <?php wp_nonce_field('custom-status-sortable', 'custom-status-sortable'); ?>
                     </div>
@@ -1996,11 +2011,21 @@ if ( ! class_exists('PP_Custom_Status')) {
         {
             global $pagenow;
 
+
             if (is_int($post)) {
+                $postId = $post;
+                $this->get_service('debug')->write($postId, 'PP_Custom_Status::fix_preview_link_part_two $postId');
                 $post = get_post($post);
             }
 
             //Should we be doing anything at all?
+            if (!is_object($post)) {
+                $this->get_service('debug')->write($post, 'PP_Custom_Status::fix_preview_link_part_two $post');
+                $this->get_service('debug')->write($permalink, 'PP_Custom_Status::fix_preview_link_part_two $permalink');
+                $this->get_service('debug')->write($sample, 'PP_Custom_Status::fix_preview_link_part_two $sample');
+
+            }
+
             if ( ! in_array($post->post_type, $this->get_post_types_for_module($this->module))) {
                 return $permalink;
             }
@@ -2304,6 +2329,59 @@ if ( ! class_exists('PP_Custom_Status')) {
 
             return $data;
         }
+
+        /**
+         * @since   1.20.1
+         *
+         * @static
+         *
+         * @return  self|null
+         */
+        public static function getModuleInstance()
+        {
+            global $publishpress;
+
+            foreach ($publishpress->modules as $pp_module_name => $pp_module) {
+                if ($pp_module_name === PP_Custom_Status::MODULE_NAME) {
+                    return $pp_module;
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * @since   1.20.1
+         *
+         * @static
+         *
+         * @return  bool
+         */
+        public static function isModuleEnabled()
+        {
+            $custom_status_module = self::getModuleInstance();
+
+            return !is_null($custom_status_module) && $custom_status_module->options->enabled === 'on';
+        }
+
+        /**
+         * @since   1.20.1
+         *
+         * @static
+         *
+         * @return  array
+         */
+        public static function getCustomStatuses()
+        {
+            $is_module_enabled = self::isModuleEnabled();
+            if (!$is_module_enabled) {
+                return [];
+            }
+
+            global $publishpress;
+
+            return $publishpress->custom_status->get_custom_statuses();
+        }
     }
 }
 
@@ -2317,6 +2395,21 @@ class PP_Custom_Status_List_Table extends WP_List_Table
     public $callback_args;
 
     public $default_status;
+
+    public function get_table_classes()
+    {
+        $classes_list = parent::get_table_classes();
+        $class_to_remove = 'fixed';
+
+        $class_to_remove_index = array_search($class_to_remove, $classes_list);
+        if ($class_to_remove_index === false) {
+            return $classes_list;
+        }
+
+        unset($classes_list[$class_to_remove_index]);
+
+        return $classes_list;
+    }
 
     /**
      * Construct the extended class

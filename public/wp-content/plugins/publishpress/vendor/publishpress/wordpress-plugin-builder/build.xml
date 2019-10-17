@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<project name="AllediaBuilder" default="">
+    <property name="builder.path" value="vendor/alledia/wordpress-plugin-builder"/>
+
+    <import file="${builder.path}/targets/plugin.xml"/>
+    <import file="${builder.path}/targets/build.xml"/>
+    <import file="${builder.path}/targets/release.xml"/>
+
+    <!-- Parameters -->
+    <property name="src.dir.path" value="./"/>
+    <property name="dist.dir.path" value="dist"/>
+    <property name="dist.file.name" value="${plugin.name}-${plugin.version}.zip"/>
+    <property name="dist.file.path" value="${dist.dir.path}/${dist.file.name}"/>
+    <property name="tmp.dir.path" value="${dist.dir.path}/${plugin.name}"/>
+
+    <!-- Get the plugin name and store in the property plugin.name -->
+    <getpluginname property="plugin.name" dir="${src.dir.path}"/>
+
+    <!-- Get the plugin version and store in the property plugin.version -->
+    <getpluginversion property="plugin.version" file="${src.dir.path}/${plugin.name}.php"/>
+
+
+    <!-- Build a dist file -->
+    <target name="build">
+        <!-- Create the dist folder -->
+        <phingcall target="remove-dist-dir"/>
+        <phingcall target="create-dist-dir"/>
+
+        <!-- Copy files to the dist dir -->
+        <phingcall target="copy-files-to-tmp-dir"/>
+
+        <!-- Compact the tmp dir -->
+        <phingcall target="compact-tmp-dir"/>
+
+        <!-- Remove the tmp dir -->
+        <phingcall target="remove-tmp-dir"/>
+
+        <!-- Move the file to a common dir, if allowed -->
+        <phingcall target="move-to-common-dir"/>
+    </target>
+
+    <target name="copy-link" hidden="true">
+        <php expression="PHP_OS === 'Darwin' ? 'mac' : 'unix';" returnProperty="os"/>
+        <if>
+            <equals arg1="${os}" arg2="mac"/>
+            <then>
+                <exec command="echo '${link}' | pbcopy"/>
+                <echo msg="Copying link ${link} to the clipboard"/>
+            </then>
+        </if>
+
+        <if>
+            <equals arg1="${os}" arg2="unix"/>
+            <then>
+                <exec command="echo '${link}' | xclip -selection 'clipboard'"/>
+                <echo msg="Copying link ${link} to the clipboard"/>
+            </then>
+        </if>
+    </target>
+
+    <!-- Run the build and upload the package to a S3 bucket -->
+    <target name="build-s3">
+        <phingcall target="build">
+            <property name="keep-file" value="1" override="true"/>
+        </phingcall>
+
+        <!-- Get properties -->
+        <php expression="md5(microtime());" returnProperty="uid"/>
+        <php expression="getenv('PS_S3_BUCKET');" returnProperty="s3.bucket"/>
+        <php expression="sprintf('s3://%s/%s/%s', '${s3.bucket}', '${uid}', '${dist.file.name}');"
+             returnProperty="s3.path"/>
+
+        <!-- Upload to the S3 bucket -->
+        <echo msg="Uploading to S3..."/>
+        <exec command="s3cmd put --acl-public --reduced-redundancy ${dist.file.path} ${s3.path}"/>
+
+        <!-- Copy the public link to the clipboard -->
+        <exec command="s3cmd info ${s3.path} | grep 'URL:' | awk '{ print $2 }'" outputProperty="s3.link"/>
+
+        <phingcall target="copy-link">
+            <property name="link" value="${s3.link}"/>
+        </phingcall>
+
+        <phingcall target="move-to-common-dir"/>
+    </target>
+
+    <!-- Run the build and upload th package to a dropbox folder -->
+    <target name="build-db">
+        <phingcall target="build">
+            <property name="keep-file" value="1" override="true"/>
+        </phingcall>
+
+
+        <!-- Get properties -->
+        <php expression="date('Y-m-d');" returnProperty="dir"/>
+        <property name="script.path" value="${builder.path}/scripts/dropbox-uploader.sh"/>
+
+        <!-- Upload to Dropbox -->
+        <echo msg="Uploading to Dropbox..."/>
+
+        <exec command="sh ${script.path} mkdir ${dir}"/>
+        <exec command="sh ${script.path} upload ${dist.file.path} ${dir}/${dist.file.name}"/>
+
+        <!-- Copy the public link to the clipboard -->
+        <exec command="sh ${script.path} share ${dir}/${dist.file.name} | grep 'http'" outputProperty="dropbox.link"/>
+
+        <phingcall target="copy-link">
+            <property name="link" value="${dropbox.link}"/>
+        </phingcall>
+    </target>
+</project>

@@ -72,6 +72,11 @@ if ( ! class_exists('PP_Improved_Notifications')) {
         protected $published_workflows;
 
         /**
+         * Flag to assist conditional loading
+         */
+        private $twig_configured = false;
+
+        /**
          * Construct the Notifications class
          */
         public function __construct()
@@ -106,12 +111,14 @@ if ( ! class_exists('PP_Improved_Notifications')) {
             );
 
             parent::__construct();
-
-            $this->configure_twig();
         }
 
         protected function configure_twig()
         {
+            if ($this->twig_configured) {
+                return;
+            }
+
             $function = new Twig_SimpleFunction('settings_fields', function () {
                 return settings_fields($this->module->options_group_name);
             });
@@ -136,6 +143,8 @@ if ( ! class_exists('PP_Improved_Notifications')) {
                 return do_settings_sections($section);
             });
             $this->twig->addFunction($function);
+
+            $this->twig_configured = true;
         }
 
         /**
@@ -187,6 +196,8 @@ if ( ! class_exists('PP_Improved_Notifications')) {
             add_action('pp_init', [$this, 'action_after_init']);
 
             add_filter('psppno_default_channel', [$this, 'filter_default_channel'], 10, 2);
+
+            add_action('admin_head', [$this, 'show_icon_on_title']);
         }
 
         /**
@@ -256,6 +267,8 @@ if ( ! class_exists('PP_Improved_Notifications')) {
          */
         protected function create_default_workflow_post_save()
         {
+            $this->configure_twig();
+
             $twig = $this->get_service('twig');
 
             // Get post statuses
@@ -298,6 +311,8 @@ if ( ! class_exists('PP_Improved_Notifications')) {
          */
         public function settings_default_channels_option()
         {
+            $this->configure_twig();
+
             $twig = $this->get_service('twig');
 
             /**
@@ -351,6 +366,8 @@ if ( ! class_exists('PP_Improved_Notifications')) {
          */
         protected function create_default_workflow_editorial_comment()
         {
+            $this->configure_twig();
+
             $twig = $this->get_service('twig');
 
             // Post Save
@@ -486,9 +503,7 @@ if ( ! class_exists('PP_Improved_Notifications')) {
          */
         public function action_transition_post_status($new_status, $old_status, $post)
         {
-
-            // Ignore if the post_type is an internal post_type
-            if (PUBLISHPRESS_NOTIF_POST_TYPE_WORKFLOW === $post->post_type) {
+            if ( ! $this->is_supported_post_type($post->post_type)) {
                 return;
             }
 
@@ -514,6 +529,18 @@ if ( ! class_exists('PP_Improved_Notifications')) {
         }
 
         /**
+         * @param $post_type
+         */
+        private function is_supported_post_type($post_type)
+        {
+            $publishpress = $this->get_service('publishpress');
+
+            $supportedPostTypes = $publishpress->improved_notifications->get_all_post_types();
+
+            return array_key_exists($post_type, $supportedPostTypes);
+        }
+
+        /**
          * Action called on editorial comments. Used to trigger the
          * controller of workflows to filter and execute them.
          *
@@ -523,6 +550,11 @@ if ( ! class_exists('PP_Improved_Notifications')) {
         {
             // Go ahead and do the action to run workflows
             $post = get_post($comment->comment_post_ID);
+
+            if ( ! $this->is_supported_post_type($post->post_type)) {
+                return;
+            }
+
             $args = [
                 'action'     => 'editorial_comment',
                 'post'       => $post,
@@ -630,6 +662,8 @@ if ( ! class_exists('PP_Improved_Notifications')) {
             // Adds the nonce field
             wp_nonce_field('publishpress_notif_save_metabox', 'publishpress_notif_metabox_events_nonce');
 
+            $this->configure_twig();
+
             $twig = $this->get_service('twig');
 
             $main_context = [];
@@ -706,9 +740,12 @@ if ( ! class_exists('PP_Improved_Notifications')) {
                     'format_text'      => __('On each shortcode, you can select one or more fields. If more than one, they will be displayed separated by ", ".',
                         'publishpress'),
                     'available_fields' => __('Available fields', 'publishpress'),
+                    'meta_fields'      => __('Meta fields', 'publishpress'),
                     'read_more'        => __('Click here to read more about shortcode options...', 'publishpress'),
                 ],
             ];
+
+            $this->configure_twig();
 
             $twig = $this->get_service('twig');
 
@@ -817,6 +854,8 @@ if ( ! class_exists('PP_Improved_Notifications')) {
                 return;
             }
 
+            $this->configure_twig();
+
             $twig = $this->get_service('twig');
 
             // Adds the nonce field
@@ -916,11 +955,11 @@ if ( ! class_exists('PP_Improved_Notifications')) {
         /**
          * Validate data entered by the user
          *
-         * @since 0.7
-         *
          * @param array $new_options New values that have been entered by the user
          *
          * @return array $new_options Form values after they've been sanitized
+         * @since 0.7
+         *
          */
         public function settings_validate($new_options)
         {
@@ -1094,6 +1133,27 @@ if ( ! class_exists('PP_Improved_Notifications')) {
             }
 
             return $channel;
+        }
+
+        public function show_icon_on_title()
+        {
+            global $pagenow;
+
+            if ('edit.php' !== $pagenow || ! (isset($_GET['post_type']) && PUBLISHPRESS_NOTIF_POST_TYPE_WORKFLOW === $_GET['post_type'])) {
+                return;
+            }
+            ?>
+            <img
+                src="<?php echo PUBLISHPRESS_URL . '/common/img/publishpress-logo-icon.png' ?>"
+                alt="" class="logo-header"/>
+
+            <script>
+                // Move the logo to the correct place since we don't have other hook to add it inside the .wrap element.
+                jQuery(function ($) {
+                    $('.wp-heading-inline').before($('.logo-header'));
+                });
+            </script>
+            <?php
         }
     }
 }

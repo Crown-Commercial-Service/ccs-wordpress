@@ -114,5 +114,11 @@ if ( ! defined( 'ABSPATH' ) )
 
 /** Sets up WordPress vars and included files. */
 require_once ABSPATH . 'wp-settings.php';
+
 //Disable File Edits
 define('DISALLOW_FILE_EDIT', true);
+
+// Disable plugin installation (requires ENV)
+
+$disable_file_mods = (getenv('WP_DISABLE_FILE_MODS') == 1) ? true : false;
+define('DISALLOW_FILE_MODS', $disable_file_mods);

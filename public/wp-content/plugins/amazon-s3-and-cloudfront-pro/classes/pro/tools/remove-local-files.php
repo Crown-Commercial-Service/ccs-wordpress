@@ -116,7 +116,7 @@ class Remove_Local_Files extends Background_Tool {
 	 * @return bool
 	 */
 	public function should_render() {
-		return $this->count_media_files() && (bool) $this->as3cf->get_setting( 'remove-local-file', false );
+		return (bool) $this->as3cf->get_setting( 'remove-local-file', false ) && $this->count_offloaded_media_files();
 	}
 
 	/**

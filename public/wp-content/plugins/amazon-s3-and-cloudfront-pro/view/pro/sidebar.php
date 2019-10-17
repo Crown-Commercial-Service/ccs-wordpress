@@ -1,7 +1,7 @@
 <?php
 $sidebar_style = '';
 // Don't show the sidebar when away from core settings.
-if ( ! empty( $_GET['action'] ) ) {
+if ( ! empty( $_REQUEST['action'] ) && empty( $_REQUEST['tool'] ) ) {
 	$sidebar_style = ' style="display: none;"';
 }
 ?>

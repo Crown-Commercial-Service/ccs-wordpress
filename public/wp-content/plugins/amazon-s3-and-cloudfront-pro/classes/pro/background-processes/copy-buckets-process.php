@@ -19,6 +19,8 @@ class Copy_Buckets_Process extends Background_Tool_Process {
 	 * @param array $attachments
 	 * @param int   $blog_id
 	 *
+	 * @return array
+	 *
 	 * @throws Exception
 	 */
 	protected function process_attachments_chunk( $attachments, $blog_id ) {
@@ -38,6 +40,9 @@ class Copy_Buckets_Process extends Background_Tool_Process {
 		}
 
 		$this->copy_attachments( $attachments_to_copy, $blog_id, $bucket, $region );
+
+		// Whether copied or not, we processed every item.
+		return $attachments;
 	}
 
 	/**
@@ -183,4 +188,31 @@ class Copy_Buckets_Process extends Background_Tool_Process {
 		return __( '<strong>WP Offload Media</strong> &mdash; Finished copying media files to new bucket.', 'amazon-s3-and-cloudfront' );
 	}
 
+	/**
+	 * Called when background process has been cancelled.
+	 */
+	protected function cancelled() {
+		// Do nothing at the moment.
+	}
+
+	/**
+	 * Called when background process has been paused.
+	 */
+	protected function paused() {
+		// Do nothing at the moment.
+	}
+
+	/**
+	 * Called when background process has been resumed.
+	 */
+	protected function resumed() {
+		// Do nothing at the moment.
+	}
+
+	/**
+	 * Called when background process has completed.
+	 */
+	protected function completed() {
+		// Do nothing at the moment.
+	}
 }

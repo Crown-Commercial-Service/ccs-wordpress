@@ -106,7 +106,7 @@ class Delicious_Brains_API_Updates {
 			(array) $this->licences->plugin,
 			array(
 				'addons'  => $this->licences->addons,
-				'license' => $this->licences->is_licence_expired()
+				'license' => $this->licences->is_licence_expired(),
 			)
 		);
 
@@ -189,13 +189,16 @@ class Delicious_Brains_API_Updates {
 					'check_licence' => wp_create_nonce( 'check-licence' ),
 				),
 				'strings' => array(
-					'check_license_again'     => __( 'Check my license again', 'amazon-s3-and-cloudfront' ),
-					'license_check_problem'   => __( 'A problem occurred when trying to check the license, please try again.', 'amazon-s3-and-cloudfront' ),
-					'requires_parent_license' => __( 'Requires a valid license for %s.', 'amazon-s3-and-cloudfront' )
+					'check_licence_again'     => __( 'Check My License Again', 'amazon-s3-and-cloudfront' ),
+					'licence_check_problem'   => __( 'A problem occurred when trying to check the license, please try again.', 'amazon-s3-and-cloudfront' ),
+					'requires_parent_licence' => __( 'Requires a valid license for %s.', 'amazon-s3-and-cloudfront' )
 				),
 				'plugins' => apply_filters( 'delicious_brains_plugins', array() ),
 			)
 		);
+
+		$src = plugins_url( "assets/css/plugin-update.css", __FILE__ );
+		wp_enqueue_style( $handle, $src, array(), $version );
 	}
 
 	/**

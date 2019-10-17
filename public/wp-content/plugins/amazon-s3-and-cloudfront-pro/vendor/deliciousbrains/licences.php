@@ -309,20 +309,20 @@ abstract class Delicious_Brains_API_Licences extends Delicious_Brains_API_Base {
 			$message = $errors['connection_failed'];
 		} elseif ( isset( $errors['subscription_cancelled'] ) ) {
 			$message = sprintf( __( '<strong>Your License Was Cancelled</strong> &mdash; Please visit <a href="%s" target="_blank">My Account</a> to renew or upgrade your license.', 'amazon-s3-and-cloudfront' ), $this->plugin->account_url );
-			$message .= sprintf( '<br /><a href="%s">%s</a>', $check_licence_again_url, __( 'Check my license again', 'amazon-s3-and-cloudfront' ) );
+			$message .= sprintf( '<br /><a href="%s">%s</a>', $check_licence_again_url, __( 'Check My License Again', 'amazon-s3-and-cloudfront' ) );
 		} elseif ( isset( $errors['subscription_expired'] ) ) {
 			$message = sprintf( __( '<strong>Your License Has Expired</strong> &mdash; Your expired license has been added to this install. Please visit <a href="%s" target="_blank">My Account</a> to renew your license and continue receiving plugin updates and access to email support.', 'amazon-s3-and-cloudfront' ), $this->plugin->account_url );
-			$message .= sprintf( '<br /><a href="%s">%s</a>', $check_licence_again_url, __( 'Check my license again', 'amazon-s3-and-cloudfront' ) );
+			$message .= sprintf( '<br /><a href="%s">%s</a>', $check_licence_again_url, __( 'Check My License Again', 'amazon-s3-and-cloudfront' ) );
 		} elseif ( isset( $errors['no_activations_left'] ) ) {
 			$message = sprintf( __( '<strong>No Activations Left</strong> &mdash; Please visit <a href="%s" target="_blank">My Account</a> to upgrade your license or deactivate a previous activation.', 'amazon-s3-and-cloudfront' ), $this->plugin->account_url );
-			$message .= sprintf( ' <a href="%s">%s</a>', $check_licence_again_url, __( 'Check my license again', 'amazon-s3-and-cloudfront' ) );
+			$message .= sprintf( ' <a href="%s">%s</a>', $check_licence_again_url, __( 'Check My License Again', 'amazon-s3-and-cloudfront' ) );
 		} elseif ( isset( $errors['licence_not_found'] ) ) {
 			if ( ! $api_response_provided ) {
 				$message = sprintf( __( '<strong>Your License Was Not Found</strong> &mdash; Make sure you have copied your licence key exactly as it appears in your email or from <a href="%s" target="_blank">My Account</a>.', 'amazon-s3-and-cloudfront' ), $this->plugin->account_url );
 				if ( $this->is_licence_constant() ) {
 					$message = sprintf( __( '<strong>Your License Was Not Found</strong> &mdash; Perhaps you made a typo when defining your %s constant in your wp-config.php? Please visit <a href="%s" target="_blank">My Account</a> to double check your license key.', 'amazon-s3-and-cloudfront' ), $this->get_licence_constant_name(), $this->plugin->account_url );
 				}
-				$message .= sprintf( ' <a href="%s">%s</a>', $check_licence_again_url, __( 'Check my license again', 'amazon-s3-and-cloudfront' ) );
+				$message .= sprintf( ' <a href="%s">%s</a>', $check_licence_again_url, __( 'Check My License Again', 'amazon-s3-and-cloudfront' ) );
 			} else {
 				$error   = reset( $errors );
 				$message = __( '<strong>Your License Was Not Found</strong> &mdash; ', 'amazon-s3-and-cloudfront' );

@@ -5,12 +5,12 @@
         "version_normalized": "dev-development",
         "source": {
             "type": "git",
-            "url": "https://github.com/upstreamplugin/WordPress-Plugin-Builder.git",
+            "url": "https://github.com/publishpress/WordPress-Plugin-Builder.git",
             "reference": "1bf3a36415281289623492efdd4841308a2f6e94"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/upstreamplugin/WordPress-Plugin-Builder/zipball/1bf3a36415281289623492efdd4841308a2f6e94",
+            "url": "https://api.github.com/repos/publishpress/WordPress-Plugin-Builder/zipball/1bf3a36415281289623492efdd4841308a2f6e94",
             "reference": "1bf3a36415281289623492efdd4841308a2f6e94",
             "shasum": ""
         },
@@ -60,17 +60,17 @@
     },
     {
         "name": "alledia/wordpress-plugin-framework",
-        "version": "dev-development",
-        "version_normalized": "dev-development",
+        "version": "0.6.7",
+        "version_normalized": "0.6.7.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/upstreamplugin/WordPress-Plugin-Framework.git",
-            "reference": "e71bed761dcca3616be00e5a45ca6fc16a2637d6"
+            "url": "https://github.com/publishpress/WordPress-Plugin-Framework.git",
+            "reference": "d454be57aa700d06ee4be7bd7aedf563da4c191e"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/upstreamplugin/WordPress-Plugin-Framework/zipball/e71bed761dcca3616be00e5a45ca6fc16a2637d6",
-            "reference": "e71bed761dcca3616be00e5a45ca6fc16a2637d6",
+            "url": "https://api.github.com/repos/publishpress/WordPress-Plugin-Framework/zipball/d454be57aa700d06ee4be7bd7aedf563da4c191e",
+            "reference": "d454be57aa700d06ee4be7bd7aedf563da4c191e",
             "shasum": ""
         },
         "require": {
@@ -78,9 +78,9 @@
             "pimple/pimple": "~3.0",
             "twig/twig": "~1.20"
         },
-        "time": "2019-02-07T18:56:30+00:00",
+        "time": "2019-08-23T19:47:00+00:00",
         "type": "library",
-        "installation-source": "source",
+        "installation-source": "dist",
         "autoload": {
             "psr-4": {
                 "Allex\\": "src/library"
@@ -92,15 +92,15 @@
         ],
         "authors": [
             {
-                "name": "Anderson Grudtner Martins",
-                "email": "anderson@grudtner.me",
-                "homepage": "http://anderson.grudtner.me",
-                "role": "Lead Developer"
-            },
-            {
                 "name": "Alledia",
                 "email": "help@alledia.com",
                 "homepage": "https://alledia.com"
+            },
+            {
+                "name": "Anderson Grudtner Martins",
+                "role": "Lead Developer",
+                "email": "anderson@grudtner.me",
+                "homepage": "http://anderson.grudtner.me"
             }
         ],
         "description": "Alledia framework for creating WordPress plugins.",
@@ -215,17 +215,17 @@
     },
     {
         "name": "symfony/polyfill-ctype",
-        "version": "v1.10.0",
-        "version_normalized": "1.10.0.0",
+        "version": "v1.12.0",
+        "version_normalized": "1.12.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/polyfill-ctype.git",
-            "reference": "e3d826245268269cd66f8326bd8bc066687b4a19"
+            "reference": "550ebaac289296ce228a706d0867afc34687e3f4"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/e3d826245268269cd66f8326bd8bc066687b4a19",
-            "reference": "e3d826245268269cd66f8326bd8bc066687b4a19",
+            "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/550ebaac289296ce228a706d0867afc34687e3f4",
+            "reference": "550ebaac289296ce228a706d0867afc34687e3f4",
             "shasum": ""
         },
         "require": {
@@ -234,11 +234,11 @@
         "suggest": {
             "ext-ctype": "For best performance"
         },
-        "time": "2018-08-06T14:22:27+00:00",
+        "time": "2019-08-06T08:03:45+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "1.9-dev"
+                "dev-master": "1.12-dev"
             }
         },
         "installation-source": "dist",
@@ -256,12 +256,12 @@
         ],
         "authors": [
             {
-                "name": "Symfony Community",
-                "homepage": "https://symfony.com/contributors"
-            },
-            {
                 "name": "Gert de Pagter",
                 "email": "BackEndTea@gmail.com"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "https://symfony.com/contributors"
             }
         ],
         "description": "Symfony polyfill for ctype functions",

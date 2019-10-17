@@ -91,12 +91,12 @@ abstract class Background_Tool_Process extends AS3CF_Background_Process {
 				continue;
 			}
 
-			$count = $this->as3cf->count_attachments( $blog['prefix'] );
+			$total = $this->get_blog_attachments( $blog, null, true );
 
-			if ( $count ) {
-				$item['blogs'][ $blog_id ]['total_attachments']  = $count;
+			if ( ! empty( $total ) ) {
+				$item['blogs'][ $blog_id ]['total_attachments']  = $total;
 				$item['blogs'][ $blog_id ]['last_attachment_id'] = $this->get_blog_last_attachment_id( $blog ) + 1;
-				$item['total_attachments']                       += $count;
+				$item['total_attachments']                       += $total;
 			} else {
 				$item['blogs'][ $blog_id ]['processed']         = true;
 				$item['blogs'][ $blog_id ]['total_attachments'] = 0;
@@ -160,12 +160,14 @@ abstract class Background_Tool_Process extends AS3CF_Background_Process {
 		$chunks = array_chunk( $attachments, $this->chunk );
 
 		foreach ( $chunks as $chunk ) {
-			$this->process_attachments_chunk( $chunk, $blog_id );
+			$processed = $this->process_attachments_chunk( $chunk, $blog_id );
 
-			$item['processed_attachments']                   += count( $chunk );
-			$item['blogs'][ $blog_id ]['last_attachment_id'] = end( $chunk );
+			if ( ! empty( $processed ) ) {
+				$item['processed_attachments']                   += count( $processed );
+				$item['blogs'][ $blog_id ]['last_attachment_id'] = end( $processed );
+			}
 
-			if ( $this->time_exceeded() || $this->memory_exceeded() ) {
+			if ( $this->time_exceeded() || $this->memory_exceeded() || count( $chunk ) > count( $processed ) ) {
 				break;
 			}
 		}
@@ -181,26 +183,39 @@ abstract class Background_Tool_Process extends AS3CF_Background_Process {
 	 * Get blog attachments to process.
 	 *
 	 * @param array $blog
-	 * @param int   $limit
+	 * @param int   $limit Maximum number of attachment IDs to return
+	 * @param bool  $count Just return the count, negates $limit, default false
 	 *
-	 * @return array|null|object
+	 * @return array|int
 	 */
-	protected function get_blog_attachments( $blog, $limit ) {
+	protected function get_blog_attachments( $blog, $limit, $count = false ) {
 		global $wpdb;
 
-		$sql = "SELECT posts.ID FROM `{$blog['prefix']}posts` AS posts
-		        INNER JOIN `{$blog['prefix']}postmeta` AS postmeta
-		        ON posts.ID = postmeta.post_id
-		        WHERE posts.post_type = 'attachment'
-		        AND postmeta.meta_key = 'amazonS3_info'";
+		if ( $count ) {
+			$sql = 'SELECT count(DISTINCT posts.ID)';
+		} else {
+			$sql = 'SELECT DISTINCT posts.ID';
+		}
+
+		$sql .= "
+			FROM `{$blog['prefix']}posts` AS posts
+			INNER JOIN `{$blog['prefix']}postmeta` AS postmeta
+			ON posts.ID = postmeta.post_id
+			WHERE posts.post_type = 'attachment'
+			AND postmeta.meta_key = 'amazonS3_info'
+			";
 
 		if ( ! empty( $blog['last_attachment_id'] ) ) {
 			$sql .= " AND posts.ID < '{$blog['last_attachment_id']}'";
 		}
 
-		$sql .= " ORDER BY posts.ID DESC LIMIT {$limit}";
+		if ( $count ) {
+			return $wpdb->get_var( $sql );
+		} else {
+			$sql .= " ORDER BY posts.ID DESC LIMIT {$limit}";
 
-		return array_map( 'intval', $wpdb->get_col( $sql ) );
+			return array_map( 'intval', $wpdb->get_col( $sql ) );
+		}
 	}
 
 	/**
@@ -247,6 +262,23 @@ abstract class Background_Tool_Process extends AS3CF_Background_Process {
 	}
 
 	/**
+	 * How many attachments have had errors recorded by this process?
+	 *
+	 * @return int
+	 */
+	protected function count_errors() {
+		$count = 0;
+
+		if ( ! empty( $this->errors ) ) {
+			foreach ( $this->errors as $blog_id => $errors ) {
+				$count += count( $errors );
+			}
+		}
+
+		return $count;
+	}
+
+	/**
 	 * Complete
 	 *
 	 * Override if applicable, but ensure that the below actions are
@@ -258,11 +290,19 @@ abstract class Background_Tool_Process extends AS3CF_Background_Process {
 		$notice_id = $this->tool->get_tool_key() . '_completed';
 
 		$this->as3cf->notices->undismiss_notice_for_all( $notice_id );
+		$this->as3cf->notices->remove_notice_by_id( $notice_id );
 
-		$message = $this->get_complete_message();
-		$args    = array(
+		if ( $this->tool->get_errors() ) {
+			$message = $this->get_complete_with_errors_message();
+			$type    = 'notice-warning';
+		} else {
+			$message = $this->get_complete_message();
+			$type    = 'updated';
+		}
+
+		$args = array(
 			'custom_id'         => $notice_id,
-			'type'              => 'updated',
+			'type'              => $type,
 			'flash'             => false,
 			'only_show_to_user' => false,
 		);
@@ -271,10 +311,21 @@ abstract class Background_Tool_Process extends AS3CF_Background_Process {
 	}
 
 	/**
+	 * Adds a note about errors to completion message.
+	 *
+	 * @return string
+	 */
+	protected function get_complete_with_errors_message() {
+		return $this->get_complete_message() . ' ' . __( 'Some errors were recorded.', 'amazon-s3-and-cloudfront' );
+	}
+
+	/**
 	 * Process attachments chunk.
 	 *
 	 * @param array $attachments
 	 * @param int   $blog_id
+	 *
+	 * @return array
 	 */
 	abstract protected function process_attachments_chunk( $attachments, $blog_id );
 

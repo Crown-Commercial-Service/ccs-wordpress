@@ -69,7 +69,7 @@ class Delicious_Brains_API {
 	 */
 	protected function get_default_request_args() {
 		return array(
-			'timeout' => 30,
+			'timeout' => 10,
 		);
 	}
 

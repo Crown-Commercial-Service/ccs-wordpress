@@ -65,9 +65,14 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	 * Plugin initialization
 	 *
 	 * @param string $plugin_file_path
+	 *
+	 * @throws Exception
 	 */
 	public function init( $plugin_file_path ) {
 		parent::init( $plugin_file_path );
+
+		$this->plugin_title      = __( 'Offload Media', 'amazon-s3-and-cloudfront' );
+		$this->plugin_menu_title = __( 'Offload Media', 'amazon-s3-and-cloudfront' );
 
 		// Licence and updates handler
 		if ( is_admin() ) {
@@ -122,9 +127,9 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 		$this->plugin_compat = new AS3CF_Pro_Plugin_Compatibility( $this );
 
 		// Register tools
-		$this->sidebar->register_tool( new Uploader( $this ) );
-		$this->sidebar->register_tool( new Downloader( $this ) );
-		$this->sidebar->register_tool( new Download_And_Remover( $this ) );
+		$this->sidebar->register_tool( new Uploader( $this ), 'background' );
+		$this->sidebar->register_tool( new Downloader( $this ), 'background' );
+		$this->sidebar->register_tool( new Download_And_Remover( $this ), 'background' );
 		$this->sidebar->register_tool( new Remove_Local_Files( $this ), 'background' );
 		$this->sidebar->register_tool( new Copy_Buckets( $this ), 'background' );
 
@@ -1436,7 +1441,7 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	 * Update the API with the total of attachments offloaded to S3 for the site
 	 */
 	public function update_media_library_total() {
-		$this->licence->check_licence_media_limit( true );
+		$this->licence->check_licence_media_limit( true, true );
 	}
 
 	/**
@@ -1447,7 +1452,7 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	public function get_total_allowed_media_items_to_upload() {
 		$cached_media_limit_check = get_site_transient( $this->licence->plugin->prefix . '_licence_media_check' );
 
-		$media_limit_check = $this->licence->check_licence_media_limit( true );
+		$media_limit_check = $this->licence->check_licence_media_limit();
 
 		if ( ! isset( $media_limit_check['total'] ) || ! isset( $media_limit_check['limit'] ) ) {
 			// Can't use latest API call
@@ -1465,8 +1470,8 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 		$limit   = absint( $media_limit_check['limit'] );
 		$allowed = $limit - $total;
 
-		if ( 0 === $limit ) {
-			// Unlimited uploads allowed
+		if ( 0 === $limit || ( isset( $media_limit_check['counts_toward_limit'] ) && ! $media_limit_check['counts_toward_limit'] ) ) {
+			// Unlimited uploads allowed or this site doesn't count.
 			return -1;
 		}
 
@@ -1528,29 +1533,6 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 		$this->_is_pro_plugin_setup[ $with_credentials ] = $this->is_plugin_setup( $with_credentials );
 
 		return $this->_is_pro_plugin_setup[ $with_credentials ];
-	}
-
-	/**
-	 * Get the total media library items offloaded to S3 for the site
-	 *
-	 * @param bool $skip_transient Ignore transient total
-	 *
-	 * @return int
-	 */
-	function get_media_library_provider_total( $skip_transient = false ) {
-		if ( $skip_transient || false === ( $library_total = get_site_transient( $this->licence->plugin->prefix . '_media_library_total' ) ) ) {
-			$library_total  = 0;
-			$table_prefixes = $this->get_all_blog_table_prefixes();
-
-			foreach ( $table_prefixes as $blog_id => $table_prefix ) {
-				$total         = $this->count_attachments( $table_prefix, true );
-				$library_total += $total;
-			}
-
-			set_site_transient( $this->licence->plugin->prefix . '_media_library_total', $library_total, HOUR_IN_SECONDS );
-		}
-
-		return $library_total;
 	}
 
 	/**
@@ -1650,7 +1632,7 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	 *
 	 * @param string $name
 	 */
-	protected function render_tool_errors_callback( $name ) {
+	public function render_tool_errors_callback( $name ) {
 		$tool = $this->sidebar->get_tool( $name );
 
 		if ( ! $tool ) {

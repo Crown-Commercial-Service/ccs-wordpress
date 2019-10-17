@@ -1,10 +1,10 @@
 === Radio Buttons for Taxonomies ===
 Contributors: helgatheviking
-Donate link: https://www.youcaring.com/wnt-residency
+Donate link: https://www.paypal.com/fundraiser/charity/1451316
 Tags: taxonomy, admin, interface, ui, post, radio, terms, metabox
 Requires at least: 4.5.0
-Tested up to: 4.9.6
-Stable tag: 1.8.3
+Tested up to: 5.1.1
+Stable tag: 2.0.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -18,7 +18,7 @@ Originally based on the the [class by Stephen Harris](https://github.com/stephen
 
 = Support =
 
-Support is handled in the [WordPress forums](http://wordpress.org/support/plugin/radio-button-for-taxonomies). Please note that support is limited and does not cover any custom implementation of the plugin. Before posting a question, read the [FAQ](http://wordpress.org/plugins/nav-menu-roles/faq/) and confirm that the problem still exists with a default theme and with all other plugins disabled. 
+Support is handled in the [WordPress forums](http://wordpress.org/support/plugin/radio-buttons-for-taxonomies). Please note that support is limited and does not cover any custom implementation of the plugin. Before posting a question, read the [FAQ](http://wordpress.org/plugins/nav-menu-roles/faq/) and confirm that the problem still exists with a default theme and with all other plugins disabled.
 
 Please report any bugs, errors, warnings, code problems to [Github](https://github.com/helgatheviking/Radio-Buttons-for-Taxonomies/issues)
 
@@ -26,7 +26,7 @@ Please report any bugs, errors, warnings, code problems to [Github](https://gith
 
 1. Upload the `plugin` folder to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Go to Settings>Radio Buttons for Taxonomies and use the checkboxes to indicate which taxonomies you'd like to use radio buttons
+1. Go to Settings > Radio Buttons for Taxonomies and use the checkboxes to indicate which taxonomies you'd like to use radio buttons
 
 == Screenshots ==
 
@@ -52,6 +52,15 @@ add_filter( 'radio_buttons_for_taxonomies_no_term_genre', '__return_FALSE' );
 `
 
 == Changelog ==
+
+= 2.0.2 =
+* Update from [Gutenberg source](https://github.com/WordPress/gutenberg/pull/14786)
+
+= 2.0.1 =
+* Fix: Fatal error use_block_editor_for_post_type() undefined in WP 4.x
+
+= 2.0.0 =
+* Gutenberg compatibility! Props @5ally and @leymannx
 
 = 1.8.3 =
 * Escape all the inputs. Props @tomjn and @rtCamp

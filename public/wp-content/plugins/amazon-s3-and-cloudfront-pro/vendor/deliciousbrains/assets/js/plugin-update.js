@@ -58,7 +58,7 @@
 	 * @returns {string}
 	 */
 	Plugin.prototype.checkAgainLink = function() {
-		return ' <a class="dbrains-check-my-licence-again" href="#">' + dbrains.strings.check_license_again + '</a>';
+		return ' <span class="dbrains-check-my-licence-again"><a href="#">' + dbrains.strings.check_licence_again + '</a></span>';
 	};
 
 	/**
@@ -101,9 +101,9 @@
 	 * @param {string} html
 	 */
 	Plugin.prototype.setNotice = function( html ) {
-		this.$noticeContainer.find( '.as3cf-license-notice' ).remove();
+		this.$noticeContainer.find( '.as3cf-licence-notice' ).remove();
 		this.$noticeContainer.append(
-			'<div class="as3cf-license-notice update-message notice inline notice-warning notice-alt">' +
+			'<div class="as3cf-licence-notice update-message notice inline notice-warning notice-alt">' +
 				'<p class="as3cf-before">' + html + this.checkAgainLink() + '</p>' +
 			'</div>'
 		);
@@ -114,7 +114,7 @@
 	 */
 	Plugin.prototype.clearNotice = function() {
 		var plugin  = this;
-		var $notice = this.$noticeContainer.find( '.as3cf-license-notice' );
+		var $notice = this.$noticeContainer.find( '.as3cf-licence-notice' );
 
 		$.when( $notice.fadeOut() ).done( function() {
 			$notice.remove();
@@ -130,7 +130,7 @@
 		if ( this.hasLicenseErrors() ) {
 			this.initNoticeContainer();
 			this.disableUpdateCheckbox();
-			this.$noticeContainer.find( '.update-message:not(".as3cf-license-notice")' ).hide();
+			this.$noticeContainer.find( '.update-message:not(".as3cf-licence-notice")' ).hide();
 			this.setNotice( this.getLicenseNotice() );
 		} else if ( this.$noticeContainer ) {
 			this.enableUpdateCheckbox();
@@ -182,7 +182,7 @@
 		}
 
 		// Finally, bind the click handler for ajax license checking
-		this.$noticeContainer.on( 'click', '.dbrains-check-my-licence-again', _.bind( this.checkLicenseAgain, this ) );
+		this.$noticeContainer.on( 'click', '.dbrains-check-my-licence-again a', _.bind( this.checkLicenseAgain, this ) );
 	};
 
 	/**
@@ -192,7 +192,7 @@
 	 */
 	Plugin.prototype.getLicenseNotice = function() {
 		if ( this.isAddon() ) {
-			return dbrains.strings.requires_parent_license.replace( '%s', this.parent.data.name );
+			return dbrains.strings.requires_parent_licence.replace( '%s', this.parent.data.name );
 		}
 
 		return _.values( this.data.license.errors ).join( '' );
@@ -223,7 +223,7 @@
 				}
 			} )
 			.fail( function() {
-				plugin.setNotice( dbrains.strings.license_check_problem );
+				plugin.setNotice( dbrains.strings.licence_check_problem );
 			} )
 			.always( function() {
 				$spinner.remove();

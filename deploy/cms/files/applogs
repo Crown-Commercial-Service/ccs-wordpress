@@ -1,0 +1,10 @@
+/var/www/var/log/import.log
+/var/www/var/log/app.log {
+    missingok
+    notifempty
+    size 10M
+    delaycompress
+    compress
+    rotate 4
+    su apache apache
+}

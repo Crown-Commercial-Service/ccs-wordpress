@@ -5,7 +5,8 @@
         "symfony/yaml": "^4.3@dev",
         "nayjest/str-case-converter": "dev-master",
         "symfony/console": "^4.3@dev",
-        "monolog/monolog": "^2.0@dev"
+        "monolog/monolog": "^2.0@dev",
+        "ruflin/elastica": "^7.0@dev"
     },
     "autoload": {
         "psr-4": {"App\\": "src/App/"}

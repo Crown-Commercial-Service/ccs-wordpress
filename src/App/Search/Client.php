@@ -1,0 +1,128 @@
+<?php
+
+namespace App\Search;
+
+use App\Model\Supplier;
+use App\Services\Logger\SearchLogger;
+use Elastica\Document;
+use Elastica\Index;
+use Elastica\Mapping;
+use Elastica\Request;
+use Psr\Log\LoggerInterface;
+
+class Client extends \Elastica\Client
+{
+
+    /**
+     * @var \Elastica\Index
+     */
+    // TODO: We need to set the environment name here on the end of the index, to allow using the same server for both live and staging. But where is environment set?
+    const SUPPLIER_TYPE_NAME = 'supplier';
+
+    /**
+     * @var null
+     */
+    protected $supplierIndexExists = null;
+
+    /**
+     * Client constructor.
+     * @param array $config
+     * @param callable|null $callback
+     * @param \Psr\Log\LoggerInterface|null $logger
+     * @throws \Exception
+     */
+    public function __construct($config = [], callable $callback = null, LoggerInterface $logger = null) {
+
+        if (empty($logger)) {
+            $logger = new SearchLogger();
+        }
+
+        parent::__construct($config, $callback, $logger);
+    }
+
+    protected function createSupplierIndex() {
+        $index = $this->getIndex(self::SUPPLIER_TYPE_NAME);
+
+        // Create the index new
+        $index->create();
+
+        $mappings = new Mapping();
+
+        $mappings->setProperties([
+            'id'            => ['type' => 'integer'],
+            'salesforce_id' => ['type' => 'integer'],
+            'name'          => ['type' => 'text'],
+            'duns_number'   => ['type' => 'text'],
+            'trading_name'  => ['type' => 'text'],
+          ]
+        );
+
+        $index->setMapping($mappings);
+
+    }
+
+    /**
+     * Returns the ElasticSearch index for the supplier
+     *
+     * @return \Elastica\Index
+     */
+    protected function getSupplierIndex(): Index
+    {
+        if (!$this->supplierIndexExists) {
+            $response = $this->request('/' . self::SUPPLIER_TYPE_NAME, Request::HEAD);
+            
+            if ($response->getStatus() > 299) {
+                $this->createSupplierIndex();
+            } else {
+                $this->supplierIndexExists = true;
+            }
+        }
+
+        return $this->getIndex(self::SUPPLIER_TYPE_NAME);
+    }
+
+    /**
+     * Remove a supplier from the ElasticSearch index
+     *
+     * @param \App\Model\Supplier $supplier
+     */
+    public function removeSupplier(Supplier $supplier)
+    {
+        $this->getSupplierIndex()->deleteById($supplier->getId());
+    }
+
+    /**
+     * Updates a supplier or creates a new one if it doesnt already exist
+     *
+     * @param \App\Model\Supplier $supplier
+     * @param array|null $frameworks
+     */
+    public function createOrUpdateSupplier(Supplier $supplier, array $frameworks = null) {
+
+        // Create a document
+        $supplierData = [
+          'id' => $supplier->getId(),
+          'salesforce_id' => $supplier->getSalesforceId(),
+          'name' => $supplier->getName(),
+          'duns_number' => $supplier->getDunsNumber(),
+          'trading_name' => $supplier->getTradingName(),
+        ];
+
+        if (!empty($frameworks)) {
+            // TODO: Add a nested array of the framework data we need into the document for indexing.
+        }
+
+        // Create a new document with the data we need
+        $document = new Document();
+        $document->setData($supplierData);
+        $document->setId($supplier->getId());
+        $document->setDocAsUpsert(true);
+
+        // Add document
+        $this->getSupplierIndex()->updateDocument($document);
+
+        // Refresh Index
+        $this->getSupplierIndex()->refresh();
+    }
+
+}

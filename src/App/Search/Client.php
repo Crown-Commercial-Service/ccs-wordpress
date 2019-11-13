@@ -111,11 +111,13 @@ class Client extends \Elastica\Client
 
         // Create a document
         $supplierData = [
-          'id' => $supplier->getId(),
+          'id'            => $supplier->getId(),
           'salesforce_id' => $supplier->getSalesforceId(),
-          'name' => $supplier->getName(),
-          'duns_number' => $supplier->getDunsNumber(),
-          'trading_name' => $supplier->getTradingName(),
+          'name'          => $supplier->getName(),
+          'duns_number'   => $supplier->getDunsNumber(),
+          'trading_name'  => $supplier->getTradingName(),
+          'city'          => $supplier->getCity(),
+          'postcode'      => $supplier->getPostcode(),
         ];
 
         if (!empty($frameworks)) {

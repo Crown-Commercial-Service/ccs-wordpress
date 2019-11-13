@@ -11,10 +11,17 @@ class SupplierMapping extends Mapping {
      */
     protected $properties = [
       'id'            => ['type' => 'integer'],
-      'salesforce_id' => ['type' => 'text'],
-      'name'          => ['type' => 'text'],
-      'duns_number'   => ['type' => 'text'],
+      'salesforce_id' => ['type' => 'keyword'],
+      'name'          => [
+        'type'   => 'text',
+        'fields' => [
+          'raw' => ['type' => 'keyword']
+        ]
+      ],
+      'duns_number'   => ['type' => 'keyword'],
       'trading_name'  => ['type' => 'text'],
+      'city'          => ['type' => 'text'],
+      'postcode'      => ['type' => 'text'],
     ];
 
     /**

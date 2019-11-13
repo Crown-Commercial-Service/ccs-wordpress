@@ -127,12 +127,12 @@ class Client extends \Elastica\Client
             {
                 $tempFramework['title'] = $framework->getTitle();
                 $tempFramework['rm_number'] = $framework->getRmNumber();
-                $tempFramework['end_date'] = $framework->getEndDate();
+                $tempFramework['end_date'] = $framework->getEndDate()->format('Y-m-d');
                 $frameworkData[] = $tempFramework;
             }
         }
 
-        $supplierData['frameworks'] = $frameworkData;
+        $supplierData['live_frameworks'] = $frameworkData;
 
         // Create a new document with the data we need
         $document = new Document();
@@ -179,22 +179,49 @@ class Client extends \Elastica\Client
      *
      * @param string $type
      * @param string $keyword
+     * @param int $limit
      * @return array
+     * @throws \IndexNotFoundException
      */
-    public function queryIndexByKeyword(string $type, string $keyword): array {
+    public function queryIndexByKeyword(string $type, string $keyword = '', int $page, int $limit): ResultSet {
         $search = new Search($this);
 
         $search->addIndex($this->convertIndexTypeToIndex($type));
 
-        $multiMatch = new Query\MultiMatch();
-        $multiMatch->setQuery($keyword);
-        $multiMatch->setFuzziness(10);
-        $query = new Query($multiMatch);
+        if (!empty($keyword)) {
+            $multiMatch = new Query\MultiMatch();
+            $multiMatch->setQuery($keyword);
+            $multiMatch->setFuzziness(10);
+            $query = new Query($multiMatch);
+        } else {
+            $matchAll = new Query\MatchAll();
+            $query = new Query($matchAll);
+        }
+
+        $query->setSize($limit);
+        $query->setFrom($this->translatePageNumberAndLimitToStartNumber($page, $limit));
+        $query->addSort('name.raw');
         $search->setQuery($query);
 
-        $resultSet = $search->search();
+        return $search->search();
+    }
 
-        return $resultSet->getResults();
+    /**
+     * For pagination we work out the result number to start searching from
+     *
+     * @param int $page
+     * @param int $limit
+     * @return int
+     */
+    protected function translatePageNumberAndLimitToStartNumber(int $page, int $limit): int {
+        if ($page >= 2)
+        {
+            $page = $page-1;
+        } else {
+            $page = 0;
+        }
+
+        return $page * $limit;
     }
 
 

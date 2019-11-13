@@ -6,6 +6,7 @@ use App\Model\Supplier;
 use App\Search\Mapping\SupplierMapping;
 use App\Services\Logger\SearchLogger;
 use Elastica\Document;
+use Elastica\Exception\NotFoundException;
 use Elastica\Index;
 use Elastica\Mapping;
 use Elastica\Request;
@@ -18,6 +19,9 @@ class Client extends \Elastica\Client
      * @var \Elastica\Index
      */
     // TODO: We need to set the environment name here on the end of the index, to allow using the same server for both live and staging. But where is environment set?
+    /**
+     *
+     */
     const SUPPLIER_TYPE_NAME = 'supplier';
 
     /**
@@ -39,10 +43,17 @@ class Client extends \Elastica\Client
         }
 
         parent::__construct($config, $callback, $logger);
+
+        if (!getenv('ELASTIC_SUFFIX')) {
+            throw new \Exception('Please set the ELASTIC_SUFFIX environment variable before continuing.');
+        }
     }
 
+    /**
+     *
+     */
     protected function createSupplierIndex() {
-        $index = $this->getIndex(self::SUPPLIER_TYPE_NAME);
+        $index = $this->getIndex($this->getIndexName(self::SUPPLIER_TYPE_NAME));
 
         // Create the index new
         $index->create();
@@ -58,7 +69,7 @@ class Client extends \Elastica\Client
     protected function getSupplierIndex(): Index
     {
         if (!$this->supplierIndexExists) {
-            $response = $this->request( self::SUPPLIER_TYPE_NAME, Request::HEAD);
+            $response = $this->request( $this->getIndexName(self::SUPPLIER_TYPE_NAME), Request::HEAD);
             
             if ($response->getStatus() > 299) {
                 $this->createSupplierIndex();
@@ -67,7 +78,7 @@ class Client extends \Elastica\Client
             $this->supplierIndexExists = true;
         }
 
-        return $this->getIndex(self::SUPPLIER_TYPE_NAME);
+        return $this->getIndex($this->getIndexName(self::SUPPLIER_TYPE_NAME));
     }
 
     /**
@@ -77,7 +88,13 @@ class Client extends \Elastica\Client
      */
     public function removeSupplier(Supplier $supplier)
     {
-        $this->getSupplierIndex()->deleteById($supplier->getId());
+        try {
+            $this->getSupplierIndex()->deleteById($supplier->getId());
+        } catch (NotFoundException $exception)
+        {
+            // We can ignore this exception. The document was never in the index.
+        }
+
     }
 
     /**
@@ -112,6 +129,16 @@ class Client extends \Elastica\Client
 
         // Refresh Index
         $this->getSupplierIndex()->refresh();
+    }
+
+    /**
+     * Get the index name for the current index
+     *
+     * @param string $type
+     * @return string
+     */
+    protected function getIndexName(string $type): string {
+        return $type . '_' . getenv('ELASTIC_SUFFIX');
     }
 
 }

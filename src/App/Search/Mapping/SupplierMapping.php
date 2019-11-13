@@ -20,8 +20,9 @@ class SupplierMapping extends Mapping {
       ],
       'duns_number'   => ['type' => 'keyword'],
       'trading_name'  => ['type' => 'text'],
-      'city'          => ['type' => 'text'],
-      'postcode'      => ['type' => 'text'],
+      'city'       => ['type' => 'text'],
+      'postcode'   => ['type' => 'text'],
+      'frameworks' => ['type' => 'nested']
     ];
 
     /**

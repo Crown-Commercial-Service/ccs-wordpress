@@ -120,9 +120,19 @@ class Client extends \Elastica\Client
           'postcode'      => $supplier->getPostcode(),
         ];
 
+        $frameworkData = [];
         if (!empty($frameworks)) {
-            // TODO: Add a nested array of the framework data we need into the document for indexing.
+            /** @var \App\Model\Framework $framework */
+            foreach ($frameworks as $framework)
+            {
+                $tempFramework['title'] = $framework->getTitle();
+                $tempFramework['rm_number'] = $framework->getRmNumber();
+                $tempFramework['end_date'] = $framework->getEndDate();
+                $frameworkData[] = $tempFramework;
+            }
         }
+
+        $supplierData['frameworks'] = $frameworkData;
 
         // Create a new document with the data we need
         $document = new Document();

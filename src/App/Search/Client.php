@@ -9,7 +9,11 @@ use Elastica\Document;
 use Elastica\Exception\NotFoundException;
 use Elastica\Index;
 use Elastica\Mapping;
+use Elastica\Query;
+use Elastica\Query\Term;
 use Elastica\Request;
+use Elastica\ResultSet;
+use Elastica\Search;
 use Psr\Log\LoggerInterface;
 
 class Client extends \Elastica\Client
@@ -140,5 +144,47 @@ class Client extends \Elastica\Client
     protected function getIndexName(string $type): string {
         return $type . '_' . getenv('ELASTIC_SUFFIX');
     }
+
+    /**
+     * Provide this class with a index type string and it will return the index
+     *
+     * @param string $type
+     * @return \Elastica\Index
+     * @throws \IndexNotFoundException
+     */
+    protected function convertIndexTypeToIndex(string $type): Index {
+        switch ($type) {
+            case self::SUPPLIER_TYPE_NAME:
+                return $this->getSupplierIndex();
+                break;
+        }
+
+        throw new \IndexNotFoundException('Index with the name: "' . $type . '" not found');
+    }
+
+    /**
+     * Query's the fields on a given index
+     *
+     * @param string $type
+     * @param string $keyword
+     * @return array
+     */
+    public function queryIndexByKeyword(string $type, string $keyword): array {
+        $search = new Search($this);
+
+        $search->addIndex($this->convertIndexTypeToIndex($type));
+
+        $multiMatch = new Query\MultiMatch();
+        $multiMatch->setQuery($keyword);
+        $multiMatch->setFuzziness(10);
+        $query = new Query($multiMatch);
+        $search->setQuery($query);
+
+        $resultSet = $search->search();
+
+        return $resultSet->getResults();
+    }
+
+
 
 }

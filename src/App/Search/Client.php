@@ -3,6 +3,7 @@
 namespace App\Search;
 
 use App\Model\Supplier;
+use App\Search\Mapping\SupplierMapping;
 use App\Services\Logger\SearchLogger;
 use Elastica\Document;
 use Elastica\Index;
@@ -46,19 +47,7 @@ class Client extends \Elastica\Client
         // Create the index new
         $index->create();
 
-        $mappings = new Mapping();
-
-        $mappings->setProperties([
-            'id'            => ['type' => 'integer'],
-            'salesforce_id' => ['type' => 'integer'],
-            'name'          => ['type' => 'text'],
-            'duns_number'   => ['type' => 'text'],
-            'trading_name'  => ['type' => 'text'],
-          ]
-        );
-
-        $index->setMapping($mappings);
-
+        $index->setMapping(new SupplierMapping());
     }
 
     /**
@@ -69,13 +58,13 @@ class Client extends \Elastica\Client
     protected function getSupplierIndex(): Index
     {
         if (!$this->supplierIndexExists) {
-            $response = $this->request('/' . self::SUPPLIER_TYPE_NAME, Request::HEAD);
+            $response = $this->request( self::SUPPLIER_TYPE_NAME, Request::HEAD);
             
             if ($response->getStatus() > 299) {
                 $this->createSupplierIndex();
-            } else {
-                $this->supplierIndexExists = true;
             }
+
+            $this->supplierIndexExists = true;
         }
 
         return $this->getIndex(self::SUPPLIER_TYPE_NAME);

@@ -26,7 +26,7 @@ if (isset($_GET['keyword'])) {
     $keyword = $_GET['keyword'];
 }
 
-$resultSet = $searchClient->queryIndexByKeyword($searchClient::SUPPLIER_TYPE_NAME, $keyword, $page, $limit);
+$resultSet = $searchClient->querySupplierIndexByKeyword($searchClient::SUPPLIER_TYPE_NAME, $keyword, $page, $limit);
 $suppliers = $resultSet->getResults();
 
 $supplierDataToReturn = [];

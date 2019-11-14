@@ -183,19 +183,34 @@ class Client extends \Elastica\Client
      * @return array
      * @throws \IndexNotFoundException
      */
-    public function queryIndexByKeyword(string $type, string $keyword = '', int $page, int $limit): ResultSet {
+    public function querySupplierIndexByKeyword(string $type, string $keyword = '', int $page, int $limit): ResultSet {
         $search = new Search($this);
 
         $search->addIndex($this->convertIndexTypeToIndex($type));
 
+        // The default search all query
+        $matchAll = new Query\MatchAll();
+        $query = new Query($matchAll);
+
         if (!empty($keyword)) {
-            $multiMatch = new Query\MultiMatch();
-            $multiMatch->setQuery($keyword);
-            $multiMatch->setFuzziness(10);
-            $query = new Query($multiMatch);
-        } else {
-            $matchAll = new Query\MatchAll();
-            $query = new Query($matchAll);
+            // Create a bool query to allow us to set up multiple query types
+            $boolQuery = new Query\BoolQuery();
+
+            // Create a multimatch query so we can search multiple fields
+            $multiMatchQuery = new Query\MultiMatch();
+            $multiMatchQuery->setQuery($keyword);
+            $multiMatchQuery->setFuzziness(1);
+            $boolQuery->addShould($multiMatchQuery);
+
+            $multiMatchQueryWithoutFuzziness = new Query\MultiMatch();
+            $multiMatchQueryWithoutFuzziness->setQuery($keyword);
+            $nestedQuery = new Query\Nested();
+            $nestedQuery->setQuery($multiMatchQueryWithoutFuzziness);
+            $nestedQuery->setPath('live_frameworks');
+
+            $boolQuery->addShould($nestedQuery);
+
+            $query = new Query($boolQuery);
         }
 
         $query->setSize($limit);

@@ -46,7 +46,30 @@ class Client extends \Elastica\Client
             $logger = new SearchLogger();
         }
 
+        $this->checkForRequiredEnvVars();
+
+        $config = [
+            'host' => getenv('ELASTIC_HOST'),
+            'port' => getenv('ELASTIC_PORT'),
+        ];
+
         parent::__construct($config, $callback, $logger);
+    }
+
+    /**
+     * Checks for required environment variables before booting
+     *
+     * @throws \Exception
+     */
+    protected function checkForRequiredEnvVars()
+    {
+        if (!getenv('ELASTIC_HOST')) {
+            throw new \Exception('Please set the ELASTIC_HOST environment variable before continuing.');
+        }
+
+        if (!getenv('ELASTIC_PORT')) {
+            throw new \Exception('Please set the ELASTIC_PORT environment variable before continuing.');
+        }
 
         if (!getenv('ELASTIC_SUFFIX')) {
             throw new \Exception('Please set the ELASTIC_SUFFIX environment variable before continuing.');

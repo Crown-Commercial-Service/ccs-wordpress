@@ -29,6 +29,9 @@ if (isset($_GET['keyword'])) {
 $resultSet = $searchClient->querySupplierIndexByKeyword($searchClient::SUPPLIER_TYPE_NAME, $keyword, $page, $limit);
 $suppliers = $resultSet->getResults();
 
+print_r($suppliers);
+die();
+
 $supplierDataToReturn = [];
 
 /** @var \Elastica\Result $supplier */

@@ -206,7 +206,7 @@ class Client extends \Elastica\Client
      * @return array
      * @throws \IndexNotFoundException
      */
-    public function querySupplierIndexByKeyword(string $type, string $keyword = '', int $page, int $limit): ResultSet {
+    public function querySupplierIndexByKeyword(string $type, string $keyword = '', int $page, int $limit, string $sortField = ''): ResultSet {
         $search = new Search($this);
 
         $search->addIndex($this->convertIndexTypeToIndex($type));
@@ -225,6 +225,13 @@ class Client extends \Elastica\Client
             $multiMatchQuery->setFuzziness(1);
             $boolQuery->addShould($multiMatchQuery);
 
+            // Add a boost to the title
+            $multiMatchQueryForNameField = new Query\MultiMatch();
+            $multiMatchQueryForNameField->setQuery($keyword);
+            $multiMatchQueryForNameField->setFields(['name^2']);
+            $multiMatchQueryForNameField->setFuzziness(1);
+            $boolQuery->addShould($multiMatchQueryForNameField);
+
             $multiMatchQueryWithoutFuzziness = new Query\MultiMatch();
             $multiMatchQueryWithoutFuzziness->setQuery($keyword);
             $nestedQuery = new Query\Nested();
@@ -238,10 +245,29 @@ class Client extends \Elastica\Client
 
         $query->setSize($limit);
         $query->setFrom($this->translatePageNumberAndLimitToStartNumber($page, $limit));
-        $query->addSort('name.raw');
+
+        $query = $this->sortQuery($query, $keyword, $sortField);
+
         $search->setQuery($query);
 
         return $search->search();
+    }
+
+    protected function sortQuery(Query $query, string $keyword, string $sortField): Query {
+        if (empty($keyword) && empty($sortField)) {
+            $query->addSort('name.raw');
+            return $query;
+        }
+
+        if (empty($keyword) && !empty($sortField)) {
+            $query->addSort($sortField);
+            return $query;
+        }
+
+        // Otherwise let's order by the score
+        $query->addSort('_score');
+        return $query;
+
     }
 
     /**

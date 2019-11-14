@@ -37,8 +37,6 @@ foreach ($suppliers as $supplier)
     $supplierDataToReturn[] = $supplier->getSource();
 }
 
-// TODO: Need the array to be in the correct order, but just getting it to work for now.
-
 $meta = [
   'total_results' => $resultSet->getTotalHits(),
   'limit'         => $limit,

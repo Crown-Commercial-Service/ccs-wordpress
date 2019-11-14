@@ -28,6 +28,7 @@ if (isset($_GET['keyword'])) {
 
 $resultSet = $searchClient->querySupplierIndexByKeyword($searchClient::SUPPLIER_TYPE_NAME, $keyword, $page, $limit);
 $suppliers = $resultSet->getResults();
+$buckets = $resultSet->getAggregations();
 
 $supplierDataToReturn = [];
 
@@ -46,5 +47,5 @@ $meta = [
 
 header('Content-Type: application/json');
 
-echo json_encode(['meta' => $meta, 'results' => $supplierDataToReturn]);
+echo json_encode(['meta' => $meta, 'results' => $supplierDataToReturn, 'buckets' => $buckets]);
 exit;

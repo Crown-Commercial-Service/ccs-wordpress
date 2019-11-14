@@ -5,6 +5,10 @@ namespace App\Search;
 use App\Model\Supplier;
 use App\Search\Mapping\SupplierMapping;
 use App\Services\Logger\SearchLogger;
+use Elastica\Aggregation\Filters;
+use Elastica\Aggregation\Nested;
+use Elastica\Aggregation\ReverseNested;
+use Elastica\Aggregation\Terms;
 use Elastica\Document;
 use Elastica\Exception\NotFoundException;
 use Elastica\Index;
@@ -248,11 +252,36 @@ class Client extends \Elastica\Client
 
         $query = $this->sortQuery($query, $keyword, $sortField);
 
+        $query = $this->addAggregationsToQuery($query);
+
         $search->setQuery($query);
 
         return $search->search();
     }
 
+    /**
+     * Adds the aggregations to the supplier query
+     *
+     * @param \Elastica\Query $query
+     * @return \Elastica\Query
+     */
+    protected function addAggregationsToQuery(Query $query): Query {
+        $termsAggregation = new Terms('titles');
+        $termsAggregation->setField('live_frameworks.title');
+        $nestedAggregation = new Nested('frameworks', 'live_frameworks');
+        $nestedAggregation->addAggregation($termsAggregation);
+
+        return $query->addAggregation($nestedAggregation);
+    }
+
+    /**
+     * Sort the query
+     *
+     * @param \Elastica\Query $query
+     * @param string $keyword
+     * @param string $sortField
+     * @return \Elastica\Query
+     */
     protected function sortQuery(Query $query, string $keyword, string $sortField): Query {
         if (empty($keyword) && empty($sortField)) {
             $query->addSort('name.raw');
@@ -287,7 +316,5 @@ class Client extends \Elastica\Client
 
         return $page * $limit;
     }
-
-
 
 }

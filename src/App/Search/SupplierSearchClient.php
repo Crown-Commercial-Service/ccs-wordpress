@@ -64,7 +64,7 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
         $supplier = $model;
 
         // Create a document
-        $supplierData = [
+        $documentData = [
           'id'            => $supplier->getId(),
           'salesforce_id' => $supplier->getSalesforceId(),
           'name'          => $supplier->getName(),
@@ -81,17 +81,17 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
             {
                 $tempFramework['title'] = $framework->getTitle();
                 $tempFramework['rm_number'] = $framework->getRmNumber();
-                $tempFramework['end_date'] = $framework->getEndDate()->format('Y-m-d');
+                $tempFramework['end_date'] = !empty($framework->getEndDate()) ? $framework->getEndDate()->format('Y-m-d') : null;
                 $tempFramework['status'] = $framework->getStatus();
                 $frameworkData[] = $tempFramework;
             }
         }
 
-        $supplierData['live_frameworks'] = $frameworkData;
+        $documentData['live_frameworks'] = $frameworkData;
 
         // Create a new document with the data we need
         $document = new Document();
-        $document->setData($supplierData);
+        $document->setData($documentData);
         $document->setId($supplier->getId());
         $document->setDocAsUpsert(true);
 

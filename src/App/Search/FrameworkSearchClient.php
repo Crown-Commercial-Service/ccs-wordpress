@@ -64,25 +64,33 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
 
         // Create a document
         $documentData = [
-          'id'            => $framework->getId(),
-          'salesforce_id' => $framework->getSalesforceId(),
-          'title'          => $framework->getTitle(),
+          'id'               => $framework->getId(),
+          'salesforce_id'    => $framework->getSalesforceId(),
+          'title'            => $framework->getTitle(),
+          'start_date'       => !empty($framework->getStartDate()) ? $framework->getStartDate()->format('Y-m-d') : null,
+          'end_date'         => !empty($framework->getEndDate()) ? $framework->getEndDate()->format('Y-m-d') : null,
+          'rm_number'        => $framework->getRmNumber(),
+          'summary'          => $framework->getSummary(),
+          'description'      => $framework->getDescription(),
+          'terms'            => $framework->getTerms(),
+          'pillar'           => $framework->getPillar(),
+          'category'         => $framework->getCategory(),
+          'status'           => $framework->getStatus(),
+          'published_status' => $framework->getPublishedStatus(),
         ];
 
-//        $frameworkData = [];
-//        if (!empty($relationships)) {
-//            /** @var \App\Model\Framework $framework */
-//            foreach ($relationships as $framework)
-//            {
-//                $tempFramework['title'] = $framework->getTitle();
-//                $tempFramework['rm_number'] = $framework->getRmNumber();
-//                $tempFramework['end_date'] = $framework->getEndDate()->format('Y-m-d');
-//                $tempFramework['status'] = $framework->getStatus();
-//                $frameworkData[] = $tempFramework;
-//            }
-//        }
-//
-//        $supplierData['live_frameworks'] = $frameworkData;
+        $lotData = [];
+        if (!empty($relationships)) {
+            /** @var \App\Model\Lot $lot */
+            foreach ($relationships as $lot)
+            {
+                $tempLot['title'] = $lot->getTitle();
+                $tempLot['description'] = $lot->getDescription();
+                $lotData[] = $tempLot;
+            }
+        }
+
+        $documentData['lots'] = $lotData;
 
         // Create a new document with the data we need
         $document = new Document();
@@ -116,6 +124,19 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
 
         // Create a bool query to allow us to set up multiple query types
         $boolQuery = new Query\BoolQuery();
+
+        $publishedStatusQuery = new Query\Match('published_status', 'publish');
+        $boolQuery->addMust($publishedStatusQuery);
+
+        $statusBool = new Query\BoolQuery();
+        $liveStatusQuery = new Query\Match('status', 'live');
+        $expiredStatusQuery = new Query\Match('status', 'Expired - Data Still Received');
+
+        $statusBool->addShould($liveStatusQuery);
+        $statusBool->addShould($expiredStatusQuery);
+
+        $boolQuery->addMust($statusBool);
+
 
         if (!empty($keyword)) {
             // Create a multimatch query so we can search multiple fields

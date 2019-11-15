@@ -11,6 +11,9 @@
 
 namespace CCS\SFI;
 
+use App\Model\Framework;
+use App\Search\FrameworkSearchClient;
+use App\Search\SupplierSearchClient;
 use App\Services\Database\DatabaseConnection;
 use App\Services\Logger\ImportLogger;
 use App\Search\AbstractSearchClient;
@@ -108,6 +111,15 @@ class Import
      */
     protected $wordpressLots;
 
+    /**
+     * @var \App\Search\FrameworkSearchClient
+     */
+    protected $frameworkSearchClient;
+
+    /**
+     * @var \App\Search\SupplierSearchClient
+     */
+    protected $supplierSearchClient;
 
     /**
      * Import constructor.
@@ -121,6 +133,8 @@ class Import
         $this->supplierRepository = new SupplierRepository();
         $this->lotSupplierRepository = new LotSupplierRepository();
         $this->dbConnection = new DatabaseConnection();
+        $this->supplierSearchClient = new SupplierSearchClient();
+        $this->frameworkSearchClient = new FrameworkSearchClient();
     }
 
     /**
@@ -243,6 +257,8 @@ class Import
 
         // Import this Framework
         $this->importSingleFramework($framework);
+
+        $this->updateFrameworkSearchIndexWithSingleFramework($framework);
 
         // Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
@@ -733,13 +749,37 @@ class Import
         return $wordpressId;
     }
 
+    public function updateFrameworkSearchIndex() {
+        WP_CLI::success('Beginning Search index update on Frameworks.');
+
+        $frameworks = $this->frameworkRepository->findAll();
+
+        WP_CLI::success(count($frameworks) . ' Frameworks found');
+
+        foreach ($frameworks as $framework)
+        {
+            $this->updateFrameworkSearchIndexWithSingleFramework($framework);
+        }
+
+        WP_CLI::success('Operation completed successfully.');
+
+        return;
+    }
+
+    protected function updateFrameworkSearchIndexWithSingleFramework(Framework $framework) {
+        WP_CLI::success('Updating Framework index for Framework ID: ' . $framework->getSalesforceId());
+
+        $lots = $this->lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');
+        
+        if (!$lots) {
+            $lots = [];
+        }
+
+        $this->frameworkSearchClient->createOrUpdateDocument($framework, $lots);
+    }
+
     public function updateSupplierSearchIndex() {
         WP_CLI::success('Beginning Search index update on Suppliers.');
-
-        $this->frameworkRepository = new FrameworkRepository();
-        $this->supplierRepository = new SupplierRepository();
-
-        $searchClient = new AbstractSearchClient();
 
         $suppliers = $this->supplierRepository->findAll();
 
@@ -751,13 +791,15 @@ class Import
 
             if (!$liveFrameworks) {
                 // Remove Supplier from index
-                $searchClient->removeDocument($supplier);
+                $this->supplierSearchClient->removeDocument($supplier);
             } else {
                 // Either create or update Supplier in index
-                $searchClient->createOrUpdateDocument($supplier, $liveFrameworks);
+                $this->supplierSearchClient->createOrUpdateDocument($supplier, $liveFrameworks);
             }
 
         }
+
+        WP_CLI::success('Operation completed successfully.');
 
         return;
     }
@@ -927,7 +969,6 @@ class Import
             $this->salesforceApi->setupHeaders($accessToken);
         }
     }
-
 
     /**
      * Updates all framework titles in WordPress to include the RM Number

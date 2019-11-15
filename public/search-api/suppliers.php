@@ -26,17 +26,19 @@ if (isset($_GET['keyword'])) {
     $keyword = $_GET['keyword'];
 }
 
+$filters = [];
+
 // See examples of filters here. This should be passed from the frontend form
-$filters[] = [
-  'field' => 'city',
-  'value' => 'London'
-];
+//$filters[] = [
+//  'field' => 'city',
+//  'value' => 'London'
+//];
 
 // Example of nested filter
-$filters[] = [
-  'field' => 'live_frameworks.title',
-  'value' => 'Management Consultancy Framework (MCF)'
-];
+//$filters[] = [
+//  'field' => 'live_frameworks.title',
+//  'value' => 'Management Consultancy Framework (MCF)'
+//];
 
 $resultSet = $searchClient->querySupplierIndexByKeyword($searchClient::SUPPLIER_TYPE_NAME, $keyword, $page, $limit, $filters);
 $suppliers = $resultSet->getResults();

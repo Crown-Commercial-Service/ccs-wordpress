@@ -27,7 +27,8 @@ class SupplierMapping extends Mapping {
         'properties' => [
           'end_date'  => ['type' => 'date'],
           'title'     => ['type' => 'keyword'],
-          'rm_number' => ['type' => 'keyword']
+          'rm_number' => ['type' => 'keyword'],
+          'status'    => ['type' => 'keyword']
         ]
       ]
     ];

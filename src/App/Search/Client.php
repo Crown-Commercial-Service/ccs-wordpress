@@ -155,6 +155,7 @@ class Client extends \Elastica\Client
                 $tempFramework['title'] = $framework->getTitle();
                 $tempFramework['rm_number'] = $framework->getRmNumber();
                 $tempFramework['end_date'] = $framework->getEndDate()->format('Y-m-d');
+                $tempFramework['status'] = $framework->getStatus();
                 $frameworkData[] = $tempFramework;
             }
         }
@@ -220,10 +221,6 @@ class Client extends \Elastica\Client
 
         // Create a bool query to allow us to set up multiple query types
         $boolQuery = new Query\BoolQuery();
-
-        // The default search all query
-        $matchAll = new Query\MatchAll();
-        $boolQuery->addShould($matchAll);
 
         if (!empty($keyword)) {
             // Create a multimatch query so we can search multiple fields

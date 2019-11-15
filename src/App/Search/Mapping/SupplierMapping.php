@@ -2,11 +2,12 @@
 
 namespace App\Search\Mapping;
 
-use Elastica\Mapping;
-
-class SupplierMapping extends Mapping {
+class SupplierMapping extends AbstractMapping
+{
 
     /**
+     * The mapping properties
+     *
      * @var array
      */
     protected $properties = [
@@ -32,13 +33,5 @@ class SupplierMapping extends Mapping {
         ]
       ]
     ];
-
-    /**
-     * SupplierMapping constructor.
-     */
-    public function __construct()
-    {
-        $this->setProperties($this->properties);
-    }
 
 }

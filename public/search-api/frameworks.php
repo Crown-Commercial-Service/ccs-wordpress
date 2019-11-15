@@ -1,7 +1,6 @@
 <?php
 
 use App\Search\AbstractSearchClient;
-use App\Search\SupplierSearchClient;
 use Symfony\Component\Dotenv\Dotenv;
 
 $rootDir = __DIR__ . '/../../';
@@ -10,7 +9,7 @@ require_once($rootDir . 'vendor/autoload.php');
 $dotenv = new Dotenv();
 $dotenv->load($rootDir . '.env');
 
-$searchClient = new SupplierSearchClient();
+$searchClient = new AbstractSearchClient();
 
 if (isset($_GET['limit'])) {
     $limit = (int)$_GET['limit'];
@@ -41,7 +40,7 @@ $filters = [];
 //  'value' => 'Management Consultancy Framework (MCF)'
 //];
 
-$resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);
+$resultSet = $searchClient->querySupplierIndexByKeyword($searchClient::SUPPLIER_TYPE_NAME, $keyword, $page, $limit, $filters);
 $suppliers = $resultSet->getResults();
 $buckets = $resultSet->getAggregations();
 

@@ -13,7 +13,7 @@ namespace CCS\SFI;
 
 use App\Services\Database\DatabaseConnection;
 use App\Services\Logger\ImportLogger;
-use App\Search\Client;
+use App\Search\AbstractSearchClient;
 use \WP_CLI;
 
 use App\Model\LotSupplier;
@@ -739,7 +739,7 @@ class Import
         $this->frameworkRepository = new FrameworkRepository();
         $this->supplierRepository = new SupplierRepository();
 
-        $searchClient = new Client();
+        $searchClient = new AbstractSearchClient();
 
         $suppliers = $this->supplierRepository->findAll();
 
@@ -751,10 +751,10 @@ class Import
 
             if (!$liveFrameworks) {
                 // Remove Supplier from index
-                $searchClient->removeSupplier($supplier);
+                $searchClient->removeDocument($supplier);
             } else {
                 // Either create or update Supplier in index
-                $searchClient->createOrUpdateSupplier($supplier, $liveFrameworks);
+                $searchClient->createOrUpdateDocument($supplier, $liveFrameworks);
             }
 
         }

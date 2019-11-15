@@ -206,23 +206,26 @@ class Client extends \Elastica\Client
      *
      * @param string $type
      * @param string $keyword
+     * @param int $page
      * @param int $limit
-     * @return array
+     * @param array $filters
+     * @param string $sortField
+     * @return \Elastica\ResultSet
      * @throws \IndexNotFoundException
      */
-    public function querySupplierIndexByKeyword(string $type, string $keyword = '', int $page, int $limit, string $sortField = ''): ResultSet {
+    public function querySupplierIndexByKeyword(string $type, string $keyword = '', int $page, int $limit, array $filters = [], string $sortField = ''): ResultSet {
         $search = new Search($this);
 
         $search->addIndex($this->convertIndexTypeToIndex($type));
 
+        // Create a bool query to allow us to set up multiple query types
+        $boolQuery = new Query\BoolQuery();
+
         // The default search all query
         $matchAll = new Query\MatchAll();
-        $query = new Query($matchAll);
+        $boolQuery->addShould($matchAll);
 
         if (!empty($keyword)) {
-            // Create a bool query to allow us to set up multiple query types
-            $boolQuery = new Query\BoolQuery();
-
             // Create a multimatch query so we can search multiple fields
             $multiMatchQuery = new Query\MultiMatch();
             $multiMatchQuery->setQuery($keyword);
@@ -241,11 +244,13 @@ class Client extends \Elastica\Client
             $nestedQuery = new Query\Nested();
             $nestedQuery->setQuery($multiMatchQueryWithoutFuzziness);
             $nestedQuery->setPath('live_frameworks');
-
             $boolQuery->addShould($nestedQuery);
 
-            $query = new Query($boolQuery);
         }
+
+        $boolQuery = $this->addSelectedSearchFilters($boolQuery, $filters);
+
+        $query = new Query($boolQuery);
 
         $query->setSize($limit);
         $query->setFrom($this->translatePageNumberAndLimitToStartNumber($page, $limit));
@@ -257,6 +262,56 @@ class Client extends \Elastica\Client
         $search->setQuery($query);
 
         return $search->search();
+    }
+
+    /**
+     * Adds the search filters to the query.
+     *
+     * @param \Elastica\Query\BoolQuery $boolQuery
+     * @param array $filters each array item must contain the keys 'field' and 'value'
+     * @return \Elastica\Query\BoolQuery
+     */
+    protected function addSelectedSearchFilters(Query\BoolQuery $boolQuery, array $filters): Query\BoolQuery {
+
+        foreach ($filters as $filter)
+        {
+            if (strpos($filter['field'], '.') !== false) {
+                $boolQuery = $this->addNestedSearchFilter($boolQuery, $filter);
+            } else {
+                $boolQuery = $this->addSimpleSearchFilter($boolQuery, $filter);
+            }
+        }
+
+        return $boolQuery;
+    }
+
+    /**
+     * Add a simple search filter
+     *
+     * @param \Elastica\Query\BoolQuery $boolQuery
+     * @param array $filter must contain the keys 'field' and 'value'
+     * @return \Elastica\Query\BoolQuery
+     */
+    protected function addSimpleSearchFilter(Query\BoolQuery $boolQuery, array $filter): Query\BoolQuery {
+        $matchQuery = new Query\Match($filter['field'], $filter['value']);
+        $boolQuery->addMust($matchQuery);
+
+        return $boolQuery;
+    }
+
+    /**
+     * @param \Elastica\Query\BoolQuery $boolQuery
+     * @param array $filter must contain the keys 'field' and 'value'
+     * @return \Elastica\Query\BoolQuery
+     */
+    protected function addNestedSearchFilter(Query\BoolQuery $boolQuery, array $filter): Query\BoolQuery {
+        $matchQuery = new Query\Match($filter['field'], $filter['value']);
+        $nested = new Query\Nested();
+        $nested->setPath(strtok($filter['field'], '.'));
+        $nested->setQuery($matchQuery);
+        $boolQuery->addMust($nested);
+
+        return $boolQuery;
     }
 
     /**

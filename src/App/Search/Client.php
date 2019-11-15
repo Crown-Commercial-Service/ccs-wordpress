@@ -270,6 +270,7 @@ class Client extends \Elastica\Client
         $termsAggregation->setField('live_frameworks.title');
         $nestedAggregation = new Nested('frameworks', 'live_frameworks');
         $nestedAggregation->addAggregation($termsAggregation);
+        $termsAggregation->setSize(1000);
 
         return $query->addAggregation($nestedAggregation);
     }

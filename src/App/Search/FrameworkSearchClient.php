@@ -3,8 +3,7 @@
 namespace App\Search;
 
 use App\Model\ModelInterface;
-use App\Model\Supplier;
-use App\Search\Mapping\SupplierMapping;
+use App\Search\Mapping\FrameworkMapping;
 use Elastica\Aggregation\Nested;
 use Elastica\Aggregation\Terms;
 use Elastica\Document;
@@ -14,23 +13,23 @@ use Elastica\ResultSet;
 use Elastica\Search;
 
 /**
- * Class SupplierSearchClient
+ * Class FrameworkSearchClient
  * @package App\Search
  */
-class SupplierSearchClient extends AbstractSearchClient implements SearchClientInterface
+class FrameworkSearchClient extends AbstractSearchClient implements SearchClientInterface
 {
 
     /**
      * The name of the index
      */
-    const INDEX_NAME = 'supplier';
+    const INDEX_NAME = 'framework';
 
     /**
      * Default sorting field
      *
      * @var string
      */
-    protected $defaultSortField = 'name.raw';
+    protected $defaultSortField = 'title.raw';
 
     /**
      * Returns the name of the index
@@ -42,57 +41,53 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
         return self::INDEX_NAME;
     }
 
-    /**
+        /**
      * Returns the mapping properties for the index
      *
      * @return \Elastica\Mapping
      */
     public function getIndexMapping(): Mapping
     {
-        return (new SupplierMapping());
+        return (new FrameworkMapping());
     }
 
     /**
-     * Updates a supplier or creates a new one if it doesnt already exist
+     * Updates a framework or creates a new one if it doesnt already exist
      *
      * @param \App\Model\ModelInterface $model
      * @param array|null $relationships
      */
     public function createOrUpdateDocument(ModelInterface $model, array $relationships = null): void {
 
-        /** @var Supplier $model */
-        $supplier = $model;
+        /** @var \App\Model\Framework $model */
+        $framework = $model;
 
         // Create a document
-        $supplierData = [
-          'id'            => $supplier->getId(),
-          'salesforce_id' => $supplier->getSalesforceId(),
-          'name'          => $supplier->getName(),
-          'duns_number'   => $supplier->getDunsNumber(),
-          'trading_name'  => $supplier->getTradingName(),
-          'city'          => $supplier->getCity(),
-          'postcode'      => $supplier->getPostcode(),
+        $documentData = [
+          'id'            => $framework->getId(),
+          'salesforce_id' => $framework->getSalesforceId(),
+          'title'          => $framework->getTitle(),
         ];
 
-        $frameworkData = [];
-        if (!empty($relationships)) {
-            /** @var \App\Model\Framework $framework */
-            foreach ($relationships as $framework)
-            {
-                $tempFramework['title'] = $framework->getTitle();
-                $tempFramework['rm_number'] = $framework->getRmNumber();
-                $tempFramework['end_date'] = $framework->getEndDate()->format('Y-m-d');
-                $tempFramework['status'] = $framework->getStatus();
-                $frameworkData[] = $tempFramework;
-            }
-        }
-
-        $supplierData['live_frameworks'] = $frameworkData;
+//        $frameworkData = [];
+//        if (!empty($relationships)) {
+//            /** @var \App\Model\Framework $framework */
+//            foreach ($relationships as $framework)
+//            {
+//                $tempFramework['title'] = $framework->getTitle();
+//                $tempFramework['rm_number'] = $framework->getRmNumber();
+//                $tempFramework['end_date'] = $framework->getEndDate()->format('Y-m-d');
+//                $tempFramework['status'] = $framework->getStatus();
+//                $frameworkData[] = $tempFramework;
+//            }
+//        }
+//
+//        $supplierData['live_frameworks'] = $frameworkData;
 
         // Create a new document with the data we need
         $document = new Document();
-        $document->setData($supplierData);
-        $document->setId($supplier->getId());
+        $document->setData($documentData);
+        $document->setId($framework->getId());
         $document->setDocAsUpsert(true);
 
         // Add document
@@ -132,16 +127,9 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
             // Add a boost to the title
             $multiMatchQueryForNameField = new Query\MultiMatch();
             $multiMatchQueryForNameField->setQuery($keyword);
-            $multiMatchQueryForNameField->setFields(['name^2']);
+            $multiMatchQueryForNameField->setFields(['title^2']);
             $multiMatchQueryForNameField->setFuzziness(1);
             $boolQuery->addShould($multiMatchQueryForNameField);
-
-            $multiMatchQueryWithoutFuzziness = new Query\MultiMatch();
-            $multiMatchQueryWithoutFuzziness->setQuery($keyword);
-            $nestedQuery = new Query\Nested();
-            $nestedQuery->setQuery($multiMatchQueryWithoutFuzziness);
-            $nestedQuery->setPath('live_frameworks');
-            $boolQuery->addShould($nestedQuery);
 
         }
 
@@ -170,13 +158,7 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
      * @return \Elastica\Query
      */
     public function addAggregationsToQuery(Query $query): Query {
-        $termsAggregation = new Terms('titles');
-        $termsAggregation->setField('live_frameworks.title');
-        $nestedAggregation = new Nested('frameworks', 'live_frameworks');
-        $nestedAggregation->addAggregation($termsAggregation);
-        $termsAggregation->setSize(1000);
-
-        return $query->addAggregation($nestedAggregation);
+        return $query;
     }
 
 

@@ -73,7 +73,7 @@ class AbstractSearchClient extends \Elastica\Client
 
         $index->create();
 
-        $index->setMapping($this->indexMapping);
+        $index->setMapping($this->getIndexMapping());
     }
 
     /**

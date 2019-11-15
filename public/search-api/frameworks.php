@@ -1,6 +1,8 @@
 <?php
 
 use App\Search\AbstractSearchClient;
+use App\Search\FrameworkSearchClient;
+use App\Search\SupplierSearchClient;
 use Symfony\Component\Dotenv\Dotenv;
 
 $rootDir = __DIR__ . '/../../';
@@ -9,7 +11,7 @@ require_once($rootDir . 'vendor/autoload.php');
 $dotenv = new Dotenv();
 $dotenv->load($rootDir . '.env');
 
-$searchClient = new AbstractSearchClient();
+$searchClient = new FrameworkSearchClient();
 
 if (isset($_GET['limit'])) {
     $limit = (int)$_GET['limit'];
@@ -40,26 +42,26 @@ $filters = [];
 //  'value' => 'Management Consultancy Framework (MCF)'
 //];
 
-$resultSet = $searchClient->querySupplierIndexByKeyword($searchClient::SUPPLIER_TYPE_NAME, $keyword, $page, $limit, $filters);
-$suppliers = $resultSet->getResults();
+$resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);
+$frameworks = $resultSet->getResults();
 $buckets = $resultSet->getAggregations();
 
-$supplierDataToReturn = [];
+$dataToReturn = [];
 
 /** @var \Elastica\Result $supplier */
-foreach ($suppliers as $supplier)
+foreach ($frameworks as $framework)
 {
-    $supplierDataToReturn[] = $supplier->getSource();
+    $dataToReturn[] = $framework->getSource();
 }
 
 $meta = [
   'total_results' => $resultSet->getTotalHits(),
   'limit'         => $limit,
-  'results'       => count($suppliers),
+  'results'       => count($frameworks),
   'page'          => $page == 0 ? 1 : $page
 ];
 
 header('Content-Type: application/json');
 
-echo json_encode(['meta' => $meta, 'results' => $supplierDataToReturn, 'buckets' => $buckets]);
+echo json_encode(['meta' => $meta, 'results' => $dataToReturn, 'buckets' => $buckets]);
 exit;

@@ -262,7 +262,7 @@ class Import
 
         // Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
-        // TODO: ElasticSearch update all suppliers with the framework data they have (ES Nested data)
+
         $this->updateSupplierSearchIndex();
 
         // Update framework titles in WordPress to include the RM number

@@ -1,0 +1,7 @@
+/**
+ * Hide the "Add New" links for Frameworks and Lots
+ */
+a[href*='post-new.php?post_type=framework'],
+a[href*='post-new.php?post_type=lot'] {
+    display: none !important;
+}

@@ -11,6 +11,9 @@
 
 namespace CCS\SFI;
 
+// Composer
+require __DIR__ . '/../../../../../vendor/autoload.php';
+
 use App\Services\Database\DatabaseConnection;
 use App\Services\Logger\ImportLogger;
 use \WP_CLI;
@@ -21,6 +24,9 @@ use App\Repository\LotRepository;
 use App\Repository\LotSupplierRepository;
 use App\Repository\SupplierRepository;
 use App\Services\Salesforce\SalesforceApi;
+
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\FlockStore;
 
 WP_CLI::add_command('salesforce import', 'CCS\SFI\Import');
 
@@ -107,12 +113,21 @@ class Import
      */
     protected $wordpressLots;
 
+    /** @var LockFactory */
+    protected $lockFactory;
 
     /**
      * Import constructor.
+     *
+     * Lock system only allows one instance of this class to run at any one time
      */
     public function __construct()
     {
+        // Initialise lock 
+        $store = new FlockStore(sys_get_temp_dir());
+        $this->lockFactory = new LockFactory($store);
+
+        // Initialise resources
         $this->logger = new ImportLogger();
         $this->salesforceApi = new SalesforceApi();
         $this->frameworkRepository = new FrameworkRepository();
@@ -197,6 +212,12 @@ class Import
      */
     public function single($args)
     {
+        // Start lock
+        $lock = $this->lockFactory->createLock('ccs-salesforce-import-single');
+        if (!$lock->acquire()) {
+            $this->addErrorAndExit('Lock file is currently in use by another process, quitting script');
+        }
+
         if (!empty($args)) {
             $frameworkId = $args[0];
         }
@@ -256,8 +277,10 @@ class Import
 
         $this->logger->info('Import complete.', $response);
 
-        return $response;
+        // Release lock
+        $lock->release();
 
+        return $response;
     }
 
     /**
@@ -272,6 +295,12 @@ class Import
 
     public function all()
     {
+        // Start lock
+        $lock = $this->lockFactory->createLock('ccs-salesforce-import-all');
+        if (!$lock->acquire()) {
+            $this->addErrorAndExit('Lock file is currently in use by another process, quitting script');
+        }
+
         $this->addSuccess('Salesforce import started', null, true);
 
         // Lets generate an access token
@@ -330,6 +359,9 @@ class Import
         ];
 
         $this->logger->info('Import complete. Import took ' . $timer/60 . ' minutes to complete.', $response);
+
+        // Release lock
+        $lock->release();
 
         return $response;
     }
@@ -486,8 +518,6 @@ class Import
      */
     protected function findContactDetails($lotId, $supplierId) {
 
-        $this->dbConnection = new DatabaseConnection();
-
         $sql = "SELECT * FROM temp_master_framework_lot_contact WHERE website_contact = 1 AND master_framework_lot_salesforce_id = '" . $lotId . "';";
         $query = $this->dbConnection->connection->prepare($sql);
         $query->execute();
@@ -522,19 +552,36 @@ class Import
     }
 
     /**
+     * Add error
+     *
      * @param $message the error message to report
      * @param $type frameworks, lots, suppliers
+     *
+     * @see https://make.wordpress.org/cli/handbook/internal-api/wp-cli-error/
      */
     protected function addError($message, $type = null)
     {
-        WP_CLI::error($message . ' Estimated time remaining: ' . $this->timeRemaining . ' minutes.');
         $this->logger->error($message);
 
-        if ($type)
-        {
+        WP_CLI::error($message . ' Estimated time remaining: ' . $this->timeRemaining . ' minutes.', false);
+
+        if ($type) {
             $this->errorCount[$type]++;
         }
+    }
 
+    /**
+     * Add error message and exit script
+     *
+     * @param string $message Error message
+     * @see https://make.wordpress.org/cli/handbook/internal-api/wp-cli-error/
+     */
+    protected function addErrorAndExit($message)
+    {
+        $this->logger->error($message);
+
+        // Passing true to WP_CLI::error exits the script
+        WP_CLI::error($message, true);
     }
 
     /**
@@ -741,8 +788,6 @@ class Import
      */
     public function truncateTempTables()
     {
-        $this->dbConnection = new DatabaseConnection();
-
         $sql = "TRUNCATE TABLE temp_contact;";
         $query = $this->dbConnection->connection->prepare($sql);
         $response = $query->execute();
@@ -771,8 +816,6 @@ class Import
      */
     public function saveContactsToTempTable($contacts)
     {
-        $this->dbConnection = new DatabaseConnection();
-
         foreach ($contacts as $contact)
         {
             $sql = "INSERT INTO temp_contact (salesforce_id, account_id) VALUES (:id, :accountId);";
@@ -803,7 +846,6 @@ class Import
 
         $sql = "SELECT wordpress_id FROM ccs_lots WHERE salesforce_id = '" . $salesforceId . "';";
 
-        $this->dbConnection = new DatabaseConnection();
         $query = $this->dbConnection->connection->prepare($sql);
         $query->execute();
 
@@ -872,9 +914,6 @@ class Import
      */
     public function updateFrameworkTitleInWordpress()
     {
-
-        $dbConnection = new DatabaseConnection();
-
         $sql = <<<EOD
 UPDATE ccs_15423_posts p 
 INNER JOIN ccs_frameworks f
@@ -882,7 +921,7 @@ ON f.wordpress_id = p.id
 SET p.post_title = (SELECT CONCAT(f.rm_number,': ', f.title) FROM ccs_frameworks f WHERE f.wordpress_id = p.id)
 WHERE p.post_type='framework'
 EOD;
-        $query = $dbConnection->connection->prepare($sql);
+        $query = $this->dbConnection->connection->prepare($sql);
         $response = $query->execute();
 
         if (!$response)
@@ -900,9 +939,6 @@ EOD;
      */
     public function updateLotTitleInWordpress()
     {
-
-        $dbConnection = new DatabaseConnection();
-
         $sql = <<<EOD
 UPDATE ccs_15423_posts p SET p.post_title = 
 (SELECT CONCAT(f.rm_number, ' Lot ', l.lot_number, ': ', l.title)
@@ -911,7 +947,7 @@ WHERE l.wordpress_id = p.id
 AND f.salesforce_id = l.framework_id)
 WHERE post_type='lot'
 EOD;
-        $query = $dbConnection->connection->prepare($sql);
+        $query = $this->dbConnection->connection->prepare($sql);
         $response = $query->execute();
 
         if (!$response)

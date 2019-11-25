@@ -26,10 +26,11 @@ class SupplierMapping extends AbstractMapping
       'live_frameworks' => [
         'type'       => 'nested',
         'properties' => [
-          'end_date'  => ['type' => 'date'],
-          'title'     => ['type' => 'keyword'],
-          'rm_number' => ['type' => 'keyword'],
-          'status'    => ['type' => 'keyword']
+          'end_date'            => ['type' => 'date'],
+          'title'               => ['type' => 'keyword'],
+          'rm_number'           => ['type' => 'keyword'],
+          'rm_number_numerical' => ['type' => 'keyword'],
+          'status'              => ['type' => 'keyword']
         ]
       ]
     ];

@@ -64,19 +64,20 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
 
         // Create a document
         $documentData = [
-          'id'               => $framework->getId(),
-          'salesforce_id'    => $framework->getSalesforceId(),
-          'title'            => $framework->getTitle(),
-          'start_date'       => !empty($framework->getStartDate()) ? $framework->getStartDate()->format('Y-m-d') : null,
-          'end_date'         => !empty($framework->getEndDate()) ? $framework->getEndDate()->format('Y-m-d') : null,
-          'rm_number'        => $framework->getRmNumber(),
-          'summary'          => $framework->getSummary(),
-          'description'      => $framework->getDescription(),
-          'terms'            => $framework->getTerms(),
-          'pillar'           => $framework->getPillar(),
-          'category'         => $framework->getCategory(),
-          'status'           => $framework->getStatus(),
-          'published_status' => $framework->getPublishedStatus(),
+          'id'                  => $framework->getId(),
+          'salesforce_id'       => $framework->getSalesforceId(),
+          'title'               => $framework->getTitle(),
+          'start_date'          => !empty($framework->getStartDate()) ? $framework->getStartDate()->format('Y-m-d') : null,
+          'end_date'            => !empty($framework->getEndDate()) ? $framework->getEndDate()->format('Y-m-d') : null,
+          'rm_number'           => $framework->getRmNumber(),
+          'rm_number_numerical' => preg_replace("/[^0-9]/", "", $framework->getRmNumber()),
+          'summary'             => $framework->getSummary(),
+          'description'         => $framework->getDescription(),
+          'terms'               => $framework->getTerms(),
+          'pillar'              => $framework->getPillar(),
+          'category'            => $framework->getCategory(),
+          'status'              => $framework->getStatus(),
+          'published_status'    => $framework->getPublishedStatus(),
         ];
 
         $lotData = [];
@@ -151,6 +152,12 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
             $multiMatchQueryForNameField->setFields(['title^2']);
             $multiMatchQueryForNameField->setFuzziness(1);
             $boolQuery->addShould($multiMatchQueryForNameField);
+
+            // Look for the RM Number without 'RM'
+            $queryForNumericalRmNumber = new Query\MultiMatch();
+            $queryForNumericalRmNumber->setQuery($keyword);
+            $queryForNumericalRmNumber->setFields(['rm_number_numerical^3']);
+            $boolQuery->addShould($queryForNumericalRmNumber);
 
         }
 

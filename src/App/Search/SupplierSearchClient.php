@@ -81,6 +81,7 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
             {
                 $tempFramework['title'] = $framework->getTitle();
                 $tempFramework['rm_number'] = $framework->getRmNumber();
+                $tempFramework['rm_number_numerical'] = preg_replace("/[^0-9]/", "", $framework->getRmNumber());
                 $tempFramework['end_date'] = !empty($framework->getEndDate()) ? $framework->getEndDate()->format('Y-m-d') : null;
                 $tempFramework['status'] = $framework->getStatus();
                 $frameworkData[] = $tempFramework;
@@ -133,7 +134,7 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
             $multiMatchQueryForNameField = new Query\MultiMatch();
             $multiMatchQueryForNameField->setQuery($keyword);
             $multiMatchQueryForNameField->setFields(['name^2']);
-            $multiMatchQueryForNameField->setFuzziness(1);
+            $multiMatchQueryForNameField->setFuzziness(0);
             $boolQuery->addShould($multiMatchQueryForNameField);
 
             $multiMatchQueryWithoutFuzziness = new Query\MultiMatch();

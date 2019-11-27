@@ -29,6 +29,15 @@ if (isset($_GET['keyword'])) {
 
 $filters = [];
 
+if (isset($_GET['framework'])) {
+    $frameworkRmNumber = filter_var($_GET['framework'], FILTER_SANITIZE_STRING);
+    $filters[] = [
+      'field' => 'live_frameworks.rm_number',
+      'value' => $frameworkRmNumber
+    ];
+}
+
+
 // See examples of filters here. This should be passed from the frontend form
 //$filters[] = [
 //  'field' => 'city',

@@ -161,10 +161,10 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
             $queryForNumericalRmNumber->setFields(['rm_number_numerical^3']);
             $boolQuery->addShould($queryForNumericalRmNumber);
 
+            $boolQuery->setMinimumShouldMatch(1);
         }
 
         $boolQuery = $this->addSearchFilters($boolQuery, $filters);
-        $boolQuery->setMinimumShouldMatch(1);
 
         $query = new Query($boolQuery);
 

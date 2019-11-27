@@ -227,4 +227,15 @@ class AbstractSearchClient extends \Elastica\Client
         return $query;
     }
 
+    /**
+     * Kills the query and outputs a representative string of the query
+     * Useful for debugging to check a query is doing what you expect
+     *
+     * @param $query
+     */
+    protected function outputDebug($query) {
+        print_r(json_encode($query->getQuery()->toArray()));
+        die();
+    }
+
 }

@@ -13,18 +13,18 @@ $dotenv->load($rootDir . '.env');
 $searchClient = new SupplierSearchClient();
 
 if (isset($_GET['limit'])) {
-    $limit = (int)$_GET['limit'];
+    $limit = (int)filter_var($_GET['limit'], FILTER_SANITIZE_STRING);
 }
 $limit = $limit ?? 20;
 
 if (isset($_GET['page'])) {
-    $page = (int)$_GET['page'];
+    $page = (int)filter_var($_GET['page'], FILTER_SANITIZE_STRING);
 }
 $page = $page ?? 0;
 
 $keyword = '';
 if (isset($_GET['keyword'])) {
-    $keyword = $_GET['keyword'];
+    $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_STRING);
 }
 
 $filters = [];

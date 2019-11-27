@@ -14,27 +14,39 @@ $dotenv->load($rootDir . '.env');
 $searchClient = new FrameworkSearchClient();
 
 if (isset($_GET['limit'])) {
-    $limit = (int)$_GET['limit'];
+    $limit = (int)filter_var($_GET['limit'], FILTER_SANITIZE_STRING);
 }
 $limit = $limit ?? 20;
 
 if (isset($_GET['page'])) {
-    $page = (int)$_GET['page'];
+    $page = (int)filter_var($_GET['page'], FILTER_SANITIZE_STRING);
 }
 $page = $page ?? 0;
 
 $keyword = '';
 if (isset($_GET['keyword'])) {
-    $keyword = $_GET['keyword'];
+    $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_STRING);
 }
 
+// Reset filters to the empty state
 $filters = [];
 
-// See examples of filters here. This should be passed from the frontend form
-//$filters[] = [
-//  'field' => 'city',
-//  'value' => 'London'
-//];
+if (isset($_GET['category'])) {
+    $category = filter_var($_GET['category'], FILTER_SANITIZE_STRING);
+    $filters[] = [
+      'field' => 'category',
+      'value' => $category
+    ];
+}
+
+if (isset($_GET['pillar'])) {
+    $pillar = filter_var($_GET['pillar'], FILTER_SANITIZE_STRING);
+    $filters[] = [
+      'field' => 'pillar',
+      'value' => $pillar
+    ];
+}
+
 
 // Example of nested filter
 //$filters[] = [

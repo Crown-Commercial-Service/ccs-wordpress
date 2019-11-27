@@ -130,11 +130,12 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
         $boolQuery->addMust($publishedStatusQuery);
 
         $statusBool = new Query\BoolQuery();
-        $liveStatusQuery = new Query\Match('status', 'live');
+        $liveStatusQuery = new Query\Match('status', 'Live');
         $expiredStatusQuery = new Query\Match('status', 'Expired - Data Still Received');
 
         $statusBool->addShould($liveStatusQuery);
         $statusBool->addShould($expiredStatusQuery);
+        $statusBool->setMinimumShouldMatch(1);
 
         $boolQuery->addMust($statusBool);
 
@@ -143,13 +144,14 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
             // Create a multimatch query so we can search multiple fields
             $multiMatchQuery = new Query\MultiMatch();
             $multiMatchQuery->setQuery($keyword);
+            $multiMatchQuery->setFields(['description', 'rm_number', 'summary']);
             $multiMatchQuery->setFuzziness(1);
             $boolQuery->addShould($multiMatchQuery);
 
             // Add a boost to the title
             $multiMatchQueryForNameField = new Query\MultiMatch();
             $multiMatchQueryForNameField->setQuery($keyword);
-            $multiMatchQueryForNameField->setFields(['title^2']);
+            $multiMatchQueryForNameField->setFields(['title^3']);
             $multiMatchQueryForNameField->setFuzziness(1);
             $boolQuery->addShould($multiMatchQueryForNameField);
 
@@ -162,6 +164,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
         }
 
         $boolQuery = $this->addSearchFilters($boolQuery, $filters);
+        $boolQuery->setMinimumShouldMatch(1);
 
         $query = new Query($boolQuery);
 

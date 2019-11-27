@@ -234,9 +234,9 @@ class CustomSupplierApi
         $lotRepository = new LotRepository();
         $lotSupplierRepository = new LotSupplierRepository();
         $suppliersData = [];
-        $supplierTradingNames = [];
 
         foreach ($suppliers as $index => $supplier) {
+            $supplierTradingNames = [];
             $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
             $liveFrameworks = [];
 

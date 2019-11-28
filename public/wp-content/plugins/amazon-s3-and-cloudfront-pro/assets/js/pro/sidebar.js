@@ -193,6 +193,7 @@
 				success: function( result ) {
 					as3cfpro.Sidebar.updateSidebar( result );
 					as3cfpro.Sidebar.updateTools( result );
+					as3cfpro.Sidebar.updateNotices( result );
 				}
 			} );
 		},
@@ -303,6 +304,21 @@
 		 */
 		updateBlockProgressContainer: function( $block, status ) {
 			var $progressContainer = $block.find( '.progress-bar-wrapper' );
+
+			var title = status.description;
+
+			if ( status.is_queued &&
+				! status.is_cancelled &&
+				'undefined' !== typeof status.progress &&
+				'undefined' !== typeof status.queue &&
+				'undefined' !== typeof status.queue.total &&
+				'undefined' !== typeof status.queue.processed &&
+				status.queue.total > 0
+			) {
+				title = status.progress + '% (' + status.queue.processed + ' / ' + status.queue.total + ')';
+			}
+
+			$progressContainer.attr( 'title', title );
 
 			if ( status.is_paused && ! status.is_processing ) {
 				$progressContainer.addClass( 'paused' );
@@ -432,6 +448,9 @@
 
 				$title.text( title.replace( '%s%', percentage ) );
 			};
+			var updatePieTitle = function( percentage, offloaded, total ) {
+				$pie.attr( 'title', percentage + '% (' + offloaded + ' / ' + total + ')' );
+			};
 			var updateBtn = function( percentage ) {
 				var text = data.i18n[ 'upload_' + currentState( percentage ) ] || data.i18n.upload_partial_complete;
 
@@ -448,27 +467,14 @@
 
 			// Listen for status change events for this tool, and update accordingly
 			$( '.as3cf-sidebar.pro' ).on( 'status-change', function( event, status, tool ) {
-				var percentage = 0;
-
-				if ( tool === data.slug && $pie.length ) {
-
-					// Only calculate percentage if total_items > 0 to prevent division by zero.
-					if ( status.total_items > 0 ) {
-						percentage = ( status.total_on_provider / status.total_items ) * 100;
-					}
-
-					if ( 0 < percentage && percentage < 1 ) {
-						percentage = 1;
-					} else {
-						percentage = Math.floor( percentage );
-					}
-
+				if ( tool === data.slug && $pie.length && 'undefined' !== typeof status.total_progress ) {
 					// The percentage attribute is used in some css selectors so it must be synced as well.
-					$pie.data( 'percentage', percentage );
-					updateTitle( percentage );
-					updateBtn( percentage );
-					chart.render( percentage );
-					$block.toggleClass( 'completed', 100 === percentage );
+					$pie.attr( 'data-percentage', status.total_progress );
+					updateTitle( status.total_progress );
+					updatePieTitle( status.total_progress, status.total_on_provider, status.total_items );
+					updateBtn( status.total_progress );
+					chart.render( status.total_progress );
+					$block.toggleClass( 'completed', 100 === status.total_progress );
 				}
 			} );
 		},
@@ -495,6 +501,33 @@
 				);
 				this.value = percentage;
 			};
+		},
+
+		/**
+		 * Update notices.
+		 *
+		 * @param {object} result
+		 */
+		updateNotices: function( result ) {
+			if ( _.isEmpty( result ) ) {
+				return;
+			}
+
+			_.each( result, as3cfpro.Sidebar.updateToolNotices );
+		},
+
+		/**
+		 * Update notices for tool.
+		 *
+		 * @param {object} status
+		 * @param {string} id
+		 */
+		updateToolNotices: function( status, id ) {
+			if ( 'undefined' === typeof status.notices || false === status.notices ) {
+				return;
+			}
+
+			as3cfpro.tool.renderErrorNotices( id, status.notices );
 		}
 	};
 

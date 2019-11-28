@@ -80,6 +80,11 @@ abstract class Provider {
 	/**
 	 * @var string
 	 */
+	protected static $use_server_roles_setting_name = 'use-server-roles';
+
+	/**
+	 * @var string
+	 */
 	protected static $key_file_setting_name = 'key-file';
 
 	/**
@@ -218,7 +223,7 @@ abstract class Provider {
 	 * @return bool
 	 */
 	public function needs_access_keys() {
-		if ( static::use_server_roles() ) {
+		if ( $this->use_server_roles() ) {
 			return false;
 		}
 
@@ -313,7 +318,7 @@ abstract class Provider {
 	 *
 	 * @return string
 	 */
-	public static function preferred_use_server_role_constant() {
+	public static function preferred_use_server_roles_constant() {
 		if ( static::use_server_roles_allowed() ) {
 			return static::$use_server_roles_constants[0];
 		} else {
@@ -328,22 +333,26 @@ abstract class Provider {
 	 *
 	 * @return bool
 	 */
-	public static function use_server_roles() {
+	public function use_server_roles() {
 		if ( ! static::use_server_roles_allowed() ) {
 			return false;
 		}
 
-		$constant = static::use_server_role_constant();
+		if ( static::use_server_roles_constant() ) {
+			$constant = static::use_server_roles_constant();
 
-		return $constant && constant( $constant );
+			return $constant ? constant( $constant ) : false;
+		}
+
+		return $this->as3cf->get_core_setting( static::$use_server_roles_setting_name, false );
 	}
 
 	/**
-	 * Get the constant used to enable the use of EC2 IAM roles.
+	 * Get the constant used to enable the use of IAM roles.
 	 *
 	 * @return string|false Constant name if defined, otherwise false
 	 */
-	public static function use_server_role_constant() {
+	public static function use_server_roles_constant() {
 		return AS3CF_Utils::get_first_defined_constant( static::$use_server_roles_constants );
 	}
 
@@ -404,10 +413,63 @@ abstract class Provider {
 		if ( static::is_key_file_path_constant_defined() ) {
 			$constant = static::key_file_path_constant();
 
-			return $constant ? constant( $constant ) : false;
+			if ( $constant ) {
+				return $this->validate_key_file_path( constant( $constant ) );
+			} else {
+				// Constant defined but value is not a non-empty string.
+				return false;
+			}
 		}
 
-		return $this->as3cf->get_core_setting( static::$key_file_path_setting_name, false );
+		return $this->validate_key_file_path( $this->as3cf->get_core_setting( static::$key_file_path_setting_name, false ) );
+	}
+
+	/**
+	 * Validate a key file path to ensure it exists, is readable, and contains JSON.
+	 *
+	 * @param string $key_file_path
+	 *
+	 * @return bool|string
+	 */
+	public function validate_key_file_path( $key_file_path ) {
+		$notice_id = 'validate-key-file-path';
+		$this->as3cf->notices->remove_notice_by_id( $notice_id );
+
+		if ( empty( $key_file_path ) ) {
+			return false;
+		}
+
+		if ( ! file_exists( $key_file_path ) ) {
+			$this->as3cf->notices->add_notice( __( 'Given Key File Path is invalid or could not be accessed.', 'amazon-s3-and-cloudfront' ), array( 'type' => 'error', 'only_show_in_settings' => true, 'only_show_on_tab' => 'media', 'custom_id' => $notice_id ) );
+
+			return false;
+		}
+
+		try {
+			$value = file_get_contents( $key_file_path );
+
+			// An exception isn't always thrown, so check value instead.
+			if ( empty( $value ) ) {
+				$this->as3cf->notices->add_notice( __( 'Could not read Key File Path\'s contents.', 'amazon-s3-and-cloudfront' ), array( 'type' => 'error', 'only_show_in_settings' => true, 'only_show_on_tab' => 'media', 'custom_id' => $notice_id ) );
+
+				return false;
+			}
+		} catch ( \Exception $e ) {
+			$this->as3cf->notices->add_notice( __( 'Could not read Key File Path\'s contents.', 'amazon-s3-and-cloudfront' ), array( 'type' => 'error', 'only_show_in_settings' => true, 'only_show_on_tab' => 'media', 'custom_id' => $notice_id ) );
+
+			return false;
+		}
+
+		$value = json_decode( $value, true );
+
+		if ( empty( $value ) ) {
+			$this->as3cf->notices->add_notice( __( 'Given Key File Path does not contain valid JSON.', 'amazon-s3-and-cloudfront' ), array( 'type' => 'error', 'only_show_in_settings' => true, 'only_show_on_tab' => 'media', 'custom_id' => $notice_id ) );
+
+			return false;
+		}
+
+		// File exists and looks like JSON.
+		return $key_file_path;
 	}
 
 	/**
@@ -519,7 +581,7 @@ abstract class Provider {
 
 		if ( is_null( $this->client ) ) {
 			// There's no extra client authentication config required when using server roles.
-			if ( ! static::use_server_roles() ) {
+			if ( ! $this->use_server_roles() ) {
 				// Some providers can supply Key File contents or Key File Path.
 				if ( static::use_key_file() ) {
 					// Key File contents take precedence over Key File Path.

@@ -6,13 +6,16 @@ files:
 hooks:
   ApplicationStop:
     - location: deploy/server_stop.sh
-      timeout: 60
+      timeout: 180
       runas: root
   AfterInstall:
-    - location: deploy/setup.sh
+    - location: deploy/server_setup.sh
+      timeout: 300
+      runas: root
+    - location: deploy/app_setup.sh
       timeout: 300
       runas: root
   ApplicationStart:
     - location: deploy/server_start.sh
-      timeout: 60
+      timeout: 180
       runas: root

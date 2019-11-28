@@ -27,7 +27,7 @@ abstract class AS3CF_Background_Process extends AS3CF_Async_Request {
 	/**
 	 * Initiate new background process
 	 *
-	 * @param object $as3cf Instance of calling class
+	 * @param Amazon_S3_And_CloudFront $as3cf Instance of calling class
 	 */
 	public function __construct( $as3cf ) {
 		parent::__construct( $as3cf );
@@ -38,8 +38,6 @@ abstract class AS3CF_Background_Process extends AS3CF_Async_Request {
 
 	/**
 	 * Dispatch
-	 *
-	 * @return array|WP_Error
 	 */
 	public function dispatch() {
 		$this->schedule_cron_healthcheck();
@@ -119,6 +117,8 @@ abstract class AS3CF_Background_Process extends AS3CF_Async_Request {
 		}
 
 		delete_site_option( $this->get_status_key() );
+
+		$this->cancelled();
 	}
 
 	/**
@@ -148,6 +148,11 @@ abstract class AS3CF_Background_Process extends AS3CF_Async_Request {
 	}
 
 	/**
+	 * Called when background process has been cancelled.
+	 */
+	abstract protected function cancelled();
+
+	/**
 	 * Pause job on next batch.
 	 */
 	public function pause() {
@@ -170,6 +175,11 @@ abstract class AS3CF_Background_Process extends AS3CF_Async_Request {
 	}
 
 	/**
+	 * Called when background process has been paused.
+	 */
+	abstract protected function paused();
+
+	/**
 	 * Resume job.
 	 */
 	public function resume() {
@@ -177,7 +187,13 @@ abstract class AS3CF_Background_Process extends AS3CF_Async_Request {
 
 		$this->schedule_cron_healthcheck();
 		$this->dispatch();
+		$this->resumed();
 	}
+
+	/**
+	 * Called when background process has been resumed.
+	 */
+	abstract protected function resumed();
 
 	/**
 	 * Generate key
@@ -229,6 +245,8 @@ abstract class AS3CF_Background_Process extends AS3CF_Async_Request {
 
 		if ( $this->is_paused() ) {
 			$this->clear_cron_healthcheck();
+
+			$this->paused();
 
 			wp_die();
 		}
@@ -486,7 +504,14 @@ abstract class AS3CF_Background_Process extends AS3CF_Async_Request {
 		delete_site_option( $this->get_status_key() );
 
 		$this->clear_cron_healthcheck();
+
+		$this->completed();
 	}
+
+	/**
+	 * Called when background process has completed.
+	 */
+	abstract protected function completed();
 
 	/**
 	 * Add cron schedules.

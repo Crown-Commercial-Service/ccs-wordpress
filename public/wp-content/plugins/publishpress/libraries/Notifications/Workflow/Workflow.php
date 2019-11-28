@@ -23,7 +23,7 @@ class Workflow
      *
      * @var WP_Post
      */
-    protected $workflow_post;
+    public $workflow_post;
 
     /**
      * An array with arguments set by the action
@@ -65,6 +65,12 @@ class Workflow
         // Prepare the shortcodes.
         $shortcodes = $this->get_service('shortcodes');
         $shortcodes->register($this->workflow_post, $this->action_args);
+
+        /**
+         * @param WP_Post $workflow_post
+         * @param array $action_args
+         */
+        do_action('publishpress_notif_before_run_workflow', $this->workflow_post, $this->action_args, $receivers);
 
         /*
          * What will the notification says?
@@ -108,6 +114,8 @@ class Workflow
 
         // Remove the shortcodes.
         $shortcodes->unregister();
+
+        do_action('publishpress_notif_after_run_workflow');
     }
 
     /**
@@ -250,19 +258,34 @@ class Workflow
      *
      * @return array
      */
-    public function get_related_posts()
+    public function get_related_posts($args = [])
     {
+        $workflow_meta_key = (!empty($args['meta_key_selected'])) ? $args['meta_key_selected'] : '_psppno_evtbeforepublishing';
+        
+        // We need to set a distinct "notification sent" flag for each workflow and notification criteria
+        if ('_psppno_evtbeforepublishing' == $workflow_meta_key) {
+            $post_status = (!empty($args['post_status'])) ? $args['post_status'] : 'future';
+
+            $notification_suffix = "_{$post_status}_{$this->workflow_post->ID}";
+
+        } elseif (!empty($args['post_status'])) {
+            $notification_suffix = "-{$workflow_meta_key}_" . $args['post_status'] . "_{$this->workflow_post->ID}";
+        } else {
+            // Other notification criteria may not specify a post status
+            $notification_suffix ="-{$workflow_meta_key}_{$this->workflow_post->ID}";
+        }
+
         $posts = [];
 
         // Build the query
         $query_args = [
             'nopaging'      => true,
-            'post_status'   => 'future',
+            'post_status'   => $post_status,
             'no_found_rows' => true,
             'cache_results' => true,
             'meta_query'    => [
                 [
-                    'key'     => static::NOTIFICATION_SCHEDULE_META_KEY,
+                    'key'     => static::NOTIFICATION_SCHEDULE_META_KEY . $notification_suffix,
                     'compare' => 'NOT EXISTS',
                 ],
             ],

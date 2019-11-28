@@ -42,6 +42,21 @@
 
 			var $spinner = createSpinner( this );
 
+			/**
+			 * Render an error notice and remove the installer notice
+			 *
+			 * @param string errorMessage
+			 */
+			function installerError( errorMessage ) {
+				var noticeText = as3cfpro_installer.strings.error_installing + ': ' + errorMessage;
+				var noticeHtml = '<div class="error"><p>' + noticeText + '</p></div>';
+
+				$( '.as3cf-pro-installer' ).after( noticeHtml );
+				$( '.as3cf-pro-installer' ).remove();
+
+				$spinner.hide();
+			}
+
 			var process = $( this ).data( 'process' );
 
 			$.ajax( {
@@ -69,22 +84,6 @@
 					}
 				}
 			} );
-
-			/**
-			 * Render an error notice and remove the installer notice
-			 *
-			 * @param string errorMessage
-			 */
-			function installerError( errorMessage ) {
-				var noticeText = as3cfpro_installer.strings.error_installing + ': ' + errorMessage;
-				var noticeHtml = '<div class="error"><p>' + noticeText + '</p></div>';
-
-				$( '.as3cf-pro-installer' ).after( noticeHtml );
-				$( '.as3cf-pro-installer' ).remove();
-
-				$spinner.hide();
-			}
-
 		} );
 
 	} );

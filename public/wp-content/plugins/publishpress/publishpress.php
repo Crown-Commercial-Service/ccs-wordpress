@@ -2,12 +2,12 @@
 /**
  * Plugin Name: PublishPress
  * Plugin URI: https://publishpress.com/
- * Description: The essential plugin for any WordPress site with multiple writers
+ * Description: PublishPress helps you plan and publish content with WordPress. Features include a content calendar, notifications, and custom statuses.
  * Author: PublishPress
  * Author URI: https://publishpress.com
- * Version: 1.19.4
+ * Version: 1.20.9
  *
- * Copyright (c) 2018 PublishPress
+ * Copyright (c) 2019 PublishPress
  *
  * ------------------------------------------------------------------------------
  * Based on Edit Flow
@@ -34,7 +34,7 @@
  * @package     PublishPress
  * @category    Core
  * @author      PublishPress
- * @copyright   Copyright (C) 2018 PublishPress. All rights reserved.
+ * @copyright   Copyright (C) 2019 PublishPress. All rights reserved.
  */
 
 use PublishPress\Notifications\Traits\Dependency_Injector;
@@ -60,6 +60,8 @@ class publishpress
     protected $added_menu_page = false;
 
     protected $menu_slug;
+
+    protected $loadedModules = [];
 
     /**
      * Main PublishPress Instance
@@ -108,7 +110,9 @@ class publishpress
         // Fix the order of the submenus
         add_filter('custom_menu_order', [$this, 'filter_custom_menu_order']);
 
-        do_action_ref_array('publishpress_after_setup_actions', [&$this]);
+        do_action_ref_array('publishpress_after_setup_actions', [$this]);
+
+        add_filter('debug_information', [$this, 'filterDebugInformation']);
     }
 
     /**
@@ -158,7 +162,7 @@ class publishpress
     {
         $this->deactivate_editflow();
 
-        load_plugin_textdomain('publishpress', null, dirname(plugin_basename(__FILE__)) . '/languages/');
+        load_plugin_textdomain('publishpress', null, PUBLISHPRESS_BASE_PATH . '/languages/');
 
         $this->load_modules();
 
@@ -216,33 +220,7 @@ class publishpress
             require_once(PUBLISHPRESS_BASE_PATH . '/common/php/class-module.php');
         }
 
-        // Scan the modules directory and include any modules that exist there
-        // $module_dirs = scandir(PUBLISHPRESS_BASE_PATH . '/modules/');
-        $default_module_dirs = [
-            'modules-settings'       => PUBLISHPRESS_BASE_PATH,
-            'calendar'               => PUBLISHPRESS_BASE_PATH,
-            'editorial-metadata'     => PUBLISHPRESS_BASE_PATH,
-            'notifications'          => PUBLISHPRESS_BASE_PATH,
-            'content-overview'       => PUBLISHPRESS_BASE_PATH,
-            'custom-status'          => PUBLISHPRESS_BASE_PATH,
-            'roles'                  => PUBLISHPRESS_BASE_PATH,
-            'improved-notifications' => PUBLISHPRESS_BASE_PATH,
-            'async-notifications'    => PUBLISHPRESS_BASE_PATH,
-            'user-groups'            => PUBLISHPRESS_BASE_PATH,
-            'debug'                  => PUBLISHPRESS_BASE_PATH,
-
-            // @TODO: Move for settings, and remove after cleanup
-            'dashboard'              => PUBLISHPRESS_BASE_PATH,
-            'editorial-comments'     => PUBLISHPRESS_BASE_PATH,
-            'settings'               => PUBLISHPRESS_BASE_PATH,
-            'efmigration'            => PUBLISHPRESS_BASE_PATH,
-        ];
-
-        // Add filters to extend the modules
-        $module_dirs = apply_filters('pp_module_dirs', $default_module_dirs);
-
-        // Add add-ons as the last tab
-        $module_dirs['addons'] = PUBLISHPRESS_BASE_PATH;
+        $module_dirs = $this->getModulesDirs();
 
         $class_names = [];
 
@@ -276,8 +254,23 @@ class publishpress
         // but make sure they exist too
         foreach ($class_names as $slug => $class_name) {
             if (class_exists($class_name)) {
-                $slug        = PublishPress\Legacy\Util::sanitize_module_name($slug);
-                $this->$slug = new $class_name();
+                $slug            = PublishPress\Legacy\Util::sanitize_module_name($slug);
+                $module_instance = new $class_name();
+
+                $this->$slug = $module_instance;
+
+                // If there's a Help Screen registered for the module, make sure we auto-load it
+                $args = null;
+                if (isset($this->modules->$slug)) {
+                    $args = $this->modules->$slug;
+                }
+
+                if ( ! is_null($args) && ! empty($args->settings_help_tab)) {
+                    add_action('load-publishpress_page_' . $args->settings_slug,
+                        [$module_instance, 'action_settings_help_menu']);
+                }
+
+                $this->loadedModules[] = $slug;
             }
         }
 
@@ -286,6 +279,42 @@ class publishpress
         // Supplementary plugins can hook into this, include their own modules
         // and add them to the $publishpress object
         do_action('pp_modules_loaded');
+    }
+
+    /**
+     * @return array
+     */
+    private function getModulesDirs()
+    {
+        // Scan the modules directory and include any modules that exist there
+        // $module_dirs = scandir(PUBLISHPRESS_BASE_PATH . '/modules/');
+        $defaultDirs = [
+            'modules-settings'       => PUBLISHPRESS_BASE_PATH,
+            'calendar'               => PUBLISHPRESS_BASE_PATH,
+            'editorial-metadata'     => PUBLISHPRESS_BASE_PATH,
+            'notifications'          => PUBLISHPRESS_BASE_PATH,
+            'content-overview'       => PUBLISHPRESS_BASE_PATH,
+            'custom-status'          => PUBLISHPRESS_BASE_PATH,
+            'roles'                  => PUBLISHPRESS_BASE_PATH,
+            'improved-notifications' => PUBLISHPRESS_BASE_PATH,
+            'async-notifications'    => PUBLISHPRESS_BASE_PATH,
+            'user-groups'            => PUBLISHPRESS_BASE_PATH,
+            'debug'                  => PUBLISHPRESS_BASE_PATH,
+
+            // @TODO: Move for settings, and remove after cleanup
+            'dashboard'              => PUBLISHPRESS_BASE_PATH,
+            'editorial-comments'     => PUBLISHPRESS_BASE_PATH,
+            'settings'               => PUBLISHPRESS_BASE_PATH,
+            'efmigration'            => PUBLISHPRESS_BASE_PATH,
+        ];
+
+        // Add filters to extend the modules
+        $modulesDirs = apply_filters('pp_module_dirs', $defaultDirs);
+
+        // Add add-ons as the last tab
+        $modulesDirs['addons'] = PUBLISHPRESS_BASE_PATH;
+
+        return $modulesDirs;
     }
 
     /**
@@ -318,6 +347,127 @@ class publishpress
         add_filter('gutenberg_can_edit_post_type', [$this, 'canUseBlockEditorForPostType'], 5, 2);
 
         add_action('add_meta_boxes', [$this, 'removeEditorMetaBox']);
+    }
+
+    /**
+     * @param array $debugInfo
+     *
+     * @return array
+     */
+    public function filterDebugInformation($debugInfo)
+    {
+        // Config
+        $framework = $this->get_service('framework');
+        $frameworkContainer = $framework->get_container();
+
+        $debugInfo['publishpress'] = [
+            'label' => 'PublishPress',
+            'description' => '',
+            'show_count' => false,
+            'fields' => [
+                'PUBLISHPRESS_VERSION' => [
+                    'label' => __('PUBLISHPRESS_VERSION'),
+                    'value' => PUBLISHPRESS_VERSION,
+                ],
+                'PUBLISHPRESS_BASE_PATH' => [
+                    'label' => __('PUBLISHPRESS_BASE_PATH'),
+                    'value' => PUBLISHPRESS_BASE_PATH,
+                ],
+                'PUBLISHPRESS_FILE_PATH' => [
+                    'label' => __('PUBLISHPRESS_FILE_PATH'),
+                    'value' => PUBLISHPRESS_FILE_PATH,
+                ],
+                'PUBLISHPRESS_URL' => [
+                    'label' => __('PUBLISHPRESS_URL'),
+                    'value' => PUBLISHPRESS_URL,
+                ],
+                'PUBLISHPRESS_SETTINGS_PAGE' => [
+                    'label' => __('PUBLISHPRESS_SETTINGS_PAGE'),
+                    'value' => PUBLISHPRESS_SETTINGS_PAGE,
+                ],
+                'PUBLISHPRESS_LIBRARIES_PATH' => [
+                    'label' => __('PUBLISHPRESS_LIBRARIES_PATH'),
+                    'value' => PUBLISHPRESS_LIBRARIES_PATH,
+                ],
+                'PUBLISHPRESS_BASENAME' => [
+                    'label' => __('PUBLISHPRESS_BASENAME'),
+                    'value' => PUBLISHPRESS_BASENAME,
+                ],
+                'WP_CONTENT_DIR' => [
+                    'label' => __('WP_CONTENT_DIR'),
+                    'value' => WP_CONTENT_DIR,
+                ],
+                'WP_CONTENT_URL' => [
+                    'label' => __('WP_CONTENT_URL'),
+                    'value' => WP_CONTENT_URL,
+                ],
+                'option::date_format' => [
+                    'label' => __('WP Date Format'),
+                    'value' => get_option('date_format'),
+                ],
+                'option::time_format' => [
+                    'label' => __('WP Time Format'),
+                    'value' => get_option('time_format'),
+                ],
+                'option::timezone_string' => [
+                    'label' => __('WP Timezone String'),
+                    'value' => get_option('timezone_string'),
+                ],
+                'option::gmt_offset' => [
+                    'label' => __('WP GMT Offset'),
+                    'value' => get_option('gmt_offset'),
+                ],
+                'php::date_default_timezone_get' => [
+                    'label' => __('date_default_timezone_get'),
+                    'value' => date_default_timezone_get(),
+                ],
+                'Framework::FRAMEWORK_BASE_PATH' => [
+                    'label' => __('Framework::FRAMEWORK_BASE_PATH'),
+                    'value' => $frameworkContainer['FRAMEWORK_BASE_PATH'],
+                ],
+                'Framework::TWIG_PATH' => [
+                    'label' => __('Framework::TWIG_PATH'),
+                    'value' => $frameworkContainer['TWIG_PATH'],
+                ],
+                'Framework::ASSETS_BASE_URL' => [
+                    'label' => __('Framework::ASSETS_BASE_URL'),
+                    'value' => $frameworkContainer['ASSETS_BASE_URL'],
+                ],
+                'Framework::PLUGIN_NAME' => [
+                    'label' => __('Framework::PLUGIN_NAME'),
+                    'value' => $frameworkContainer['PLUGIN_NAME'],
+                ],
+                'Framework::PLUGIN_TITLE' => [
+                    'label' => __('Framework::PLUGIN_TITLE'),
+                    'value' => $frameworkContainer['PLUGIN_TITLE'],
+                ],
+            ],
+        ];
+
+
+        // Modules
+        $modules = [];
+        $modulesDirs = $this->getModulesDirs();
+
+        foreach ($this->loadedModules as $module) {
+            $dashCaseModule = str_replace('_', '-', $module);
+
+            $status = isset($this->{$module}) && isset($this->{$module}->module->options->enabled) ? $this->{$module}->module->options->enabled : 'on';
+
+            $modules[$module] = [
+                'label' => $module,
+                'value' => $status . ' [' . $modulesDirs[$dashCaseModule] . '/modules/' . $module. ']',
+            ];
+        }
+
+        $debugInfo['publishpress-modules'] = [
+            'label' => 'PublishPress Modules',
+            'description' => '',
+            'show_count' => true,
+            'fields' => $modules,
+        ];
+
+        return $debugInfo;
     }
 
     /**
@@ -486,13 +636,6 @@ class publishpress
 
         if (empty($args['post_type_support'])) {
             $args['post_type_support'] = 'pp_' . $name;
-        }
-
-        // If there's a Help Screen registered for the module, make sure we
-        // auto-load it
-        if ( ! empty($args['settings_help_tab'])) {
-            add_action('load-publishpress_page_' . $args['settings_slug'],
-                [&$this->$name, 'action_settings_help_menu']);
         }
 
         $this->modules->$name = (object)$args;
@@ -739,6 +882,7 @@ class publishpress
         $pluginsState = [
             'classic-editor' => is_plugin_active('classic-editor/classic-editor.php'),
             'gutenberg'      => is_plugin_active('gutenberg/gutenberg.php'),
+            'gutenberg-ramp' => is_plugin_active('gutenberg-ramp/gutenberg-ramp.php'),
         ];
 
 
@@ -748,6 +892,15 @@ class publishpress
 
         if ( ! isset($postType) || empty($postType)) {
             $postType = 'post';
+        }
+
+        /**
+         * If show_in_rest is not true for the post type, the block editor is not available.
+         */
+        if ($postTypeObject = get_post_type_object($postType)) {
+            if (empty($postTypeObject->show_in_rest)) {
+                return false;
+            }
         }
 
         $conditions = [];
@@ -761,6 +914,7 @@ class publishpress
         // phpcs:ignore WordPress.VIP.SuperGlobalInputUsage.AccessDetected, WordPress.Security.NonceVerification.NoNonceVerification
         $conditions[] = $this->isWp5()
                         && ! $pluginsState['classic-editor']
+                        && ! $pluginsState['gutenberg-ramp']
                         && apply_filters('use_block_editor_for_post_type', true, $postType, PHP_INT_MAX);
 
         $conditions[] = $this->isWp5()
@@ -776,7 +930,7 @@ class publishpress
         /**
          * < 5.0 but Gutenberg plugin is active.
          */
-        $conditions[] = ! $this->isWp5() && $pluginsState['gutenberg'];
+        $conditions[] = ! $this->isWp5() && ($pluginsState['gutenberg'] || $pluginsState['gutenberg-ramp']);
 
         // Returns true if at least one condition is true.
         return count(
@@ -971,7 +1125,7 @@ function publishPressRegisterCustomPostTypes()
                 'public'              => false,
                 'publicly_queryable'  => false,
                 'has_archive'         => false,
-                'rewrite'             => ['slug' => 'notification-workflows'],
+                'rewrite'             => false,
                 'show_ui'             => true,
                 'query_var'           => true,
                 'capability_type'     => 'post',

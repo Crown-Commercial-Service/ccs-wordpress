@@ -19,7 +19,7 @@ class Container extends \Pimple\Container
          * @return string
          */
         $this['VERSION'] = function ($c) {
-            return '0.6.0';
+            return '0.6.7';
         };
 
         /**
@@ -38,7 +38,13 @@ class Container extends \Pimple\Container
          */
         $this['FRAMEWORK_BASE_PATH'] = function ($c) {
             // Added slashes to prevent issues in Windows machines, where the backslash where interpreted as escape char.
+            $dir = __DIR__;
+
             $dir = str_replace('\\', '/', __DIR__);
+
+            if (DIRECTORY_SEPARATOR == '\\') {
+                $dir = str_replace('\\', '/', $dir);
+            }
 
             return realpath($dir . '/../');
         };
@@ -58,27 +64,25 @@ class Container extends \Pimple\Container
          * @return string
          */
         $this['ASSETS_BASE_URL'] = function ($c) {
-            $abspath = ABSPATH;
+            $frameworkPath = $c['FRAMEWORK_BASE_PATH'];
 
-            // Fix for windows machines
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                $abspath = preg_replace('#/$#', '', $abspath);
+            if (DIRECTORY_SEPARATOR == '\\') {
+                $frameworkPath = str_replace('\\', '/', $frameworkPath);
             }
 
-            // Add support for bedrock.
-            if (class_exists('\\Roots\\Bedrock\\Autoloader')) {
-                $abspath = str_replace('/wp/', '/', $abspath);
+            $wpContentDir = WP_CONTENT_DIR;
+            if (DIRECTORY_SEPARATOR == '\\') {
+                $wpContentDir = str_replace('\\', '/', $wpContentDir);
             }
 
-            $path = str_replace($abspath, '', $c['FRAMEWORK_BASE_PATH']);
-            $path = str_replace('\\', '/', $path);
+	        // Some servers have a weird ABSPATH, so we make a minor adjustment here.
+	        if (ABSPATH === '//') {
+		        $wpContentDir = str_replace('//', '/', $wpContentDir);
+	        }
 
-            $siteUrl = get_site_url();
-            if (class_exists('\\Roots\\Bedrock\\Autoloader')) {
-                $siteUrl = str_replace('/wp', '', $siteUrl);
-            }
+            $relativePath = str_replace($wpContentDir, '', $frameworkPath);
 
-            return $siteUrl . '/' . $path . '/assets';
+            return WP_CONTENT_URL . $relativePath . '/assets';
         };
 
         /**

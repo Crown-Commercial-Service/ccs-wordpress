@@ -88,7 +88,7 @@ class Copy_Buckets extends Background_Tool {
 	 * @return string
 	 */
 	public function action_for_changed_settings_key( $action, $key ) {
-		if ( empty( $action ) && in_array( $key, array( 'bucket', 'region' ) ) && $this->count_media_files() ) {
+		if ( empty( $action ) && in_array( $key, array( 'bucket', 'region' ) ) && $this->count_offloaded_media_files() ) {
 
 			// Even if bucket has been changed and we have offloaded media, we can only copy between buckets in same provider.
 			if ( empty( $_GET['orig_provider'] ) || $this->as3cf->get_setting( 'provider', false ) === $_GET['orig_provider'] ) {
@@ -118,7 +118,7 @@ class Copy_Buckets extends Background_Tool {
 	 * Load assets.
 	 */
 	public function load_assets() {
-		$this->as3cf->enqueue_script( 'as3cf-pro-copy-buckets', 'assets/js/pro/tools/copy-buckets', array(
+		$this->as3cf->enqueue_script( 'as3cf-pro-copy-buckets-script', 'assets/js/pro/tools/copy-buckets', array(
 			'jquery',
 			'wp-util',
 		) );

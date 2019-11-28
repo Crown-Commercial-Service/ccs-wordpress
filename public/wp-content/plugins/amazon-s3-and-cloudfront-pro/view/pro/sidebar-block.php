@@ -3,20 +3,20 @@
 /* @var string $title Block title */
 /* @var string $button_title Start button title */
 
-$tab              = ( isset( $tab ) ) ? $tab : '';
-$show_button      = ( isset( $show_button ) ) ? $show_button : true;
-$description      = ( isset( $description ) ) ? $description : false;
-$progress_percent = ( isset( $progress_percent ) ) ? $progress_percent : 0;
+$tab            = ( isset( $tab ) ) ? $tab : '';
+$show_button    = ( isset( $show_button ) ) ? $show_button : true;
+$description    = ( isset( $description ) ) ? $description : false;
+$total_progress = ( isset( $total_progress ) ) ? $total_progress : 0;
 ?>
-<div class="block-scope <?php echo $progress_percent === 100 ? 'completed' : '' ?>" data-state='<?php echo wp_json_encode( $args ) ?>'>
+<div class="block-scope <?php echo $total_progress === 100 ? 'completed' : '' ?>" data-state='<?php echo wp_json_encode( $args ) ?>'>
 	<div class="block-title-wrap <?php echo false !== $description ? 'with-description' : '' ?>">
 
 		<?php if ( ! empty( $pie_chart ) ) : ?>
-		<div class="pie-chart" data-percentage="<?php echo $progress_percent; ?>">
-			<svg viewBox="-100 -100 200 200">
-				<path d="" />
-			</svg>
-		</div>
+			<div class="pie-chart" data-percentage="<?php echo $total_progress; ?>">
+				<svg viewBox="-100 -100 200 200">
+					<path d=""/>
+				</svg>
+			</div>
 		<?php endif ?>
 
 		<h4 class="block-title"><?php echo $title; ?></h4>

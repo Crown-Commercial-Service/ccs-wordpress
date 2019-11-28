@@ -26,12 +26,24 @@ See details on [Environments](https://github.com/Crown-Commercial-Service/ccsweb
 
 Post launch, we will have a number of deployment checks before merging new code into production, notably:
 
-* Code must pass static code analysis tests & automated tests (Travis)
-* Manual review by CCS TechOps to approve Pull Request
+* Code must pass static code analysis tests & automated tests (Travis).
+* Manual review by CCS TechOps to approve Pull Request.
 
 ## Installation
 
-@todo
+A step-by-step guide to get a development environment running on your machine.
+
+### Database
+
+You will need to import an up-to-date version of the database into your local environment.
+
+### ENV File
+
+This repository contains an example ENV file named `.env.example`. You need to copy this file and rename it to just `.env`.
+
+Within this `.env` file you will need to configure the various empty environment variables from the example file, these include the site URL (`WP_SITEURL`) which will need to match the domain defined in your local hosting setup. This file also includes the database and other WordPress configuration.
+
+For the Salesforce import to work locally, you will also need to specify the correct connection details in this file (these environment variables are specified at the top of the file, and separated from the rest by clear comments)
 
 ### Requirements
 

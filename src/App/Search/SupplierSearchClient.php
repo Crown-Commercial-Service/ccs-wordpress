@@ -173,6 +173,10 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
     public function addAggregationsToQuery(Query $query): Query {
         $termsAggregation = new Terms('titles');
         $termsAggregation->setField('live_frameworks.title');
+        $termsAggregationRmNumber = new Terms('rm_number');
+        $termsAggregationRmNumber->setField('live_frameworks.rm_number');
+        $termsAggregationRmNumber->setSize(1);
+        $termsAggregation->addAggregation($termsAggregationRmNumber);
         $nestedAggregation = new Nested('frameworks', 'live_frameworks');
         $nestedAggregation->addAggregation($termsAggregation);
         $termsAggregation->setSize(1000);

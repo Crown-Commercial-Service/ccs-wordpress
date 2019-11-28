@@ -1,6 +1,6 @@
 <?php
 
-use App\Search\AbstractSearchClient;
+use App\Search\FacetDataResolver;
 use App\Search\SupplierSearchClient;
 use Symfony\Component\Dotenv\Dotenv;
 
@@ -11,6 +11,7 @@ $dotenv = new Dotenv();
 $dotenv->load($rootDir . '.env');
 
 $searchClient = new SupplierSearchClient();
+$facetDataResolver = new FacetDataResolver();
 
 if (isset($_GET['limit'])) {
     $limit = (int)filter_var($_GET['limit'], FILTER_SANITIZE_STRING);
@@ -37,7 +38,6 @@ if (isset($_GET['framework'])) {
     ];
 }
 
-
 // See examples of filters here. This should be passed from the frontend form
 //$filters[] = [
 //  'field' => 'city',
@@ -52,7 +52,7 @@ if (isset($_GET['framework'])) {
 
 $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);
 $suppliers = $resultSet->getResults();
-$buckets = $resultSet->getAggregations();
+$buckets = $facetDataResolver->prepareFacetsForView($resultSet->getAggregations());
 
 $supplierDataToReturn = [];
 
@@ -62,14 +62,16 @@ foreach ($suppliers as $supplier)
     $supplierDataToReturn[] = $supplier->getSource();
 }
 
+
 $meta = [
   'total_results' => $resultSet->getTotalHits(),
   'limit'         => $limit,
   'results'       => count($suppliers),
-  'page'          => $page == 0 ? 1 : $page
+  'page'          => $page == 0 ? 1 : $page,
+  'facets'        => $buckets
 ];
 
 header('Content-Type: application/json');
 
-echo json_encode(['meta' => $meta, 'results' => $supplierDataToReturn, 'buckets' => $buckets]);
+echo json_encode(['meta' => $meta, 'results' => $supplierDataToReturn]);
 exit;

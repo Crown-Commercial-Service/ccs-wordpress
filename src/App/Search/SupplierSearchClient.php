@@ -144,11 +144,14 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
             $nestedQuery->setPath('live_frameworks');
             $boolQuery->addShould($nestedQuery);
 
+            $boolQuery->setMinimumShouldMatch(1);
         }
 
         $boolQuery = $this->addSearchFilters($boolQuery, $filters);
 
         $query = new Query($boolQuery);
+        
+
 
         $query->setSize($limit);
         $query->setFrom($this->translatePageNumberAndLimitToStartNumber($page, $limit));

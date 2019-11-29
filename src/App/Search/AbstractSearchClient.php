@@ -38,7 +38,7 @@ class AbstractSearchClient extends \Elastica\Client
         $this->checkForRequiredEnvVars();
 
         $config = [
-          'scheme'    => getenv('ELASTIC_TRANSPORT'),
+          'transport' => getenv('ELASTIC_TRANSPORT'),
           'host'      => getenv('ELASTIC_HOST'),
           'port'      => getenv('ELASTIC_PORT'),
         ];

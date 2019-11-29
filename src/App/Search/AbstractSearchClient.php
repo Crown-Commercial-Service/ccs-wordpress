@@ -38,8 +38,9 @@ class AbstractSearchClient extends \Elastica\Client
         $this->checkForRequiredEnvVars();
 
         $config = [
-            'host' => getenv('ELASTIC_HOST'),
-            'port' => getenv('ELASTIC_PORT'),
+          'scheme'    => getenv('ELASTIC_TRANSPORT'),
+          'host'      => getenv('ELASTIC_HOST'),
+          'port'      => getenv('ELASTIC_PORT'),
         ];
 
         parent::__construct($config, $callback, $logger);
@@ -52,6 +53,10 @@ class AbstractSearchClient extends \Elastica\Client
      */
     protected function checkForRequiredEnvVars()
     {
+        if (!getenv('ELASTIC_TRANSPORT')) {
+            throw new \Exception('Please set the ELASTIC_TRANSPORT environment variable before continuing.');
+        }
+
         if (!getenv('ELASTIC_HOST')) {
             throw new \Exception('Please set the ELASTIC_HOST environment variable before continuing.');
         }

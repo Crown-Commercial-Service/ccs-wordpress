@@ -46,17 +46,13 @@ if (isset($_GET['framework']) && !empty($_GET['framework'])) {
 $frameworkSearchClient = new FrameworkSearchClient();
 $frameworks = $frameworkSearchClient->getAll();
 
-// See examples of filters here. This should be passed from the frontend form
-//$filters[] = [
-//  'field' => 'city',
-//  'value' => 'London'
-//];
-
-// Example of nested filter
-//$filters[] = [
-//  'field' => 'live_frameworks.title',
-//  'value' => 'Management Consultancy Framework (MCF)'
-//];
+if (isset($_GET['lot']) && !empty($_GET['lot'])) {
+    $lotId = filter_var($_GET['lot'], FILTER_SANITIZE_STRING);
+    $filters[] = [
+      'field' => 'live_frameworks.lot_ids',
+      'value' => $lotId
+    ];
+}
 
 $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);
 $suppliers = $resultSet->getResults();

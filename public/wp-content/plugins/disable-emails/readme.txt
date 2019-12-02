@@ -5,10 +5,10 @@ Plugin URI: https://shop.webaware.com.au/downloads/disable-emails/
 Author URI: https://shop.webaware.com.au/
 Donate link: https://shop.webaware.com.au/donations/?donation_for=Disable+Emails
 Tags: disable emails, block emails
-Requires at least: 4.0
-Tested up to: 5.1
-Requires PHP: 5.3
-Stable tag: 1.4.0
+Requires at least: 4.9
+Tested up to: 5.3
+Requires PHP: 5.6
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,12 +47,15 @@ If you'd like to help out by translating this plugin, please [sign up for an acc
 
 1. Either install automatically through the WordPress admin, or download the .zip file, unzip to a folder, and upload the folder to your /wp-content/plugins/ directory. Read [Installing Plugins](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins) in the WordPress Codex for details.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
+3. Optional: from the WordPress admin, navigate to Settings > Disable Emails and click the "Activate must-use plugin" if you want the plugin to always be activated, no matter what.
 
 ## Frequently Asked Questions
 
 ### Why am I still getting standard WordPress emails?
 
 You probably have another plugin that adds its own implementation of the `wp_mail()` function. Try disabling some plugins.
+
+In some circumstances, enabling the must-use plugin from settings will fix this, because must-use plugins load before other plugins.
 
 ### Standard WordPress emails have stopped, but some others still get sent
 
@@ -64,6 +67,12 @@ The plugin replaces the standard WordPress `wp_mail()` function with a function 
 
 Behind the scenes, it creates a private copy of PHPMailer and allows the system to interact with it, but silently suppresses the functions that send emails. The standard WordPress filter and action hooks are supported, so plugins that register hooks for those will still function as normal. It just doesn't actually send any emails.
 
+### Can I make it a must-use plugin?
+
+Yes. Once you have activated the plugin, navigate to Settings > Disable Emails and click the "Activate must-use plugin". This will create a must-use plugin (mu-plugin) that ensures that Disable Emails is always loaded. This can be especially useful on development websites where the database is frequently refreshed from a live site which _does not_ have Disable Emails activated.
+
+NB: if you activate the must-use plugin on a multisite, it will stop emails on all sites on the multisite! If you have multiple networks on your multisite, the must-use plugin will stop emails on all networks.
+
 ### Contributions
 
 * [Translate into your preferred language](https://translate.wordpress.org/projects/wp-plugins/disable-emails)
@@ -71,17 +80,18 @@ Behind the scenes, it creates a private copy of PHPMailer and allows the system 
 
 ## Upgrade Notice
 
-### 1.4.0
+### 1.5.0
 
-added setting to force Events Manager to use `wp_mail()` so that its emails can be disabled
+fixes PHP notice "Trying to get property 'ErrorInfo' of non-object"; supports running as a must-use plugin (mu-plugin); requires PHP 5.6+
 
 ## Changelog
 
 The full changelog can be found [on GitHub](https://github.com/webaware/disable-emails/blob/master/changelog.md). Recent entries:
 
-### 1.4.0
+### 1.5.0
 
-Released 2018-11-21
+Released 2019-11-11
 
-* added: setting to force Events Manager to use `wp_mail()` so that its emails can be disabled
-* tested: WordPress 5.0
+* fixed: PHP notice -- Trying to get property 'ErrorInfo' of non-object
+* changed: requires minimum PHP 5.6; recommend PHP 7.3+
+* added: support for running the plugin as a must-use plugin (mu-plugin)

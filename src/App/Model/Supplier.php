@@ -56,7 +56,7 @@ class Supplier extends AbstractModel {
      * @var bool
      */
     protected $onLiveFrameworks = false;
-
+    
     /**
      * @return string
      */

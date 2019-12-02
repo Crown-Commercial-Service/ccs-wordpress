@@ -785,9 +785,20 @@ class Import
 
         WP_CLI::success(count($suppliers) . ' Suppliers found');
 
+        /** @var \App\Model\Supplier $supplier */
         foreach ($suppliers as $supplier) {
 
             $liveFrameworks = $this->frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
+            
+            /** @var \App\Model\Framework $liveFramework */
+            if (!empty($liveFrameworks))
+            {
+                foreach ($liveFrameworks as $liveFramework)
+                {
+                    $lots = $this->lotRepository->findAllByFrameworkIdSupplierId($liveFramework->getSalesforceId(), $supplier->getSalesforceId());
+                    $liveFramework->setLots($lots);
+                }
+            }
 
             if (!$liveFrameworks) {
                 // Remove Supplier from index

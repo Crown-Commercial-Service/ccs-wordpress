@@ -84,6 +84,7 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
                 $tempFramework['rm_number_numerical'] = preg_replace("/[^0-9]/", "", $framework->getRmNumber());
                 $tempFramework['end_date'] = !empty($framework->getEndDate()) ? $framework->getEndDate()->format('Y-m-d') : null;
                 $tempFramework['status'] = $framework->getStatus();
+                $tempFramework['lot_ids'] = $framework->getLotIds();
                 $frameworkData[] = $tempFramework;
             }
         }

@@ -188,6 +188,22 @@ AND l.salesforce_id IS NOT NULL';
     }
 
     /**
+     * Find all lots for framework by the id
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function findFrameworkLotsAndReturnAllFields($id){
+
+        $sql = 'SELECT l.* FROM `ccs_frameworks` f
+JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
+WHERE f.rm_number = \'' . $id  . '\'
+AND l.salesforce_id IS NOT NULL';
+
+        return $this->findAllLots($sql);
+    }
+
+    /**
      * Find the lot for framework by framework id and lot number
      *
      * @param $id

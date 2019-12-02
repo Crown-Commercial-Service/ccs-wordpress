@@ -30,7 +30,8 @@ class SupplierMapping extends AbstractMapping
           'title'               => ['type' => 'keyword'],
           'rm_number'           => ['type' => 'keyword'],
           'rm_number_numerical' => ['type' => 'keyword'],
-          'status'              => ['type' => 'keyword']
+          'status'              => ['type' => 'keyword'],
+          'lot_ids'             => ['type' => 'keyword'],
         ]
       ]
     ];

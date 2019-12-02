@@ -8,6 +8,8 @@ use Elastica\Exception\NotFoundException;
 use Elastica\Index;
 use Elastica\Query;
 use Elastica\Request;
+use Elastica\ResultSet;
+use Elastica\Search;
 use Psr\Log\LoggerInterface;
 
 class AbstractSearchClient extends \Elastica\Client
@@ -230,6 +232,25 @@ class AbstractSearchClient extends \Elastica\Client
      */
     public function addAggregationsToQuery(Query $query): Query {
         return $query;
+    }
+
+    /**
+     * Return all items (default is 1000)
+     *
+     * @param int $limit
+     * @param null $sortField
+     * @return \Elastica\ResultSet
+     */
+    public function getAll($limit = 1000, $sortField = ''): ResultSet {
+        $search = new Search($this);
+        $search->addIndex($this->getIndexOrCreate());
+        $matchAll = new Query\MatchAll();
+        $query = new Query($matchAll);
+        $query->setSize($limit);
+        $query = $this->sortQuery($query, '', $sortField);
+        $search->setQuery($query);
+
+        return $search->search();
     }
 
     /**

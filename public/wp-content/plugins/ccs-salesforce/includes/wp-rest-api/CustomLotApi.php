@@ -19,7 +19,7 @@ class CustomLotApi
         if (isset($request['limit'])) {
             $limit = (int)$request['limit'];
         }
-        $limit = $limit ?? 4;
+        $limit = $limit ?? 20;
 
         if (isset($request['page'])) {
             $page = (int)$request['page'];
@@ -89,6 +89,7 @@ class CustomLotApi
                     [
                         'supplier_name' => $supplier->getName(),
                         'supplier_id' => $supplier->getId(),
+                        'contact_email' => $supplier->getContactEmail(),
                         'live_frameworks' => $liveFrameworks
                     ];
 

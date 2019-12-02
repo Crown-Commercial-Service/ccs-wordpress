@@ -24,6 +24,8 @@ class AbstractSearchClient extends \Elastica\Client
 
     protected $defaultSortField = '_score';
 
+    protected $synonyms = [];
+
     /**
      * Client constructor.
      * @param array $config
@@ -262,6 +264,23 @@ class AbstractSearchClient extends \Elastica\Client
     protected function outputDebug($query) {
         print_r(json_encode($query->getQuery()->toArray()));
         die();
+    }
+
+    /**
+     * Takes an array of Synonyms and converts the output to the synonym.
+     * Currently this only works on complete search phrase, not individual terms
+     *
+     * @param string $searchPhrase
+     * @return string
+     */
+    protected function checkKeywordAgainstSynonyms(string $searchPhrase): string {
+        foreach ($this->synonyms as $keyword => $synonym) {
+            if (strtolower($keyword) === strtolower($searchPhrase)) {
+                return $synonym;
+            }
+        }
+
+        return $searchPhrase;
     }
 
 }

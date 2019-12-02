@@ -33,6 +33,13 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
     protected $defaultSortField = 'name.raw';
 
     /**
+     * @var array
+     */
+    protected $synonyms = [
+      'tmw' => 'Tullo Marshall Warren'
+    ];
+
+    /**
      * Returns the name of the index
      *
      * @return string
@@ -125,6 +132,9 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
         $boolQuery = new Query\BoolQuery();
 
         if (!empty($keyword)) {
+
+            $keyword = $this->checkKeywordAgainstSynonyms($keyword);
+
             // Create a multimatch query so we can search multiple fields
             $multiMatchQuery = new Query\MultiMatch();
             $multiMatchQuery->setQuery($keyword);

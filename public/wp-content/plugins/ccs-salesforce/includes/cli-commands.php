@@ -256,7 +256,7 @@ class Import
         }
 
         // Import this Framework
-        $this->importSingleFramework($framework);
+        $framework = $this->importSingleFramework($framework);
 
         $this->updateFrameworkSearchIndexWithSingleFramework($framework);
 
@@ -519,6 +519,9 @@ class Import
             }
 
         }
+
+        return $framework;
+
     }
 
     /**

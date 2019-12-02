@@ -4,6 +4,7 @@ namespace DeliciousBrains\WP_Offload_Media\Pro\Background_Processes;
 
 use AS3CF_Error;
 use AS3CF_Utils;
+use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
 use Exception;
 
 class Copy_Buckets_Process extends Background_Tool_Process {
@@ -30,9 +31,9 @@ class Copy_Buckets_Process extends Background_Tool_Process {
 		$attachments_to_copy = array();
 
 		foreach ( $attachments as $attachment_id ) {
-			$provider_info = $this->as3cf->get_attachment_provider_info( $attachment_id );
+			$as3cf_item = Media_Library_Item::get_by_source_id( $attachment_id );
 
-			if ( $bucket === $provider_info['bucket'] ) {
+			if ( $bucket === $as3cf_item->bucket() ) {
 				continue;
 			}
 
@@ -79,13 +80,13 @@ class Copy_Buckets_Process extends Background_Tool_Process {
 				continue;
 			}
 
-			$provider_info = $this->as3cf->get_attachment_provider_info( $attachment_id );
+			$as3cf_item = Media_Library_Item::get_by_source_id( $attachment_id );
 
 			foreach ( $attachment_keys as $key ) {
 				$args    = array(
 					'Bucket'     => $bucket,
 					'Key'        => $key,
-					'CopySource' => urlencode( "{$provider_info['bucket']}/{$key}" ),
+					'CopySource' => urlencode( "{$as3cf_item->bucket()}/{$key}" ),
 					'ACL'        => $this->determine_key_acl( $attachment_id, $key ),
 				);
 				$size    = AS3CF_Utils::get_intermediate_size_from_filename( $attachment_id, wp_basename( $key ) );
@@ -170,12 +171,22 @@ class Copy_Buckets_Process extends Background_Tool_Process {
 		}
 
 		foreach ( $keys as $attachment_id => $attachment_keys ) {
-			$provider_info = $this->as3cf->get_attachment_provider_info( $attachment_id );
+			$as3cf_item = Media_Library_Item::get_by_source_id( $attachment_id );
 
-			$provider_info['bucket'] = $bucket;
-			$provider_info['region'] = $region;
+			$as3cf_item = new Media_Library_Item(
+				$as3cf_item->provider(),
+				$region,
+				$bucket,
+				$as3cf_item->path(),
+				$as3cf_item->is_private(),
+				$as3cf_item->source_id(),
+				$as3cf_item->source_path(),
+				wp_basename( $as3cf_item->original_source_path() ),
+				$as3cf_item->private_sizes(),
+				$as3cf_item->id()
+			);
 
-			update_post_meta( $attachment_id, 'amazonS3_info', $provider_info );
+			$as3cf_item->save();
 		}
 	}
 

@@ -2,6 +2,7 @@
 
 namespace DeliciousBrains\WP_Offload_Media\Pro\Integrations;
 
+use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
 use WP_Error;
 
 class Advanced_Custom_Fields extends Integration {
@@ -75,7 +76,9 @@ class Advanced_Custom_Fields extends Integration {
 			return $this->as3cf->_throw_error( 2, 'File already exists' );
 		}
 
-		if ( ! ( $provider_object = $this->as3cf->get_attachment_provider_info( $post_id ) ) ) {
+		$as3cf_item = Media_Library_Item::get_by_source_id( $post_id );
+
+		if ( ! $as3cf_item ) {
 			return $this->as3cf->_throw_error( 3, 'Attachment not offloaded' );
 		}
 
@@ -89,15 +92,14 @@ class Advanced_Custom_Fields extends Integration {
 		}
 
 		// Copy back the original file for cropping
-		$result = $this->as3cf->plugin_compat->copy_provider_file_to_server( $provider_object, $file );
+		$result = $this->as3cf->plugin_compat->copy_provider_file_to_server( $as3cf_item, $file );
 
 		if ( false === $result ) {
 			return $this->as3cf->_throw_error( 5, 'Copy back failed' );
 		}
 
 		// Mark the attachment so we know to remove it later after the crop
-		$provider_object['acf_cropped_to_remove'] = true;
-		update_post_meta( $post_id, 'amazonS3_info', $provider_object );
+		update_post_meta( $post_id, 'as3cf_acf_cropped_to_remove', true );
 
 		return true;
 	}
@@ -132,12 +134,14 @@ class Advanced_Custom_Fields extends Integration {
 			return $this->as3cf->_throw_error( 6, 'Attachment ID not available' );
 		}
 
-		if ( ! ( $provider_object = $this->as3cf->get_attachment_provider_info( $original_attachment_id ) ) ) {
+		$as3cf_item = Media_Library_Item::get_by_source_id( $original_attachment_id );
+
+		if ( ! $as3cf_item ) {
 			// Original attachment not on S3
 			return $this->as3cf->_throw_error( 3, 'Attachment not offloaded' );
 		}
 
-		if ( ! isset( $provider_object['acf_cropped_to_remove'] ) ) {
+		if ( ! get_post_meta( $original_attachment_id, 'as3cf_acf_cropped_to_remove', true ) ) {
 			// Original attachment should exist locally, no need to delete
 			return $this->as3cf->_throw_error( 7, 'Attachment not to be removed from server' );
 		}
@@ -147,10 +151,8 @@ class Advanced_Custom_Fields extends Integration {
 		$this->as3cf->remove_local_files( array( $original_file ) );
 
 		// Remove marker
-		unset( $provider_object['acf_cropped_to_remove'] );
-		update_post_meta( $original_attachment_id, 'amazonS3_info', $provider_object );
+		delete_post_meta( $original_attachment_id, 'as3cf_acf_cropped_to_remove' );
 
 		return true;
 	}
-
 }

@@ -2,6 +2,9 @@
 
 namespace DeliciousBrains\WP_Offload_Media\Pro\Integrations;
 
+use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
+use Exception;
+
 class Enable_Media_Replace extends Integration {
 
 	/**
@@ -10,7 +13,7 @@ class Enable_Media_Replace extends Integration {
 	 * @return bool
 	 */
 	public function is_installed() {
-		if ( function_exists( 'enable_media_replace_init' ) ) {
+		if ( class_exists( 'EnableMediaReplace\EnableMediaReplacePlugin' ) || function_exists( 'enable_media_replace_init' ) ) {
 			return true;
 		}
 
@@ -21,65 +24,45 @@ class Enable_Media_Replace extends Integration {
 	 * Init integration.
 	 */
 	public function init() {
-		add_filter( 'as3cf_get_attached_file', array( $this, 'download_file' ), 10, 4 );
-		add_filter( 'update_attached_file', array( $this, 'maybe_process_provider_replacement' ), 101, 2 );
-		add_filter( 'as3cf_update_attached_file', array( $this, 'process_provider_replacement' ), 10, 2 );
-		add_filter( 'as3cf_get_attachment_provider_info', array( $this, 'update_file_prefix_on_replace' ), 10, 2 );
-		add_filter( 'as3cf_pre_update_attachment_metadata', array( $this, 'remove_existing_provider_files_before_replace' ), 10, 4 );
+		// Make sure EMR allows OME to filter get_attached_file.
 		add_filter( 'emr_unfiltered_get_attached_file', '__return_false' );
+
+		// Download the files and return their path so EMR doesn't get tripped up.
+		add_filter( 'as3cf_get_attached_file', array( $this, 'download_file' ), 10, 4 );
+
+		// Although EMR uses wp_unique_filename, it discards that potentially new filename for plain replace, but does then use the following filter.
 		add_filter( 'emr_unique_filename', array( $this, 'ensure_unique_filename' ), 10, 3 );
+
+		// Remove objects before offload happens, but don't re-offload just yet.
+		add_filter( 'as3cf_update_attached_file', array( $this, 'remove_existing_provider_files_during_replace' ), 10, 2 );
 	}
 
 	/**
-	 * Allow the Enable Media Replace plugin to copy the S3 file back to the local
-	 * server when the file is missing on the server via get_attached_file()
+	 * Allow the Enable Media Replace plugin to copy the provider file back to the local
+	 * server when the file is missing on the server via get_attached_file().
 	 *
-	 * @param string $url
-	 * @param string $file
-	 * @param int    $attachment_id
-	 * @param array  $provider_object
+	 * @param string             $url
+	 * @param string             $file
+	 * @param int                $attachment_id
+	 * @param Media_Library_Item $as3cf_item
 	 *
 	 * @return string
 	 */
-	function download_file( $url, $file, $attachment_id, $provider_object ) {
-		return $this->as3cf->plugin_compat->copy_image_to_server_on_action( 'media_replace_upload', false, $url, $file, $provider_object );
+	function download_file( $url, $file, $attachment_id, Media_Library_Item $as3cf_item ) {
+		return $this->as3cf->plugin_compat->copy_image_to_server_on_action( 'media_replace_upload', false, $url, $file, $as3cf_item );
 	}
 
 	/**
-	 * Allow the Enable Media Replace plugin to remove old images from S3 when performing a replace
-	 *
-	 * @param bool  $pre
-	 * @param array $data
-	 * @param int   $post_id
-	 * @param array $provider_object
-	 *
-	 * @return bool
-	 */
-	function remove_existing_provider_files_before_replace( $pre, $data, $post_id, $provider_object = array() ) {
-		if ( ! $this->is_replacing_media() ) {
-			return $pre;
-		}
-
-		if ( $provider_object ) {
-			// Only remove old attachment files if they exist on S3
-			$this->as3cf->remove_attachment_files_from_provider( $post_id, $provider_object );
-		}
-
-		// abort the rest of the update_attachment_metadata hook,
-		// as we will process via update_attached_file
-		return true;
-	}
-
-	/**
-	 * Process the file replacement on a local only file if we are now
-	 * offloading to S3.
+	 * EMR deletes the original files before replace, then updates metadata etc.
+	 * So we should remove associated offloaded files too, and let normal (re)offload happen afterwards.
 	 *
 	 * @param string $file
 	 * @param int    $attachment_id
 	 *
 	 * @return string
+	 * @throws Exception
 	 */
-	public function maybe_process_provider_replacement( $file, $attachment_id ) {
+	function remove_existing_provider_files_during_replace( $file, $attachment_id ) {
 		if ( ! $this->is_replacing_media() ) {
 			return $file;
 		}
@@ -88,30 +71,11 @@ class Enable_Media_Replace extends Integration {
 			return $file;
 		}
 
-		if ( ! ( $provider_object = $this->as3cf->get_attachment_provider_info( $attachment_id ) ) ) {
-			// Process the replacement for a local file
-			return $this->process_provider_replacement( $file, $attachment_id );
-		}
+		$as3cf_item = Media_Library_Item::get_by_source_id( $attachment_id );
 
-		return $file;
-	}
-
-	/**
-	 * Allow the Enable Media Replace to use update_attached_file() so it can
-	 * replace the file on S3.
-	 *
-	 * @param string $file
-	 * @param int    $attachment_id
-	 *
-	 * @return string
-	 */
-	function process_provider_replacement( $file, $attachment_id ) {
-		if ( ! $this->is_replacing_media() ) {
-			return $file;
-		}
-
-		if ( $this->as3cf->get_attachment_provider_info( $attachment_id ) ) {
-			$this->as3cf->upload_attachment( $attachment_id, null, $file );
+		if ( ! empty( $as3cf_item ) ) {
+			$this->as3cf->remove_attachment_files_from_provider( $attachment_id, $as3cf_item );
+			$as3cf_item->delete();
 		}
 
 		return $file;
@@ -130,56 +94,6 @@ class Enable_Media_Replace extends Integration {
 		}
 
 		return ( 'media_replace_upload' === sanitize_key( $action ) );
-	}
-
-	/**
-	 * Update the file prefix in the S3 meta
-	 *
-	 * @param array|string $provider_object
-	 * @param int          $attachment_id
-	 *
-	 * @return array|string
-	 */
-	public function update_file_prefix_on_replace( $provider_object, $attachment_id ) {
-		if ( ! $this->is_replacing_media() ) {
-			// Not replacing using EMR
-			return $provider_object;
-		}
-
-		if ( '' === $provider_object ) {
-			// First time upload to S3
-			return $provider_object;
-		}
-
-		if ( ! $this->as3cf->get_setting( 'object-versioning' ) ) {
-			// Not using object versioning
-			return $provider_object;
-		}
-
-		$is_doing_upload = false;
-		$callers         = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 50 );
-
-		foreach ( $callers as $caller ) {
-			if ( isset( $caller['function'] ) && 'upload_attachment' === $caller['function'] ) {
-				$is_doing_upload = true;
-				break;
-			}
-		}
-
-		if ( ! $is_doing_upload ) {
-			return $provider_object;
-		}
-
-		// Get attachment folder time
-		$time = $this->as3cf->get_attachment_folder_year_month( $attachment_id );
-
-		// Update the file prefix to generate new object versioning string
-		$prefix   = $this->as3cf->get_file_prefix( $time );
-		$filename = wp_basename( $provider_object['key'] );
-
-		$provider_object['key'] = $prefix . $filename;
-
-		return $provider_object;
 	}
 
 	/**

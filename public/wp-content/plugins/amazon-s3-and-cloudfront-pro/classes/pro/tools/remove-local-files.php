@@ -156,6 +156,20 @@ class Remove_Local_Files extends Background_Tool {
 	}
 
 	/**
+	 * Message for error notice
+	 *
+	 * @param null $message Optional message to override the default for the tool.
+	 *
+	 * @return string
+	 */
+	protected function get_error_notice_message( $message = null ) {
+		$title   = __( 'Remove From Local Errors', 'amazon-s3-and-cloudfront' );
+		$message = empty( $message ) ? __( 'Previous attempts at removing your offloaded media library files from the server have resulted in errors.', 'amazon-s3-and-cloudfront' ) : $message;
+
+		return sprintf( '<strong>%s</strong> &mdash; %s', $title, $message );
+	}
+
+	/**
 	 * Get background process class.
 	 *
 	 * @return Background_Tool_Process|null

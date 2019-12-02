@@ -146,7 +146,7 @@ class Uploader extends Background_Tool {
 	 * @return array
 	 */
 	protected function get_custom_notices_to_update() {
-		$notices = array();
+		$notices = parent::get_custom_notices_to_update();
 
 		$notice_id = $this->get_tool_key() . '_license_limit';
 		$notice    = $this->as3cf->notices->find_notice_by_id( $notice_id );
@@ -161,11 +161,13 @@ class Uploader extends Background_Tool {
 	/**
 	 * Message for error notice
 	 *
+	 * @param null $message Optional message to override the default for the tool.
+	 *
 	 * @return string
 	 */
-	protected function get_error_notice_message() {
+	protected function get_error_notice_message( $message = null ) {
 		$title   = __( 'Offload Errors', 'amazon-s3-and-cloudfront' );
-		$message = __( 'Previous attempts at offloading your media library have resulted in errors.', 'amazon-s3-and-cloudfront' );
+		$message = empty( $message ) ? __( 'Previous attempts at offloading your media library have resulted in errors.', 'amazon-s3-and-cloudfront' ) : $message;
 
 		return sprintf( '<strong>%s</strong> &mdash; %s', $title, $message );
 	}

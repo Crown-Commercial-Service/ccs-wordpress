@@ -2,6 +2,9 @@
 
 namespace DeliciousBrains\WP_Offload_Media\Pro\Background_Processes;
 
+use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
+use Exception;
+
 class Uploader_Process extends Background_Tool_Process {
 
 	/**
@@ -27,7 +30,7 @@ class Uploader_Process extends Background_Tool_Process {
 	 *
 	 * @return array
 	 *
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	protected function process_attachments_chunk( $attachments, $blog_id ) {
 		$processed = array();
@@ -60,20 +63,20 @@ class Uploader_Process extends Background_Tool_Process {
 	 * @param int $blog_id
 	 *
 	 * @return bool
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	protected function handle_attachment( $attachment_id, $blog_id ) {
 		// Skip item if attachment already on provider.
-		if ( $this->as3cf->get_attachment_provider_info( $attachment_id ) ) {
+		if ( Media_Library_Item::get_by_source_id( $attachment_id ) ) {
 			return false;
 		}
 
-		$provider_object = $this->as3cf->upload_attachment( $attachment_id, null, null, false );
+		$as3cf_item = $this->as3cf->upload_attachment( $attachment_id, null, null, false );
 
 		// Build error message
-		if ( is_wp_error( $provider_object ) ) {
+		if ( is_wp_error( $as3cf_item ) ) {
 			if ( $this->count_errors() <= 100 ) {
-				foreach ( $provider_object->get_error_messages() as $error_message ) {
+				foreach ( $as3cf_item->get_error_messages() as $error_message ) {
 					$error_msg = sprintf( __( 'Error offloading to bucket - %s', 'amazon-s3-and-cloudfront' ), $error_message );
 					$this->record_error( $blog_id, $attachment_id, $error_msg );
 				}
@@ -137,54 +140,14 @@ class Uploader_Process extends Background_Tool_Process {
 	/**
 	 * Get blog attachments to process.
 	 *
-	 * @param array $blog
-	 * @param int   $limit Maximum number of attachment IDs to return
-	 * @param bool  $count Just return the count, negates $limit, default false
+	 * @param int  $last_attachment_id
+	 * @param int  $limit Maximum number of attachment IDs to return
+	 * @param bool $count Just return the count, negates $limit, default false
 	 *
 	 * @return array|int
 	 */
-	protected function get_blog_attachments( $blog, $limit, $count = false ) {
-		global $wpdb;
-
-		if ( $count ) {
-			$sql = 'SELECT count(DISTINCT posts.ID)';
-		} else {
-			$sql = 'SELECT DISTINCT posts.ID';
-		}
-
-		$sql .= "
-			FROM `{$blog['prefix']}posts` AS posts
-			WHERE posts.post_type = 'attachment'
-			AND posts.ID NOT IN (
-			    SELECT postmeta.post_id
-				FROM `{$blog['prefix']}postmeta` AS postmeta
-				WHERE postmeta.post_id = posts.ID
-				AND postmeta.meta_key = 'amazonS3_info'
-			)
-		";
-
-		if ( ! empty( $blog['last_attachment_id'] ) ) {
-			$sql .= " AND posts.ID < '{$blog['last_attachment_id']}'";
-		}
-
-		/**
-		 * Allow users to exclude certain MIME types from attachments to upload.
-		 *
-		 * @param array
-		 */
-		$ignored_mime_types = apply_filters( 'as3cf_ignored_mime_types', array() );
-		if ( is_array( $ignored_mime_types ) && ! empty( $ignored_mime_types ) ) {
-			$ignored_mime_types = array_map( 'sanitize_text_field', $ignored_mime_types );
-			$sql                .= ' AND posts.post_mime_type NOT IN ("' . implode( '", "', $ignored_mime_types ) . '")';
-		}
-
-		if ( $count ) {
-			return $wpdb->get_var( $sql );
-		} else {
-			$sql .= " ORDER BY posts.ID DESC LIMIT {$limit}";
-
-			return array_map( 'intval', $wpdb->get_col( $sql ) );
-		}
+	protected function get_blog_attachments( $last_attachment_id, $limit, $count = false ) {
+		return Media_Library_Item::get_missing_source_ids( $last_attachment_id, $limit, $count );
 	}
 
 	/**

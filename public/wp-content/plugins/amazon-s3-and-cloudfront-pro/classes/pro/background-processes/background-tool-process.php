@@ -5,6 +5,7 @@ namespace DeliciousBrains\WP_Offload_Media\Pro\Background_Processes;
 use AS3CF_Background_Process;
 use AS3CF_Error;
 use AS3CF_Utils;
+use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
 use DeliciousBrains\WP_Offload_Media\Pro\Tool;
 use DeliciousBrains\WP_Offload_Media\Providers\Provider;
 
@@ -91,16 +92,22 @@ abstract class Background_Tool_Process extends AS3CF_Background_Process {
 				continue;
 			}
 
-			$total = $this->get_blog_attachments( $blog, null, true );
+			$last_attachment_id = ! empty( $blog['last_attachment_id'] ) ? $blog['last_attachment_id'] : null;
+
+			$this->as3cf->switch_to_blog( $blog_id );
+
+			$total = $this->get_blog_attachments( $last_attachment_id, null, true );
 
 			if ( ! empty( $total ) ) {
 				$item['blogs'][ $blog_id ]['total_attachments']  = $total;
-				$item['blogs'][ $blog_id ]['last_attachment_id'] = $this->get_blog_last_attachment_id( $blog ) + 1;
+				$item['blogs'][ $blog_id ]['last_attachment_id'] = $this->get_blog_last_attachment_id() + 1;
 				$item['total_attachments']                       += $total;
 			} else {
 				$item['blogs'][ $blog_id ]['processed']         = true;
 				$item['blogs'][ $blog_id ]['total_attachments'] = 0;
 			}
+
+			$this->as3cf->restore_current_blog();
 		}
 
 		$item['blogs_processed'] = true;
@@ -129,10 +136,12 @@ abstract class Background_Tool_Process extends AS3CF_Background_Process {
 				continue;
 			}
 
+			$last_attachment_id = ! empty( $blog['last_attachment_id'] ) ? $blog['last_attachment_id'] : null;
+
 			$this->as3cf->switch_to_blog( $blog_id );
 
 			$limit       = apply_filters( "as3cf_tool_{$this->action}_batch_size", $this->limit );
-			$attachments = $this->get_blog_attachments( $blog, $limit );
+			$attachments = $this->get_blog_attachments( $last_attachment_id, $limit );
 			$item        = $this->process_blog_attachments( $item, $blog_id, $attachments );
 
 			$this->as3cf->restore_current_blog();
@@ -182,51 +191,23 @@ abstract class Background_Tool_Process extends AS3CF_Background_Process {
 	/**
 	 * Get blog attachments to process.
 	 *
-	 * @param array $blog
-	 * @param int   $limit Maximum number of attachment IDs to return
-	 * @param bool  $count Just return the count, negates $limit, default false
+	 * @param int  $last_attachment_id
+	 * @param int  $limit Maximum number of attachment IDs to return
+	 * @param bool $count Just return the count, negates $limit, default false
 	 *
 	 * @return array|int
 	 */
-	protected function get_blog_attachments( $blog, $limit, $count = false ) {
-		global $wpdb;
-
-		if ( $count ) {
-			$sql = 'SELECT count(DISTINCT posts.ID)';
-		} else {
-			$sql = 'SELECT DISTINCT posts.ID';
-		}
-
-		$sql .= "
-			FROM `{$blog['prefix']}posts` AS posts
-			INNER JOIN `{$blog['prefix']}postmeta` AS postmeta
-			ON posts.ID = postmeta.post_id
-			WHERE posts.post_type = 'attachment'
-			AND postmeta.meta_key = 'amazonS3_info'
-			";
-
-		if ( ! empty( $blog['last_attachment_id'] ) ) {
-			$sql .= " AND posts.ID < '{$blog['last_attachment_id']}'";
-		}
-
-		if ( $count ) {
-			return $wpdb->get_var( $sql );
-		} else {
-			$sql .= " ORDER BY posts.ID DESC LIMIT {$limit}";
-
-			return array_map( 'intval', $wpdb->get_col( $sql ) );
-		}
+	protected function get_blog_attachments( $last_attachment_id, $limit, $count = false ) {
+		return Media_Library_Item::get_source_ids( $last_attachment_id, $limit, $count );
 	}
 
 	/**
 	 * Get blog last attachment ID.
 	 *
-	 * @param array $blog
-	 *
 	 * @return int
 	 */
-	protected function get_blog_last_attachment_id( $blog ) {
-		$attachments = $this->get_blog_attachments( $blog, 1 );
+	protected function get_blog_last_attachment_id() {
+		$attachments = $this->get_blog_attachments( null, 1 );
 
 		return empty( $attachments ) ? 0 : reset( $attachments );
 	}

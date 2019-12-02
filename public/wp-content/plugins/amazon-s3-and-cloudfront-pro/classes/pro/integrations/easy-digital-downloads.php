@@ -2,7 +2,8 @@
 
 namespace DeliciousBrains\WP_Offload_Media\Pro\Integrations;
 
-use Amazon_S3_And_CloudFront;
+use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
+use Exception;
 
 class Easy_Digital_Downloads extends Integration {
 
@@ -63,6 +64,7 @@ class Easy_Digital_Downloads extends Integration {
 	 * @param $file_key
 	 *
 	 * @return mixed
+	 * @throws Exception
 	 */
 	public function get_download_url( $file, $download_files, $file_key ) {
 		global $edd_options;
@@ -75,8 +77,10 @@ class Easy_Digital_Downloads extends Integration {
 			'ResponseContentDisposition' => 'attachment',
 		), $file_data );
 
-		// Our S3 upload
-		if ( $this->as3cf->get_attachment_provider_info( $post_id ) ) {
+		// Standard Offloaded Media Library Item.
+		$as3cf_item = Media_Library_Item::get_by_source_id( $post_id );
+
+		if ( $as3cf_item ) {
 			return $this->as3cf->get_secure_attachment_url( $post_id, $expires, null, $headers, true );
 		}
 
@@ -114,15 +118,18 @@ class Easy_Digital_Downloads extends Integration {
 			foreach ( $files as $key => $file ) {
 				$new_attachment_ids[] = $file['attachment_id'];
 
-				if ( ! ( $provider_object = $this->as3cf->get_attachment_provider_info( $file['attachment_id'] ) ) ) {
-					// not S3 upload ignore
+				$as3cf_item = Media_Library_Item::get_by_source_id( $file['attachment_id'] );
+
+				if ( ! $as3cf_item ) {
+					// not offloaded, ignore.
 					continue;
 				}
 
 				if ( $this->as3cf->is_pro_plugin_setup( true ) ) {
-					$provider_object = $this->as3cf->set_attachment_acl_on_provider( $file['attachment_id'], $provider_object, $this->as3cf->get_provider()->get_private_acl() );
-					if ( $provider_object && ! is_wp_error( $provider_object ) ) {
-						$this->as3cf->make_acl_admin_notice( $provider_object );
+					$as3cf_item = $this->as3cf->set_attachment_acl_on_provider( $file['attachment_id'], $as3cf_item, true );
+
+					if ( $as3cf_item && ! is_wp_error( $as3cf_item ) ) {
+						$this->as3cf->make_acl_admin_notice( $as3cf_item );
 					}
 				}
 			}
@@ -139,19 +146,22 @@ class Easy_Digital_Downloads extends Integration {
 	 * Remove public ACL from attachments removed from a download
 	 * as long as they are not attached to any other downloads
 	 *
-	 * @param $attachment_ids
-	 * @param $download_id
+	 * @param array   $attachment_ids
+	 * @param integer $download_id
 	 */
 	function maybe_make_removed_edd_files_public( $attachment_ids, $download_id ) {
 		global $wpdb;
 
 		foreach ( $attachment_ids as $id ) {
-			if ( ! ( $provider_object = $this->as3cf->get_attachment_provider_info( $id ) ) ) {
-				// not an S3 attachment, ignore
+			$as3cf_item = Media_Library_Item::get_by_source_id( $id );
+
+			if ( ! $as3cf_item ) {
+				// Not offloaded, ignore.
 				continue;
 			}
 
 			$length = strlen( $id );
+
 			// check the attachment isn't used by other downloads
 			$sql = "
 				SELECT COUNT(*)
@@ -167,9 +177,10 @@ class Easy_Digital_Downloads extends Integration {
 			}
 
 			// set acl to public
-			$provider_object = $this->as3cf->set_attachment_acl_on_provider( $id, $provider_object, $this->as3cf->get_provider()->get_default_acl() );
-			if ( $provider_object && ! is_wp_error( $provider_object ) ) {
-				$this->as3cf->make_acl_admin_notice( $provider_object );
+			$as3cf_item = $this->as3cf->set_attachment_acl_on_provider( $id, $as3cf_item, false );
+
+			if ( $as3cf_item && ! is_wp_error( $as3cf_item ) ) {
+				$this->as3cf->make_acl_admin_notice( $as3cf_item );
 			}
 		}
 	}

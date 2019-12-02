@@ -1,5 +1,6 @@
 <?php
 
+use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
 use DeliciousBrains\WP_Offload_Media\Pro\Integration_Manager;
 use DeliciousBrains\WP_Offload_Media\Pro\Integrations\Advanced_Custom_Fields;
 use DeliciousBrains\WP_Offload_Media\Pro\Integrations\Divi;
@@ -123,15 +124,11 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 		// Diagnostic info
 		add_filter( 'as3cf_diagnostic_info', array( $this, 'diagnostic_info' ) );
 
+		// Register tools
+		add_action( 'as3cf_pro_init', array( $this, 'register_tools' ) );
+
 		// Include compatibility code for other plugins
 		$this->plugin_compat = new AS3CF_Pro_Plugin_Compatibility( $this );
-
-		// Register tools
-		$this->sidebar->register_tool( new Uploader( $this ), 'background' );
-		$this->sidebar->register_tool( new Downloader( $this ), 'background' );
-		$this->sidebar->register_tool( new Download_And_Remover( $this ), 'background' );
-		$this->sidebar->register_tool( new Remove_Local_Files( $this ), 'background' );
-		$this->sidebar->register_tool( new Copy_Buckets( $this ), 'background' );
 
 		// Perform network upgrades
 		new Disable_Compatibility_Plugins( $this, $this->plugin_version );
@@ -154,6 +151,21 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 		foreach ( $integrations as $integration ) {
 			$this->integrations->register_integration( $integration );
 		}
+	}
+
+	/**
+	 * Register tools once everything is setup and ready to go.
+	 *
+	 * @handles as3cf_pro_init
+	 *
+	 * @param Amazon_S3_And_CloudFront_Pro $as3cfpro
+	 */
+	public function register_tools( Amazon_S3_And_CloudFront_Pro $as3cfpro ) {
+		$this->sidebar->register_tool( new Uploader( $as3cfpro ), 'background' );
+		$this->sidebar->register_tool( new Downloader( $as3cfpro ), 'background' );
+		$this->sidebar->register_tool( new Download_And_Remover( $as3cfpro ), 'background' );
+		$this->sidebar->register_tool( new Remove_Local_Files( $as3cfpro ), 'background' );
+		$this->sidebar->register_tool( new Copy_Buckets( $as3cfpro ), 'background' );
 	}
 
 	/**
@@ -408,39 +420,6 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	}
 
 	/**
-	 * Get all attachments uploaded to S3
-	 *
-	 * @param string $prefix Table prefix for multisite support
-	 * @param bool   $count
-	 * @param bool   $limit
-	 * @param int    $offset
-	 *
-	 * @return mixed
-	 */
-	function get_all_provider_attachments( $prefix, $count = false, $limit = false, $offset = 0 ) {
-		global $wpdb;
-
-		$sql = " FROM `{$prefix}postmeta`
-		        WHERE `meta_key` = 'amazonS3_info'";
-
-		if ( $count ) {
-			$sql    = 'SELECT COUNT(*)' . $sql;
-			$result = $wpdb->get_var( $sql );
-
-			return ( ! is_null( $result ) ) ? $result : 0;
-		}
-
-		$sql = 'SELECT *' . $sql;
-
-		if ( false !== $limit ) {
-			$sql .= ' LIMIT %d OFFSET %d';
-			$sql = $wpdb->prepare( $sql, $limit, $offset );
-		}
-
-		return $wpdb->get_results( $sql, ARRAY_A );
-	}
-
-	/**
 	 * Handle S3 actions applied to attachments via the Backbone JS
 	 * in the media grid and edit attachment modal
 	 */
@@ -474,22 +453,24 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	function ajax_update_acl() {
 		check_ajax_referer( 'singular-update_acl' );
 
-		$id    = $this->filter_input( 'id', INPUT_POST, FILTER_VALIDATE_INT ); // input var ok
-		$acl   = $this->filter_input( 'acl', INPUT_POST, FILTER_SANITIZE_STRING ); // input var ok
-		$title = $this->get_media_action_strings( 'change_to_public' );
+		$id         = $this->filter_input( 'id', INPUT_POST, FILTER_VALIDATE_INT ); // input var ok
+		$acl        = $this->filter_input( 'acl', INPUT_POST, FILTER_SANITIZE_STRING ); // input var ok
+		$title      = $this->get_media_action_strings( 'change_to_public' );
+		$is_private = true;
 
 		if ( empty( $id ) || empty( $acl ) ) {
 			wp_send_json_error();
 		}
 
 		if ( $this->get_provider()->get_private_acl() !== $acl ) {
-			$acl   = $this->get_provider()->get_default_acl();
-			$title = $this->get_media_action_strings( 'change_to_private' );
+			$acl        = $this->get_provider()->get_default_acl();
+			$title      = $this->get_media_action_strings( 'change_to_private' );
+			$is_private = false;
 		}
 
-		// Update in S3.
-		$provider_object = $this->get_attachment_provider_info( $id );
-		$update          = $this->set_attachment_acl_on_provider( $id, $provider_object, $acl );
+		// Update on provider.
+		$as3cf_item = Media_Library_Item::get_by_source_id( $id );
+		$update     = $this->set_attachment_acl_on_provider( $id, $as3cf_item, $is_private );
 
 		$data = array(
 			'acl'         => $acl,
@@ -521,28 +502,6 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 		$sizes = count( get_intermediate_image_sizes() );
 
 		return floor( $max / $sizes );
-	}
-
-	/**
-	 * Get the S3 attachment url, based on the provided URL settings.
-	 *
-	 * @param array $attachment
-	 * @param array $args
-	 *
-	 * @return string
-	 */
-	function get_custom_attachment_url( $attachment, $args ) {
-		$scheme  = $this->get_url_scheme( $args['force-https'] );
-		$expires = null;
-
-		// Force use of secured url when ACL has been set to private
-		if ( isset( $attachment['acl'] ) && $this->get_provider()->get_private_acl() === $attachment['acl'] ) {
-			$expires = self::DEFAULT_EXPIRES;
-		}
-
-		$domain = $this->get_provider()->get_url_domain( $attachment['bucket'], $attachment['region'], $expires, $args );
-
-		return $scheme . '://' . $domain . '/' . $attachment['key'];
 	}
 
 	/**
@@ -681,24 +640,24 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 			return $actions;
 		}
 
-		$post_id       = ( is_object( $post ) ) ? $post->ID : $post;
-		$file          = get_attached_file( $post_id, true );
-		$file_exists   = file_exists( $file );
-		$provider_info = $this->get_attachment_provider_info( $post_id );
+		$post_id     = ( is_object( $post ) ) ? $post->ID : $post;
+		$file        = get_attached_file( $post_id, true );
+		$file_exists = file_exists( $file );
+		$as3cf_item  = Media_Library_Item::get_by_source_id( $post_id );
 
 		// If offloaded to another provider can not do anything.
-		if ( $provider_info && ! $this->is_attachment_served_by_provider( $post_id, true ) ) {
+		if ( $as3cf_item && ! $this->is_attachment_served_by_provider( $post_id, true ) ) {
 			$actions['as3cfpro_wrong_provider'] = '<span title="' . __( 'Offloaded to a different provider than currently configured.', 'amazon-s3-and-cloudfront' ) . '">' . __( 'Wrong Provider', 'amazon-s3-and-cloudfront' ) . '</span>';
 
 			return $actions;
 		}
 
 		// If not offloaded at all, or offloaded to current provider, can use copy.
-		if ( in_array( 'copy', $available_actions ) && $file_exists && ( ! $provider_info || $this->is_attachment_served_by_provider( $post_id, true ) ) ) {
+		if ( in_array( 'copy', $available_actions ) && $file_exists && ( ! $as3cf_item || $this->is_attachment_served_by_provider( $post_id, true ) ) ) {
 			$this->add_media_row_action( $actions, $post_id, 'copy' );
 		}
 
-		// Actions beyond this point are for items on S3 only
+		// Actions beyond this point are for items on provider only
 		if ( ! $this->is_attachment_served_by_provider( $post_id, true ) ) {
 			return $actions;
 		}
@@ -711,11 +670,11 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 			$this->add_media_row_action( $actions, $post_id, 'download' );
 		}
 
-		if ( in_array( 'private_acl', $available_actions ) && ( empty( $provider_info['acl'] ) || $this->get_provider()->get_private_acl() !== $provider_info['acl'] ) ) {
+		if ( in_array( 'private_acl', $available_actions ) && ! $as3cf_item->is_private() ) {
 			$this->add_media_row_action( $actions, $post_id, 'private_acl' );
 		}
 
-		if ( in_array( 'public_acl', $available_actions ) && ! empty( $provider_info['acl'] ) && $this->get_provider()->get_private_acl() === $provider_info['acl'] ) {
+		if ( in_array( 'public_acl', $available_actions ) && $as3cf_item->is_private() ) {
 			$this->add_media_row_action( $actions, $post_id, 'public_acl' );
 		}
 
@@ -1070,7 +1029,7 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	}
 
 	/**
-	 * Wrapper for removing multiple attachments from S3
+	 * Wrapper for removing multiple attachments from provider
 	 *
 	 * @param array $post_ids            attachment IDs
 	 * @param bool  $doing_bulk_action   flag for multiple attachments, if true then we need to
@@ -1086,13 +1045,13 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 
 		foreach ( $post_ids as $post_id ) {
 			// if bulk action check has been uploaded to S3
-			if ( $doing_bulk_action && ! $this->get_attachment_provider_info( $post_id ) ) {
+			if ( $doing_bulk_action && ! Media_Library_Item::get_by_source_id( $post_id ) ) {
 				// Confirm that item already deleted.
 				$deleted_count++;
 				continue;
 			}
 
-			// Download any missing local files before removing from S3
+			// Download any missing local files before removing from provider
 			$downloaded = $this->download_attachment_from_provider( $post_id, $doing_bulk_action );
 
 			if ( is_wp_error( $downloaded ) ) {
@@ -1100,9 +1059,10 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 				continue;
 			}
 
-			// Delete attachment from S3
+			// Delete attachment from provider
 			$this->delete_attachment( $post_id, $doing_bulk_action );
-			if ( $this->get_attachment_provider_info( $post_id ) ) {
+
+			if ( Media_Library_Item::get_by_source_id( $post_id ) ) {
 				$error_count++;
 				continue;
 			}
@@ -1140,7 +1100,7 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 
 			if ( $doing_bulk_action ) {
 				// if bulk action check has been uploaded to S3
-				if ( ! $this->get_attachment_provider_info( $post_id ) ) {
+				if ( ! Media_Library_Item::get_by_source_id( $post_id ) ) {
 					continue;
 				}
 				$file_exists_locally = file_exists( $file );
@@ -1167,7 +1127,7 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	}
 
 	/**
-	 * Wrapper for removing multiple attachments from from server if offloaded
+	 * Wrapper for removing multiple attachments from server if offloaded
 	 *
 	 * @param array $post_ids            attachment IDs
 	 * @param bool  $doing_bulk_action   flag for multiple attachments, if true then we need to
@@ -1235,30 +1195,24 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 
 		$provider_key = $this->get_provider()->get_provider_key_name();
 
-		if ( true === $private ) {
-			$acl = $this->get_provider()->get_private_acl();
-		} else {
-			$acl = $this->get_provider()->get_default_acl();
-		}
-
 		foreach ( $post_ids as $post_id ) {
-			$provider_info = $this->get_attachment_provider_info( $post_id );
+			$as3cf_item = Media_Library_Item::get_by_source_id( $post_id );
 
-			if ( false === $provider_info || ! is_array( $provider_info ) ) {
+			if ( ! $as3cf_item ) {
 				$error_count++;
 				continue;
 			}
 
 			if ( $doing_bulk_action ) {
-				if ( $provider_key !== $provider_info['provider'] ) {
+				if ( $provider_key !== $as3cf_item->provider() ) {
 					$error_count++;
 					continue;
 				}
 			}
 
-			$provider_info = $this->set_attachment_acl_on_provider( $post_id, $provider_info, $acl );
+			$as3cf_item = $this->set_attachment_acl_on_provider( $post_id, $as3cf_item, $private );
 
-			if ( is_wp_error( $provider_info ) ) {
+			if ( is_wp_error( $as3cf_item ) ) {
 				$error_count++;
 				continue;
 			}
@@ -1320,11 +1274,13 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 			return false;
 		}
 
-		if ( ! ( $provider_object = $this->get_attachment_provider_info( $post_id ) ) ) {
+		$as3cf_item = Media_Library_Item::get_by_source_id( $post_id );
+
+		if ( ! $as3cf_item ) {
 			return false;
 		}
 
-		$prefix     = trailingslashit( dirname( $provider_object['key'] ) );
+		$prefix     = trailingslashit( $as3cf_item->normalized_path_dir() );
 		$file_paths = AS3CF_Utils::get_attachment_file_paths( $post_id, false );
 		$downloads  = array();
 
@@ -1345,16 +1301,11 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 			if ( ! $this->is_attachment_served_by_provider( $post_id, true ) ) {
 				$errors[] = sprintf( __( 'Attachment ID %s is offloaded to a different provider than currently configured', 'amazon-s3-and-cloudfront' ), $post_id );
 			} else {
-				$region = $this->get_provider_object_region( $provider_object );
-				if ( is_wp_error( $region ) ) {
-					$region = false;
-				}
-
-				$provider_client = $this->get_provider_client( $region, $force_new_provider_client );
+				$provider_client = $this->get_provider_client( $as3cf_item->region(), $force_new_provider_client );
 
 				foreach ( $downloads as $download ) {
 					// Save object to a file
-					$download['Bucket'] = $provider_object['bucket'];
+					$download['Bucket'] = $as3cf_item->bucket();
 
 					$result = $this->download_object( $provider_client, $download );
 
@@ -1657,28 +1608,54 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 	 * @throws \Exception
 	 */
 	public function get_provider_keys( $attachments ) {
-		$regions = array();
+		$regions   = array();
+		$originals = array();
 
 		foreach ( $attachments as $attachment_id ) {
 			if ( ! $this->is_attachment_served_by_provider( $attachment_id, true ) ) {
 				continue;
 			}
 
-			$provider_info = $this->get_attachment_provider_info( $attachment_id );
+			$as3cf_item = Media_Library_Item::get_by_source_id( $attachment_id );
 
-			$region = empty( $provider_info['region'] ) ? 'us-east-1' : $provider_info['region'];
-
-			if ( ! isset( $regions[ $region ]['provider_client'] ) ) {
-				$regions[ $region ]['provider_client'] = $this->get_provider_client( $region, true );
+			if ( ! isset( $regions[ $as3cf_item->region() ]['provider_client'] ) ) {
+				$regions[ $as3cf_item->region() ]['provider_client'] = $this->get_provider_client( $as3cf_item->region(), true );
 			}
 
-			$regions[ $region ]['locations'][ $attachment_id ] = array(
-				'Bucket' => $provider_info['bucket'],
-				'Prefix' => AS3CF_Utils::strip_image_edit_suffix_and_extension( $provider_info['key'] ),
+			$regions[ $as3cf_item->region() ]['locations'][ $attachment_id ] = array(
+				'Bucket' => $as3cf_item->bucket(),
+				'Prefix' => AS3CF_Utils::strip_image_edit_suffix_and_extension( $as3cf_item->path() ),
 			);
+
+			if ( $as3cf_item->original_path() !== $as3cf_item->path() ) {
+				if ( ! isset( $originals[ $as3cf_item->region() ]['provider_client'] ) ) {
+					$originals[ $as3cf_item->region() ]['provider_client'] = $this->get_provider_client( $as3cf_item->region(), true );
+				}
+
+				$originals[ $as3cf_item->region() ]['locations'][ $attachment_id ] = array(
+					'Bucket' => $as3cf_item->bucket(),
+					'Prefix' => AS3CF_Utils::strip_image_edit_suffix_and_extension( $as3cf_item->original_path() ),
+				);
+			}
 		}
 
-		return Provider::get_keys_from_regions( $regions );
+		$keys = Provider::get_keys_from_regions( $regions );
+
+		if ( ! empty( $originals ) ) {
+			$original_keys = Provider::get_keys_from_regions( $originals );
+
+			if ( ! empty( $original_keys ) ) {
+				foreach ( $original_keys as $attachment_id => $paths ) {
+					if ( ! empty( $keys[ $attachment_id ] ) ) {
+						$keys[ $attachment_id ] = array_unique( array_merge( $keys[ $attachment_id ], $paths ) );
+					} else {
+						$keys[ $attachment_id ] = $paths;
+					}
+				}
+			}
+		}
+
+		return $keys;
 	}
 
 	/**
@@ -1734,23 +1711,7 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 			return $local_paths[ $blog_id ][ $attachment_id ];
 		}
 
-		$file    = get_attached_file( $attachment_id, true );
-		$parts   = pathinfo( $file );
-		$meta    = wp_get_attachment_metadata( $attachment_id );
-		$backups = get_post_meta( $attachment_id, '_wp_attachment_backup_sizes', true );
-		$paths   = array( $file );
-
-		if ( ! empty( $meta['sizes'] ) ) {
-			foreach ( $meta['sizes'] as $size ) {
-				$paths[] = path_join( $parts['dirname'], $size['file'] );
-			}
-		}
-
-		if ( ! empty( $backups ) ) {
-			foreach ( $backups as $size ) {
-				$paths[] = path_join( $parts['dirname'], $size['file'] );
-			}
-		}
+		$paths = AS3CF_Utils::get_attachment_file_paths( $attachment_id, false );
 
 		$local_paths[ $blog_id ][ $attachment_id ] = array_unique( $paths );
 
@@ -1767,6 +1728,10 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 		$paths = $this->get_attachment_local_paths( $attachment_id );
 		$keys  = isset( $keys[ $attachment_id ] ) ? $keys[ $attachment_id ] : array();
 
+		if ( empty( $keys ) ) {
+			return;
+		}
+
 		foreach ( $paths as $path ) {
 			if ( file_exists( $path ) && $this->file_exists_on_provider( $path, $keys ) ) {
 				$files_to_remove[] = $path;
@@ -1776,7 +1741,13 @@ class Amazon_S3_And_CloudFront_Pro extends Amazon_S3_And_CloudFront {
 		// Delete the files and record original file's size before removal.
 		if ( ! empty( $files_to_remove ) ) {
 			// Get original file's size if still on disk.
-			$filesize = file_exists( $paths[0] ) ? filesize( $paths[0] ) : 0;
+			if ( ! empty( $paths['original_image'] ) ) {
+				$filesize = file_exists( $paths['original_image'] ) ? filesize( $paths['original_image'] ) : 0;
+			} elseif ( ! empty( $paths['original'] ) ) {
+				$filesize = file_exists( $paths['original'] ) ? filesize( $paths['original'] ) : 0;
+			} else {
+				$filesize = 0;
+			}
 
 			$this->remove_local_files( $files_to_remove, $attachment_id );
 

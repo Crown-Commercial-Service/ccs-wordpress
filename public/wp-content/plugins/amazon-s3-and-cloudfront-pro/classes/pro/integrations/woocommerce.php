@@ -2,6 +2,7 @@
 
 namespace DeliciousBrains\WP_Offload_Media\Pro\Integrations;
 
+use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
 use Exception;
 
 class Woocommerce extends Integration {
@@ -76,7 +77,7 @@ class Woocommerce extends Integration {
 		 */
 		$capability = apply_filters( 'as3cfpro_woo_use_attachment_capability', null );
 
-		if ( $this->as3cf->verify_ajax_request( $capability, true ) && $this->as3cf->get_attachment_provider_info( intval( $_POST['attachment_id'] ) ) ) {
+		if ( $this->as3cf->verify_ajax_request( $capability, true ) && Media_Library_Item::get_by_source_id( intval( $_POST['attachment_id'] ) ) ) {
 			$return = true;
 		}
 
@@ -105,16 +106,18 @@ class Woocommerce extends Integration {
 
 			$new_attachments[] = $attachment_id;
 
-			if ( ! ( $provider_object = $this->as3cf->get_attachment_provider_info( $attachment_id ) ) ) {
-				// Not S3 upload, ignore
+			$as3cf_item = Media_Library_Item::get_by_source_id( $attachment_id );
+
+			if ( ! $as3cf_item ) {
+				// Not offloaded, ignore.
 				continue;
 			}
 
 			if ( $this->as3cf->is_pro_plugin_setup( true ) ) {
 				// Only set new files as private if the Pro plugin is setup
-				$provider_object = $this->as3cf->set_attachment_acl_on_provider( $attachment_id, $provider_object, $this->as3cf->get_provider()->get_private_acl() );
-				if ( $provider_object && ! is_wp_error( $provider_object ) ) {
-					$this->as3cf->make_acl_admin_notice( $provider_object );
+				$as3cf_item = $this->as3cf->set_attachment_acl_on_provider( $attachment_id, $as3cf_item, true );
+				if ( $as3cf_item && ! is_wp_error( $as3cf_item ) ) {
+					$this->as3cf->make_acl_admin_notice( $as3cf_item );
 				}
 			}
 		}
@@ -144,21 +147,7 @@ class Woocommerce extends Integration {
 			return false;
 		}
 
-		$bucket_length = strlen( $atts['bucket'] );
-		$object_length = strlen( $atts['object'] );
-
-		$sql = "
-			SELECT `post_id`
-			FROM `{$wpdb->prefix}postmeta`
-			WHERE `{$wpdb->prefix}postmeta`.`meta_key` = 'amazonS3_info'
-			AND `{$wpdb->prefix}postmeta`.`meta_value` LIKE '%s:6:\"bucket\";s:{$bucket_length}:\"{$atts['bucket']}\";s:3:\"key\";s:{$object_length}:\"{$atts['object']}\";%'
-		";
-
-		if ( $id = $wpdb->get_var( $sql ) ) {
-			return $id;
-		}
-
-		return false;
+		return Media_Library_Item::get_source_id_by_bucket_and_path( $atts['bucket'], $atts['object'] );
 	}
 
 	/**
@@ -208,13 +197,15 @@ class Woocommerce extends Integration {
 		global $wpdb;
 
 		foreach ( $removed_attachments as $attachment_id ) {
-			if ( ! ( $provider_object = $this->as3cf->get_attachment_provider_info( $attachment_id ) ) ) {
-				// Not an S3 attachment, ignore
+			$as3cf_item = Media_Library_Item::get_by_source_id( $attachment_id );
+
+			if ( ! $as3cf_item ) {
+				// Not offloaded, ignore.
 				continue;
 			}
 
-			$bucket = preg_quote( $provider_object['bucket'], '@' );
-			$key    = preg_quote( $provider_object['key'], '@' );
+			$bucket = preg_quote( $as3cf_item->bucket(), '@' );
+			$key    = preg_quote( $as3cf_item->path(), '@' );
 
 			// Check the attachment isn't used by other downloads
 			$sql = $wpdb->prepare( "
@@ -243,9 +234,10 @@ class Woocommerce extends Integration {
 			}
 
 			// Set ACL to public
-			$provider_object = $this->as3cf->set_attachment_acl_on_provider( $attachment_id, $provider_object, $this->as3cf->get_provider()->get_default_acl() );
-			if ( $provider_object && ! is_wp_error( $provider_object ) ) {
-				$this->as3cf->make_acl_admin_notice( $provider_object );
+			$as3cf_item = $this->as3cf->set_attachment_acl_on_provider( $attachment_id, $as3cf_item, false );
+
+			if ( $as3cf_item && ! is_wp_error( $as3cf_item ) ) {
+				$this->as3cf->make_acl_admin_notice( $as3cf_item );
 			}
 		}
 	}
@@ -277,7 +269,7 @@ class Woocommerce extends Integration {
 			'file' => $file_path,
 		);
 
-		if ( ! $attachment_id || ! $this->as3cf->get_attachment_provider_info( $attachment_id ) ) {
+		if ( ! $attachment_id || ! Media_Library_Item::get_by_source_id( $attachment_id ) ) {
 			/*
 			This addon is meant to be a drop-in replacement for the
 			WooCommerce Amazon S3 Storage extension. The latter doesn't encourage people

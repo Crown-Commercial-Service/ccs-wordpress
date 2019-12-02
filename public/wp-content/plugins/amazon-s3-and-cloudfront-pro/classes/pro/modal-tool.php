@@ -3,6 +3,7 @@
 namespace DeliciousBrains\WP_Offload_Media\Pro;
 
 use AS3CF_Utils;
+use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
 
 abstract class Modal_Tool extends Tool {
 
@@ -486,9 +487,13 @@ abstract class Modal_Tool extends Tool {
 		$total_to_process  = 0;
 
 		foreach ( $blogs as $blog_id => $blog ) {
-			$counts            = $this->as3cf->count_attachments( $blog['prefix'] );
+			$this->as3cf->switch_to_blog( $blog_id );
+
+			$counts            = Media_Library_Item::count_attachments();
 			$total_attachments += $counts['total'];
 			$total_to_process  += $this->get_attachments_to_process( $blog['prefix'], $blog_id, true, null, null );
+
+			$this->as3cf->restore_current_blog();
 		}
 
 		return compact( 'total_to_process', 'total_attachments' );

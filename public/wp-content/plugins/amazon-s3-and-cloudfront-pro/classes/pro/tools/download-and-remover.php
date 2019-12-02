@@ -28,11 +28,13 @@ class Download_And_Remover extends Downloader {
 	/**
 	 * Message for error notice
 	 *
+	 * @param null $message Optional message to override the default for the tool.
+	 *
 	 * @return string
 	 */
-	protected function get_error_notice_message() {
+	protected function get_error_notice_message( $message = null ) {
 		$title   = __( 'Removal Errors', 'amazon-s3-and-cloudfront' );
-		$message = __( 'Previous attempts at removing your media library from the bucket have resulted in errors.', 'amazon-s3-and-cloudfront' );
+		$message = empty( $message ) ? __( 'Previous attempts at removing your media library from the bucket have resulted in errors.', 'amazon-s3-and-cloudfront' ) : $message;
 
 		return sprintf( '<strong>%s</strong> &mdash; %s', $title, $message );
 	}

@@ -413,9 +413,11 @@ abstract class Tool {
 	/**
 	 * Tool specific message for error notice.
 	 *
+	 * @param null $message Optional message to override the default for the tool.
+	 *
 	 * @return string
 	 */
-	protected function get_error_notice_message() {
+	protected function get_error_notice_message( $message = null ) {
 		return '';
 	}
 

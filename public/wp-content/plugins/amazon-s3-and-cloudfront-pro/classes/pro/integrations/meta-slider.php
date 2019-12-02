@@ -5,6 +5,7 @@ namespace DeliciousBrains\WP_Offload_Media\Pro\Integrations;
 use Amazon_S3_And_CloudFront;
 use AS3CF_Error;
 use AS3CF_Utils;
+use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
 use Exception;
 
 class Meta_Slider extends Integration {
@@ -85,22 +86,22 @@ class Meta_Slider extends Integration {
 	 * 'Layer Slide' duplicates an attachment in the Media Library, but uses the same
 	 * file as the original. This prevents us trying to upload a new version to S3.
 	 *
-	 * @param bool  $pre
-	 * @param mixed $data
-	 * @param int   $post_id
-	 * @param mixed $old_provider_object
+	 * @param bool               $pre
+	 * @param mixed              $data
+	 * @param int                $post_id
+	 * @param Media_Library_Item $old_item
 	 *
 	 * @return bool
 	 */
-	public function layer_slide_abort_upload( $pre, $data, $post_id, $old_provider_object ) {
-		if ( ! $this->is_layer_slide() ) {
+	public function layer_slide_abort_upload( $pre, $data, $post_id, Media_Library_Item $old_item = null ) {
+		if ( ! $this->is_layer_slide() || empty( $old_item ) ) {
 			return $pre;
 		}
 
 		if ( $this->as3cf->get_setting( 'remove-local-file' ) ) {
 			// Download full size image locally so that custom sizes can be generated
 			$file = get_attached_file( $post_id, true );
-			$this->as3cf->plugin_compat->copy_provider_file_to_server( $old_provider_object, $file );
+			$this->as3cf->plugin_compat->copy_provider_file_to_server( $old_item, $file );
 
 			$this->post_id = $post_id;
 		}
@@ -115,14 +116,14 @@ class Meta_Slider extends Integration {
 	 * file as the original we don't want to remove them from S3. Only the backup sizes
 	 * should be removed.
 	 *
-	 * @param array $paths
-	 * @param int   $post_id
-	 * @param array $provider_object
-	 * @param bool  $remove_backup_sizes
+	 * @param array              $paths
+	 * @param int                $post_id
+	 * @param Media_Library_Item $item
+	 * @param bool               $remove_backup_sizes
 	 *
 	 * @return array
 	 */
-	public function layer_slide_remove_attachment_paths( $paths, $post_id, $provider_object, $remove_backup_sizes ) {
+	public function layer_slide_remove_attachment_paths( $paths, $post_id, Media_Library_Item $item, $remove_backup_sizes ) {
 		$slider = get_post_meta( $post_id, 'ml-slider_type', true );
 
 		if ( 'html_overlay' !== $slider ) {
@@ -180,6 +181,8 @@ class Meta_Slider extends Integration {
 	 * @param int    $object_id
 	 * @param string $meta_key
 	 * @param mixed  $_meta_value
+	 *
+	 * @throws Exception
 	 */
 	public function add_post_meta( $object_id, $meta_key, $_meta_value ) {
 		$this->maybe_upload_attachment_backup_sizes( $object_id, $meta_key, $_meta_value );
@@ -192,6 +195,8 @@ class Meta_Slider extends Integration {
 	 * @param int    $object_id
 	 * @param string $meta_key
 	 * @param mixed  $_meta_value
+	 *
+	 * @throws Exception
 	 */
 	public function update_post_meta( $meta_id, $object_id, $meta_key, $_meta_value ) {
 		$this->maybe_upload_attachment_backup_sizes( $object_id, $meta_key, $_meta_value );
@@ -203,6 +208,8 @@ class Meta_Slider extends Integration {
 	 * @param int    $object_id
 	 * @param string $meta_key
 	 * @param mixed  $data
+	 *
+	 * @throws Exception
 	 */
 	private function maybe_upload_attachment_backup_sizes( $object_id, $meta_key, $data ) {
 		if ( '_wp_attachment_backup_sizes' !== $meta_key ) {
@@ -217,36 +224,32 @@ class Meta_Slider extends Integration {
 			return;
 		}
 
-		if ( ! ( $provider_object = $this->as3cf->get_attachment_provider_info( $object_id ) ) && ! $this->as3cf->get_setting( 'copy-to-s3' ) ) {
-			// Abort if not already uploaded to S3 and the copy setting is off
+		$item = Media_Library_Item::get_by_source_id( $object_id );
+
+		if ( ! $item && ! $this->as3cf->get_setting( 'copy-to-s3' ) ) {
+			// Abort if not already offloaded to provider and the copy setting is off
 			return;
 		}
 
-		$this->upload_attachment_backup_sizes( $object_id, $provider_object, $data );
+		$this->upload_attachment_backup_sizes( $object_id, $item, $data );
 	}
 
 	/**
 	 * Upload attachment backup sizes
 	 *
-	 * @param int   $object_id
-	 * @param array $provider_object
-	 * @param mixed $data
+	 * @param int                $object_id
+	 * @param Media_Library_Item $item
+	 * @param mixed              $data
+	 *
+	 * @throws Exception
 	 */
-	private function upload_attachment_backup_sizes( $object_id, $provider_object, $data ) {
-		$region = '';
-		$prefix = trailingslashit( dirname( $provider_object['key'] ) );
-
-		if ( isset( $provider_object['region'] ) ) {
-			$region = $provider_object['region'];
-		}
+	private function upload_attachment_backup_sizes( $object_id, Media_Library_Item $item, $data ) {
+		$region = $item->region();
+		$prefix = trailingslashit( dirname( $item->path() ) );
 
 		$provider_client = $this->as3cf->get_provider_client( $region, true );
 
-		$acl = $this->as3cf->get_provider()->get_default_acl();
-
-		if ( isset( $provider_object['acl'] ) ) {
-			$acl = $provider_object['acl'];
-		}
+		$acl = $item->is_private() ? $this->as3cf->get_provider()->get_private_acl() : $this->as3cf->get_provider()->get_default_acl();
 
 		foreach ( $data as $file ) {
 			if ( ! isset( $file['path'] ) ) {
@@ -258,7 +261,7 @@ class Meta_Slider extends Integration {
 			}
 
 			$args = array(
-				'Bucket'       => $provider_object['bucket'],
+				'Bucket'       => $item->bucket(),
 				'Key'          => $prefix . $file['file'],
 				'ACL'          => $acl,
 				'SourceFile'   => $file['path'],

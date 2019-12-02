@@ -2,7 +2,9 @@
 
 namespace DeliciousBrains\WP_Offload_Media\Pro;
 
+use AS3CF_Utils;
 use DeliciousBrains\WP_Offload_Media\Pro\Background_Processes\Background_Tool_Process;
+use DeliciousBrains\WP_Offload_Media\Upgrades\Upgrade;
 
 abstract class Background_Tool extends Tool {
 
@@ -41,6 +43,11 @@ abstract class Background_Tool extends Tool {
 
 		$this->background_process = $this->get_background_process_class();
 
+		// During an upgrade, cancel all background processes.
+		if ( Upgrade::is_locked() && ( $this->is_processing() || $this->is_queued() ) ) {
+			$this->handle_cancel();
+		}
+
 		$this->maybe_handle_action_url();
 	}
 
@@ -68,6 +75,7 @@ abstract class Background_Tool extends Tool {
 			'is_queued'          => $this->is_queued(),
 			'is_paused'          => $this->is_paused(),
 			'is_cancelled'       => $this->is_cancelled(),
+			'is_upgrading'       => Upgrade::is_locked(),
 			'total_progress'     => $this->get_progress(),
 			'progress'           => $this->get_progress(),
 			'queue'              => $this->get_queue_counts(),
@@ -80,7 +88,7 @@ abstract class Background_Tool extends Tool {
 	 * @return array
 	 */
 	public function get_status() {
-		return array(
+		$status = array(
 			'should_render'  => $this->should_render(),
 			'total_progress' => $this->get_progress(),
 			'progress'       => $this->get_progress(),
@@ -88,10 +96,98 @@ abstract class Background_Tool extends Tool {
 			'is_processing'  => $this->is_processing(),
 			'is_paused'      => $this->is_paused(),
 			'is_cancelled'   => $this->is_cancelled(),
+			'is_upgrading'   => Upgrade::is_locked(),
 			'description'    => $this->get_status_description(),
 			'queue'          => $this->get_queue_counts(),
-			'notices'        => $this->get_notices(),
 		);
+
+		$this->maybe_add_loopback_request_notice( $status );
+
+		$status['notices'] = $this->get_notices();
+
+		return $status;
+	}
+
+	/**
+	 * If it looks like this tool is stuck, check loopback site health report and potentially add notice.
+	 *
+	 * @param array $status
+	 */
+	private function maybe_add_loopback_request_notice( $status ) {
+		$site_health_path = trailingslashit( ABSPATH ) . 'wp-admin/includes/class-wp-site-health.php';
+
+		if (
+			! empty( $status['is_queued'] ) &&
+			empty( $status['is_processing'] ) &&
+			empty( $status['is_paused'] ) &&
+			empty( $status['is_cancelled'] ) &&
+			file_exists( $site_health_path ) &&
+			(
+				false === get_site_transient( $this->prefix . '_loopback_test' ) ||
+				get_site_transient( $this->prefix . '_loopback_test' ) === $this->tool_key
+			)
+		) {
+			set_site_transient( $this->prefix . '_loopback_test', $this->tool_key, 30 );
+
+			/** @noinspection PhpIncludeInspection */
+			require_once $site_health_path;
+			$site_health = new \WP_Site_Health();
+
+			$loopback = $site_health->get_test_loopback_requests();
+
+			if (
+				! empty( $loopback['status'] ) &&
+				'good' !== $loopback['status'] &&
+				! empty( $loopback['label'] ) &&
+				! empty( $loopback['description'] ) ) {
+				$args = array(
+					'type'              => 'error',
+					'class'             => 'tool-error',
+					'dismissible'       => false,
+					'flash'             => false,
+					'only_show_to_user' => false,
+					'only_show_on_tab'  => $this->tab,
+					'custom_id'         => $this->errors_key_prefix . 'loopback_test',
+					'user_capabilities' => array( 'as3cfpro', 'is_plugin_setup' ),
+				);
+
+				$site_health_link = get_dashboard_url( get_current_user_id(), 'site-health.php' );
+
+				$doc_url  = $this->as3cf->dbrains_url( '/wp-offload-media/doc/background-processes-not-completing/', array(
+					'utm_campaign' => 'support+docs',
+				) );
+				$doc_link = AS3CF_Utils::dbrains_link( $doc_url, __( 'Background Processes doc', 'amazon-s3-and-cloudfront' ) );
+
+				$message = sprintf( __( 'The background process is stuck. Please ensure that the <strong>loopback request</strong> test is passing in <a href="%1$s">Site Health</a>.<br><br>For troubleshooting tips please see our %2$s.', 'amazon-s3-and-cloudfront' ), $site_health_link, $doc_link );
+
+				$this->as3cf->notices->add_notice( $this->get_error_notice_message( $message ), $args );
+			} else {
+				$this->as3cf->notices->remove_notice_by_id( $this->errors_key_prefix . 'loopback_test' );
+			}
+		} elseif (
+			false === get_site_transient( $this->prefix . '_loopback_test' ) ||
+			get_site_transient( $this->prefix . '_loopback_test' ) === $this->tool_key
+		) {
+			// No other tool is stuck, clear out admin notice if set.
+			$this->as3cf->notices->remove_notice_by_id( $this->errors_key_prefix . 'loopback_test' );
+		}
+	}
+
+	/**
+	 * Add general background tool notices, but allow child classes to inject custom notices to be updated in the DOM.
+	 *
+	 * @return array
+	 */
+	protected function get_custom_notices_to_update() {
+		$notices = parent::get_custom_notices_to_update();
+
+		$notice = $this->as3cf->notices->find_notice_by_id( $this->errors_key_prefix . 'loopback_test' );
+
+		if ( ! empty( $notice ) ) {
+			$notices[] = $notice;
+		}
+
+		return $notices;
 	}
 
 	/**

@@ -5,8 +5,8 @@ Author URI: https://publishpress.com
 Tags: notifications, Editorial Calendar, workflow, statuses, permissions
 Requires at least: 4.6
 Requires PHP: 5.4
-Tested up to: 5.2
-Stable tag: 1.20.9
+Tested up to: 5.3
+Stable tag: 1.21.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,6 @@ PublishPress is based on the EditFlow plugin. It is easy for Edit Flow users to 
 * [Click here for full instructions on moving from Edit Flow to PublishPress](https://publishpress.com/docs/migrate/)
 
 = I FOUND A BUG, OR WANT TO CONTRIBUTE CODE =
-K_TCPDF_CALLS_IN_HTML
 Great! We’d love to hear from you! PublishPress [is available on Github](https://github.com/AllediaWordPress/PublishPress), and we welcome contributions from everyone.
 
 = FAQ =
@@ -129,6 +128,38 @@ Not at all. You can set up everything your team needs without any coding knowled
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
+
+= [1.21.2] - 2019-11-19 =
+
+* Added: New action for writing a debug log message: publishpress_debug_write_log;
+* Added: Show receiver's data in the notifications log;
+* Fixed: Email errors in the log for the Post SMTP plugin;
+* Fixed: Wrong URL protocols in the Notifications\Table\Base class;
+* Fixed: Wrong ordering for items in the calendar;
+* Fixed: UTC time is always used in the exported ICS file. Now it is exporting time in the current timezone;
+* Fixed: The React library is being downgraded (overridden) in WP 5.3;
+* Changed: Removed not used methods from the Notifications\Table\Base class: hide_months_dropdown_filter and months_dropdown;
+
+= [1.21.1] - 2019-10-23 =
+
+* Fixed: Updated the Plugin Framework removing a debug statement;
+* Changed: Removed the Async column from the Notifications Log and added text to the Status column for async notifications;
+
+= [1.21.0] - 2019-10-22 =
+
+* Feature: Implement a log for notifications, #500;
+* Feature: Implement support for pages in the content overview, #503
+* Fixed: Fix PHP notices with statuses coming from PressShack, #506;
+* Fixed: Sending notifications when there is no status change, #515;
+* Fixed: Fix error when there is no follower for a post, #509;
+* Fixed: Uncaught TypeError: Cannot read property 'length' of undefined, #499;
+* Fixed: Error "Can't read prop of null" in the pp_date.js file;
+* Fixed: Custom statuses was not accepting numbers in the name;
+* Fixed: Fixed message for async notifications when a post changes the status;
+* Fixed: Remove a PHP short tag;
+* Removed: Removed Multiple Authors from the add-ons list since the plugin is standalone now;
+* Removed: Removed leftovers from the Freemius integration;
+* Changed: Renamed the file common/js/admin.js to common/js/admin-menu.js;
 
 = [1.20.9] - 2019-09-11 =
 

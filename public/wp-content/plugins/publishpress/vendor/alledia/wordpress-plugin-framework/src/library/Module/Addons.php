@@ -119,7 +119,6 @@ class Addons extends Abstract_Module
      */
     public function echo_addons_page($addons_page_url, $plugin_name = null)
     {
-
         /*
          * ---------------------------------------------------------------------
          * Backward compatibility for users using PublishPress and UpStream with

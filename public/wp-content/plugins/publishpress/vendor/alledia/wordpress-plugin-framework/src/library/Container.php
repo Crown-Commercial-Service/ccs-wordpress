@@ -19,7 +19,7 @@ class Container extends \Pimple\Container
          * @return string
          */
         $this['VERSION'] = function ($c) {
-            return '0.6.7';
+            return '0.6.8';
         };
 
         /**

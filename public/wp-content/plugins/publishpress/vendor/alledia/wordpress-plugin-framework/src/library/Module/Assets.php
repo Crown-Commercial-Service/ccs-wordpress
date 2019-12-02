@@ -78,30 +78,34 @@ class Assets extends Abstract_Module
      */
     public function admin_enqueue_scripts()
     {
-        $react_env = defined('WP_DEBUG') && WP_DEBUG ? 'development' : 'production.min';
-        wp_enqueue_script(
-            'allex-react',
-            "{$this->assets_base_url}/lib/react-v16.4.2/react.{$react_env}.js",
-            [],
-            $this->version
-        );
-        wp_enqueue_script(
-            'allex-react-dom',
-            "{$this->assets_base_url}/lib/react-v16.4.2/react-dom.{$react_env}.js",
-            ['allex-react'],
-            $this->version
-        );
+        global $wp_scripts;
+
+        if ( ! isset($wp_scripts->queue['react'])) {
+            wp_enqueue_script(
+                'react',
+                "{$this->assets_base_url}/lib/react.min.js",
+                [],
+                $this->version
+            );
+            wp_enqueue_script(
+                'react-dom',
+                "{$this->assets_base_url}/lib/react-dom.min.js",
+                ['react'],
+                $this->version
+            );
+        }
+
         wp_enqueue_script(
             'allex-admin-addons',
             "{$this->assets_base_url}/js/admin-addons.min.js",
-            ['jquery', 'allex-react', 'allex-react-dom'],
+            ['jquery', 'react', 'react-dom'],
             $this->version
         );
 
         wp_enqueue_script(
             'allex',
             $this->assets_base_url . '/js/allex-admin.js',
-            ['jquery', 'allex-react'],
+            ['jquery', 'react'],
             $this->version
         );
 

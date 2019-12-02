@@ -31,23 +31,23 @@
         ],
         "authors": [
             {
+                "name": "PublishPress",
+                "email": "help@publishpress.com",
+                "homepage": "https://publishpress.com"
+            },
+            {
                 "name": "Alledia",
                 "email": "help@alledia.com"
+            },
+            {
+                "name": "UpStream",
+                "email": "help@upstream.com"
             },
             {
                 "name": "Anderson Grudtner Martins",
                 "email": "anderson@grudtner.me",
                 "homepage": "http://anderson.grudtner.me",
                 "role": "Lead Developer"
-            },
-            {
-                "name": "PublishPress",
-                "email": "help@publishpress.com",
-                "homepage": "https://publishpress.com"
-            },
-            {
-                "name": "UpStream",
-                "email": "help@upstream.com"
             }
         ],
         "description": "Base classes and Phing scripts for building WordPress plugins",
@@ -60,17 +60,17 @@
     },
     {
         "name": "alledia/wordpress-plugin-framework",
-        "version": "0.6.7",
-        "version_normalized": "0.6.7.0",
+        "version": "0.6.8",
+        "version_normalized": "0.6.8.0",
         "source": {
             "type": "git",
             "url": "https://github.com/publishpress/WordPress-Plugin-Framework.git",
-            "reference": "d454be57aa700d06ee4be7bd7aedf563da4c191e"
+            "reference": "d92bdbda933412f8d04f7088b758c81f1eb4fba0"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/publishpress/WordPress-Plugin-Framework/zipball/d454be57aa700d06ee4be7bd7aedf563da4c191e",
-            "reference": "d454be57aa700d06ee4be7bd7aedf563da4c191e",
+            "url": "https://api.github.com/repos/publishpress/WordPress-Plugin-Framework/zipball/d92bdbda933412f8d04f7088b758c81f1eb4fba0",
+            "reference": "d92bdbda933412f8d04f7088b758c81f1eb4fba0",
             "shasum": ""
         },
         "require": {
@@ -78,7 +78,7 @@
             "pimple/pimple": "~3.0",
             "twig/twig": "~1.20"
         },
-        "time": "2019-08-23T19:47:00+00:00",
+        "time": "2019-11-19T16:38:51+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -98,9 +98,9 @@
             },
             {
                 "name": "Anderson Grudtner Martins",
-                "role": "Lead Developer",
                 "email": "anderson@grudtner.me",
-                "homepage": "http://anderson.grudtner.me"
+                "homepage": "http://anderson.grudtner.me",
+                "role": "Lead Developer"
             }
         ],
         "description": "Alledia framework for creating WordPress plugins.",

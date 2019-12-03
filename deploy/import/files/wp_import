@@ -1,4 +1,4 @@
-0 2 * * * ec2-user /home/ec2-user/wp_import.sh | logger -t 'wp_import' curl -s -d s=$? https://nosnch.in/9097b15a40 &> /dev/null
-0 10 * * * ec2-user /home/ec2-user/wp_import.sh | logger -t 'wp_import' curl -s -d s=$? https://nosnch.in/9097b15a40 &> /dev/null
-0 12 * * * ec2-user /home/ec2-user/wp_import.sh | logger -t 'wp_import' curl -s -d s=$? https://nosnch.in/9097b15a40 &> /dev/null
-0 15 * * * ec2-user /home/ec2-user/wp_import.sh | logger -t 'wp_import' curl -s -d s=$? https://nosnch.in/9097b15a40 &> /dev/null
+0 2 * * * ec2-user dms -s 9097b15a40 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
+0 10 * * * ec2-user dms -s 9097b15a40 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
+0 12 * * * ec2-user dms -s 9097b15a40 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
+0 15 * * * ec2-user dms -s 9097b15a40 /home/ec2-user/wp_import.sh | logger -t 'wp_import'

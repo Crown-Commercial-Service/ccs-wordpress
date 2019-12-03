@@ -55,6 +55,10 @@ class Supplier extends AbstractModel {
     /**
      * @var string
      */
+    protected $contactName;
+    /**
+     * @var string
+     */
     protected $tradingName;
     /**
      * @var bool
@@ -247,6 +251,24 @@ class Supplier extends AbstractModel {
     public function getTradingName(): ?string
     {
         return $this->tradingName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getContactName(): ?string
+    {
+        return $this->contactName;
+    }
+
+    /**
+     * @param string $contactName
+     * @return string
+     */
+    public function setContactName($contactName): ?string
+    {
+        $this->contactName = $contactName;
+        return $this->contactName;
     }
 
     /**

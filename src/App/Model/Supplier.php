@@ -57,6 +57,10 @@ class Supplier extends AbstractModel {
      */
     protected $contactEmail;
     /**
+     * @var string
+     */
+    protected $contactName;
+    /**
      * @var bool
      */
     protected $onLiveFrameworks = false;
@@ -274,6 +278,24 @@ class Supplier extends AbstractModel {
     public function setContactEmail(?string $contactEmail): Supplier
     {
         $this->contactEmail = $contactEmail;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getContactName(): ?string
+    {
+        return $this->contactName;
+    }
+
+    /**
+     * @param string $contactName
+     * @return Supplier
+     */
+    public function setContactName(?string $contactName): Supplier
+    {
+        $this->contactName = $contactName;
         return $this;
     }
 

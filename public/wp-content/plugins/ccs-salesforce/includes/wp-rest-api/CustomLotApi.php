@@ -89,6 +89,7 @@ class CustomLotApi
                     [
                         'supplier_name' => $supplier->getName(),
                         'supplier_id' => $supplier->getId(),
+                        'contact_name' => $supplier->getContactName(),
                         'contact_email' => $supplier->getContactEmail(),
                         'live_frameworks' => $liveFrameworks
                     ];

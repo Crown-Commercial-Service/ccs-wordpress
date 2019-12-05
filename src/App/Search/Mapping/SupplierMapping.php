@@ -28,7 +28,7 @@ class SupplierMapping extends AbstractMapping
         'properties' => [
           'end_date'            => ['type' => 'date'],
           'title'               => ['type' => 'keyword'],
-          'rm_number'           => ['type' => 'keyword'],
+          'rm_number'           => ['type' => 'text', 'fielddata' =>'true'],
           'rm_number_numerical' => ['type' => 'keyword'],
           'status'              => ['type' => 'keyword'],
           'lot_ids'             => ['type' => 'keyword'],

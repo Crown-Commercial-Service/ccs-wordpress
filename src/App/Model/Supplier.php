@@ -265,10 +265,10 @@ class Supplier extends AbstractModel {
      * @param string $contactName
      * @return string
      */
-    public function setContactName($contactName): ?string
+    public function setContactName($contactName): Supplier
     {
         $this->contactName = $contactName;
-        return $this->contactName;
+        return $this;
     }
 
     /**
@@ -282,10 +282,10 @@ class Supplier extends AbstractModel {
      * @param string $contactEmail
      * @return string
      */
-    public function setContactEmail($contactEmail): ?string
+    public function setContactEmail($contactEmail): Supplier
     {
         $this->contactEmail = $contactEmail;
-        return $this->contactEmail;
+        return $this;
     }
 
     /**

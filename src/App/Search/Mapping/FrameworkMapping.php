@@ -13,7 +13,7 @@ class FrameworkMapping extends AbstractMapping
     protected $properties = [
       'id'               => ['type' => 'integer'],
       'salesforce_id'    => ['type' => 'keyword'],
-      'rm_number'        => ['type' => 'keyword'],
+      'rm_number'        => ['type' => 'text', 'fielddata' =>'true'],
       'type'             => ['type' => 'keyword'],
       'description'      => ['type' => 'text'],
       'summary'          => ['type' => 'text'],

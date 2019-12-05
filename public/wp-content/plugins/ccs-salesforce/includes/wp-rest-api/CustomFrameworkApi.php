@@ -248,9 +248,12 @@ class CustomFrameworkApi
 
                 if ($frameworks !== false) {
                     foreach ($frameworks as $counter => $framework) {
+                        $childFrameworkData = $framework->toArray();
                         $liveFrameworks[$counter] =
-                            ['title'     => $framework->getTitle(),
-                             'rm_number' => $framework->getRmNumber()
+                            ['title'     => $childFrameworkData['title'],
+                             'rm_number' => $childFrameworkData['rm_number'],
+                             'status'    => $childFrameworkData['status'],
+                             'end_date'  => $childFrameworkData['end_date']
                             ];
                     }
                 }
@@ -259,6 +262,8 @@ class CustomFrameworkApi
                     [
                         'supplier_name' => $supplier->getName(),
                         'supplier_id' => $supplier->getId(),
+                        'supplier_contact_name' => $supplier->getContactName(),
+                        'supplier_contact_email' => $supplier->getContactEmail(),
                         'live_frameworks' => $liveFrameworks
                     ];
 

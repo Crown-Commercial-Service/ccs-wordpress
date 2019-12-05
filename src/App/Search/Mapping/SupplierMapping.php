@@ -28,7 +28,7 @@ class SupplierMapping extends AbstractMapping
         'type'       => 'nested',
         'properties' => [
           'end_date'            => ['type' => 'date'],
-          'title'               => ['type' => 'keyword'],
+          'title'               => ['type' => 'keyword', 'analyzer' => 'english_analyzer'],
           'rm_number'           => ['type' => 'text', 'fielddata' =>'true'],
           'rm_number_numerical' => ['type' => 'keyword'],
           'status'              => ['type' => 'keyword'],

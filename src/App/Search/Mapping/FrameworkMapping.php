@@ -15,8 +15,8 @@ class FrameworkMapping extends AbstractMapping
       'salesforce_id'    => ['type' => 'keyword'],
       'rm_number'        => ['type' => 'text', 'fielddata' =>'true'],
       'type'             => ['type' => 'keyword'],
-      'description'      => ['type' => 'text'],
-      'summary'          => ['type' => 'text'],
+      'description'      => ['type' => 'text', 'analyzer' => 'english_analyzer'],
+      'summary'          => ['type' => 'text', 'analyzer' => 'english_analyzer'],
       'title'            => [
         'type'   => 'text',
         'analyzer' => 'english_analyzer',

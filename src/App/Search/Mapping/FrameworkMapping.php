@@ -19,6 +19,7 @@ class FrameworkMapping extends AbstractMapping
       'summary'          => ['type' => 'text'],
       'title'            => [
         'type'   => 'text',
+        'analyzer' => 'english_analyzer',
         'fields' => [
           'raw' => ['type' => 'keyword']
         ]

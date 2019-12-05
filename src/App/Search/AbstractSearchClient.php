@@ -80,7 +80,24 @@ class AbstractSearchClient extends \Elastica\Client
     protected function createIndex() {
         $index = $this->getIndex($this->getQualifiedIndexName());
 
-        $index->create();
+        $analysis = [
+          'analysis' => array(
+            'analyzer' => array(
+              'english_analyzer' => array(
+                'tokenizer' => 'standard',
+                'filter'    => array('lowercase', 'english_stemmer')
+              ),
+            ),
+            'filter'   => array(
+              'english_stemmer' => array(
+                'type' => 'stemmer',
+                'name' => 'english'
+              )
+            )
+          )
+        ];
+
+        $index->create(['settings' => $analysis]);
 
         $index->setMapping($this->getIndexMapping());
     }

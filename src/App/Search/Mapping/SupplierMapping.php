@@ -11,11 +11,12 @@ class SupplierMapping extends AbstractMapping
      * @var array
      */
     protected $properties = [
-      'id'              => ['type' => 'integer'],
-      'salesforce_id'   => ['type' => 'keyword'],
-      'name'            => [
-        'type'   => 'text',
-        'fields' => [
+      'id'            => ['type' => 'integer'],
+      'salesforce_id' => ['type' => 'keyword'],
+      'name'          => [
+        'type'     => 'text',
+        'analyzer' => 'english_analyzer',
+        'fields'   => [
           'raw' => ['type' => 'keyword']
         ]
       ],

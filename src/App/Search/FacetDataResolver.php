@@ -64,6 +64,7 @@ class FacetDataResolver {
               'title'       => $lot->getTitle(),
               'id'          => $lot->getId(),
               'description' => $lot->getDescription(),
+              'lot_number'  => $lot->getLotNumber()
             ];
         }
 

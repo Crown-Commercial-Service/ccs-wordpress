@@ -11,25 +11,26 @@ class SupplierMapping extends AbstractMapping
      * @var array
      */
     protected $properties = [
-      'id'            => ['type' => 'integer'],
-      'salesforce_id' => ['type' => 'keyword'],
-      'name'          => [
+      'id'                        => ['type' => 'integer'],
+      'salesforce_id'             => ['type' => 'keyword'],
+      'name'                      => [
         'type'     => 'text',
         'analyzer' => 'english_analyzer',
         'fields'   => [
           'raw' => ['type' => 'keyword']
         ]
       ],
-      'duns_number'     => ['type' => 'keyword'],
-      'trading_name'    => ['type' => 'text'],
-      'city'            => ['type' => 'text'],
-      'postcode'        => ['type' => 'text'],
-      'live_frameworks' => [
+      'duns_number'               => ['type' => 'keyword'],
+      'trading_name'              => ['type' => 'text'],
+      'alternative_trading_names' => ['type' => 'text'],
+      'city'                      => ['type' => 'text'],
+      'postcode'                  => ['type' => 'text'],
+      'live_frameworks'           => [
         'type'       => 'nested',
         'properties' => [
           'end_date'            => ['type' => 'date'],
           'title'               => ['type' => 'keyword'],
-          'rm_number'           => ['type' => 'text', 'fielddata' =>'true'],
+          'rm_number'           => ['type' => 'text', 'fielddata' => 'true'],
           'rm_number_numerical' => ['type' => 'keyword'],
           'status'              => ['type' => 'keyword'],
           'lot_ids'             => ['type' => 'keyword'],

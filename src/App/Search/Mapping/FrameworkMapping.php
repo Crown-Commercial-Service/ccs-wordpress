@@ -11,16 +11,23 @@ class FrameworkMapping extends AbstractMapping
      * @var array
      */
     protected $properties = [
-      'id'               => ['type' => 'integer'],
-      'salesforce_id'    => ['type' => 'keyword'],
-      'rm_number'        => ['type' => 'text', 'fielddata' =>'true'],
-      'type'             => ['type' => 'keyword'],
-      'description'      => ['type' => 'text', 'analyzer' => 'english_analyzer'],
-      'summary'          => ['type' => 'text', 'analyzer' => 'english_analyzer'],
-      'title'            => [
-        'type'   => 'text',
+      'id'            => ['type' => 'integer'],
+      'salesforce_id' => ['type' => 'keyword'],
+      'rm_number'     => [
+        'type'      => 'text',
+        'fielddata' => 'true',
+        'fields'    => [
+          'raw' => ['type' => 'keyword']
+        ]
+      ],
+      'rm_number_numerical' => ['type' => 'keyword'],
+      'type'          => ['type' => 'keyword'],
+      'description'   => ['type' => 'text', 'analyzer' => 'english_analyzer'],
+      'summary'       => ['type' => 'text', 'analyzer' => 'english_analyzer'],
+      'title'         => [
+        'type'     => 'text',
         'analyzer' => 'english_analyzer',
-        'fields' => [
+        'fields'   => [
           'raw' => ['type' => 'keyword']
         ]
       ],

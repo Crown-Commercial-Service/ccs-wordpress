@@ -43,9 +43,6 @@ if (isset($_GET['framework']) && !empty($_GET['framework'])) {
     $lots = $lotRepository->findFrameworkLotsAndReturnAllFields($frameworkRmNumber);
 }
 
-$frameworkSearchClient = new FrameworkSearchClient();
-$frameworks = $frameworkSearchClient->getAll();
-
 if (isset($_GET['lot']) && !empty($_GET['lot'])) {
     $lotId = filter_var($_GET['lot'], FILTER_SANITIZE_STRING);
     $filters[] = [
@@ -57,7 +54,10 @@ if (isset($_GET['lot']) && !empty($_GET['lot'])) {
 $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);
 $suppliers = $resultSet->getResults();
 
-$facets = $resultSet->getAggregations();
+// We then want to do a
+
+$facetSearch = $searchClient->queryByKeyword($keyword, $page, $limit);
+$facets = $facetSearch->getAggregations();
 if (isset($lots))
 {
     $facets['lots'] = $lots;
@@ -81,7 +81,6 @@ $meta = [
   'results'       => count($suppliers),
   'page'          => $page == 0 ? 1 : $page,
   'facets'        => $buckets,
-  'frameworks'    => $frameworks,
 ];
 
 header('Content-Type: application/json');

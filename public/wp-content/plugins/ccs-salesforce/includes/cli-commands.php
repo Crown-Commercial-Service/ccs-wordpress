@@ -803,6 +803,27 @@ class Import
                 }
             }
 
+            $alternativeTradingNames = [];
+            $lotSuppliers = $this->lotSupplierRepository->findAllById($supplier->getSalesforceId(), 'supplier_id');
+
+            if (!empty($lotSuppliers))
+            {
+                /** @var LotSupplier $lotSupplier */
+                foreach ($lotSuppliers as $lotSupplier)
+                {
+                    if (!empty($lotSupplier->getTradingName())) {
+                        $alternativeTradingNames[$lotSupplier->getTradingName()] = $lotSupplier->getTradingName();
+                    }
+                }
+
+                if (!empty($supplier->getTradingName())) {
+                    $alternativeTradingNames[$supplier->getTradingName()] = $supplier->getTradingName();
+                }
+
+                $supplier->setAlternativeTradingNames(array_values($alternativeTradingNames));
+            }
+
+
             if (!$liveFrameworks) {
                 // Remove Supplier from index
                 $this->supplierSearchClient->removeDocument($supplier);

@@ -72,13 +72,14 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
 
         // Create a document
         $documentData = [
-          'id'            => $supplier->getId(),
-          'salesforce_id' => $supplier->getSalesforceId(),
-          'name'          => $supplier->getName(),
-          'duns_number'   => $supplier->getDunsNumber(),
-          'trading_name'  => $supplier->getTradingName(),
-          'city'          => $supplier->getCity(),
-          'postcode'      => $supplier->getPostcode(),
+          'id'                        => $supplier->getId(),
+          'salesforce_id'             => $supplier->getSalesforceId(),
+          'name'                      => $supplier->getName(),
+          'duns_number'               => $supplier->getDunsNumber(),
+          'trading_name'              => $supplier->getTradingName(),
+          'alternative_trading_names' => $supplier->getAlternativeTradingNames(),
+          'city'                      => $supplier->getCity(),
+          'postcode'                  => $supplier->getPostcode(),
         ];
 
         $frameworkData = [];
@@ -161,8 +162,6 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
         $boolQuery = $this->addSearchFilters($boolQuery, $filters);
 
         $query = new Query($boolQuery);
-        
-
 
         $query->setSize($limit);
         $query->setFrom($this->translatePageNumberAndLimitToStartNumber($page, $limit));

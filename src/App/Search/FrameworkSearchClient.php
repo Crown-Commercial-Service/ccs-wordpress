@@ -143,8 +143,8 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
         if (!empty($keyword)) {
             // Create a multimatch query so we can search multiple fields
             $multiMatchQuery = new Query\MultiMatch();
-            $multiMatchQuery->setQuery($keyword);
-            $multiMatchQuery->setFields(['description', 'rm_number', 'summary']);
+            $multiMatchQuery->setQuery($keyword );
+            $multiMatchQuery->setFields(['description', 'summary']);
             $multiMatchQuery->setFuzziness(1);
             $boolQuery->addShould($multiMatchQuery);
 
@@ -155,9 +155,21 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
             $multiMatchQueryForNameField->setFuzziness(1);
             $boolQuery->addShould($multiMatchQueryForNameField);
 
-            // Look for the RM Number without 'RM'
+            // RM Number search
             $queryForNumericalRmNumber = new Query\MultiMatch();
             $queryForNumericalRmNumber->setQuery($keyword);
+            $queryForNumericalRmNumber->setFields(['rm_number^2', 'rm_number.raw^2']);
+            $boolQuery->addShould($queryForNumericalRmNumber);
+
+            $rmNumberQuery = new Query\Wildcard('rm_number.raw', $keyword.'*', 2);
+            $boolQuery->addShould($rmNumberQuery);
+
+            $rmNumberQuery = new Query\Wildcard('rm_number_numerical', $keyword.'*', 2);
+            $boolQuery->addShould($rmNumberQuery);
+
+            // Look for the RM Number without 'RM'
+            $queryForNumericalRmNumber = new Query\MultiMatch();
+            $queryForNumericalRmNumber->setQuery($keyword.'*');
             $queryForNumericalRmNumber->setFields(['rm_number_numerical^3']);
             $boolQuery->addShould($queryForNumericalRmNumber);
 

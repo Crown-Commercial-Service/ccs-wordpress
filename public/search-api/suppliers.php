@@ -12,6 +12,14 @@ require_once($rootDir . 'vendor/autoload.php');
 $dotenv = new Dotenv();
 $dotenv->load($rootDir . '.env');
 
+/**
+ * Fix for CORS
+ */
+$frontendUrl = getenv('FRONTEND_SITEURL');
+header('Access-Control-Allow-Origin: ' . $frontendUrl);
+header('Access-Control-Allow-Methods: GET');
+header("Access-Control-Allow-Headers: X-Requested-With");
+
 $searchClient = new SupplierSearchClient();
 $facetDataResolver = new FacetDataResolver();
 

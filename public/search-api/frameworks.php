@@ -13,52 +13,38 @@ $dotenv->load($rootDir . '.env');
 
 $searchClient = new FrameworkSearchClient();
 
+// Set empty vars
+$dataToReturn = [];
+$filters = [];
+$keyword = '';
+$page = 0;
+$limit = 20;
+
 if (isset($_GET['limit'])) {
     $limit = (int)filter_var($_GET['limit'], FILTER_SANITIZE_STRING);
 }
-$limit = $limit ?? 20;
 
 if (isset($_GET['page'])) {
     $page = (int)filter_var($_GET['page'], FILTER_SANITIZE_STRING);
 }
-$page = $page ?? 0;
 
-$keyword = '';
 if (isset($_GET['keyword'])) {
     $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_STRING);
 }
 
-// Reset filters to the empty state
-$filters = [];
-
 if (isset($_GET['category'])) {
     $category = filter_var($_GET['category'], FILTER_SANITIZE_STRING);
-    $filters[] = [
-      'field' => 'category',
-      'value' => $category
-    ];
+    $filters['category'] = $category;
 }
 
 if (isset($_GET['pillar'])) {
     $pillar = filter_var($_GET['pillar'], FILTER_SANITIZE_STRING);
-    $filters[] = [
-      'field' => 'pillar',
-      'value' => $pillar
-    ];
+    $filters['pillar'] = $pillar;
 }
-
-
-// Example of nested filter
-//$filters[] = [
-//  'field' => 'live_frameworks.title',
-//  'value' => 'Management Consultancy Framework (MCF)'
-//];
 
 $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);
 $frameworks = $resultSet->getResults();
 $buckets = $resultSet->getAggregations();
-
-$dataToReturn = [];
 
 /** @var \Elastica\Result $supplier */
 foreach ($frameworks as $framework)

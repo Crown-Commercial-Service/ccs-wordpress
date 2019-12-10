@@ -158,12 +158,16 @@ class AbstractSearchClient extends \Elastica\Client
      */
     public function addSearchFilters(Query\BoolQuery $boolQuery, array $filters): Query\BoolQuery {
 
-        foreach ($filters as $filter)
+        if (empty($filters)) {
+            return $boolQuery;
+        }
+
+        foreach ($filters as $key => $value)
         {
-            if (strpos($filter['field'], '.') !== false) {
-                $boolQuery = $this->addNestedSearchFilter($boolQuery, $filter);
+            if (is_array($value)) {
+                $boolQuery = $this->addNestedSearchFilter($boolQuery, $key, $value);
             } else {
-                $boolQuery = $this->addSimpleSearchFilter($boolQuery, $filter);
+                $boolQuery = $this->addSimpleSearchFilter($boolQuery, $key, $value);
             }
         }
 
@@ -174,11 +178,12 @@ class AbstractSearchClient extends \Elastica\Client
      * Add a simple search filter
      *
      * @param \Elastica\Query\BoolQuery $boolQuery
-     * @param array $filter must contain the keys 'field' and 'value'
+     * @param $key
+     * @param $value
      * @return \Elastica\Query\BoolQuery
      */
-    protected function addSimpleSearchFilter(Query\BoolQuery $boolQuery, array $filter): Query\BoolQuery {
-        $matchQuery = new Query\Match($filter['field'], $filter['value']);
+    protected function addSimpleSearchFilter(Query\BoolQuery $boolQuery, $key, $value): Query\BoolQuery {
+        $matchQuery = new Query\Match($key, $value);
         $boolQuery->addMust($matchQuery);
 
         return $boolQuery;
@@ -186,14 +191,21 @@ class AbstractSearchClient extends \Elastica\Client
 
     /**
      * @param \Elastica\Query\BoolQuery $boolQuery
-     * @param array $filter must contain the keys 'field' and 'value'
+     * @param $key
+     * @param $value
      * @return \Elastica\Query\BoolQuery
      */
-    protected function addNestedSearchFilter(Query\BoolQuery $boolQuery, array $filter): Query\BoolQuery {
-        $matchQuery = new Query\Match($filter['field'], $filter['value']);
+    protected function addNestedSearchFilter(Query\BoolQuery $boolQuery, $key, $value): Query\BoolQuery {
+        $newBoolQuery = new Query\BoolQuery();
+
+        foreach ($value as $nestedField => $nestedValue) {
+            $matchQuery = new Query\Match($key.'.'.$nestedField, $nestedValue);
+            $newBoolQuery->addMust($matchQuery);
+        }
+
         $nested = new Query\Nested();
-        $nested->setPath(strtok($filter['field'], '.'));
-        $nested->setQuery($matchQuery);
+        $nested->setPath($key);
+        $nested->setQuery($newBoolQuery);
         $boolQuery->addMust($nested);
 
         return $boolQuery;

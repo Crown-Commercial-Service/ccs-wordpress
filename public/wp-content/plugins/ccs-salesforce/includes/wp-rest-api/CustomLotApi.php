@@ -103,6 +103,7 @@ class CustomLotApi
             'page' => $page == 0 ? 1 : $page,
             'framework_title' => $frameworkData['title'],
             'framework_rm_number' => $frameworkData['rm_number'],
+            'lot_description' => $lotData['description'],
             'lot_title' => $lotData['title'],
             'lot_number' => $lotData['lot_number'],
         ];

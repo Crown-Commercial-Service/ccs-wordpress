@@ -23,8 +23,8 @@ header("Access-Control-Allow-Headers: X-Requested-With");
 $searchClient = new SupplierSearchClient();
 $facetDataResolver = new FacetDataResolver();
 
-
 // Set empty vars
+$dataToReturn = [];
 $filters = [];
 $keyword = '';
 $page = 0;
@@ -44,21 +44,14 @@ if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
 
 if (isset($_GET['framework']) && !empty($_GET['framework'])) {
     $frameworkRmNumber = filter_var($_GET['framework'], FILTER_SANITIZE_STRING);
-    $filters[] = [
-      'field' => 'live_frameworks.rm_number',
-      'value' => $frameworkRmNumber
-    ];
-
+    $filters['live_frameworks']['rm_number'] = $frameworkRmNumber;
     $lotRepository = new LotRepository();
     $lots = $lotRepository->findFrameworkLotsAndReturnAllFields($frameworkRmNumber);
 }
 
 if (isset($_GET['lot']) && !empty($_GET['lot'])) {
     $lotId = filter_var($_GET['lot'], FILTER_SANITIZE_STRING);
-    $filters[] = [
-      'field' => 'live_frameworks.lot_ids',
-      'value' => $lotId
-    ];
+    $filters['live_frameworks']['lot_ids'] = $lotId;
 }
 
 // Run the full query we want the results for
@@ -75,11 +68,10 @@ if (isset($lots))
 }
 $buckets = $facetDataResolver->prepareFacetsForView($facets);
 
-$supplierDataToReturn = [];
 /** @var \Elastica\Result $supplier */
 foreach ($suppliers as $supplier)
 {
-    $supplierDataToReturn[] = $supplier->getSource();
+    $dataToReturn[] = $supplier->getSource();
 }
 
 $meta = [
@@ -92,5 +84,5 @@ $meta = [
 
 header('Content-Type: application/json');
 
-echo json_encode(['meta' => $meta, 'results' => $supplierDataToReturn]);
+echo json_encode(['meta' => $meta, 'results' => $dataToReturn]);
 exit;

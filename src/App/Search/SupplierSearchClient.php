@@ -5,6 +5,7 @@ namespace App\Search;
 use App\Model\ModelInterface;
 use App\Model\Supplier;
 use App\Search\Mapping\SupplierMapping;
+use App\Utils\StringHelpers;
 use Elastica\Aggregation\Nested;
 use Elastica\Aggregation\Terms;
 use Elastica\Document;
@@ -75,6 +76,7 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
           'id'                        => $supplier->getId(),
           'salesforce_id'             => $supplier->getSalesforceId(),
           'name'                      => $supplier->getName(),
+          'encoded_name'              => StringHelpers::slugify($supplier->getName()),
           'duns_number'               => $supplier->getDunsNumber(),
           'trading_name'              => $supplier->getTradingName(),
           'alternative_trading_names' => $supplier->getAlternativeTradingNames(),

@@ -20,6 +20,7 @@ class SupplierMapping extends AbstractMapping
           'raw' => ['type' => 'keyword']
         ]
       ],
+      'encoded_name'              => ['type' => 'text'],
       'duns_number'               => ['type' => 'keyword'],
       'trading_name'              => ['type' => 'text'],
       'alternative_trading_names' => ['type' => 'text'],

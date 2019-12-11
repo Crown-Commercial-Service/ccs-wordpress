@@ -38,8 +38,7 @@ class FacetDataResolver {
             $returnData[$framework['key']] = [
               'title'     => $framework['key'],
               'doc_count' => $framework['doc_count'],
-              'rm_number' => $framework['rm_number']['buckets'][0]['key'
-              ]
+              'rm_number' => strtoupper($framework['rm_number']['buckets'][0]['key'])
             ];
         }
 

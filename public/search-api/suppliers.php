@@ -59,7 +59,7 @@ $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);
 $suppliers = $resultSet->getResults();
 
 // We then want to do a separate query to get the facet results we require
-$facetSearch = $searchClient->queryByKeyword($keyword, $page, $limit);
+$facetSearch = $searchClient->queryByKeyword('', $page, $limit);
 $facets = $facetSearch->getAggregations();
 // If the lots facet is set, let's add them in
 if (isset($lots))

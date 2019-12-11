@@ -9,6 +9,11 @@
  * @since 1.0.0
  */
 
+
+$framework_id = get_the_ID();
+
+var_dump(ccs_get_framework_title($framework_id));
+
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
@@ -18,7 +23,7 @@
             printf( '<span class="sticky-post">%s</span>', _x( 'Featured', 'post', 'twentynineteen' ) );
         }
         if ( is_singular() ) :
-            the_title( '<h1 class="entry-title">', '</h1>' );
+            echo '<h1 class="entry-title">'. ccs_get_framework_title($framework_id) . '</h1>';
         else :
             the_title( sprintf( '<h2 class="entry-title"><a href="%s" rel="bookmark">', esc_url( get_permalink() ) ), '</a></h2>' );
         endif;
@@ -40,10 +45,19 @@
                         ),
                     )
                 ),
-                get_the_title()
+                ccs_get_framework_title($framework_id)
             )
         );
         ?>
+
+        <?php echo ccs_get_framework_description($framework_id); ?>
+
+        <?php if(!empty(get_field('framework_summary'))): ?>
+            <div class="framework-summary" id="framework-summary">
+                <?= get_field('framework_summary'); ?>
+            </div>
+        <?php endif; ?>
+
 
         <?php if(!empty(get_field('framework_updates'))): ?>
             <div class="accordion-title" data-associated-accordion="framework-updates">

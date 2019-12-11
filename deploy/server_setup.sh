@@ -87,6 +87,19 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" \
         /etc/logrotate.d/
 
+    echo "> > chown'ing php config file..."
+    sudo chown root:root \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/99-custom.ini"
+
+    echo "> > chmod'ing php config file..."
+    sudo chmod 644 \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/99-custom.ini"
+
+    echo "> > Moving php config file..."
+    sudo mv -f \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/99-custom.ini" \
+        /etc/php.d/
+
     if [ "$APPLICATION_NAME" == "$IMPORT_APP_NAME" ]; then
         echo "> Installing import-specific wp_import process..."
 
@@ -117,11 +130,6 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
             "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/httpd.conf" \
             /etc/httpd/conf/httpd.conf
     fi
-
-    echo "> Moving custom PHP directives..."
-    sudo mv -f \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/99-custom.ini" \
-        /etc/php.d/99-custom.ini
 
     echo "> > Marking first deployment tasks as completed..."
     sudo touch "$FIRST_RUN_PATH"

@@ -118,6 +118,11 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
             /etc/httpd/conf/httpd.conf
     fi
 
+    echo "> Moving custom PHP directives..."
+    sudo mv -f \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/99-custom.ini" \
+        /etc/php.d/99-custom.ini
+
     echo "> > Marking first deployment tasks as completed..."
     sudo touch "$FIRST_RUN_PATH"
 fi

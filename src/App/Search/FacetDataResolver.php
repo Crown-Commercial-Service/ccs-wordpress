@@ -59,7 +59,7 @@ class FacetDataResolver {
 
         /** @var \App\Model\Lot $lot */
         foreach ($lots as $lot) {
-            $returnData[$lot->getTitle()] = [
+            $returnData[$lot->getLotNumber()] = [
               'title'       => $lot->getTitle(),
               'id'          => $lot->getId(),
               'description' => $lot->getDescription(),
@@ -67,7 +67,9 @@ class FacetDataResolver {
             ];
         }
 
-        ksort($returnData);
+        usort($returnData, function($a, $b) {
+            return strnatcasecmp($a['lot_number'], $b['lot_number']);
+        });
 
         return $returnData;
     }

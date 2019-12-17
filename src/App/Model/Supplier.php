@@ -314,6 +314,7 @@ class Supplier extends AbstractModel {
             'postcode'            => $this->getPostcode(),
             'website'             => $this->getWebsite(),
             'trading_name'        => $this->getTradingName(),
+
         ];
     }
 

@@ -81,6 +81,7 @@ class CustomSupplierApi
         $supplierRepository = new SupplierRepository();
 
         //Retrieve the supplier data
+        /** @var \App\Model\Supplier $supplier */
         $supplier = $supplierRepository->findLiveSupplier($supplierId);
 
         if ($supplier === false) {
@@ -95,6 +96,8 @@ class CustomSupplierApi
         $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
         $frameworksData = [];
 
+        $alternativeTradingNames = [];
+
         if ($frameworks !== false) {
             foreach ($frameworks as $index => $framework) {
                 $frameworksData[$index] = $framework->toArray();
@@ -108,6 +111,9 @@ class CustomSupplierApi
                         $currentLotData = $lot->toArray();
                         if ($lotSupplier = $lotSupplierRepository->findByLotIdAndSupplierId($lot->getSalesforceId(), $supplier->getSalesforceId()))
                         {
+                            if (!empty($lotSupplier->getTradingName())) {
+                                $alternativeTradingNames[$lotSupplier->getTradingName()] = $lotSupplier->getTradingName();
+                            }
                             $currentLotData['supplier_contact_name'] = $lotSupplier->getContactName();
                             $currentLotData['supplier_contact_email'] = $lotSupplier->getContactEmail();
                             $currentLotData['supplier_trading_name'] = $lotSupplier->getTradingName();
@@ -126,9 +132,16 @@ class CustomSupplierApi
             }
         }
 
+        if (!empty($supplier->getTradingName())) {
+            $alternativeTradingNames[$supplier->getTradingName()] = $supplier->getTradingName();
+        }
+
+        $supplier->setAlternativeTradingNames($alternativeTradingNames);
+
         //Populate the framework array with data
         $supplierData = $supplier->toArray();
         $supplierData['live_frameworks'] = $frameworksData;
+        $supplierData['alternative_trading_names'] = $alternativeTradingNames;
 
         header('Content-Type: application/json');
         return rest_ensure_response($supplierData);

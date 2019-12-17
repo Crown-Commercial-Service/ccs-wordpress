@@ -331,11 +331,17 @@ class Import
             $this->timeRemaining = round((($elapsedTime / $index) * count($frameworks) - $index) / 60,
               0);
 
+            // Import the framework
             $this->importSingleFramework($framework);
+
+            // Update the search index for this framework
+            $this->updateFrameworkSearchIndexWithSingleFramework($framework);
         }
 
         //Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
+
+        $this->updateSupplierSearchIndex();
 
         //Update framework titles in WordPress to include the RM number
         $this->updateFrameworkTitleInWordpress();
@@ -752,6 +758,9 @@ class Import
         return $wordpressId;
     }
 
+    /**
+     * Update the entire ElasticSearch search index for Frameworks
+     */
     public function updateFrameworkSearchIndex() {
         WP_CLI::success('Beginning Search index update on Frameworks.');
 
@@ -769,6 +778,9 @@ class Import
         return;
     }
 
+    /**
+     * @param \App\Model\Framework $framework
+     */
     protected function updateFrameworkSearchIndexWithSingleFramework(Framework $framework) {
         WP_CLI::success('Updating Framework index for Framework ID: ' . $framework->getSalesforceId());
 
@@ -781,6 +793,9 @@ class Import
         $this->frameworkSearchClient->createOrUpdateDocument($framework, $lots);
     }
 
+    /**
+     * Update the entire ElasticSearch search index for Suppliers
+     */
     public function updateSupplierSearchIndex() {
         WP_CLI::success('Beginning Search index update on Suppliers.');
 

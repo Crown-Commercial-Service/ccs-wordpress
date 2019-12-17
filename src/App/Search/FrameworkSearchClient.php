@@ -141,6 +141,9 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
 
 
         if (!empty($keyword)) {
+
+            $keyword = $this->checkKeywordAgainstSynonyms($keyword);
+
             // Create a multimatch query so we can search multiple fields
             $multiMatchQuery = new Query\MultiMatch();
             $multiMatchQuery->setQuery($keyword );

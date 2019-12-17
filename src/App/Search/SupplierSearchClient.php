@@ -160,16 +160,10 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
 
             $boolQuery->setMinimumShouldMatch(1);
         }
-        
-
 
         $boolQuery = $this->addSearchFilters($boolQuery, $filters);
 
-
         $query = new Query($boolQuery);
-
-//        print_r($query->toArray());
-//        die();
 
         $query->setSize($limit);
         $query->setFrom($this->translatePageNumberAndLimitToStartNumber($page, $limit));

@@ -42,17 +42,35 @@ if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
     $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_STRING);
 }
 
+$nestedLiveFrameworkFilterData = [];
+
 if (isset($_GET['framework']) && !empty($_GET['framework'])) {
     $frameworkRmNumber = filter_var($_GET['framework'], FILTER_SANITIZE_STRING);
-    $filters['live_frameworks']['rm_number'] = $frameworkRmNumber;
+    $nestedLiveFrameworkFilterData[] = [
+      'field' => 'live_frameworks.rm_number',
+      'value' => $frameworkRmNumber
+    ];
     $lotRepository = new LotRepository();
     $lots = $lotRepository->findFrameworkLotsAndReturnAllFields($frameworkRmNumber);
 }
 
 if (isset($_GET['lot']) && !empty($_GET['lot'])) {
     $lotId = filter_var($_GET['lot'], FILTER_SANITIZE_STRING);
-    $filters['live_frameworks']['lot_ids'] = $lotId;
+    $nestedLiveFrameworkFilterData[] = [
+      'field' => 'live_frameworks.lot_ids',
+      'value' => $lotId
+    ];
 }
+
+if (!empty($nestedLiveFrameworkFilterData))
+{
+    $filters['live_frameworks'] = [
+      'field'     => 'live_frameworks',
+      'condition' => 'AND',
+      'nested'    => $nestedLiveFrameworkFilterData
+    ];
+}
+
 
 // Run the full query we want the results for
 $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);

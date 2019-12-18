@@ -32,15 +32,44 @@ if (isset($_GET['keyword'])) {
     $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_STRING);
 }
 
-if (isset($_GET['category'])) {
-    $category = filter_var($_GET['category'], FILTER_SANITIZE_STRING);
-    $filters['category'] = $category;
+if (isset($_GET['status'])) {
+    if (!is_array(($_GET['status']))) {
+        $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
+    } else {
+        foreach ($_GET['status'] as $status) {
+            if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'EXPIRED') {
+                $status = 'Expired - Data Still Received';
+            } else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'LIVE') {
+                $status = 'Live';
+            }
+            $statuses[] = filter_var($status, FILTER_SANITIZE_STRING);
+        }
+    }
+
+    $filters['status'] = [
+      'field'     => 'status',
+      'condition' => 'OR',
+      'value'     => $statuses
+    ];
+
 }
 
 if (isset($_GET['pillar'])) {
-    $pillar = filter_var($_GET['pillar'], FILTER_SANITIZE_STRING);
-    $filters['pillar'] = $pillar;
+    if (!is_array(($_GET['pillar']))) {
+        $categories = filter_var($_GET['pillar'], FILTER_SANITIZE_STRING);
+    } else {
+        foreach ($_GET['pillar'] as $category) {
+            $categories[] = filter_var($category, FILTER_SANITIZE_STRING);
+        }
+    }
+
+    $filters['pillar'] = [
+      'field'     => 'pillar',
+      'condition' => 'OR',
+      'value'     => $categories
+    ];
 }
+
 
 $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);
 $frameworks = $resultSet->getResults();

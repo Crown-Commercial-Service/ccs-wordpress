@@ -167,7 +167,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
             $rmNumberQuery = new Query\Wildcard('rm_number.raw', $keyword.'*', 2);
             $boolQuery->addShould($rmNumberQuery);
 
-            $rmNumberQuery = new Query\Wildcard('rm_number_numerical', $keyword.'*', 2);
+            $rmNumberQuery = new Query\Wildcard('rm_number_numerical', preg_replace("/[^0-9]/", "", $keyword).'*', 2);
             $boolQuery->addShould($rmNumberQuery);
 
             // Look for the RM Number without 'RM'

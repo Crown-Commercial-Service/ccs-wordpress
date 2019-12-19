@@ -1,17 +1,4 @@
-# Dev
-0 2 * * * ec2-user dms -s 81fb82ea9a /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 10 * * * ec2-user dms -s 2e46ba9233 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 12 * * * ec2-user dms -s 50b5532fe8 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 15 * * * ec2-user dms -s 440f98bcec /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-
-# UAT
-0 2 * * * ec2-user dms -s 2d4405212f /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 10 * * * ec2-user dms -s 470a61dd28 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 12 * * * ec2-user dms -s 77fb7b606e /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 15 * * * ec2-user dms -s 23fc9da0cf /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-
-# Prod
-0 2 * * * ec2-user dms -s c11e511f02 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 10 * * * ec2-user dms -s 1568967162 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 12 * * * ec2-user dms -s 5b9cb955aa /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 15 * * * ec2-user dms -s d47b119e1f /home/ec2-user/wp_import.sh | logger -t 'wp_import'
+0 2 * * * ec2-user wp_import_dms.sh import_1
+0 10 * * * ec2-user wp_import_dms.sh import_2
+0 12 * * * ec2-user wp_import_dms.sh import_3
+0 15 * * * ec2-user wp_import_dms.sh import_4

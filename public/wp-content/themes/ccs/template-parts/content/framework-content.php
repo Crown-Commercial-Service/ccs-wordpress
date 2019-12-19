@@ -12,8 +12,6 @@
 
 $framework_id = get_the_ID();
 
-var_dump(ccs_get_framework_title($framework_id));
-
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
@@ -50,7 +48,7 @@ var_dump(ccs_get_framework_title($framework_id));
         );
         ?>
 
-        <?php echo ccs_get_framework_description($framework_id); ?>
+        <?php //echo ccs_get_framework_description($framework_id); ?>
 
         <?php if(!empty(get_field('framework_summary'))): ?>
             <div class="framework-summary" id="framework-summary">

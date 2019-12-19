@@ -21,6 +21,14 @@ fi
 echo "> Updating system software..."
 sudo yum update -y
 
+echo "> Set timezone..."
+    sudo -rm -f /etc/sysconfig/clock
+    sudo mv -f \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/clock" \
+        /etc/sysconfig/clock
+    sudo ln -sf /usr/share/zoneinfo/Europe/London /etc/localtime
+
+
 if [ ! -e "$FIRST_RUN_PATH" ]; then
     echo "> Running once-only deployment tasks..."
 

@@ -78,6 +78,9 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
           'category'            => $framework->getCategory(),
           'status'              => $framework->getStatus(),
           'published_status'    => $framework->getPublishedStatus(),
+          'benefits'            => $framework->getBenefits(),
+          'how_to_buy'          => $framework->getHowToBuy(),
+          'keywords'            => $framework->getKeywords(),
         ];
 
         $lotData = [];
@@ -142,49 +145,54 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
 
         if (!empty($keyword)) {
 
+            $keywordBool = new Query\BoolQuery();
+
             $keyword = $this->checkKeywordAgainstSynonyms($keyword);
 
             // Create a multimatch query so we can search multiple fields
             $multiMatchQuery = new Query\MultiMatch();
             $multiMatchQuery->setQuery($keyword );
-            $multiMatchQuery->setFields(['description', 'summary']);
+            $multiMatchQuery->setFields(['description^2', 'summary', 'benefits', 'how_to_buy', 'keywords^2']);
             $multiMatchQuery->setFuzziness(1);
-            $boolQuery->addShould($multiMatchQuery);
+            $keywordBool->addShould($multiMatchQuery);
 
             // Add a boost to the title
             $multiMatchQueryForNameField = new Query\MultiMatch();
             $multiMatchQueryForNameField->setQuery($keyword);
             $multiMatchQueryForNameField->setFields(['title^3']);
             $multiMatchQueryForNameField->setFuzziness(1);
-            $boolQuery->addShould($multiMatchQueryForNameField);
+            $keywordBool->addShould($multiMatchQueryForNameField);
 
             // RM Number search
             $queryForNumericalRmNumber = new Query\MultiMatch();
             $queryForNumericalRmNumber->setQuery($keyword);
             $queryForNumericalRmNumber->setFields(['rm_number^2', 'rm_number.raw^2']);
-            $boolQuery->addShould($queryForNumericalRmNumber);
+            $keywordBool->addShould($queryForNumericalRmNumber);
 
             $rmNumberQuery = new Query\Wildcard('rm_number.raw', $keyword.'*', 2);
-            $boolQuery->addShould($rmNumberQuery);
+            $keywordBool->addShould($rmNumberQuery);
 
-            $rmNumberQuery = new Query\Wildcard('rm_number_numerical', preg_replace("/[^0-9]/", "", $keyword).'*', 2);
-            $boolQuery->addShould($rmNumberQuery);
+            $number = preg_replace("/[^0-9]/", "", $keyword);
+            if (!empty($number))
+            {
+                $rmNumberQuery = new Query\Wildcard('rm_number_numerical', $number.'*', 2);
+                $keywordBool->addShould($rmNumberQuery);
+            }
 
             // Look for the RM Number without 'RM'
             $queryForNumericalRmNumber = new Query\MultiMatch();
             $queryForNumericalRmNumber->setQuery($keyword.'*');
             $queryForNumericalRmNumber->setFields(['rm_number_numerical^3']);
-            $boolQuery->addShould($queryForNumericalRmNumber);
+            $keywordBool->addShould($queryForNumericalRmNumber);
 
-            $boolQuery->setMinimumShouldMatch(1);
+            $keywordBool->setMinimumShouldMatch(1);
+
+            $boolQuery->addMust($keywordBool);
         }
 
         $boolQuery = $this->addSearchFilters($boolQuery, $filters);
 
         $query = new Query($boolQuery);
-        
-//        print_r($query->toArray());
-//        die();
 
         $query->setSize($limit);
         $query->setFrom($this->translatePageNumberAndLimitToStartNumber($page, $limit));

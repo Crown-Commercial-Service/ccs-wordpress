@@ -23,7 +23,10 @@ class FrameworkMapping extends AbstractMapping
       'rm_number_numerical' => ['type' => 'keyword'],
       'type'          => ['type' => 'keyword'],
       'description'   => ['type' => 'text', 'analyzer' => 'english_analyzer'],
+      'benefits'      => ['type' => 'text', 'analyzer' => 'english_analyzer'],
+      'how_to_buy'    => ['type' => 'text', 'analyzer' => 'english_analyzer'],
       'summary'       => ['type' => 'text', 'analyzer' => 'english_analyzer'],
+      'keywords'      => ['type' => 'text', 'analyzer' => 'english_analyzer'],
       'title'         => [
         'type'     => 'text',
         'analyzer' => 'english_analyzer',

@@ -94,6 +94,7 @@ class CustomSupplierApi
         // Find all frameworks for the retrieved supplier
         $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
         $frameworksData = [];
+        $supplierTradingNames = [];
 
         if ($frameworks !== false) {
             foreach ($frameworks as $index => $framework) {
@@ -112,6 +113,13 @@ class CustomSupplierApi
                             $currentLotData['supplier_contact_email'] = $lotSupplier->getContactEmail();
                             $currentLotData['supplier_trading_name'] = $lotSupplier->getTradingName();
                             $currentLotData['supplier_website_contact'] = $lotSupplier->isWebsiteContact();
+
+                            // If the trading name isn't empty, then add it
+                            // to the array of trading names for the supplier
+                            if(!empty($currentLotData['supplier_trading_name'])) {
+                                $supplierTradingNames[] = $currentLotData['supplier_trading_name'];
+                            }
+
                         }  else {
                             $currentLotData['supplier_contact_name'] = null;
                             $currentLotData['supplier_contact_email'] = null;
@@ -126,9 +134,12 @@ class CustomSupplierApi
             }
         }
 
+        $supplierTradingNamesFinal = $this->clean_supplier_names($supplierTradingNames);
+
         //Populate the framework array with data
         $supplierData = $supplier->toArray();
         $supplierData['live_frameworks'] = $frameworksData;
+        $supplierData['trading_names'] = $supplierTradingNamesFinal;
 
         header('Content-Type: application/json');
         return rest_ensure_response($supplierData);
@@ -237,5 +248,24 @@ class CustomSupplierApi
         }
 
         return $suppliersData;
+    }
+
+
+    /**
+     * Reformat the trading names array so that it doesn't have duplicates and
+     * so that it's compatible with the frontend system
+     *
+     * @param $tradingNames
+     * @return array
+     */
+    private function clean_supplier_names($tradingNames) {
+        // remove duplicates from the trading_names array
+        $tradingNamesUnformatted = array_unique($tradingNames);
+        $tradingNamesFinal = [];
+        foreach($tradingNamesUnformatted as $name) {
+            $tradingNamesFinal[]['name'] = $name;
+        }
+
+        return $tradingNamesFinal;
     }
 }

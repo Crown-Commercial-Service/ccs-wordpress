@@ -299,7 +299,7 @@ class Import
         // Lets generate an access token
         $this->generateSalesforceToken();
 
-        $this->processTempData();
+//        $this->processTempData();
         $this->startTime = microtime(true);
 
         // Get all frameworks from Salesforce
@@ -333,14 +333,13 @@ class Import
 
             // Import the framework
             $this->importSingleFramework($framework);
-
-            // Update the search index for this framework
-            $this->updateFrameworkSearchIndexWithSingleFramework($framework);
         }
 
         //Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
 
+        // Update elasticsearch
+        $this->updateFrameworkSearchIndex();
         $this->updateSupplierSearchIndex();
 
         //Update framework titles in WordPress to include the RM number

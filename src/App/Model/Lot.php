@@ -44,7 +44,6 @@ class Lot extends AbstractModel {
      * @var \DateTime
      */
     protected $expiryDate;
-
     /**
      * @var bool
      */

@@ -14,8 +14,12 @@ namespace CCS\SFI;
 // Composer
 require __DIR__ . '/../../../../../vendor/autoload.php';
 
+use App\Model\Framework;
+use App\Search\FrameworkSearchClient;
+use App\Search\SupplierSearchClient;
 use App\Services\Database\DatabaseConnection;
 use App\Services\Logger\ImportLogger;
+use App\Search\AbstractSearchClient;
 use \WP_CLI;
 
 use App\Model\LotSupplier;
@@ -117,13 +121,23 @@ class Import
     protected $lockFactory;
 
     /**
+     * @var \App\Search\FrameworkSearchClient
+     */
+    protected $frameworkSearchClient;
+
+    /**
+     * @var \App\Search\SupplierSearchClient
+     */
+    protected $supplierSearchClient;
+
+    /**
      * Import constructor.
      *
      * Lock system only allows one instance of this class to run at any one time
      */
     public function __construct()
     {
-        // Initialise lock 
+        // Initialise lock
         $store = new FlockStore(sys_get_temp_dir());
         $this->lockFactory = new LockFactory($store);
 
@@ -135,6 +149,8 @@ class Import
         $this->supplierRepository = new SupplierRepository();
         $this->lotSupplierRepository = new LotSupplierRepository();
         $this->dbConnection = new DatabaseConnection();
+        $this->supplierSearchClient = new SupplierSearchClient();
+        $this->frameworkSearchClient = new FrameworkSearchClient();
     }
 
     /**
@@ -259,10 +275,14 @@ class Import
         }
 
         // Import this Framework
-        $this->importSingleFramework($framework);
+        $framework = $this->importSingleFramework($framework);
+
+        $this->updateFrameworkSearchIndexWithSingleFramework($framework);
 
         // Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
+
+        $this->updateSupplierSearchIndex();
 
         // Update framework titles in WordPress to include the RM number
         $this->updateFrameworkTitleInWordpress();
@@ -281,6 +301,7 @@ class Import
         $lock->release();
 
         return $response;
+
     }
 
     /**
@@ -338,11 +359,16 @@ class Import
             // What is the estimated remaining time in minutes.
             $this->timeRemaining = round((($elapsedTime/$index)*count($frameworks)-$index)/60, 0);
 
+            // Import the framework
             $this->importSingleFramework($framework);
         }
 
         //Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
+
+        // Update elasticsearch
+        $this->updateFrameworkSearchIndex();
+        $this->updateSupplierSearchIndex();
 
         //Update framework titles in WordPress to include the RM number
         $this->updateFrameworkTitleInWordpress();
@@ -509,6 +535,9 @@ class Import
             }
 
         }
+
+        return $framework;
+
     }
 
     /**
@@ -745,6 +774,102 @@ class Import
         return $wordpressId;
     }
 
+    /**
+     * Update the entire ElasticSearch search index for Frameworks
+     */
+    public function updateFrameworkSearchIndex() {
+        WP_CLI::success('Beginning Search index update on Frameworks.');
+
+        $frameworks = $this->frameworkRepository->findAll();
+
+        WP_CLI::success(count($frameworks) . ' Frameworks found');
+
+        foreach ($frameworks as $framework)
+        {
+            $this->updateFrameworkSearchIndexWithSingleFramework($framework);
+        }
+
+        WP_CLI::success('Operation completed successfully.');
+
+        return;
+    }
+
+    /**
+     * @param \App\Model\Framework $framework
+     */
+    protected function updateFrameworkSearchIndexWithSingleFramework(Framework $framework) {
+        WP_CLI::success('Updating Framework index for Framework ID: ' . $framework->getSalesforceId());
+
+        $lots = $this->lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');
+
+        if (!$lots) {
+            $lots = [];
+        }
+
+        $this->frameworkSearchClient->createOrUpdateDocument($framework, $lots);
+    }
+
+    /**
+     * Update the entire ElasticSearch search index for Suppliers
+     */
+    public function updateSupplierSearchIndex() {
+        WP_CLI::success('Beginning Search index update on Suppliers.');
+
+        $suppliers = $this->supplierRepository->findAll();
+
+        WP_CLI::success(count($suppliers) . ' Suppliers found');
+
+        /** @var \App\Model\Supplier $supplier */
+        foreach ($suppliers as $supplier) {
+
+            $liveFrameworks = $this->frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
+
+            /** @var \App\Model\Framework $liveFramework */
+            if (!empty($liveFrameworks))
+            {
+                foreach ($liveFrameworks as $liveFramework)
+                {
+                    $lots = $this->lotRepository->findAllByFrameworkIdSupplierId($liveFramework->getSalesforceId(), $supplier->getSalesforceId());
+                    $liveFramework->setLots($lots);
+                }
+            }
+
+            $alternativeTradingNames = [];
+            $lotSuppliers = $this->lotSupplierRepository->findAllById($supplier->getSalesforceId(), 'supplier_id');
+
+            if (!empty($lotSuppliers))
+            {
+                /** @var LotSupplier $lotSupplier */
+                foreach ($lotSuppliers as $lotSupplier)
+                {
+                    if (!empty($lotSupplier->getTradingName())) {
+                        $alternativeTradingNames[$lotSupplier->getTradingName()] = $lotSupplier->getTradingName();
+                    }
+                }
+
+                if (!empty($supplier->getTradingName())) {
+                    $alternativeTradingNames[$supplier->getTradingName()] = $supplier->getTradingName();
+                }
+
+                $supplier->setAlternativeTradingNames(array_values($alternativeTradingNames));
+            }
+
+
+            if (!$liveFrameworks) {
+                // Remove Supplier from index
+                $this->supplierSearchClient->removeDocument($supplier);
+            } else {
+                // Either create or update Supplier in index
+                $this->supplierSearchClient->createOrUpdateDocument($supplier, $liveFrameworks);
+            }
+
+        }
+
+        WP_CLI::success('Operation completed successfully.');
+
+        return;
+    }
+
 
     /**
      * Check if a supplier has any live frameworks
@@ -857,7 +982,6 @@ class Import
 
         return $lotWordpressId;
     }
-
 
 
     /**

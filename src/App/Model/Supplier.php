@@ -53,10 +53,14 @@ class Supplier extends AbstractModel {
      */
     protected $tradingName;
     /**
+     * @var array
+     */
+    protected $alternativeTradingNames;
+    /**
      * @var bool
      */
     protected $onLiveFrameworks = false;
-
+    
     /**
      * @return string
      */
@@ -270,6 +274,24 @@ class Supplier extends AbstractModel {
     public function setOnLiveFrameworks(?bool $onLiveFrameworks): Supplier
     {
         $this->onLiveFrameworks = $onLiveFrameworks;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAlternativeTradingNames(): ?array
+    {
+        return $this->alternativeTradingNames;
+    }
+
+    /**
+     * @param array $alternativeTradingNames
+     * @return \App\Model\Supplier
+     */
+    public function setAlternativeTradingNames(array $alternativeTradingNames): Supplier {
+        $this->alternativeTradingNames = $alternativeTradingNames;
+
         return $this;
     }
 

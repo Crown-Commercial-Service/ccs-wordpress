@@ -328,6 +328,21 @@ class Framework extends AbstractModel {
     }
 
     /**
+     * @param array $lots
+     */
+    public function getLotIds(): ?array
+    {
+        $ids = [];
+        /** @var \App\Model\Lot $lot */
+        foreach ($this->getLots() as $lot)
+        {
+            $ids[] = $lot->getId();
+        }
+
+        return $ids;
+    }
+
+    /**
      * @return string
      */
     public function getHowToBuy(): ?string

@@ -112,6 +112,7 @@ class CustomSupplierApi
                             $currentLotData['supplier_contact_name'] = $lotSupplier->getContactName();
                             $currentLotData['supplier_contact_email'] = $lotSupplier->getContactEmail();
                             $currentLotData['supplier_trading_name'] = $lotSupplier->getTradingName();
+                            $currentLotData['supplier_website_contact'] = $lotSupplier->isWebsiteContact();
 
                             // If the trading name isn't empty, then add it
                             // to the array of trading names for the supplier
@@ -119,7 +120,6 @@ class CustomSupplierApi
                                 $supplierTradingNames[] = $currentLotData['supplier_trading_name'];
                             }
 
-                            $currentLotData['supplier_website_contact'] = $lotSupplier->isWebsiteContact();
                         }  else {
                             $currentLotData['supplier_contact_name'] = null;
                             $currentLotData['supplier_contact_email'] = null;
@@ -138,8 +138,8 @@ class CustomSupplierApi
 
         //Populate the framework array with data
         $supplierData = $supplier->toArray();
-        $supplierData['trading_names'] = $supplierTradingNamesFinal;
         $supplierData['live_frameworks'] = $frameworksData;
+        $supplierData['trading_names'] = $supplierTradingNamesFinal;
 
         header('Content-Type: application/json');
         return rest_ensure_response($supplierData);

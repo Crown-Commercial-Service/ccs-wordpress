@@ -35,4 +35,7 @@ vendor/*
 # Account for plugins that include a vendor directory but no composer.json file
 !public/wp-content/plugins/**/vendor
 
+public/wp-content/themes/twentynineteen/package-lock.json
+public/wp-content/themes/twentytwenty/package-lock.json
+
 .idea

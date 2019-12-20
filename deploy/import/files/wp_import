@@ -1,4 +1,4 @@
-0 1 * * * ec2-user /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 9 * * * ec2-user /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 11 * * * ec2-user /home/ec2-user/wp_import.sh | logger -t 'wp_import'
-0 14 * * * ec2-user /home/ec2-user/wp_import.sh | logger -t 'wp_import'
+0 2 * * * ec2-user dms -s 9097b15a40 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
+0 10 * * * ec2-user dms -s 9097b15a40 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
+0 12 * * * ec2-user dms -s 9097b15a40 /home/ec2-user/wp_import.sh | logger -t 'wp_import'
+0 15 * * * ec2-user dms -s 9097b15a40 /home/ec2-user/wp_import.sh | logger -t 'wp_import'

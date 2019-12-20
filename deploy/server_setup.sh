@@ -111,6 +111,11 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
         sudo mv -f \
             "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/wp_import" \
             /etc/cron.d/
+
+        echo "> Installing Dead Mans Snitch field agent..."
+        sudo curl -O https://bin.equinox.io/c/kToLfSsFgCw/field-agent-stable-linux-amd64.tgz
+        sudo tar zxvf field-agent-stable-linux-amd64.tgz -C /usr/local/bin
+
     else
         echo "> Moving cms-specific httpd.conf..."
         sudo mv -f \

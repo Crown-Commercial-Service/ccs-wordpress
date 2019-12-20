@@ -19,7 +19,7 @@ class CustomLotApi
         if (isset($request['limit'])) {
             $limit = (int)$request['limit'];
         }
-        $limit = $limit ?? 4;
+        $limit = $limit ?? 20;
 
         if (isset($request['page'])) {
             $page = (int)$request['page'];

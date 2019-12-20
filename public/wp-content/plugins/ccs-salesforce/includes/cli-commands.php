@@ -802,6 +802,8 @@ class Import
 
         WP_CLI::success(count($suppliers) . ' Suppliers found');
 
+        $count = 0;
+
         /** @var \App\Model\Supplier $supplier */
         foreach ($suppliers as $supplier) {
 
@@ -844,6 +846,12 @@ class Import
             } else {
                 // Either create or update Supplier in index
                 $this->supplierSearchClient->createOrUpdateDocument($supplier, $liveFrameworks);
+            }
+
+            $count++;
+
+            if ($count % 50 == 0) {
+                WP_CLI::success($count . ' Suppliers imported...');
             }
 
         }

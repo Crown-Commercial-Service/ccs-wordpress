@@ -2,6 +2,7 @@
 
 namespace App\Search;
 
+use App\Model\Framework;
 use App\Model\ModelInterface;
 use App\Model\Supplier;
 use App\Search\Mapping\SupplierMapping;
@@ -89,11 +90,16 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
             /** @var \App\Model\Framework $framework */
             foreach ($relationships as $framework)
             {
+                if (!$this->frameworkShouldBeIndexed($framework))
+                {
+                    continue;
+                }
                 $tempFramework['title'] = $framework->getTitle();
                 $tempFramework['rm_number'] = $framework->getRmNumber();
                 $tempFramework['rm_number_numerical'] = preg_replace("/[^0-9]/", "", $framework->getRmNumber());
                 $tempFramework['end_date'] = !empty($framework->getEndDate()) ? $framework->getEndDate()->format('Y-m-d') : null;
                 $tempFramework['status'] = $framework->getStatus();
+                $tempFramework['type'] = $framework->getType();
                 $tempFramework['lot_ids'] = $framework->getLotIds();
                 $frameworkData[] = $tempFramework;
             }
@@ -175,6 +181,16 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
         $search->setQuery($query);
 
         return $search->search();
+    }
+
+
+    protected function frameworkShouldBeIndexed(Framework $framework) {
+
+        if ($framework->getType() == 'Dynamic purchasing system') {
+            return false;
+        }
+
+        return true;
     }
 
 

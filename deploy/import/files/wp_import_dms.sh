@@ -13,4 +13,5 @@ elif [ "$IMPORT_TIME" == "import_4" ]; then
     export DMS_ID=$DMS_3PM
 fi
 
-dms -s $DMS_ID /home/ec2-user/wp_import.sh | logger -t 'wp_import'
+/usr/local/bin/dms $DMS_ID /home/ec2-user/wp_import.sh | logger -t 'wp_import'
+

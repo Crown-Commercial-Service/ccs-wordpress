@@ -32,6 +32,16 @@ if (isset($_GET['keyword'])) {
     $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_STRING);
 }
 
+if (isset($_GET['category'])) {
+    $category = filter_var($_GET['category'], FILTER_SANITIZE_STRING);
+
+    $filters['category'] = [
+      'field'     => 'category',
+      'condition' => 'AND',
+      'value'     => $category
+    ];
+}
+
 if (isset($_GET['status'])) {
     if (!is_array(($_GET['status']))) {
         $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);

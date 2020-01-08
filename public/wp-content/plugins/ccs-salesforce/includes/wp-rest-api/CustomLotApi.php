@@ -19,7 +19,7 @@ class CustomLotApi
         if (isset($request['limit'])) {
             $limit = (int)$request['limit'];
         }
-        $limit = $limit ?? 4;
+        $limit = $limit ?? 20;
 
         if (isset($request['page'])) {
             $page = (int)$request['page'];
@@ -89,6 +89,13 @@ class CustomLotApi
                     [
                         'supplier_name' => $supplier->getName(),
                         'supplier_id' => $supplier->getId(),
+                        'supplier_phone' => $supplier->getPhoneNumber(),
+                        'supplier_street' => $supplier->getStreet(),
+                        'supplier_city' => $supplier->getCity(),
+                        'supplier_postcode' => $supplier->getPostcode(),
+                        'supplier_website' => $supplier->getWebsite(),
+                        'supplier_contact_name' => $supplier->getContactName(),
+                        'supplier_contact_email' => $supplier->getContactEmail(),
                         'live_frameworks' => $liveFrameworks
                     ];
 
@@ -106,6 +113,7 @@ class CustomLotApi
             'page' => $page == 0 ? 1 : $page,
             'framework_title' => $frameworkData['title'],
             'framework_rm_number' => $frameworkData['rm_number'],
+            'lot_description' => $lotData['description'],
             'lot_title' => $lotData['title'],
             'lot_number' => $lotData['lot_number'],
         ];

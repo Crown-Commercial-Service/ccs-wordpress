@@ -262,6 +262,8 @@ class CustomFrameworkApi
                     [
                         'supplier_name' => $supplier->getName(),
                         'supplier_id' => $supplier->getId(),
+                        'supplier_contact_name' => $supplier->getContactName(),
+                        'supplier_contact_email' => $supplier->getContactEmail(),
                         'live_frameworks' => $liveFrameworks
                     ];
 

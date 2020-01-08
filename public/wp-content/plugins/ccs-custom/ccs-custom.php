@@ -22,6 +22,9 @@ include('library/headless-cms.php');
 include('library/options-page.php');
 include('library/custom-revisionise.php');
 include('library/admin-styles.php');
+include('library/custom-queries.php');
+include('library/restrict-api.php');
+
 //include('library/usersnap.php');
 
 // the following can be used to customise the registration email sent to new users

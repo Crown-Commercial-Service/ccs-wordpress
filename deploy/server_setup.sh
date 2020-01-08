@@ -21,6 +21,14 @@ fi
 echo "> Updating system software..."
 sudo yum update -y
 
+echo "> Set timezone..."
+    sudo -rm -f /etc/sysconfig/clock
+    sudo mv -f \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/clock" \
+        /etc/sysconfig/clock
+    sudo ln -sf /usr/share/zoneinfo/Europe/London /etc/localtime
+
+
 if [ ! -e "$FIRST_RUN_PATH" ]; then
     echo "> Running once-only deployment tasks..."
 
@@ -87,6 +95,19 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" \
         /etc/logrotate.d/
 
+    echo "> > chown'ing php config file..."
+    sudo chown root:root \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/99-custom.ini"
+
+    echo "> > chmod'ing php config file..."
+    sudo chmod 644 \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/99-custom.ini"
+
+    echo "> > Moving php config file..."
+    sudo mv -f \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/99-custom.ini" \
+        /etc/php.d/
+
     if [ "$APPLICATION_NAME" == "$IMPORT_APP_NAME" ]; then
         echo "> Installing import-specific wp_import process..."
 
@@ -111,6 +132,25 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
         sudo mv -f \
             "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/wp_import" \
             /etc/cron.d/
+
+        echo "> Installing Dead Mans Snitch field agent..."
+        sudo curl -O https://bin.equinox.io/c/kToLfSsFgCw/field-agent-stable-linux-amd64.tgz
+        sudo tar zxvf field-agent-stable-linux-amd64.tgz -C /usr/local/bin
+
+echo "> Installing import-specific wp_import cron script..."
+
+        echo "> > chown'ing wp_import_dms.sh..."
+        sudo chown ec2-user:ec2-user "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/wp_import_dms.sh"
+
+        echo "> > chmod'ing wp_import_dms.sh..."
+        sudo chmod 700 "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/wp_import_dms.sh"
+
+        echo "> > Moving wp_import_dms.sh..."
+        sudo mv -f \
+            "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/wp_import_dms.sh" \
+            ~ec2-user/
+
+
     else
         echo "> Moving cms-specific httpd.conf..."
         sudo mv -f \

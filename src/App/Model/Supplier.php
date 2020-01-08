@@ -51,12 +51,24 @@ class Supplier extends AbstractModel {
     /**
      * @var string
      */
+    protected $contactEmail;
+    /**
+     * @var string
+     */
+    protected $contactName;
+    /**
+     * @var string
+     */
     protected $tradingName;
+    /**
+     * @var array
+     */
+    protected $alternativeTradingNames;
     /**
      * @var bool
      */
     protected $onLiveFrameworks = false;
-
+    
     /**
      * @return string
      */
@@ -246,6 +258,41 @@ class Supplier extends AbstractModel {
     }
 
     /**
+     * @return string
+     */
+    public function getContactName(): ?string
+    {
+        return $this->contactName;
+    }
+
+    /**
+     * @param string $contactName
+     * @return string
+     */
+    public function setContactName($contactName): Supplier
+    {
+        $this->contactName = $contactName;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getContactEmail(): ?string
+    {
+        return $this->contactEmail;
+    }
+    /**
+     * @param string $contactEmail
+     * @return string
+     */
+    public function setContactEmail($contactEmail): Supplier
+    {
+        $this->contactEmail = $contactEmail;
+        return $this;
+    }
+
+    /**
      * @param string $tradingName
      * @return Supplier
      */
@@ -270,6 +317,24 @@ class Supplier extends AbstractModel {
     public function setOnLiveFrameworks(?bool $onLiveFrameworks): Supplier
     {
         $this->onLiveFrameworks = $onLiveFrameworks;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAlternativeTradingNames(): ?array
+    {
+        return $this->alternativeTradingNames;
+    }
+
+    /**
+     * @param array $alternativeTradingNames
+     * @return \App\Model\Supplier
+     */
+    public function setAlternativeTradingNames(array $alternativeTradingNames): Supplier {
+        $this->alternativeTradingNames = $alternativeTradingNames;
+
         return $this;
     }
 

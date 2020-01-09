@@ -31,9 +31,15 @@ class component_hero extends project_brick {
 		// REVIEW MICROCOPY
 		// Minimum size required is 1042 pixels wide and 480 pixels tall, however the recommended dimensions are 2084 pixels wide and 960 pixels tall (uploading at these larger dimensions will ensure that retina displays receive a high resolution image). Please note that these hero images are vertically cropped on larger screen sizes - so please try and ensure the focal point of the image is vertically in the middle (as the image is cropped vertically on the center)
 
-		$this->add_field( new acf_fields\text( 'Heading', 'heading', '202001031023b' ));
+		$this->add_field( new acf_fields\text( 'Heading', 'heading', '202001031023b', [
+			'instructions' => 'Keep headings under 65 characters (including spaces) so that they can be displayed for search engine results.',
+			'maxlength' => 65
+		] ));
 		$this->add_field( new acf_fields\wysiwyg( 'Content', 'content', '202001031023c' ));
-		$this->add_field( new acf_fields\text( 'CTA label', 'cta_label', '202001031023d' ));
+		$this->add_field( new acf_fields\text( 'CTA label', 'cta_label', '202001031023d', [
+			'instructions' => 'Keep our lead concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
+			'maxlength' => 140
+		] ));
 		$this->add_field( new acf_fields\text( 'CTA destination', 'cta_destination', '20200108105a', [
 			'instructions' => 'Add a # before the destination name to indicate that this is an anchor link, i.e. a link which takes you to a different part of the same page. The destination name ought to be unique to the page and match the name you give your component.'
 		] ));

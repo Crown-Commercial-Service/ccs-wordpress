@@ -37,7 +37,7 @@ class component_hero extends project_brick {
 		] ));
 		$this->add_field( new acf_fields\wysiwyg( 'Content', 'content', '202001031023c' ));
 		$this->add_field( new acf_fields\text( 'CTA label', 'cta_label', '202001031023d', [
-			'instructions' => 'Keep our lead concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
+			'instructions' => 'Keep the CTA concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
 			'maxlength' => 140
 		] ));
 		$this->add_field( new acf_fields\text( 'CTA destination', 'cta_destination', '20200108105a', [

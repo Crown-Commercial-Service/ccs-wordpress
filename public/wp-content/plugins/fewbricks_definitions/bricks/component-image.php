@@ -24,6 +24,7 @@ class component_image extends project_brick
 	public function set_fields()
 	{
 		$this->add_field(new acf_fields\image( 'Image' , 'image' , '202001031509a' ));
+		$this->add_field(new acf_fields\wysiwyg( 'Caption' , 'caption' , '202001091137a' ));
 	}
 
 	/**

@@ -23,7 +23,10 @@ class component_intro extends project_brick {
 	 */
 	public function set_fields() {
 
-		$this->add_field( new acf_fields\text( 'Heading', 'heading', '202001031433a' ) );
+		$this->add_field( new acf_fields\text( 'Heading', 'heading', '202001031433a', [
+			'instructions' => 'Keep the heading concise and under 200 characters (including spaces).',
+			'maxlength' => 200
+		] ));
 
 		$this->add_field( new acf_fields\wysiwyg( 'Content', 'content', '202001031433b' ) );
 

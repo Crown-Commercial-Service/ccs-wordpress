@@ -122,4 +122,88 @@ function ccs_register_my_cpts() {
     );
 
     register_post_type( "supplier", $args) ;
+
+
+
+    // Whitepaper(s) content type
+    $labels = array(
+        "name" => __('Whitepapers', ''),
+        "singular_name" => __('Whitepaper', ''),
+        "menu_name" => __('Whitepapers', ''),
+        "name_admin_bar" => __('Whitepapers', ''),
+        'add_new'            => __('Add New', 'whitepaper', ''),
+        'add_new_item'       => __('Add New Whitepaper', ''),
+        'new_item'           => __('New Whitepaper', ''),
+        'edit_item'          => __('Edit Whitepaper', ''),
+        'view_item'          => __('View Whitepaper', ''),
+        'all_items'          => __('All Whitepapers', ''),
+        'search_items'       => __('Search Whitepapers', ''),
+        'parent_item_colon'  => __('Parent Whitepaper:', ''),
+        'not_found'          => __('No Whitepapers found.', ''),
+        'not_found_in_trash' => __('No Whitepapers found in Trash.', '')
+    );
+
+    $args = array(
+        "labels" => $labels,
+        "description" => "",
+        "public" => true,
+        "publicly_queryable" => true,
+        "show_ui" => true,
+        "show_in_rest" => true,
+        "rest_base" => "",
+        "has_archive" => true,
+        "show_in_menu" => true,
+        "exclude_from_search" => false,
+        "capability_type" => "whitepaper",
+        "map_meta_cap" => true,
+        "hierarchical" => false,
+        "rewrite" => array("slug" => "whitepapers"),
+        "query_var" => true,
+        "menu_icon" => "dashicons-welcome-learn-more",
+        "supports" => array("title", "excerpt", "revisions", "thumbnail"),
+    );
+
+    register_post_type( "whitepaper", $args) ;
+
+
+
+    // Whitepaper(s) content type
+    $labels = array(
+        "name" => __('Webinars', ''),
+        "singular_name" => __('Webinar', ''),
+        "menu_name" => __('Webinars', ''),
+        "name_admin_bar" => __('Webinars', ''),
+        'add_new'            => __('Add New', 'webinar', ''),
+        'add_new_item'       => __('Add New Webinar', ''),
+        'new_item'           => __('New Webinar', ''),
+        'edit_item'          => __('Edit Webinar', ''),
+        'view_item'          => __('View Webinar', ''),
+        'all_items'          => __('All Webinar', ''),
+        'search_items'       => __('Search Whitepapers', ''),
+        'parent_item_colon'  => __('Parent Whitepaper:', ''),
+        'not_found'          => __('No Whitepapers found.', ''),
+        'not_found_in_trash' => __('No Whitepapers found in Trash.', '')
+    );
+
+    $args = array(
+        "labels" => $labels,
+        "description" => "",
+        "public" => true,
+        "publicly_queryable" => true,
+        "show_ui" => true,
+        "show_in_rest" => true,
+        "rest_base" => "",
+        "has_archive" => true,
+        "show_in_menu" => true,
+        "exclude_from_search" => false,
+        "capability_type" => "webinar",
+        "map_meta_cap" => true,
+        "hierarchical" => false,
+        "rewrite" => array("slug" => "webinars"),
+        "query_var" => true,
+        "menu_icon" => "dashicons-video-alt3",
+        "supports" => array("title", "excerpt", "revisions", "thumbnail"),
+    );
+
+    register_post_type( "webinar", $args) ;
 }

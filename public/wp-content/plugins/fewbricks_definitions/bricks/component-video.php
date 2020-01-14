@@ -24,6 +24,7 @@ class component_video extends project_brick
 	public function set_fields()
 	{
 		$this->add_field(new acf_fields\oembed( 'Video' , 'video' , '202001031510a' ));
+		$this->add_field(new acf_fields\wysiwyg( 'Caption' , 'caption' , '202001131443a' ));
 	}
 
 	/**
@@ -36,7 +37,8 @@ class component_video extends project_brick
 	{
 
 		$data = [
-			'video'  => $this->get_field( 'video' )
+			'video'  => $this->get_field( 'video' ),
+			'caption'  => $this->get_field( 'caption' )
 		];
 
 		return $data;

@@ -77,6 +77,8 @@ $field_group = ( new fewacf\field_group( 'Page Resources', '202001101220a', $loc
  */
 $field_group->add_brick((new bricks\resources_intro('resources_intro', '202001101222b')));
 $field_group->add_brick((new bricks\brochures_list('brochures_list', '202001101634a')));
+$field_group->add_brick((new bricks\whitepapers_list('whitepapers_list', '202001131114a')));
+$field_group->add_brick((new bricks\webinars_list('webinars_list', '202001131712a')));
 
 /*
  * Register the field group

@@ -20,6 +20,16 @@ include('post-types/lot.php');
  */
 include('post-types/supplier.php');
 
+/**
+ * Import fields for the whitepaper custom post type
+ */
+include('post-types/whitepaper.php');
+
+/**
+ * Import fields for the whitepaper custom post type
+ */
+include('post-types/webinar.php');
+
 
 
 

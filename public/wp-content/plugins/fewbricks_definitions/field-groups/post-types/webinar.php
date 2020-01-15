@@ -24,5 +24,7 @@ $fg1 = ( new fewacf\field_group( 'Webinar Details', '202001131703a', $location, 
 
 $fg1->add_field( new acf_fields\date_time_picker( 'Webinar Date', 'webinar_date', '202001131704a' ) );
 
+$fg1->add_field( new acf_fields\oembed('Webinar Video', 'webinar_video', '202001150013a'));
+
 $fg1->register();
 

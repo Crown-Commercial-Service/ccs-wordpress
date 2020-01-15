@@ -31,7 +31,7 @@ if (!function_exists('whitepapers_add_data')) {
  */
 if (!function_exists('webinars_add_data')) {
     function webinars_add_data($response, $post) {
-        if(!isset($response->data['acf']['webinars_list_webinars'])) {
+        if(!isset($response->data['acf']['webinars_list_webinars']) || empty($response->data['acf']['webinars_list_webinars'])) {
             return $response;
         }
 

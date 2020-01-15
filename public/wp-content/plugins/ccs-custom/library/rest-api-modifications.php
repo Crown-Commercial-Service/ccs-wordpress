@@ -11,6 +11,10 @@ if (!function_exists('whitepapers_add_data')) {
         }
 
         foreach($response->data['acf']['whitepapers_list_whitepapers'] as $key => $whitepaper) {
+            if(!isset($whitepaper->ID)) {
+                continue;
+            }
+            
             $postId = $whitepaper->ID;
 
             $file = get_field('whitepaper_file', $postId);

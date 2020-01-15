@@ -36,6 +36,10 @@ if (!function_exists('webinars_add_data')) {
         }
 
         foreach($response->data['acf']['webinars_list_webinars'] as $key => $webinar) {
+            if(!isset($webinar->ID)) {
+                continue;
+            }
+
             $postId = $webinar->ID;
 
             $featuredImageId = get_post_thumbnail_id( $postId );

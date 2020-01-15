@@ -23,7 +23,9 @@ class brochures_list extends project_brick {
     public function set_fields() {
 
         $this->add_field( (new acf_fields\repeater('Brochures', 'brochures_list', '202001091647a', ['button_label' => 'Add Brochure']))
-            ->add_sub_field(new acf_fields\file('Brochure', 'brochure', '202001091649a'))
+            ->add_sub_field(new acf_fields\file('Brochure', 'brochure', '202001091649a', [
+                'required' => 1
+            ]))
         );
 
     }

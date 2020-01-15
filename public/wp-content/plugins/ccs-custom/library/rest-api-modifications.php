@@ -6,7 +6,7 @@
  */
 if (!function_exists('whitepapers_add_data')) {
     function whitepapers_add_data($response, $post) {
-        if(!isset($response->data['acf']['whitepapers_list_whitepapers'])) {
+        if(!isset($response->data['acf']['whitepapers_list_whitepapers']) || empty($response->data['acf']['whitepapers_list_whitepapers'])) {
             return $response;
         }
 

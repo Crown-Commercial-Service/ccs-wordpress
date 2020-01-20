@@ -31,7 +31,10 @@ class component_subcategory extends project_brick {
 		$this->add_field( new acf_fields\wysiwyg( 'Content', 'content', '202001131516b' ) );
 
 
-		$this->add_field( new acf_fields\page_link('Link', 'link', '202001131516c' ) );
+		$this->add_field( new acf_fields\page_link('Link', 'link', '202001131516c', [
+		    'post_type' => 'page'
+            ]
+        ) );
 
 	}
 

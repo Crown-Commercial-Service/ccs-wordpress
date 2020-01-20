@@ -68,7 +68,7 @@ function register_pillars_taxonomy() {
 	);
 
 	// https://codex.wordpress.org/Reserved_Terms
-	register_taxonomy( 'pillars', array( 'page' ), $args );
+	register_taxonomy( 'pillars', array( 'page', 'whitepaper', 'webinar' ), $args );
 	// We'll use this to make sure post types are attached inside filter callback that run during parse_request or pre_get_posts
 //	register_taxonomy_for_object_type( 'pillars', 'page' );
 }

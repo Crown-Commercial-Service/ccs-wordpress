@@ -36,9 +36,13 @@ class group_page_content_default extends project_brick
 		$l->add_brick(new component_intro('intro', '202001031449b'));
 		$fc->add_layout($l);
 
-		$l = new layout('', 'subcategories', '202001131522a');
-		$l->add_brick(new component_subcategories('subcategories', '202001131522b'));
-		$fc->add_layout($l);
+        $l = new layout('', 'subcategories', '202001131522a');
+        $l->add_brick(new component_subcategories('subcategories', '202001131522b'));
+        $fc->add_layout($l);
+
+        $l = new layout('', 'accordion', '202001211617a');
+        $l->add_brick(new component_accordion('accordion', '202001211617b'));
+        $fc->add_layout($l);
 
 		$this->add_flexible_content($fc);
 

@@ -29,6 +29,6 @@ class SearchLogger extends \Monolog\Logger
             touch($logFileLocation);
         }
 
-        $this->pushHandler(new StreamHandler($logFileLocation, ImportLogger::DEBUG));
+        $this->pushHandler(new StreamHandler($logFileLocation, ImportLogger::ERROR));
     }
 }

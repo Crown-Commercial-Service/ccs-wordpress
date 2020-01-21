@@ -28,9 +28,9 @@ class group_page_content_default extends project_brick
 			'layout' => 'row'
 		]);
 
-		$l = new layout('', 'text', '202001031019a');
-		$l->add_brick(new component_text('text', '202001031019b'));
-		$fc->add_layout($l);
+		//$l = new layout('', 'text', '202001031019a');
+		//$l->add_brick(new component_text('text', '202001031019b'));
+		//$fc->add_layout($l);
 
 		$l = new layout('', 'intro', '202001031449a');
 		$l->add_brick(new component_intro('intro', '202001031449b'));

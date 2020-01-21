@@ -26,7 +26,8 @@ $location = [
 $field_group = ( new fewacf\field_group( 'Hero', '202001081046a', $location, 10, [
 	'position' => 'acf_after_title',
 	'names_of_items_to_hide_on_screen' => [
-		'excerpt'
+		'excerpt',
+        'the_content'
 	]
 ]));
 

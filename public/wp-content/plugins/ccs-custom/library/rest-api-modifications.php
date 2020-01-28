@@ -47,8 +47,10 @@ if (!function_exists('webinars_add_data')) {
             $postId = $webinar->ID;
 
             $featuredImageId = get_post_thumbnail_id( $postId );
+            $linkText = get_field('link_text', $postId);
 
             $response->data['acf']['webinars_list_webinars'][$key]->ccs_webinar_featured_image = ($featuredImageId != "" ? intval($featuredImageId) : null);
+            $response->data['acf']['webinars_list_webinars'][$key]->link_text = $linkText;
         }
 
         return $response;

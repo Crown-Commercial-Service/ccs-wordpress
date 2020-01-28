@@ -179,10 +179,10 @@ function ccs_register_my_cpts() {
         'edit_item'          => __('Edit Webinar', ''),
         'view_item'          => __('View Webinar', ''),
         'all_items'          => __('All Webinar', ''),
-        'search_items'       => __('Search Whitepapers', ''),
+        'search_items'       => __('Search Webinars', ''),
         'parent_item_colon'  => __('Parent Whitepaper:', ''),
-        'not_found'          => __('No Whitepapers found.', ''),
-        'not_found_in_trash' => __('No Whitepapers found in Trash.', '')
+        'not_found'          => __('No Webinars found.', ''),
+        'not_found_in_trash' => __('No Webinars found in Trash.', '')
     );
 
     $args = array(

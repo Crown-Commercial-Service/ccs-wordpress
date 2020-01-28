@@ -28,5 +28,9 @@ $fg1->add_field( new acf_fields\date_time_picker( 'Webinar Date', 'webinar_date'
 
 $fg1->add_field( new acf_fields\oembed('Webinar Video', 'webinar_video', '202001150013a'));
 
+$fg1->add_field( new acf_fields\text( 'Link text', 'link_text', '202001282130a', [
+    'instructions' => 'Optionally add link text to display underneath the Webinar when listing it.'
+] ) );
+
 $fg1->register();
 

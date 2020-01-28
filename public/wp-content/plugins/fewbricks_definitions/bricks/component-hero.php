@@ -37,10 +37,10 @@ class component_hero extends project_brick {
 		$this->add_field( new acf_fields\wysiwyg( 'Content', 'content', '202001031023c',[
 			'instructions' => 'Keep the content under 200 characters (including spaces).',
 		] ));
-		$this->add_field( new acf_fields\text( 'CTA label', 'cta_label', '202001031023d', [
-			'instructions' => 'Keep the CTA concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
+		$this->add_field( new acf_fields\text( 'Button label', 'cta_label', '202001031023d', [
+			'instructions' => 'Keep the text concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
 		] ));
-		$this->add_field( new acf_fields\text( 'CTA destination', 'cta_destination', '20200108105a', [
+		$this->add_field( new acf_fields\text( 'Button destination', 'cta_destination', '20200108105a', [
 			'instructions' => 'Add a # before the destination name to indicate that this is an anchor link, i.e. a link which takes you to a different part of the same page. The destination name ought to be unique to the page and match the name you give your component.'
 		] ));
 

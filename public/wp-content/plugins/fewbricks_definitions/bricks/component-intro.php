@@ -31,11 +31,11 @@ class component_intro extends project_brick {
 		$this->add_field( new acf_fields\wysiwyg( 'Content', 'content', '202001031433b' ) );
 
 
-		$this->add_field( new acf_fields\text( 'CTA label', 'cta_label', '202001031433d', [
-			'instructions' => 'Keep the CTA concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
+		$this->add_field( new acf_fields\text( 'Button label', 'cta_label', '202001031433d', [
+			'instructions' => 'Keep the text concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
 			'maxlength' => 140
 		] ));
-		$this->add_field( new acf_fields\text( 'CTA destination', 'cta_destination', '202001091136a', [
+		$this->add_field( new acf_fields\text( 'Button destination', 'cta_destination', '202001091136a', [
 			'instructions' => 'Add a # before the destination name to indicate that this is an anchor link, i.e. a link which takes you to a different part of the same page. The destination name ought to be unique to the page and match the name you give your component.'
 		] ));
 

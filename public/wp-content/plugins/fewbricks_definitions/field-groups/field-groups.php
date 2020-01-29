@@ -20,6 +20,16 @@ include('post-types/lot.php');
  */
 include('post-types/supplier.php');
 
+/**
+ * Import fields for the whitepaper custom post type
+ */
+include('post-types/whitepaper.php');
+
+/**
+ * Import fields for the whitepaper custom post type
+ */
+include('post-types/webinar.php');
+
 
 
 
@@ -36,6 +46,13 @@ include('templates/post.php');
 
 
 
+/**
+ * Import fields for the default post type (news articles)
+ */
+include('templates/landing.php');
+
+
+
 // --- Setting components on default page template ---
 
 $location = [
@@ -48,7 +65,7 @@ $location = [
         [
             'param'    => 'page_template',
             'operator' => '!=',
-            'value'    => 'page-templates/landing-page.php'
+            'value'    => 'page-templates/landing.php'
         ]
     ]
 ];

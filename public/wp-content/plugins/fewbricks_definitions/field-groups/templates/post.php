@@ -11,7 +11,12 @@ $location = [
             'param'    => 'post_type',
             'operator' => '==',
             'value'    => 'post'
-        ]
+        ],
+	    [
+		    'param'    => 'page_template',
+		    'operator' => '!=',
+		    'value'    => 'page-templates/landing.php'
+	    ]
     ]
 ];
 

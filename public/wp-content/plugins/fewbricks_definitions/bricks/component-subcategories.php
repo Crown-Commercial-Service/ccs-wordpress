@@ -34,7 +34,7 @@ class component_subcategories extends project_brick {
 			'button_label' => 'Add link',
 			'layout'       => 'row',
 			'min'          => '',
-			'max'          => 6,
+			'max'          => 9,
 		] );
 
 		$l = new layout( '', 'link', '202001131517d' );

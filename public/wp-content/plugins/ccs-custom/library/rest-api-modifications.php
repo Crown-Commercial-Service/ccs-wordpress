@@ -20,9 +20,11 @@ if (!function_exists('whitepapers_add_data')) {
             $file = get_field('whitepaper_file', $postId);
 
             $featuredImageId = get_post_thumbnail_id( $postId );
+            $linkText = get_field('link_text', $postId);
 
             $response->data['acf']['whitepapers_list_whitepapers'][$key]->ccs_whitepaper_file = $file;
             $response->data['acf']['whitepapers_list_whitepapers'][$key]->ccs_whitepaper_featured_image = ($featuredImageId != "" ? intval($featuredImageId) : null);
+            $response->data['acf']['whitepapers_list_whitepapers'][$key]->link_text = $linkText;
         }
 
         return $response;

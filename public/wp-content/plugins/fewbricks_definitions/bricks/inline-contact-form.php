@@ -48,6 +48,17 @@ class inline_contact_form extends project_brick
                 ]
             ],
         ]));
+        $this->add_field(new acf_fields\text('Form campaign code', 'form_campaign_code', '202002031251c', [
+            'conditional_logic' => [
+                [
+                    [
+                        'field' => '202002031250a',
+                        'operator' => '==',
+                        'value' => '1'
+                    ]
+                ]
+            ],
+        ]));
     }
 
     /**

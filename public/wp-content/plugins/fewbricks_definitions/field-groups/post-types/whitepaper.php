@@ -24,5 +24,13 @@ $fg1 = ( new fewacf\field_group( 'Whitepaper Details', '202001131107a', $locatio
 
 $fg1->add_field( new acf_fields\file( 'Whitepaper', 'whitepaper_file', '202001131109a' ) );
 
+$fg1->add_field( new acf_fields\text( 'Link text', 'link_text', '202001311744a', [
+    'instructions' => 'Optionally add link text to display underneath the Whitepaper when listing it.'
+] ) );
+
+$fg1->add_field( new acf_fields\text( 'Campaign code', 'campaign_code', '202002041115a', [
+    'instructions' => 'An optional campaign code which will be sent to Salesforce on submission.'
+] ) );
+
 $fg1->register();
 

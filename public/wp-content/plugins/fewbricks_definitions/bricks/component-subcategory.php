@@ -36,6 +36,12 @@ class component_subcategory extends project_brick {
             ]
         ) );
 
+
+        $this->add_field( new acf_fields\text('Link Text', 'link_text', '202002031711a', [
+            'instructions' => 'Optionally enter text for the link'
+            ]
+        ) );
+
 	}
 
 	/**

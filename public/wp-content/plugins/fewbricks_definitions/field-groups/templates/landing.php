@@ -85,3 +85,30 @@ $field_group->add_brick((new bricks\webinars_list('webinars_list', '202001131712
  * Register the field group
  */
 $field_group->register();
+
+
+
+
+
+/**
+ * Define the field group
+ *
+ * Field groups with a lower menu_order will appear first on the edit screens (change by 10,20,30 increments to give yourself space to add)
+ */
+$field_group = ( new fewacf\field_group( 'Contact Form', '202002031256a', $location, 70, [
+    'position' => 'acf_after_title',
+    'names_of_items_to_hide_on_screen' => [
+        'excerpt',
+        'the_content'
+    ]
+]));
+
+/**
+ * Define the fields
+ */
+$field_group->add_brick((new bricks\inline_contact_form('contact_form', '202002031257a')));
+
+/*
+ * Register the field group
+ */
+$field_group->register();

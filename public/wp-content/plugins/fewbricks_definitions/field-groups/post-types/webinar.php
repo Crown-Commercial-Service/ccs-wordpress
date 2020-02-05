@@ -22,6 +22,10 @@ $fg1 = ( new fewacf\field_group( 'Webinar Details', '202001131703a', $location, 
     ]
 ]));
 
+$fg1->add_field( new acf_fields\wysiwyg( 'Webinar Form Introduction', 'form_introduction', '202002051740a', [
+    'instructions' => 'Optional text to display above the form when requesting access to the Webinar'
+] ) );
+
 $fg1->add_field( new acf_fields\text( 'Webinar Additional text', 'additional_text', '202002051219a', [
     'instructions' => 'Optional text to display underneath the thumbnail when requesting the Webinar'
 ] ) );

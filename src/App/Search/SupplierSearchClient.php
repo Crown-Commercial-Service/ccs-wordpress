@@ -67,7 +67,8 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
      * @param \App\Model\ModelInterface $model
      * @param array|null $relationships
      */
-    public function createOrUpdateDocument(ModelInterface $model, array $relationships = null): void {
+    public function createOrUpdateDocument(ModelInterface $model, array $relationships = null): void
+    {
 
         /** @var Supplier $model */
         $supplier = $model;
@@ -88,10 +89,8 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
         $frameworkData = [];
         if (!empty($relationships)) {
             /** @var \App\Model\Framework $framework */
-            foreach ($relationships as $framework)
-            {
-                if (!$this->frameworkShouldBeIndexed($framework))
-                {
+            foreach ($relationships as $framework) {
+                if (!$this->frameworkShouldBeIndexed($framework)) {
                     continue;
                 }
                 $tempFramework['title'] = $framework->getTitle();
@@ -132,7 +131,8 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
      * @return \Elastica\ResultSet
      * @throws \IndexNotFoundException
      */
-    public function queryByKeyword(string $keyword = '', int $page, int $limit, array $filters = [], string $sortField = ''): ResultSet {
+    public function queryByKeyword(string $keyword = '', int $page, int $limit, array $filters = [], string $sortField = ''): ResultSet
+    {
         $search = new Search($this);
 
         $search->addIndex($this->getIndexOrCreate());
@@ -141,7 +141,6 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
         $boolQuery = new Query\BoolQuery();
 
         if (!empty($keyword)) {
-
             $keyword = $this->checkKeywordAgainstSynonyms($keyword);
 
             // Create a multimatch query so we can search multiple fields
@@ -184,7 +183,8 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
     }
 
 
-    protected function frameworkShouldBeIndexed(Framework $framework) {
+    protected function frameworkShouldBeIndexed(Framework $framework)
+    {
 
         if ($framework->getType() == 'Dynamic purchasing system') {
             return false;
@@ -201,7 +201,8 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
      * @param \Elastica\Query $query
      * @return \Elastica\Query
      */
-    public function addAggregationsToQuery(Query $query): Query {
+    public function addAggregationsToQuery(Query $query): Query
+    {
         $termsAggregation = new Terms('titles');
         $termsAggregation->setField('live_frameworks.title');
         $termsAggregationRmNumber = new Terms('rm_number');
@@ -214,6 +215,4 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
 
         return $query->addAggregation($nestedAggregation);
     }
-
-
 }

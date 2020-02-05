@@ -4,7 +4,8 @@ namespace App\Model;
 
 use Nayjest\StrCaseConverter\Str;
 
-abstract class AbstractModel implements ModelInterface {
+abstract class AbstractModel implements ModelInterface
+{
 
     /**
      * Model constructor.
@@ -24,5 +25,4 @@ abstract class AbstractModel implements ModelInterface {
             }
         }
     }
-
 }

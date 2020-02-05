@@ -2,8 +2,8 @@
 
 namespace App\Model;
 
-interface ModelInterface {
+interface ModelInterface
+{
 
     public function getId();
-
 }

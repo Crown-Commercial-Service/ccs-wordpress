@@ -22,7 +22,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
     /**
      * The name of the index
      */
-    const INDEX_NAME = 'framework';
+    private const INDEX_NAME = 'framework';
 
     /**
      * Default sorting field
@@ -57,7 +57,8 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
      * @param \App\Model\ModelInterface $model
      * @param array|null $relationships
      */
-    public function createOrUpdateDocument(ModelInterface $model, array $relationships = null): void {
+    public function createOrUpdateDocument(ModelInterface $model, array $relationships = null): void
+    {
 
         /** @var \App\Model\Framework $model */
         $framework = $model;
@@ -86,8 +87,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
         $lotData = [];
         if (!empty($relationships)) {
             /** @var \App\Model\Lot $lot */
-            foreach ($relationships as $lot)
-            {
+            foreach ($relationships as $lot) {
                 $tempLot['title'] = $lot->getTitle();
                 $tempLot['description'] = $lot->getDescription();
                 $lotData[] = $tempLot;
@@ -121,7 +121,8 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
      * @return \Elastica\ResultSet
      * @throws \IndexNotFoundException
      */
-    public function queryByKeyword(string $keyword = '', int $page, int $limit, array $filters = [], string $sortField = ''): ResultSet {
+    public function queryByKeyword(string $keyword = '', int $page, int $limit, array $filters = [], string $sortField = ''): ResultSet
+    {
         $search = new Search($this);
 
         $search->addIndex($this->getIndexOrCreate());
@@ -144,14 +145,13 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
 
 
         if (!empty($keyword)) {
-
             $keywordBool = new Query\BoolQuery();
 
             $keyword = $this->checkKeywordAgainstSynonyms($keyword);
 
             // Create a multimatch query so we can search multiple fields
             $multiMatchQuery = new Query\MultiMatch();
-            $multiMatchQuery->setQuery($keyword );
+            $multiMatchQuery->setQuery($keyword);
             $multiMatchQuery->setFields(['description^2', 'summary', 'benefits', 'how_to_buy', 'keywords^2']);
             $multiMatchQuery->setFuzziness(1);
             $keywordBool->addShould($multiMatchQuery);
@@ -169,19 +169,18 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
             $queryForNumericalRmNumber->setFields(['rm_number^2', 'rm_number.raw^2']);
             $keywordBool->addShould($queryForNumericalRmNumber);
 
-            $rmNumberQuery = new Query\Wildcard('rm_number.raw', $keyword.'*', 2);
+            $rmNumberQuery = new Query\Wildcard('rm_number.raw', $keyword . '*', 2);
             $keywordBool->addShould($rmNumberQuery);
 
             $number = preg_replace("/[^0-9]/", "", $keyword);
-            if (!empty($number))
-            {
-                $rmNumberQuery = new Query\Wildcard('rm_number_numerical', $number.'*', 2);
+            if (!empty($number)) {
+                $rmNumberQuery = new Query\Wildcard('rm_number_numerical', $number . '*', 2);
                 $keywordBool->addShould($rmNumberQuery);
             }
 
             // Look for the RM Number without 'RM'
             $queryForNumericalRmNumber = new Query\MultiMatch();
-            $queryForNumericalRmNumber->setQuery($keyword.'*');
+            $queryForNumericalRmNumber->setQuery($keyword . '*');
             $queryForNumericalRmNumber->setFields(['rm_number_numerical^3']);
             $keywordBool->addShould($queryForNumericalRmNumber);
 
@@ -214,9 +213,8 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
      * @param \Elastica\Query $query
      * @return \Elastica\Query
      */
-    public function addAggregationsToQuery(Query $query): Query {
+    public function addAggregationsToQuery(Query $query): Query
+    {
         return $query;
     }
-
-
 }

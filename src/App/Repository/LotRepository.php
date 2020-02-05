@@ -41,12 +41,13 @@ class LotRepository extends AbstractRepository
      * @param \App\Model\Lot $lot
      * @return mixed
      */
-    public function create(Lot $lot) {
+    public function create(Lot $lot)
+    {
 
         /**
          * Don't import a lot if the Salesforce ID isn't set
          */
-        if(!isset($this->databaseBindings['salesforce_id']) || empty($this->databaseBindings['salesforce_id'])) {
+        if (!isset($this->databaseBindings['salesforce_id']) || empty($this->databaseBindings['salesforce_id'])) {
             return false;
         }
 
@@ -72,8 +73,7 @@ class LotRepository extends AbstractRepository
     public function update($searchField, $searchValue, Lot $lot)
     {
         // Remove the field which we're using for the update command
-        if (isset($this->databaseBindings[$searchField]))
-        {
+        if (isset($this->databaseBindings[$searchField])) {
             unset($this->databaseBindings[$searchField]);
         }
 
@@ -110,60 +110,50 @@ class LotRepository extends AbstractRepository
      */
     protected function bindValues($databaseBindings, $query, Lot $lot)
     {
-        if (isset($databaseBindings['framework_id']))
-        {
+        if (isset($databaseBindings['framework_id'])) {
             $frameworkId = $lot->getFrameworkId();
             $query->bindParam(':framework_id', $frameworkId, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['wordpress_id']))
-        {
+        if (isset($databaseBindings['wordpress_id'])) {
             $wordpressId = $lot->getWordpressId();
             $query->bindParam(':wordpress_id', $wordpressId, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['salesforce_id']))
-        {
+        if (isset($databaseBindings['salesforce_id'])) {
             $salesforceId = $lot->getSalesforceId();
             $query->bindParam(':salesforce_id', $salesforceId, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['lot_number']))
-        {
+        if (isset($databaseBindings['lot_number'])) {
             $lotNumber = $lot->getLotNumber();
             $query->bindParam(':lot_number', $lotNumber, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['title']))
-        {
+        if (isset($databaseBindings['title'])) {
             $title = $lot->getTitle();
             $query->bindParam(':title', $title, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['status']))
-        {
+        if (isset($databaseBindings['status'])) {
             $status = $lot->getStatus();
             $query->bindParam(':status', $status, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['description']))
-        {
+        if (isset($databaseBindings['description'])) {
             $description = $lot->getDescription();
             $query->bindParam(':description', $description, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['expiry_date']))
-        {
+        if (isset($databaseBindings['expiry_date'])) {
             $expiryDate = $lot->getExpiryDate();
-            if ($expiryDate instanceof \DateTime)
-            {
+            if ($expiryDate instanceof \DateTime) {
                 $expiryDate = $expiryDate->format('Y-m-d');
             }
             $query->bindParam(':expiry_date', $expiryDate, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['hide_suppliers']))
-        {
+        if (isset($databaseBindings['hide_suppliers'])) {
             $hideSuppliers = $lot->isHideSuppliers();
             $query->bindParam(':hide_suppliers', $hideSuppliers, \PDO::PARAM_BOOL);
         }
@@ -177,7 +167,8 @@ class LotRepository extends AbstractRepository
      * @param $id
      * @return mixed
      */
-    public function findFrameworkLots($id){
+    public function findFrameworkLots($id)
+    {
 
         $sql = 'SELECT l.salesforce_id FROM `ccs_frameworks` f
 JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
@@ -193,7 +184,8 @@ AND l.salesforce_id IS NOT NULL';
      * @param $id
      * @return mixed
      */
-    public function findFrameworkLotsAndReturnAllFields($id){
+    public function findFrameworkLotsAndReturnAllFields($id)
+    {
 
         $sql = 'SELECT l.* FROM `ccs_frameworks` f
 JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
@@ -210,7 +202,8 @@ AND l.salesforce_id IS NOT NULL';
      * @param $lotNumber
      * @return mixed
      */
-    public function findSingleFrameworkLot($id, $lotNumber) {
+    public function findSingleFrameworkLot($id, $lotNumber)
+    {
 
         $sql = 'SELECT l.* FROM `ccs_frameworks` f
 JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
@@ -227,7 +220,8 @@ AND l.salesforce_id IS NOT NULL';
      * @param $supplierId
      * @return bool
      */
-    public function findAllByFrameworkIdSupplierId($frameworkId, $supplierId) {
+    public function findAllByFrameworkIdSupplierId($frameworkId, $supplierId)
+    {
 
         $sql = <<<EOD
 SELECT l.* 
@@ -253,8 +247,7 @@ EOD;
      */
     public function findAllLots($sql = null, $paginate = false, $limit = 20, $page = 0)
     {
-        if ($paginate)
-        {
+        if ($paginate) {
             $sql = $this->addPaginationQuery($sql, $limit, $page);
         }
         try {

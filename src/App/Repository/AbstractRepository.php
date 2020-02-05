@@ -5,7 +5,8 @@ namespace App\Repository;
 use App\Services\Database\DatabaseConnection;
 use PDOException;
 
-abstract class AbstractRepository implements RepositoryInterface {
+abstract class AbstractRepository implements RepositoryInterface
+{
 
     /**
      * Database bindings array
@@ -51,9 +52,8 @@ abstract class AbstractRepository implements RepositoryInterface {
      */
     protected function addPaginationQuery($sql, $limit, $page)
     {
-        if ($page >= 2)
-        {
-            $page = $page-1;
+        if ($page >= 2) {
+            $page = $page - 1;
         } else {
             $page = 0;
         }
@@ -77,8 +77,7 @@ abstract class AbstractRepository implements RepositoryInterface {
 
         $results = $query->fetch(\PDO::FETCH_ASSOC);
 
-        if (!isset($results['count']))
-        {
+        if (!isset($results['count'])) {
             return 0;
         }
 
@@ -97,8 +96,7 @@ abstract class AbstractRepository implements RepositoryInterface {
     {
         $sql = 'SELECT * from  ' . $this->tableName;
 
-        if ($paginate)
-        {
+        if ($paginate) {
             $sql = $this->addPaginationQuery($sql, $limit, $page);
         }
 
@@ -130,8 +128,7 @@ abstract class AbstractRepository implements RepositoryInterface {
         $sql = 'SELECT * from ' . $this->tableName . ' where ' . $condition ;
 
 
-        if ($paginate)
-        {
+        if ($paginate) {
             $sql = $this->addPaginationQuery($sql, $limit, $page);
         }
         try {
@@ -186,12 +183,12 @@ abstract class AbstractRepository implements RepositoryInterface {
     {
         $sql = 'SELECT * from ' . $this->tableName . ' where ' . $fieldName . ' = :id';
         try {
-        $query = $this->connection->prepare($sql);
-        $query->bindParam(':id', $id, \PDO::PARAM_STR);
+            $query = $this->connection->prepare($sql);
+            $query->bindParam(':id', $id, \PDO::PARAM_STR);
 
-        $query->execute();
+            $query->execute();
 
-        $result = $query->fetch(\PDO::FETCH_ASSOC);
+            $result = $query->fetch(\PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
         }
@@ -241,8 +238,7 @@ abstract class AbstractRepository implements RepositoryInterface {
     public function createOrUpdateExcludingWordpressFields($searchField, $searchValue, $object)
     {
         $originalDataBindings = $this->databaseBindings;
-        foreach ($this->wordpressDataFields as $wordpressDataField)
-        {
+        foreach ($this->wordpressDataFields as $wordpressDataField) {
             if (isset($this->databaseBindings[$wordpressDataField])) {
                 unset($this->databaseBindings[$wordpressDataField]);
             }
@@ -265,8 +261,7 @@ abstract class AbstractRepository implements RepositoryInterface {
      */
     public function createOrUpdate($searchField, $searchValue, $object)
     {
-        if ($this->idExists($searchValue, $searchField))
-        {
+        if ($this->idExists($searchValue, $searchField)) {
             return $this->update($searchField, $searchValue, $object);
         }
 
@@ -327,8 +322,7 @@ abstract class AbstractRepository implements RepositoryInterface {
     {
         $modelCollection = [];
 
-        foreach ($results as $result)
-        {
+        foreach ($results as $result) {
             $modelCollection[] = $this->translateSingleResultToModel($result);
         }
 
@@ -378,5 +372,4 @@ abstract class AbstractRepository implements RepositoryInterface {
 
         return $query->execute();
     }
-
 }

@@ -31,8 +31,8 @@ class component_subcategory extends project_brick {
 		$this->add_field( new acf_fields\wysiwyg( 'Content', 'content', '202001131516b' ) );
 
 
-		$this->add_field( new acf_fields\page_link('Link', 'link', '202001131516c', [
-		    'post_type' => 'page'
+		$this->add_field( new acf_fields\text('Link URL', 'link_url', '202002061331a', [
+		    'instructions' => 'Optionally specify a URL to link to. If linking internally, please make this link relative, e.g. /test-page/example (so exclude the domain at the beginning)'
             ]
         ) );
 

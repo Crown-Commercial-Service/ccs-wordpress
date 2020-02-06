@@ -86,7 +86,7 @@ class inline_contact_form extends project_brick
             ],
         ]));
 
-        $this->add_field(new acf_fields\true_false('Show "Find out more about aggregation opportunities"', 'show_find_out_more_aggregation', '202002060930c'), [
+        $this->add_field(new acf_fields\true_false('Show "Find out more about aggregation opportunities"', 'show_find_out_more_aggregation', '202002060930c', [
             'conditional_logic' => [
                 [
                     [
@@ -96,9 +96,9 @@ class inline_contact_form extends project_brick
                     ]
                 ]
             ],
-        ]);
+        ]));
 
-        $this->add_field(new acf_fields\true_false('Show "What areas of aggregation are you interested in"', 'show_what_areas_aggregation', '202002060930d'), [
+        $this->add_field(new acf_fields\true_false('Show "What areas of aggregation are you interested in"', 'show_what_areas_aggregation', '202002060930d', [
             'conditional_logic' => [
                 [
                     [
@@ -108,7 +108,7 @@ class inline_contact_form extends project_brick
                     ]
                 ]
             ],
-        ]);
+        ]));
 
 
 

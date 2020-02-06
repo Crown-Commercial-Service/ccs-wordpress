@@ -25,7 +25,7 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
     /**
      * The name of the index
      */
-    const INDEX_NAME = 'supplier';
+    private const INDEX_NAME = 'supplier';
 
     /**
      * Default sorting field
@@ -122,16 +122,14 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
     /**
      * Query's the fields on a given index
      *
-     * @param string $type
      * @param string $keyword
      * @param int $page
      * @param int $limit
      * @param array $filters
      * @param string $sortField
      * @return \Elastica\ResultSet
-     * @throws \IndexNotFoundException
      */
-    public function queryByKeyword(string $keyword = '', int $page, int $limit, array $filters = [], string $sortField = ''): ResultSet
+    public function queryByKeyword(string $keyword, int $page, int $limit, array $filters = [], string $sortField = ''): ResultSet
     {
         $search = new Search($this);
 

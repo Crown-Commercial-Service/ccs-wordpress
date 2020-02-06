@@ -4,8 +4,6 @@ namespace App\Search;
 
 use App\Model\ModelInterface;
 use App\Search\Mapping\FrameworkMapping;
-use Elastica\Aggregation\Nested;
-use Elastica\Aggregation\Terms;
 use Elastica\Document;
 use Elastica\Mapping;
 use Elastica\Query;
@@ -112,16 +110,14 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
     /**
      * Query's the fields on a given index
      *
-     * @param string $type
      * @param string $keyword
      * @param int $page
      * @param int $limit
      * @param array $filters
      * @param string $sortField
      * @return \Elastica\ResultSet
-     * @throws \IndexNotFoundException
      */
-    public function queryByKeyword(string $keyword = '', int $page, int $limit, array $filters = [], string $sortField = ''): ResultSet
+    public function queryByKeyword(string $keyword, int $page, int $limit, array $filters = [], string $sortField = ''): ResultSet
     {
         $search = new Search($this);
 

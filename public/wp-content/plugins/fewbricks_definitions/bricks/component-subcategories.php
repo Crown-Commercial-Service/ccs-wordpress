@@ -23,6 +23,12 @@ class component_subcategories extends project_brick {
 	 */
 	public function set_fields() {
 
+	    $this->add_field( new acf_fields\image( 'Optional Image Icon', 'optional_icon', '202002051757a', [
+	        'instructions' => 'An optional icon to display above the heading. Max size 600x400. Ideal dimensions 300x200',
+            'max_width' => 600,
+            'max_height' => 400,
+        ]) );
+
 		$this->add_field( new acf_fields\text( 'Heading', 'heading', '202001131517a', [
 			'instructions' => 'Keep the heading concise and under 200 characters (including spaces).',
 			'maxlength' => 200

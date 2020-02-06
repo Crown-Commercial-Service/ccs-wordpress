@@ -37,6 +37,7 @@ class inline_contact_form extends project_brick
                 ]
             ],
         ]));
+
         $this->add_field(new acf_fields\text('Form sub-heading', 'form_sub_heading', '202002031251b', [
             'conditional_logic' => [
                 [
@@ -48,6 +49,31 @@ class inline_contact_form extends project_brick
                 ]
             ],
         ]));
+
+        $this->add_field(new acf_fields\text('Message question title', 'message_question_title', '202002060930a', [
+            'conditional_logic' => [
+                [
+                    [
+                        'field' => '202002031250a',
+                        'operator' => '==',
+                        'value' => '1'
+                    ]
+                ]
+            ],
+        ]));
+
+        $this->add_field(new acf_fields\text('Message question description', 'message_question_description', '202002060930b', [
+            'conditional_logic' => [
+                [
+                    [
+                        'field' => '202002031250a',
+                        'operator' => '==',
+                        'value' => '1'
+                    ]
+                ]
+            ],
+        ]));
+
         $this->add_field(new acf_fields\text('Form campaign code', 'form_campaign_code', '202002031251c', [
             'conditional_logic' => [
                 [
@@ -59,6 +85,33 @@ class inline_contact_form extends project_brick
                 ]
             ],
         ]));
+
+        $this->add_field(new acf_fields\true_false('Show "Find out more about aggregation opportunities"', 'show_find_out_more_aggregation', '202002060930c'), [
+            'conditional_logic' => [
+                [
+                    [
+                        'field' => '202002031250a',
+                        'operator' => '==',
+                        'value' => '1'
+                    ]
+                ]
+            ],
+        ]);
+
+        $this->add_field(new acf_fields\true_false('Show "What areas of aggregation are you interested in"', 'show_what_areas_aggregation', '202002060930d'), [
+            'conditional_logic' => [
+                [
+                    [
+                        'field' => '202002031250a',
+                        'operator' => '==',
+                        'value' => '1'
+                    ]
+                ]
+            ],
+        ]);
+
+
+
     }
 
     /**

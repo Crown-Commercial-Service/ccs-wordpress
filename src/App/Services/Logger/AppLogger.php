@@ -18,14 +18,14 @@ class AppLogger extends \Monolog\Logger
      * @param \DateTimeZone|null $timezone
      * @throws \Exception
      */
-    public function __construct($handlers = [], $processors = [], ?\DateTimeZone $timezone = null) {
+    public function __construct($handlers = [], $processors = [], ?\DateTimeZone $timezone = null)
+    {
 
         parent::__construct('app', $handlers, $processors, $timezone);
 
         $logFileLocation = __DIR__ . '/../../../../var/log/app.log';
 
-        if (!file_exists($logFileLocation))
-        {
+        if (!file_exists($logFileLocation)) {
             touch($logFileLocation);
         }
 

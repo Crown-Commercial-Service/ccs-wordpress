@@ -49,5 +49,4 @@ class FrameworkMapping extends AbstractMapping
         ]
       ]
     ];
-
 }

@@ -23,6 +23,8 @@ This should automatically inject the new Access Token and Instance Url into the 
 
 ## Running the import
 
+Find out more on the technical details of the [data import](data-import.md).
+
 ### Running a complete import
 
 The import can be run with the command `wp salesforce import all` when in the `/public` folder.

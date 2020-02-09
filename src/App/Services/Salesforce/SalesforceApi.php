@@ -55,8 +55,7 @@ class SalesforceApi
      */
     public function setupHeaders($accessToken = null)
     {
-        if (!$accessToken)
-        {
+        if (!$accessToken) {
             $accessToken = getenv('SALESFORCE_ACCESS_TOKEN');
         }
 
@@ -117,8 +116,7 @@ class SalesforceApi
 
         $contents = $this->response->getBody()->getContents();
 
-        if ($json == true)
-        {
+        if ($json == true) {
             return $contents;
         }
 
@@ -164,18 +162,17 @@ EOD;
 
         $frameworks = [];
 
-        foreach ($response->records as $salesforceRecord)
-        {
+        foreach ($response->records as $salesforceRecord) {
             $framework = new Framework();
             $framework->setMappedFields($salesforceRecord);
             $frameworks[] = $framework;
-
         }
 
         return $frameworks;
     }
 
-    public function getFrameworkLots($salesforceFrameworkId) {
+    public function getFrameworkLots($salesforceFrameworkId)
+    {
         return $this->getAllLots('Master_Framework__c = \'' . $salesforceFrameworkId . '\' AND Master_Framework_Lot_Number__c > \'0\' AND Hide_this_Lot_from_Website__c = FALSE');
     }
 
@@ -201,8 +198,7 @@ EOD;
 
         $lots = [];
 
-        foreach ($response->records as $salesforceRecord)
-        {
+        foreach ($response->records as $salesforceRecord) {
             $lot = new Lot();
             $lot->setMappedFields($salesforceRecord);
             $lots[] = $lot;
@@ -233,8 +229,7 @@ EOD;
         $suppliersToDisplay = $this->query("SELECT Id, Supplier__c from Supplier_Framework_Lot__c WHERE Master_Framework_Lot__c = '" . $lotId . "' AND Status__c = 'Live'");
 
         $suppliers = [];
-        foreach ($suppliersToDisplay->records as $supplierToDisplay)
-        {
+        foreach ($suppliersToDisplay->records as $supplierToDisplay) {
             $suppliers[] = $this->getSupplier($supplierToDisplay->Supplier__c);
         }
 
@@ -334,26 +329,22 @@ EOD;
     {
         $potentialLotContacts = $this->query("SELECT Id, Contact_Name__c, Email__c, Website_Contact__c, Master_Framework_Lot__c, Supplier_Contact__c from Master_Framework_Lot_Contact__c WHERE Master_Framework_Lot__c = '" . $lotId . "'");
 
-        if ($potentialLotContacts->totalSize == 0)
-        {
+        if ($potentialLotContacts->totalSize == 0) {
             // Nothing was found
             return null;
         }
 
 
-        foreach ($potentialLotContacts->records as $potentialLotContact)
-        {
+        foreach ($potentialLotContacts->records as $potentialLotContact) {
             $contactRecord = $this->query("SELECT Id, AccountId from Contact where Id = '" . $potentialLotContact->Supplier_Contact__c . "'");
 
-            if ($contactRecord->totalSize == 0)
-            {
+            if ($contactRecord->totalSize == 0) {
                 continue;
             }
 
             $accountId = $contactRecord->records[0]->AccountId;
 
-            if ($supplierId == $accountId)
-            {
+            if ($supplierId == $accountId) {
                 return $potentialLotContact;
             }
         }
@@ -367,20 +358,18 @@ EOD;
      * @todo SOQL: SELECT Framework__c, Id, Name, RM_Number__c, Status__c, Supplier__c, Trading_Name__c FROM Framework_Supplier__c
      *
      */
-    public function getTradingName($frameworkId, $supplierId) {
+    public function getTradingName($frameworkId, $supplierId)
+    {
         $queryResponse = $this->query("SELECT Trading_Name__c FROM Framework_Supplier__c WHERE Framework__c = '" . $frameworkId . "' AND Supplier__c = '" . $supplierId . "' ");
 
-        if ($queryResponse->totalSize == 0)
-        {
+        if ($queryResponse->totalSize == 0) {
             return false;
         }
 
-        if (empty($queryResponse->records[0]->Trading_Name__c))
-        {
+        if (empty($queryResponse->records[0]->Trading_Name__c)) {
             return false;
         }
 
         return $accountId = $queryResponse->records[0]->Trading_Name__c;
     }
-
 }

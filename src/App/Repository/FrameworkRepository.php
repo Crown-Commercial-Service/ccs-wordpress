@@ -6,7 +6,8 @@ use App\Exception\DbException;
 use App\Model\Framework;
 use PDOException;
 
-class FrameworkRepository extends AbstractRepository {
+class FrameworkRepository extends AbstractRepository
+{
 
     protected $databaseBindings = [
       'rm_number'               => ':rm_number',
@@ -71,7 +72,8 @@ class FrameworkRepository extends AbstractRepository {
      * @param \App\Model\Framework $framework
      * @return mixed
      */
-    public function create(Framework $framework) {
+    public function create(Framework $framework)
+    {
 
         // Build the bindings PDO statement
         $columns = implode(", ", array_keys($this->databaseBindings));
@@ -102,8 +104,7 @@ class FrameworkRepository extends AbstractRepository {
     public function update($searchField, $searchValue, Framework $framework)
     {
         // Remove the field which we're using for the update command
-        if (isset($this->databaseBindings[$searchField]))
-        {
+        if (isset($this->databaseBindings[$searchField])) {
             unset($this->databaseBindings[$searchField]);
         }
 
@@ -146,176 +147,145 @@ class FrameworkRepository extends AbstractRepository {
      */
     protected function bindValues($databaseBindings, $query, Framework $framework)
     {
-        if (isset($databaseBindings['rm_number']))
-        {
+        if (isset($databaseBindings['rm_number'])) {
             $rmNumber = $framework->getRmNumber();
             $query->bindParam(':rm_number', $rmNumber, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['title']))
-        {
+        if (isset($databaseBindings['title'])) {
             $title = $framework->getTitle();
             $query->bindParam(':title', $title, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['wordpress_id']))
-        {
+        if (isset($databaseBindings['wordpress_id'])) {
             $wordpressId = $framework->getWordpressId();
             $query->bindParam(':wordpress_id', $wordpressId, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['salesforce_id']))
-        {
+        if (isset($databaseBindings['salesforce_id'])) {
             $salesforceId = $framework->getSalesforceId();
             $query->bindParam(':salesforce_id', $salesforceId, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['terms']))
-        {
+        if (isset($databaseBindings['terms'])) {
             $terms = $framework->getTerms();
             $query->bindParam(':terms', $terms, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['type']))
-        {
+        if (isset($databaseBindings['type'])) {
             $type = $framework->getType();
             $query->bindParam(':type', $type, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['pillar']))
-        {
+        if (isset($databaseBindings['pillar'])) {
             $pillar = $framework->getPillar();
             $query->bindParam(':pillar', $pillar, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['category']))
-        {
+        if (isset($databaseBindings['category'])) {
             $category = $framework->getCategory();
             $query->bindParam(':category', $category, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['status']))
-        {
+        if (isset($databaseBindings['status'])) {
             $status = $framework->getStatus();
             $query->bindParam(':status', $status, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['start_date']))
-        {
+        if (isset($databaseBindings['start_date'])) {
             $startDate = $framework->getStartDate();
-            if ($startDate instanceof \DateTime)
-            {
+            if ($startDate instanceof \DateTime) {
                 $startDate = $startDate->format('Y-m-d');
             }
             $query->bindParam(':start_date', $startDate, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['end_date']))
-        {
+        if (isset($databaseBindings['end_date'])) {
             $endDate = $framework->getEndDate();
-            if ($endDate instanceof \DateTime)
-            {
+            if ($endDate instanceof \DateTime) {
                 $endDate = $endDate->format('Y-m-d');
             }
             $query->bindParam(':end_date', $endDate, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['tenders_open_date']))
-        {
+        if (isset($databaseBindings['tenders_open_date'])) {
             $tendersOpenDate = $framework->getTendersOpenDate();
-            if ($tendersOpenDate instanceof \DateTime)
-            {
+            if ($tendersOpenDate instanceof \DateTime) {
                 $tendersOpenDate = $tendersOpenDate->format('Y-m-d');
             }
             $query->bindParam(':tenders_open_date', $tendersOpenDate, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['tenders_close_date']))
-        {
+        if (isset($databaseBindings['tenders_close_date'])) {
             $tendersCloseDate = $framework->getTendersCloseDate();
-            if ($tendersCloseDate instanceof \DateTime)
-            {
+            if ($tendersCloseDate instanceof \DateTime) {
                 $tendersCloseDate = $tendersCloseDate->format('Y-m-d');
             }
             $query->bindParam(':tenders_close_date', $tendersCloseDate, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['expected_live_date']))
-        {
+        if (isset($databaseBindings['expected_live_date'])) {
             $expectedLiveDate = $framework->getExpectedLiveDate();
-            if ($expectedLiveDate instanceof \DateTime)
-            {
+            if ($expectedLiveDate instanceof \DateTime) {
                 $expectedLiveDate = $expectedLiveDate->format('Y-m-d');
             }
             $query->bindParam(':expected_live_date', $expectedLiveDate, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['expected_award_date']))
-        {
+        if (isset($databaseBindings['expected_award_date'])) {
             $expectedAwardDate = $framework->getExpectedAwardDate();
-            if ($expectedAwardDate instanceof \DateTime)
-            {
+            if ($expectedAwardDate instanceof \DateTime) {
                 $expectedAwardDate = $expectedAwardDate->format('Y-m-d');
             }
             $query->bindParam(':expected_award_date', $expectedAwardDate, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['description']))
-        {
+        if (isset($databaseBindings['description'])) {
             $description = $framework->getDescription();
             $query->bindParam(':description', $description, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['updates']))
-        {
+        if (isset($databaseBindings['updates'])) {
             $updates = $framework->getUpdates();
             $query->bindParam(':updates', $updates, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['summary']))
-        {
+        if (isset($databaseBindings['summary'])) {
             $summary = $framework->getSummary();
             $query->bindParam(':summary', $summary, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['benefits']))
-        {
+        if (isset($databaseBindings['benefits'])) {
             $benefits = $framework->getBenefits();
             $query->bindParam(':benefits', $benefits, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['how_to_buy']))
-        {
+        if (isset($databaseBindings['how_to_buy'])) {
             $howToBuy = $framework->getHowToBuy();
             $query->bindParam(':how_to_buy', $howToBuy, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['document_updates']))
-        {
+        if (isset($databaseBindings['document_updates'])) {
             $documentUpdates = $framework->getDocumentUpdates();
             $query->bindParam(':document_updates', $documentUpdates, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['publish_on_website']))
-        {
+        if (isset($databaseBindings['publish_on_website'])) {
             $publishOnWeb = ($framework->isPublishOnWebsite()) ? 1 : 0;
             $query->bindParam(':publish_on_website', $publishOnWeb, \PDO::PARAM_INT);
         }
 
-        if (isset($databaseBindings['published_status']))
-        {
+        if (isset($databaseBindings['published_status'])) {
             $publishedStatus = $framework->getPublishedStatus();
             $query->bindParam(':published_status', $publishedStatus, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['keywords']))
-        {
+        if (isset($databaseBindings['keywords'])) {
             $keywords = $framework->getKeywords();
             $query->bindParam(':keywords', $keywords, \PDO::PARAM_STR);
         }
 
-        if (isset($databaseBindings['upcoming_deal_details']))
-        {
+        if (isset($databaseBindings['upcoming_deal_details'])) {
             $upcomingDealDetails = $framework->getUpcomingDealDetails();
             $query->bindParam(':upcoming_deal_details', $upcomingDealDetails, \PDO::PARAM_STR);
         }
@@ -330,7 +300,8 @@ class FrameworkRepository extends AbstractRepository {
      * @param $id
      * @return mixed
      */
-    public function findLiveFramework($id) {
+    public function findLiveFramework($id)
+    {
 
         $sql = <<<EOD
 SELECT * from `ccs_frameworks` 
@@ -348,7 +319,8 @@ EOD;
      * @param $id
      * @return mixed
      */
-    public function findLiveOrUpcomingFramework($id) {
+    public function findLiveOrUpcomingFramework($id)
+    {
 
         $sql = <<<EOD
 SELECT * from `ccs_frameworks` 
@@ -370,7 +342,8 @@ EOD;
      * @param $id
      * @return mixed
      */
-    public function countAllSupplierLiveFrameworks($id){
+    public function countAllSupplierLiveFrameworks($id)
+    {
 
         $sql = 'SELECT COUNT(*) as count FROM `ccs_frameworks` 
 WHERE salesforce_id IN
@@ -386,8 +359,7 @@ AND published_status = \'publish\'';
 
         $results = $query->fetch(\PDO::FETCH_ASSOC);
 
-        if (!isset($results['count']))
-        {
+        if (!isset($results['count'])) {
             return 0;
         }
 
@@ -400,7 +372,8 @@ AND published_status = \'publish\'';
      * @param $id
      * @return mixed
      */
-    public function findSupplierLiveFrameworks($id){
+    public function findSupplierLiveFrameworks($id)
+    {
 
         $query = 'SELECT * FROM `ccs_frameworks` 
 WHERE salesforce_id IN
@@ -420,7 +393,8 @@ ORDER BY title';
      *
      * @return mixed
      */
-    public function findUpcomingDeals() {
+    public function findUpcomingDeals()
+    {
 
         $sql = 'SELECT * from `ccs_frameworks` 
 WHERE published_status = \'publish\' 
@@ -435,13 +409,11 @@ AND (status = \'Future (Pipeline)\'
 
         $upcomingDeals = $this->findAllFrameworks($sql);
 
-        if (!$upcomingDeals)
-        {
+        if (!$upcomingDeals) {
             return [];
         }
 
         return $upcomingDeals;
-
     }
 
     /**
@@ -468,7 +440,6 @@ GROUP BY f.id
 ORDER by f.title ASC;';
 
         return $this->findAllFrameworks($sql, true, $limit, $page);
-
     }
 
     /**
@@ -477,7 +448,8 @@ ORDER by f.title ASC;';
      * @param $keyword
      * @return mixed
      */
-    public function countSearchResults($keyword){
+    public function countSearchResults($keyword)
+    {
 
         $sql = 'SELECT COUNT(*) as count FROM 
 (SELECT f.* 
@@ -500,8 +472,7 @@ ORDER by f.title ASC) SearchTableAlias';
 
         $results = $query->fetch(\PDO::FETCH_ASSOC);
 
-        if (!isset($results['count']))
-        {
+        if (!isset($results['count'])) {
             return 0;
         }
 
@@ -519,8 +490,7 @@ ORDER by f.title ASC) SearchTableAlias';
      */
     public function findAllFrameworks($sql = null, $paginate = false, $limit = 20, $page = 0)
     {
-        if ($paginate)
-        {
+        if ($paginate) {
             $sql = $this->addPaginationQuery($sql, $limit, $page);
         }
         try {
@@ -528,7 +498,6 @@ ORDER by f.title ASC) SearchTableAlias';
             $query->execute();
 
             $results = $query->fetchAll(\PDO::FETCH_ASSOC);
-
         } catch (PDOException $e) {
             trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
         }
@@ -540,5 +509,4 @@ ORDER by f.title ASC) SearchTableAlias';
         $modelCollection = $this->translateResultsToModels($results);
         return $modelCollection;
     }
-
 }

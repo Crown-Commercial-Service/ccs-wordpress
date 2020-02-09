@@ -4,7 +4,8 @@ namespace App\Traits;
 
 use App\Utils\YamlLoader;
 
-trait SalesforceMappingTrait {
+trait SalesforceMappingTrait
+{
 
     /**
      * An array of mappings for model properties to salesforce properties
@@ -29,14 +30,11 @@ trait SalesforceMappingTrait {
             $this->mappings = YamlLoader::loadMappings($className);
         }
 
-        foreach ($this->mappings['properties'] as $classProperty => $salesforceProperty)
-        {
+        foreach ($this->mappings['properties'] as $classProperty => $salesforceProperty) {
             $method = "set" . ucfirst($classProperty);
-            if (isset($data->$salesforceProperty))
-            {
+            if (isset($data->$salesforceProperty)) {
                 $this->$method($data->$salesforceProperty);
             }
         }
     }
-
 }

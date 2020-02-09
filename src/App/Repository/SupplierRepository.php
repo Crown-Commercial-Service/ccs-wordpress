@@ -189,7 +189,8 @@ class SupplierRepository extends AbstractRepository
      * @param int $page
      * @return mixed
      */
-    public function findLotSuppliers($lotIds, $paginate = false, $limit = 20, $page = 0) {
+    public function findLotSuppliers($lotIds, $paginate = false, $limit = 20, $page = 0)
+    {
 
         $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, ls.trading_name, s.phone_number, s.street, s.city, s.postcode, s.website, s.country, ls.contact_name, ls.contact_email, ls.trading_name, IFNULL(ls.trading_name, s.name) as order_name FROM `ccs_suppliers` s
 JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
@@ -197,7 +198,7 @@ WHERE ls.lot_id IN (\'' . $lotIds . '\')
 ORDER BY order_name';
 
         return $this->findAllSuppliers($sql, $paginate, $limit, $page);
-}
+    }
 
     /**
      * Find all rows based on a query, with pagination
@@ -210,8 +211,7 @@ ORDER BY order_name';
      */
     public function findAllSuppliers($sql = null, $paginate = false, $limit = 20, $page = 0)
     {
-        if ($paginate)
-        {
+        if ($paginate) {
             $sql = $this->addPaginationQuery($sql, $limit, $page);
         }
         try {
@@ -220,7 +220,6 @@ ORDER BY order_name';
             $query->execute();
 
             $results = $query->fetchAll(\PDO::FETCH_ASSOC);
-
         } catch (PDOException $e) {
             trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
         }
@@ -239,7 +238,8 @@ ORDER BY order_name';
      * @param $id
      * @return mixed
      */
-    public function findLiveSupplier($id) {
+    public function findLiveSupplier($id)
+    {
 
         $sql = 'SELECT * from `ccs_suppliers` 
 WHERE id = \'' . $id . '\' 
@@ -266,8 +266,7 @@ WHERE ls.lot_id IN (\'' . $lotIds . '\')';
 
         $results = $query->fetch(\PDO::FETCH_ASSOC);
 
-        if (!isset($results['count']))
-        {
+        if (!isset($results['count'])) {
             return 0;
         }
 
@@ -291,8 +290,7 @@ WHERE ls.lot_id =\'' . $lotId . '\'';
 
         $results = $query->fetch(\PDO::FETCH_ASSOC);
 
-        if (!isset($results['count']))
-        {
+        if (!isset($results['count'])) {
             return 0;
         }
 
@@ -305,7 +303,8 @@ WHERE ls.lot_id =\'' . $lotId . '\'';
      * @param $number
      * @return mixed
      */
-    public function searchByDunsNumber($number) {
+    public function searchByDunsNumber($number)
+    {
 
         $sql = 'SELECT * from `ccs_suppliers` 
 WHERE duns_number = \'' . $number . '\' 
@@ -336,7 +335,6 @@ GROUP BY s.id
 ORDER by s.name ASC;';
 
         return $this->findAllSuppliers($sql, true, $limit, $page);
-
     }
 
     /**
@@ -344,7 +342,8 @@ ORDER by s.name ASC;';
      * @param $rmNumber
      * @return mixed
      */
-    public function countSearchByRmNumberResults($rmNumber){
+    public function countSearchByRmNumberResults($rmNumber)
+    {
 
         $sql = 'SELECT COUNT(*) as count FROM 
 (SELECT s.* 
@@ -363,8 +362,7 @@ ORDER by s.name ASC) SearchRmNumberAlias';
 
         $results = $query->fetch(\PDO::FETCH_ASSOC);
 
-        if (!isset($results['count']))
-        {
+        if (!isset($results['count'])) {
             return 0;
         }
 
@@ -395,7 +393,6 @@ GROUP BY s.id
 ORDER by s.name ASC;';
 
         return $this->findAllSuppliers($sql, true, $limit, $page);
-
     }
 
     /**
@@ -426,7 +423,8 @@ ORDER by s.name ASC;';
      * @param $keyword
      * @return mixed
      */
-    public function countSearchResults($keyword){
+    public function countSearchResults($keyword)
+    {
 
         $sql = 'SELECT COUNT(*) as count FROM 
 (SELECT s.* 
@@ -447,12 +445,10 @@ ORDER by s.name ASC) SearchTableAlias';
 
         $results = $query->fetch(\PDO::FETCH_ASSOC);
 
-        if (!isset($results['count']))
-        {
+        if (!isset($results['count'])) {
             return 0;
         }
 
         return (int) $results['count'];
     }
-
 }

@@ -1,5 +1,8 @@
 <?php
 
-class IndexNotFoundException extends Exception {
+namespace App\Search\Exceptions;
+
+class IndexNotFoundException extends Exception
+{
 
 }

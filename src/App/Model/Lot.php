@@ -4,8 +4,8 @@ namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
 
-class Lot extends AbstractModel {
-
+class Lot extends AbstractModel
+{
     use SalesforceMappingTrait;
 
     /**
@@ -211,10 +211,8 @@ class Lot extends AbstractModel {
      */
     public function setExpiryDate($expiryDate, $format = 'Y-m-d'): Lot
     {
-        if (!$expiryDate instanceof \DateTime)
-        {
-            if (!$expiryDate = date_create_from_format($format, $expiryDate))
-            {
+        if (!$expiryDate instanceof \DateTime) {
+            if (!$expiryDate = date_create_from_format($format, $expiryDate)) {
                 $expiryDate = null;
             }
         }

@@ -2,17 +2,18 @@
 
 namespace App\Search;
 
-class FacetDataResolver {
+class FacetDataResolver
+{
 
     /**
      * @param array $facets
      * @return array|null
      */
-    public function prepareFacetsForView(array $facets): ?array {
+    public function prepareFacetsForView(array $facets): ?array
+    {
         $returnData = [];
 
-        foreach ($facets as $name => $data)
-        {
+        foreach ($facets as $name => $data) {
             if ($name == 'frameworks') {
                 $returnData['frameworks'] = $this->prepareFrameworkFacetsForView($data);
             }
@@ -29,7 +30,8 @@ class FacetDataResolver {
      * @param array $data
      * @return array|null
      */
-    protected function prepareFrameworkFacetsForView(array $data): ?array {
+    protected function prepareFrameworkFacetsForView(array $data): ?array
+    {
         $returnData = [];
 
         $frameworks = $data['titles']['buckets'];
@@ -52,7 +54,8 @@ class FacetDataResolver {
      * @param array $data
      * @return array|null
      */
-    protected function prepareLotFacetsForView(array $data): ?array {
+    protected function prepareLotFacetsForView(array $data): ?array
+    {
         $returnData = [];
 
         $lots = $data;
@@ -67,7 +70,7 @@ class FacetDataResolver {
             ];
         }
 
-        usort($returnData, function($a, $b) {
+        usort($returnData, function ($a, $b) {
             return strnatcasecmp($a['lot_number'], $b['lot_number']);
         });
 

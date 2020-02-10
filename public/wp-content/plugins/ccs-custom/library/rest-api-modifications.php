@@ -59,5 +59,9 @@ if (!function_exists('webinars_add_data')) {
     }
 }
 
+
+
+
+
 add_filter('rest_prepare_page', 'whitepapers_add_data', 10, 3);
 add_filter('rest_prepare_page', 'webinars_add_data', 10, 3);

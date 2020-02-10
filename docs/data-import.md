@@ -49,7 +49,6 @@ The following process is run to save a single framework record.
 1. Save framework to DB (create or update to `ccs_frameworks` table)
 1. Verify framework saved to DB
 1. Create framework in WordPress if is does not exist
-1. Update search index with single framework
 1. Gets lots for the framework from Salesforce
 1. For each lot:
     1. Get WordPress ID for existing lot from DB if it exists (`ccs_lots`)

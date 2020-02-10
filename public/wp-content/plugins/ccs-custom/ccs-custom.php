@@ -26,6 +26,7 @@ include('library/admin-styles.php');
 include('library/custom-queries.php');
 include('library/restrict-api.php');
 include('library/rest-api-modifications.php');
+include('library/rest-api-featured-news.php');
 
 //include('library/usersnap.php');
 

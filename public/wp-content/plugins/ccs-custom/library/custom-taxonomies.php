@@ -15,6 +15,27 @@ function ccs_register_my_taxonomies() {
         'capabilities' => [ 'assign_terms' => 'upload_files' ],
         'show_in_rest' => true
     ) );
+
+    register_taxonomy( 'products_services', array( 'post', 'event' ), array(
+        'hierarchical' => true,
+        'label'        => 'Products and Services',
+        'capabilities' => [ 'assign_terms' => 'edit_posts' ],
+        'show_in_rest' => true
+    ) );
+
+    register_taxonomy( 'sectors', array( 'post', 'event' ), array(
+        'hierarchical' => true,
+        'label'        => 'Sectors',
+        'capabilities' => [ 'assign_terms' => 'edit_posts' ],
+        'show_in_rest' => true
+    ) );
+
+    register_taxonomy( 'audience_tag', array( 'event' ), array(
+        'hierarchical' => true,
+        'label'        => 'Audience Tag',
+        'capabilities' => [ 'assign_terms' => 'edit_events' ],
+        'show_in_rest' => true
+    ) );
 }
 
 /**

@@ -30,6 +30,11 @@ include('post-types/whitepaper.php');
  */
 include('post-types/webinar.php');
 
+/**
+ * Import fields for the event custom post type
+ */
+include('post-types/event.php');
+
 
 
 

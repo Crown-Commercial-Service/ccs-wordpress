@@ -4,8 +4,8 @@ namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
 
-class Supplier extends AbstractModel {
-
+class Supplier extends AbstractModel
+{
     use SalesforceMappingTrait;
 
     /**
@@ -332,7 +332,8 @@ class Supplier extends AbstractModel {
      * @param array $alternativeTradingNames
      * @return \App\Model\Supplier
      */
-    public function setAlternativeTradingNames(array $alternativeTradingNames): Supplier {
+    public function setAlternativeTradingNames(array $alternativeTradingNames): Supplier
+    {
         $this->alternativeTradingNames = $alternativeTradingNames;
 
         return $this;
@@ -360,5 +361,4 @@ class Supplier extends AbstractModel {
 
         ];
     }
-
 }

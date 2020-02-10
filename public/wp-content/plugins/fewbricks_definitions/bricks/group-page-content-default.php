@@ -44,6 +44,10 @@ class group_page_content_default extends project_brick
         $l->add_brick(new component_accordion('accordion', '202001211617b'));
         $fc->add_layout($l);
 
+        $l = new layout('', 'feature_news', '202002101434a');
+        $l->add_brick(new component_feature_news('feature_news', '202002101434b'));
+        $fc->add_layout($l);
+
 		$this->add_flexible_content($fc);
 
 	}

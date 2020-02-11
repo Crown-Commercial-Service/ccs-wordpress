@@ -23,6 +23,11 @@ class component_feature_news extends project_brick
      */
     public function set_fields()
     {
+        $this->add_field(new acf_fields\text('Component Heading', 'heading', '202002111558a', [
+            'instructions' => 'An optional heading to display above the list of news articles',
+            'default_value' => 'Related articles'
+        ]));
+
         $this->add_field(new acf_fields\taxonomy('News Type', 'news_type', '202002101444a', [
             'taxonomy' => 'category',
             'multiple' => 1,

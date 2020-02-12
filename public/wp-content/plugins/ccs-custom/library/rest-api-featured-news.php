@@ -61,11 +61,14 @@ if (!function_exists('modify_featured_news')) {
             if($component['acf_fc_layout'] == 'feature_news_feature_news') {
                 $articles = [];
                 $articleIds = [];
+                $numCherryPicked = 0;
 
                 $cherryPickedArticles = $component['feature_news_feature_news_cherry_picked_articles'];
-                $numCherryPicked = count($cherryPickedArticles);
-                foreach($cherryPickedArticles as $article) {
-                    $articleIds[] = $article->ID;
+                if(!empty($cherryPickedArticles)) {
+                    $numCherryPicked = count($cherryPickedArticles);
+                    foreach ($cherryPickedArticles as $article) {
+                        $articleIds[] = $article->ID;
+                    }
                 }
 
                 // calculate how many articles we need to query for

@@ -52,7 +52,7 @@ function additionalPostFormatting(array $postIds) {
 if (!function_exists('modify_featured_news')) {
     function modify_featured_news($response, $post) {
         // there are no components set on this page
-        if(!isset($response->data['acf']['page_components_rows'])) {
+        if(empty($response->data['acf']['page_components_rows'])) {
             return $response;
         }
 

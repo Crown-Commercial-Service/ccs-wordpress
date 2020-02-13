@@ -75,11 +75,12 @@ if (!function_exists('modify_featured_news')) {
                 // calculate how many articles we need to query for
                 $numQueryArticles = 3 - $numCherryPicked;
 
-                if($numQueryArticles > 0) {
+                $newsTypes        = processApiTaxonomyList($component['feature_news_feature_news_news_type']);
+                $productsServices = processApiTaxonomyList($component['feature_news_feature_news_products_and_services']);
+                $sectors          = processApiTaxonomyList($component['feature_news_feature_news_sectors']);
+
+                if($numQueryArticles > 0 && (!empty($productsServices) || !empty($sectors))) {
                     // Get query parameters (defined by the user in the CMS
-                    $newsTypes        = processApiTaxonomyList($component['feature_news_feature_news_news_type']);
-                    $productsServices = processApiTaxonomyList($component['feature_news_feature_news_products_and_services']);
-                    $sectors          = processApiTaxonomyList($component['feature_news_feature_news_sectors']);
 
                     // Build the query
                     $args = array(

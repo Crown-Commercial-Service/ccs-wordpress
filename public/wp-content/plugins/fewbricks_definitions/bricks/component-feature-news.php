@@ -75,7 +75,6 @@ class component_feature_news extends project_brick
 
         // Use apply-filter on WYSIWYG fields
         $data = [
-            'seantesthere' => 'hello there'
         ];
 
         return $data;

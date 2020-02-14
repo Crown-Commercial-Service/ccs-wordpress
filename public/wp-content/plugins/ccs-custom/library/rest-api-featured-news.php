@@ -134,6 +134,12 @@ if (!function_exists('modify_featured_news')) {
 
                 $articles = additionalPostFormatting($articleIds);
 
+                foreach($articles as $key => $article) {
+                    if(!isset($article['post_type'])) {
+                        $articles[$key]['post_type'] = $articles[$key]['type'];
+                    }
+                }
+
                 $response->data['acf']['page_components_rows'][$iteration]['articles'] = $articles;
 
             }

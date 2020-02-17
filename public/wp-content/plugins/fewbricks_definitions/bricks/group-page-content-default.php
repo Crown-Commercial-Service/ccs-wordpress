@@ -52,6 +52,10 @@ class group_page_content_default extends project_brick
         $l->add_brick(new component_feature_events('feature_events', '202002131749a'));
         $fc->add_layout($l);
 
+		$l = new layout('', 'pillars', '202002171346a');
+		$l->add_brick(new component_pillars('pillars', '202002171346b'));
+		$fc->add_layout($l);
+
 		$this->add_flexible_content($fc);
 
 	}

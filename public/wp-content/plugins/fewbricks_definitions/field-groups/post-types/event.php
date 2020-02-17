@@ -42,12 +42,14 @@ $fg1->add_field( new acf_fields\date_time_picker( 'Event start date (and time)',
     'instructions' => 'The start date and time for the event',
     'display_format' => 'd-m-Y g:i a',
     'return_format' => 'd-m-Y g:i a',
+    'required' => 1
 ] ) );
 
 $fg1->add_field( new acf_fields\date_time_picker( 'Event end date (and time)', 'end_datetime', '202002061423a', [
     'instructions' => 'The end date and time for the event',
     'display_format' => 'd-m-Y g:i a',
     'return_format' => 'd-m-Y g:i a',
+    'required' => 1
 ] ) );
 
 $fg1->add_field( new acf_fields\textarea( 'Event location', 'location', '202002061424a', [

@@ -6,6 +6,7 @@ Description: A WordPress plugin to contain custom code for the CCS website
 Version: 0.1
 */
 
+include('library/custom-pages-filtering.php');
 //include('library/rest-api.php');
 include('library/editor-customisation.php');
 include('library/custom-taxonomies.php');
@@ -24,9 +25,12 @@ include('library/custom-revisionise.php');
 include('library/admin-styles.php');
 //include('library/admin-scripts.php');
 include('library/custom-queries.php');
-include('library/restrict-api.php');
-include('library/rest-api-modifications.php');
-include('library/rest-api-featured-news.php');
+
+/**
+ * Rest API Modifications
+ */
+include('library/rest-api/restrict-api.php');
+include('library/rest-api/rest-api-modifications.php');
 
 //include('library/usersnap.php');
 

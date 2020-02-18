@@ -82,15 +82,13 @@ if (!function_exists('modify_featured_news')) {
                             $the_query->the_post();
                             $articleIds[] = get_the_ID();
                         }
-                    } else {
-                        $articles = [];
                     }
 
                     /* Restore original Post Data */
                     wp_reset_postdata();
                 }
 
-                if(!empty($articles)) {
+                if(!empty($articleIds)) {
                     $articles = additionalPostFormatting($articleIds);
                 }
 

@@ -21,8 +21,14 @@ $location = [
 		    'param'    => 'page_template',
 		    'operator' => '!=',
 		    'value'    => 'page-templates/products-and-services.php'
+	    ],
+	    [
+		    'param'    => 'page_template',
+		    'operator' => '!=',
+		    'value'    => 'page-templates/sectors.php'
 	    ]
-    ]
+
+    ],
 ];
 
 

@@ -58,6 +58,13 @@ include('templates/landing.php');
 
 
 
+/**
+ * Import fields for the default post type (news articles)
+ */
+include('templates/products-and-services.php');
+
+
+
 // --- Setting components on default page template ---
 
 $location = [
@@ -71,7 +78,12 @@ $location = [
             'param'    => 'page_template',
             'operator' => '!=',
             'value'    => 'page-templates/landing.php'
-        ]
+        ],
+	    [
+		    'param'    => 'page_template',
+		    'operator' => '!=',
+		    'value'    => 'page-templates/products-and-services.php'
+	    ]
     ]
 ];
 

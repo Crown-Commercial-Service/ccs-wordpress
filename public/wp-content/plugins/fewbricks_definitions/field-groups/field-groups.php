@@ -52,16 +52,23 @@ include('templates/post.php');
 
 
 /**
- * Import fields for the default post type (news articles)
+ * Import fields for the landing template
  */
 include('templates/landing.php');
 
 
 
 /**
- * Import fields for the default post type (news articles)
+ * Import fields for the Products and Services template
  */
 include('templates/products-and-services.php');
+
+
+
+/**
+ * Import fields for the Sectors template
+ */
+include('templates/sectors.php');
 
 
 

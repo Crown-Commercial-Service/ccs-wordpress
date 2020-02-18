@@ -31,7 +31,7 @@ class component_sectors extends project_brick {
 		$this->add_field( (new acf_fields\repeater('Sectors', 'sectors', '202002181326b', [
 			'button_label' => 'Add sector',
 			'layout' => 'row',
-			'max' => 4
+			'max' => 8
 		]) )
 			->add_sub_field(new acf_fields\taxonomy('Flourish', 'taxonomy', '202002171340f',[
 				'taxonomy' => 'sectors',

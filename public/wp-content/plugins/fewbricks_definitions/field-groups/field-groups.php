@@ -5,70 +5,34 @@ use fewbricks\acf AS fewacf;
 use fewbricks\acf\fields AS acf_fields;
 
 
+
 /**
- * Import fields for the framework custom post type
+ * Import field groups for post types
  */
 include('post-types/framework.php');
-
-/**
- * Import fields for the lot custom post type
- */
 include('post-types/lot.php');
-
-/**
- * Import fields for the supplier custom post type
- */
 include('post-types/supplier.php');
-
-/**
- * Import fields for the whitepaper custom post type
- */
 include('post-types/whitepaper.php');
-
-/**
- * Import fields for the whitepaper custom post type
- */
 include('post-types/webinar.php');
-
-/**
- * Import fields for the event custom post type
- */
 include('post-types/event.php');
 
 
 
-
 /**
- * Import fields for the default page template
+ * Import field groups for page templates
  */
 include('templates/page.php');
-
-
-/**
- * Import fields for the default post type (news articles)
- */
 include('templates/post.php');
-
-
-
-/**
- * Import fields for the landing template
- */
 include('templates/landing.php');
-
-
-
-/**
- * Import fields for the Products and Services template
- */
 include('templates/products-and-services.php');
+include('templates/sectors.php');
 
 
 
 /**
- * Import fields for the Sectors template
+ * Import field groups for taxonomies
  */
-include('templates/sectors.php');
+include('taxonomies/pillars.php');
 
 
 

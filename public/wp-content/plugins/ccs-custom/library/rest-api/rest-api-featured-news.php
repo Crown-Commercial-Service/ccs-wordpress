@@ -45,19 +45,20 @@ if (!function_exists('modify_featured_news')) {
 
 
                     if (!empty($newsTypes)) {
-                        $args[] = array(
-                            'category__in' => array($newsTypes)
+                        $args['tax_query']['relation'] = 'AND';
+                        $args['tax_query'][0] = array(
+                            'taxonomy' => 'category',
+                            'field'    => 'term_id',
+                            'terms'    => $newsTypes,
                         );
                     }
 
                     if (!empty($productsServices) || !empty($sectors)) {
-                        $args['tax_query'] = array(
-                            'relation' => 'OR',
-                        );
+                        $args['tax_query'][1]['relation'] = 'OR';
                     }
 
                     if (!empty($productsServices)) {
-                        $args['tax_query'][] = array(
+                        $args['tax_query'][1][] = array(
                             'taxonomy' => 'products_services',
                             'field' => 'term_id',
                             'terms' => $productsServices,
@@ -66,7 +67,7 @@ if (!function_exists('modify_featured_news')) {
                     }
 
                     if (!empty($sectors)) {
-                        $args['tax_query'][] = array(
+                        $args['tax_query'][1][] = array(
                             'taxonomy' => 'sectors',
                             'field' => 'term_id',
                             'terms' => $sectors,

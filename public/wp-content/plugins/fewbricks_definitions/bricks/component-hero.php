@@ -41,7 +41,8 @@ class component_hero extends project_brick {
 			'instructions' => 'Keep the text concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
 		] ));
 		$this->add_field( new acf_fields\text( 'Button destination', 'cta_destination', '20200108105a', [
-			'instructions' => 'Add a # before the destination name to indicate that this is an anchor link, i.e. a link which takes you to a different part of the same page. The destination name ought to be unique to the page and match the name you give your component.'
+			'instructions' => 'Leave blank to let it use the default value, `#js-contact-form` which is an anchor link that takes you to a the form section on the page.',
+			'default_value' => '#js-contact-form'
 		] ));
 
 	}

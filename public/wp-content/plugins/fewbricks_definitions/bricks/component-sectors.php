@@ -33,9 +33,11 @@ class component_sectors extends project_brick {
 			'layout' => 'row',
 			'max' => 8
 		]) )
-			->add_sub_field(new acf_fields\relationship('Page', 'taxonomy', '202002171340f',[
+			->add_sub_field(new acf_fields\taxonomy('Sector', 'taxonomy', '202002171340f',[
+				'taxonomy' => 'sectors',
+				'field_type' => 'select',
 				'return_format' => 'object',
-				'max' => 0,
+				'multiple' => 0,
 			]))
 			->add_sub_field(new acf_fields\text('Title', 'title', '202002181326c'))
 			->add_sub_field(new acf_fields\wysiwyg('Content', 'content', '202002181326d'))

@@ -30,9 +30,9 @@ include('templates/sectors.php');
 
 
 /**
- * Import field groups for taxonomies
+ * Import field groups for taxonomies (WIP)
  */
-include('taxonomies/pillars.php');
+//include('taxonomies/pillars.php');
 
 
 

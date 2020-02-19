@@ -33,11 +33,9 @@ class component_sectors extends project_brick {
 			'layout' => 'row',
 			'max' => 8
 		]) )
-			->add_sub_field(new acf_fields\taxonomy('Flourish', 'taxonomy', '202002171340f',[
-				'taxonomy' => 'sectors',
-				'field_type' => 'select',
+			->add_sub_field(new acf_fields\relationship('Page', 'taxonomy', '202002171340f',[
 				'return_format' => 'object',
-				'multiple' => 0,
+				'max' => 0,
 			]))
 			->add_sub_field(new acf_fields\text('Title', 'title', '202002181326c'))
 			->add_sub_field(new acf_fields\wysiwyg('Content', 'content', '202002181326d'))

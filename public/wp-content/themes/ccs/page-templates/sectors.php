@@ -1,6 +1,6 @@
 <?php
 /**
-Template Name: Sectors Template
+Template Name: Sectors Landing Template
  */
 
 get_header();

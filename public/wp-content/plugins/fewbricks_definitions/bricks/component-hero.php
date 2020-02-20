@@ -41,7 +41,7 @@ class component_hero extends project_brick {
 			'instructions' => 'Keep the text concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
 		] ));
 		$this->add_field( new acf_fields\text( 'Button destination', 'cta_destination', '20200108105a', [
-			'instructions' => 'Leave blank to let it use the default value, `#js-contact-form` which is an anchor link that takes you to a the form section on the page.',
+			'instructions' => 'Leave the default value, `#js-contact-form` to take the user to the form section on the page.',
 			'default_value' => '#js-contact-form'
 		] ));
 

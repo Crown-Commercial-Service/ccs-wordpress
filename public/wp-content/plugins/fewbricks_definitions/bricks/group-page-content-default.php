@@ -44,6 +44,26 @@ class group_page_content_default extends project_brick
         $l->add_brick(new component_accordion('accordion', '202001211617b'));
         $fc->add_layout($l);
 
+        $l = new layout('', 'feature_news', '202002101434a');
+        $l->add_brick(new component_feature_news('feature_news', '202002101434b'));
+        $fc->add_layout($l);
+
+        $l = new layout('', 'feature_events', '202002131748a');
+        $l->add_brick(new component_feature_events('feature_events', '202002131749a'));
+        $fc->add_layout($l);
+
+		$l = new layout('', 'pillars', '202002171346a');
+		$l->add_brick(new component_pillars('pillars', '202002171346b'));
+		$fc->add_layout($l);
+
+		$l = new layout('', 'cards', '202002181327a');
+		$l->add_brick(new component_card_list('cards', '202002181327b'));
+		$fc->add_layout($l);
+
+		$l = new layout('', 'sectors', '202002181437a');
+		$l->add_brick(new component_sectors('sectors', '202002181437b'));
+		$fc->add_layout($l);
+
 		$this->add_flexible_content($fc);
 
 	}

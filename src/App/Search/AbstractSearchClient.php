@@ -33,7 +33,8 @@ class AbstractSearchClient extends \Elastica\Client
      * @param \Psr\Log\LoggerInterface|null $logger
      * @throws \Exception
      */
-    public function __construct($config = [], callable $callback = null, LoggerInterface $logger = null) {
+    public function __construct($config = [], callable $callback = null, LoggerInterface $logger = null)
+    {
 
         if (empty($logger)) {
             $logger = new SearchLogger();
@@ -77,7 +78,8 @@ class AbstractSearchClient extends \Elastica\Client
     /**
      * Creates the index and sets the mappings
      */
-    protected function createIndex() {
+    protected function createIndex()
+    {
         $index = $this->getIndex($this->getQualifiedIndexName());
 
         $analysis = [
@@ -110,7 +112,7 @@ class AbstractSearchClient extends \Elastica\Client
     protected function getIndexOrCreate(): Index
     {
         if (!$this->indexExists) {
-            $response = $this->request( $this->getQualifiedIndexName(), Request::HEAD);
+            $response = $this->request($this->getQualifiedIndexName(), Request::HEAD);
             
             if ($response->getStatus() > 299) {
                 $this->createIndex();
@@ -131,11 +133,9 @@ class AbstractSearchClient extends \Elastica\Client
     {
         try {
             $this->getIndexOrCreate()->deleteById($model->getId());
-        } catch (NotFoundException $exception)
-        {
+        } catch (NotFoundException $exception) {
             // We can ignore this exception. The document was never in the index.
         }
-
     }
 
 
@@ -144,7 +144,8 @@ class AbstractSearchClient extends \Elastica\Client
      *
      * @return string
      */
-    protected function getQualifiedIndexName(): string {
+    protected function getQualifiedIndexName(): string
+    {
         return $this->getIndexName() . '_' . getenv('ELASTIC_SUFFIX');
     }
 
@@ -156,14 +157,14 @@ class AbstractSearchClient extends \Elastica\Client
      * @param array $filters each array item must contain the keys 'field' and 'value'
      * @return \Elastica\Query\BoolQuery
      */
-    public function addSearchFilters(Query\BoolQuery $boolQuery, array $filters): Query\BoolQuery {
+    public function addSearchFilters(Query\BoolQuery $boolQuery, array $filters): Query\BoolQuery
+    {
 
         if (empty($filters)) {
             return $boolQuery;
         }
 
-        foreach ($filters as $filter)
-        {
+        foreach ($filters as $filter) {
             if (isset($filter['nested'])) {
                 $boolQuery = $this->addNestedSearchFilter($boolQuery, $filter);
             } else {
@@ -181,12 +182,12 @@ class AbstractSearchClient extends \Elastica\Client
      * @param $filter
      * @return \Elastica\Query\BoolQuery
      */
-    protected function addSimpleSearchFilter(Query\BoolQuery $boolQuery, $filter): Query\BoolQuery {
+    protected function addSimpleSearchFilter(Query\BoolQuery $boolQuery, $filter): Query\BoolQuery
+    {
         
         if (is_array($filter['value'])) {
             $newBoolQuery = new Query\BoolQuery();
-            foreach ($filter['value'] as $value)
-            {
+            foreach ($filter['value'] as $value) {
                 $newBoolQuery = $this->addMatchQueryToBoolFilter($newBoolQuery, $filter['field'], $value, $filter['condition'] ?? null);
             }
             $boolQuery->addMust($newBoolQuery);
@@ -206,11 +207,11 @@ class AbstractSearchClient extends \Elastica\Client
      * @param string $condition
      * @return \Elastica\Query\BoolQuery
      */
-    protected function addMatchQueryToBoolFilter(Query\BoolQuery $boolQuery, $key, $value, $condition = 'AND'): Query\BoolQuery {
+    protected function addMatchQueryToBoolFilter(Query\BoolQuery $boolQuery, $key, $value, $condition = 'AND'): Query\BoolQuery
+    {
         $matchQuery = new Query\Match($key, $value);
 
-        if (strtoupper($condition) == 'AND')
-        {
+        if (strtoupper($condition) == 'AND') {
             $boolQuery->addMust($matchQuery);
         } else {
             $boolQuery->addShould($matchQuery);
@@ -224,7 +225,8 @@ class AbstractSearchClient extends \Elastica\Client
      * @param $filter
      * @return \Elastica\Query\BoolQuery
      */
-    protected function addNestedSearchFilter(Query\BoolQuery $boolQuery, $filter): Query\BoolQuery {
+    protected function addNestedSearchFilter(Query\BoolQuery $boolQuery, $filter): Query\BoolQuery
+    {
         $newBoolQuery = new Query\BoolQuery();
 
         foreach ($filter['nested'] as $nestedFilter) {
@@ -249,7 +251,8 @@ class AbstractSearchClient extends \Elastica\Client
      * @param string $sortField
      * @return \Elastica\Query
      */
-    protected function sortQuery(Query $query, string $keyword, string $sortField): Query {
+    protected function sortQuery(Query $query, string $keyword, string $sortField): Query
+    {
         if (empty($keyword) && empty($sortField)) {
             $query->addSort($this->defaultSortField);
             return $query;
@@ -263,7 +266,6 @@ class AbstractSearchClient extends \Elastica\Client
         // Otherwise let's order by the score
         $query->addSort('_score');
         return $query;
-
     }
 
     /**
@@ -273,10 +275,10 @@ class AbstractSearchClient extends \Elastica\Client
      * @param int $limit
      * @return int
      */
-    protected function translatePageNumberAndLimitToStartNumber(int $page, int $limit): int {
-        if ($page >= 2)
-        {
-            $page = $page-1;
+    protected function translatePageNumberAndLimitToStartNumber(int $page, int $limit): int
+    {
+        if ($page >= 2) {
+            $page = $page - 1;
         } else {
             $page = 0;
         }
@@ -290,7 +292,8 @@ class AbstractSearchClient extends \Elastica\Client
      * @param \Elastica\Query $query
      * @return \Elastica\Query
      */
-    public function addAggregationsToQuery(Query $query): Query {
+    public function addAggregationsToQuery(Query $query): Query
+    {
         return $query;
     }
 
@@ -301,7 +304,8 @@ class AbstractSearchClient extends \Elastica\Client
      * @param null $sortField
      * @return \Elastica\ResultSet
      */
-    public function getAll($limit = 1000, $sortField = ''): ResultSet {
+    public function getAll($limit = 1000, $sortField = ''): ResultSet
+    {
         $search = new Search($this);
         $search->addIndex($this->getIndexOrCreate());
         $matchAll = new Query\MatchAll();
@@ -319,7 +323,8 @@ class AbstractSearchClient extends \Elastica\Client
      *
      * @param $query
      */
-    protected function outputDebug($query) {
+    protected function outputDebug($query)
+    {
         print_r(json_encode($query->getQuery()->toArray()));
         die();
     }
@@ -331,7 +336,8 @@ class AbstractSearchClient extends \Elastica\Client
      * @param string $searchPhrase
      * @return string
      */
-    protected function checkKeywordAgainstSynonyms(string $searchPhrase): string {
+    protected function checkKeywordAgainstSynonyms(string $searchPhrase): string
+    {
         foreach ($this->synonyms as $keyword => $synonym) {
             if (strtolower($keyword) === strtolower($searchPhrase)) {
                 return $synonym;
@@ -340,5 +346,4 @@ class AbstractSearchClient extends \Elastica\Client
 
         return $searchPhrase;
     }
-
 }

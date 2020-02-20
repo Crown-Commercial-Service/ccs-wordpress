@@ -178,7 +178,7 @@ function ccs_register_my_cpts() {
         'new_item'           => __('New Webinar', ''),
         'edit_item'          => __('Edit Webinar', ''),
         'view_item'          => __('View Webinar', ''),
-        'all_items'          => __('All Webinar', ''),
+        'all_items'          => __('All Webinars', ''),
         'search_items'       => __('Search Webinars', ''),
         'parent_item_colon'  => __('Parent Whitepaper:', ''),
         'not_found'          => __('No Webinars found.', ''),
@@ -206,4 +206,47 @@ function ccs_register_my_cpts() {
     );
 
     register_post_type( "webinar", $args) ;
+
+
+
+
+    // Event(s) content type
+    $labels = array(
+        "name" => __('Events', ''),
+        "singular_name" => __('Event', ''),
+        "menu_name" => __('Events', ''),
+        "name_admin_bar" => __('Events', ''),
+        'add_new'            => __('Add New', 'event', ''),
+        'add_new_item'       => __('Add New Event', ''),
+        'new_item'           => __('New Event', ''),
+        'edit_item'          => __('Edit Event', ''),
+        'view_item'          => __('View Event', ''),
+        'all_items'          => __('All Events', ''),
+        'search_items'       => __('Search Events', ''),
+        'parent_item_colon'  => __('Parent Event:', ''),
+        'not_found'          => __('No Events found.', ''),
+        'not_found_in_trash' => __('No Events found in Trash.', '')
+    );
+
+    $args = array(
+        "labels" => $labels,
+        "description" => "",
+        "public" => true,
+        "publicly_queryable" => true,
+        "show_ui" => true,
+        "show_in_rest" => true,
+        "rest_base" => "",
+        "has_archive" => true,
+        "show_in_menu" => true,
+        "exclude_from_search" => false,
+        "capability_type" => "event",
+        "map_meta_cap" => true,
+        "hierarchical" => false,
+        "rewrite" => array("slug" => "events"),
+        "query_var" => true,
+        "menu_icon" => "dashicons-calendar-alt",
+        "supports" => array("title", "revisions"),
+    );
+
+    register_post_type( "event", $args) ;
 }

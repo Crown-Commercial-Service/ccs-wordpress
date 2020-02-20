@@ -86,18 +86,6 @@ class inline_contact_form extends project_brick
             ],
         ]));
 
-        $this->add_field(new acf_fields\true_false('Show "Find out more about aggregation opportunities"', 'show_find_out_more_aggregation', '202002060930c', [
-            'conditional_logic' => [
-                [
-                    [
-                        'field' => '202002031250a',
-                        'operator' => '==',
-                        'value' => '1'
-                    ]
-                ]
-            ],
-        ]));
-
         $this->add_field(new acf_fields\true_false('Show "What areas of aggregation are you interested in"', 'show_what_areas_aggregation', '202002060930d', [
             'conditional_logic' => [
                 [
@@ -109,6 +97,23 @@ class inline_contact_form extends project_brick
                 ]
             ],
         ]));
+
+        $this->add_field( (new acf_fields\repeater('Aggregation Options', 'aggregation_options', '202002121515a', [
+            'button_label' => 'Add Aggregation Option',
+            'layout' => 'table',
+            'conditional_logic' => array(
+                array (
+                    array (
+                        'field' => '202002060930d',
+                        'operator' => '!=',
+                        'value' => ''
+                    )
+                )
+            )
+        ]))
+            ->add_sub_field(new acf_fields\text('Name', 'name', '202002121517a'))
+            ->add_sub_field(new acf_fields\text('Campign Code', 'campaign_code', '202002121517b'))
+        );
 
 
 

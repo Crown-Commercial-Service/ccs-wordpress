@@ -2,19 +2,44 @@
 
 add_action( 'init', 'ccs_register_my_taxonomies' );
 function ccs_register_my_taxonomies() {
-    register_taxonomy( 'framework_type', array( 'framework' ), array(
-        'hierarchical' => true,
-        'label'        => 'Framework Type',
-        'capabilities' => [ 'assign_terms' => 'edit_frameworks' ],
-        'show_in_rest' => true
-    ) );
+	register_taxonomy( 'framework_type', array( 'framework' ), array(
+		'hierarchical' => true,
+		'label'        => 'Framework Type',
+		'capabilities' => [ 'assign_terms' => 'edit_frameworks' ],
+		'show_in_rest' => true
+	) );
 
-    register_taxonomy( 'media_category', array( 'attachment' ), array(
-        'hierarchical' => true,
-        'label'        => 'Media Categories',
-        'capabilities' => [ 'assign_terms' => 'upload_files' ],
-        'show_in_rest' => true
-    ) );
+	register_taxonomy( 'media_category', array( 'attachment' ), array(
+		'hierarchical' => true,
+		'label'        => 'Media Categories',
+		'capabilities' => [ 'assign_terms' => 'upload_files' ],
+		'show_in_rest' => true
+	) );
+
+	register_taxonomy( 'products_services', array( 'post', 'event' ), array(
+		'hierarchical' => true,
+		'label'        => 'Products and Services',
+		'capabilities' => [ 'assign_terms' => 'edit_posts' ],
+		'show_in_rest' => true
+	) );
+
+	register_taxonomy( 'audience_tag', array( 'event' ), array(
+		'hierarchical' => true,
+		'label'        => 'Audience Tag',
+		'capabilities' => [ 'assign_terms' => 'edit_events' ],
+		'show_in_rest' => true
+	) );
+
+
+
+	register_taxonomy( 'sectors', array( 'post', 'event', 'page' ), array(
+		'hierarchical' => true,
+		'label'        => 'Sectors',
+		'capabilities' => [ 'assign_terms' => 'edit_posts' ],
+		'show_in_rest' => true
+	) );
+
+
 }
 
 /**
@@ -71,11 +96,16 @@ function register_pillars_taxonomy() {
 		'show_ui'           => true,
 		'show_admin_column' => true,
 		'query_var'         => true,
-		'show_in_rest'      => true
+		'show_in_rest'      => true,
+		'rest_base'         => 'pillars',
 	);
 
 	// https://codex.wordpress.org/Reserved_Terms
-	register_taxonomy( 'pillars', array( 'page', 'whitepaper', 'webinar' ), $args );
+	register_taxonomy( 'pillars', array(
+		'page',
+		'whitepaper',
+		'webinar'
+	), $args );
 	// We'll use this to make sure post types are attached inside filter callback that run during parse_request or pre_get_posts
 //	register_taxonomy_for_object_type( 'pillars', 'page' );
 }

@@ -154,6 +154,4 @@ class LotSupplierRepository extends AbstractRepository
 
         return $this->translateSingleResultToModel($result);
     }
-
-
 }

@@ -4,7 +4,8 @@ namespace App\Search\Mapping;
 
 use Elastica\Mapping;
 
-abstract class AbstractMapping extends Mapping {
+abstract class AbstractMapping extends Mapping
+{
 
     /**
      * The mapping properties
@@ -20,6 +21,4 @@ abstract class AbstractMapping extends Mapping {
     {
         $this->setProperties($this->properties);
     }
-
-
 }

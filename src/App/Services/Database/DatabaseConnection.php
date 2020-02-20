@@ -31,7 +31,10 @@ class DatabaseConnection
         $username = getenv('WP_DB_USER');
         $password = getenv('WP_DB_PASSWORD');
 
-        $this->connection = new \PDO("mysql:host=$host;dbname=$dbname",
-          $username, $password);
+        $this->connection = new \PDO(
+            "mysql:host=$host;dbname=$dbname",
+            $username,
+            $password
+        );
     }
 }

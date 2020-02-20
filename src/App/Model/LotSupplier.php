@@ -5,7 +5,8 @@ namespace App\Model;
 use App\Traits\SalesforceMappingTrait;
 use Nayjest\StrCaseConverter\Str;
 
-class LotSupplier extends AbstractModel {
+class LotSupplier extends AbstractModel
+{
 
     /**
      * @var string
@@ -131,8 +132,7 @@ class LotSupplier extends AbstractModel {
      */
     public function isWebsiteContact(): bool
     {
-        if (is_null($this->websiteContact))
-        {
+        if (is_null($this->websiteContact)) {
             return false;
         }
 
@@ -145,8 +145,7 @@ class LotSupplier extends AbstractModel {
      */
     public function setWebsiteContact(?bool $websiteContact): LotSupplier
     {
-        if (!empty($websiteContact))
-        {
+        if (!empty($websiteContact)) {
             $this->websiteContact = $websiteContact;
         } else {
             $this->websiteContact = false;
@@ -172,7 +171,4 @@ class LotSupplier extends AbstractModel {
         $this->tradingName = $tradingName;
         return $this;
     }
-
-
-
 }

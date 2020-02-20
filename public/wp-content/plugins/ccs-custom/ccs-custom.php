@@ -27,6 +27,7 @@ include('library/admin-styles.php');
 include('library/custom-queries.php');
 
 include('library/add-acf-fields-to-rest-api.php');
+include('library/add-custom-metafields-to-rest-api-orderby-enumerator.php');
 
 /**
  * Rest API Modifications

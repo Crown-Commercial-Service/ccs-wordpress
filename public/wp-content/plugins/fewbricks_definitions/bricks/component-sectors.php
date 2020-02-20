@@ -23,10 +23,10 @@ class component_sectors extends project_brick {
 	 */
 	public function set_fields() {
 
-		$this->add_field( new acf_fields\text( 'Heading', 'heading', '202002181326a', [
-			'instructions' => 'Keep the heading concise and under 200 characters (including spaces).',
-			'maxlength' => 200
-		] ));
+//		$this->add_field( new acf_fields\text( 'Heading', 'heading', '202002181326a', [
+//			'instructions' => 'Keep the heading concise and under 200 characters (including spaces).',
+//			'maxlength' => 200
+//		] ));
 
 		$this->add_field( (new acf_fields\repeater('Sectors', 'sectors', '202002181326b', [
 			'button_label' => 'Add sector',

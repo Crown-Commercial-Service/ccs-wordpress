@@ -56,6 +56,14 @@ class group_page_content_default extends project_brick
 		$l->add_brick(new component_pillars('pillars', '202002171346b'));
 		$fc->add_layout($l);
 
+		$l = new layout('', 'cards', '202002181327a');
+		$l->add_brick(new component_card_list('cards', '202002181327b'));
+		$fc->add_layout($l);
+
+		$l = new layout('', 'sectors', '202002181437a');
+		$l->add_brick(new component_sectors('sectors', '202002181437b'));
+		$fc->add_layout($l);
+
 		$this->add_flexible_content($fc);
 
 	}

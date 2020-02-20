@@ -26,6 +26,8 @@ include('library/admin-styles.php');
 //include('library/admin-scripts.php');
 include('library/custom-queries.php');
 
+include('library/add-acf-fields-to-rest-api.php');
+
 /**
  * Rest API Modifications
  */

@@ -24,9 +24,9 @@ class component_subcategories extends project_brick {
 	public function set_fields() {
 
 	    $this->add_field( new acf_fields\image( 'Optional Image Icon', 'optional_icon', '202002051757a', [
-	        'instructions' => 'An optional icon to display above the heading. Minimum size is 600x400.',
-            'min_width' => 600,
-            'min_height' => 400,
+	        'instructions' => 'An optional icon to display above the heading. Minimum size: 152&times;93. Recommended size: 304&times;186.',
+            'min_width' => 152,
+            'min_height' => 93,
         ]) );
 
 		$this->add_field( new acf_fields\text( 'Heading', 'heading', '202001131517a', [

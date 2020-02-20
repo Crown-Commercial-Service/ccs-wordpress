@@ -36,7 +36,8 @@ class component_intro extends project_brick {
 			'maxlength' => 140
 		] ));
 		$this->add_field( new acf_fields\text( 'Button destination', 'cta_destination', '202001091136a', [
-			'instructions' => 'Add a # before the destination name to indicate that this is an anchor link, i.e. a link which takes you to a different part of the same page. The destination name ought to be unique to the page and match the name you give your component.'
+			'instructions' => 'Leave the default value, `#js-contact-form` to take the user to the form section on the page.',
+			'default_value' => '#js-contact-form'
 		] ));
 
 

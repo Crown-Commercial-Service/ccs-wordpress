@@ -23,7 +23,7 @@ $fg1 = ( new fewacf\field_group( 'Event Details', '202002061432a', $location, 10
 
 
 $fg1->add_field( new acf_fields\image( 'Event image', 'image', '202002061421a', [
-    'instructions' => 'Also used for the thumbnail',
+    'instructions' => 'Also used for the thumbnail. Minimum size: 160&times;80. Recommended size: 320&times;160.',
 ] ) );
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Description', 'description', '202002061420a', [

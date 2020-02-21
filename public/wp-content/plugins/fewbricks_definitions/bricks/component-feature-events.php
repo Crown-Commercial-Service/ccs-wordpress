@@ -24,8 +24,8 @@ class component_feature_events extends project_brick
     public function set_fields()
     {
         $this->add_field(new acf_fields\text('Component Heading', 'heading', '202002111558a', [
-            'instructions' => 'An optional heading to display above the list of events',
-            'default_value' => 'Related articles'
+            'instructions' => 'Always use \'Upcoming events\'',
+            'default_value' => 'Upcoming events'
         ]));
 
         $this->add_field(new acf_fields\taxonomy('Event Categories', 'event_categories', '202002101444a', [

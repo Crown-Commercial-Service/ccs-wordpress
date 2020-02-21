@@ -32,13 +32,13 @@ class component_subcategory extends project_brick {
 
 
 		$this->add_field( new acf_fields\text('Link URL', 'link_url', '202002061331a', [
-		    'instructions' => 'Optionally specify a URL to link to. If linking internally, please make this link relative, e.g. /test-page/example (so exclude the domain at the beginning)'
+		    'instructions' => 'External links: use the whole URL including https://. For example https://www.pensionwise.gov.uk/en. Internal links: use the part of the link after gov.uk. For example If you want to link to www.crowncommercial.gov.uk/agreements/RM1063 you would enter /agreements/RM1063'
             ]
         ) );
 
 
         $this->add_field( new acf_fields\text('Link Text', 'link_text', '202002031711a', [
-            'instructions' => 'Optionally enter text for the link'
+            'instructions' => 'Add text for the link. If you do not enter any text it will show \'Learn more\'.'
             ]
         ) );
 

@@ -87,6 +87,7 @@ class inline_contact_form extends project_brick
         ]));
 
         $this->add_field(new acf_fields\true_false('Show "What areas of aggregation are you interested in"', 'show_what_areas_aggregation', '202002060930d', [
+        	'instructions' => 'By enabling aggregation options on the form, the campaign form code will no longer be submitted to Salesforce.',
             'conditional_logic' => [
                 [
                     [

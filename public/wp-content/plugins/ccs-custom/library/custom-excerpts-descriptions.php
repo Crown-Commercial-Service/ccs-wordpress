@@ -8,6 +8,10 @@ function update_excerpt_metas( $translation, $original ) {
 
 	global $post;
 
+	if ( !isset($post->post_type)) {
+		return $translation;
+	}
+
 	if ( $post->post_type == 'whitepaper' || $post->post_type == 'webinar' ) {
 
 		if ( 'Excerpt' == $original ) {

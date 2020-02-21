@@ -27,6 +27,9 @@ if (!function_exists('modify_featured_events')) {
                     $args = array(
                         'post_type' => 'event',
                         'posts_per_page' => 2,
+                        'meta_key'	     => 'start_datetime',
+                        'orderby'		 => 'meta_value',
+                        'order'			 => 'DESC'
                     );
 
                     if (!empty($productsServices) || !empty($sectors)) {
@@ -66,7 +69,9 @@ if (!function_exists('modify_featured_events')) {
                     wp_reset_postdata();
                 }
 
-                $articles = additionalPostFormatting($articleIds, '/wp/v2/event');
+                if(!empty($articleIds)) {
+                    $articles = additionalPostFormatting($articleIds, '/wp/v2/event');
+                }
 
                 foreach($articles as $key => $article) {
                     if(!isset($article['post_type'])) {

@@ -1,13 +1,14 @@
 <?php
 
-global $post;
 
-if ( $post->post_type == 'whitepaper' || $post->post_type == 'webinar' ) {
-
-	add_filter( 'gettext', 'update_excerpt_metas', 10, 2 );
+add_filter( 'gettext', 'update_excerpt_metas', 10, 2 );
 
 
-	function update_excerpt_metas( $translation, $original ) {
+function update_excerpt_metas( $translation, $original ) {
+
+	global $post;
+
+	if ( $post->post_type == 'whitepaper' || $post->post_type == 'webinar' ) {
 
 		if ( 'Excerpt' == $original ) {
 			//Change here to what you want Excerpt box to be called
@@ -24,8 +25,8 @@ if ( $post->post_type == 'whitepaper' || $post->post_type == 'webinar' ) {
 
 		}
 
-		return $translation;
-
 	}
+
+	return $translation;
 
 }

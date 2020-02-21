@@ -25,6 +25,7 @@ include('library/custom-revisionise.php');
 include('library/admin-styles.php');
 //include('library/admin-scripts.php');
 include('library/custom-queries.php');
+include('library/custom-excerpts-descriptions.php');
 
 /**
  * Rest API Modifications

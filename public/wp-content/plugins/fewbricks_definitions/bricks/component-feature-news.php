@@ -23,8 +23,8 @@ class component_feature_news extends project_brick
      */
     public function set_fields()
     {
-        $this->add_field(new acf_fields\text('Component Heading', 'heading', '202002111558a', [
-            'instructions' => 'An optional heading to display above the list of news articles',
+        $this->add_field(new acf_fields\text('Heading', 'heading', '202002111558a', [
+            'instructions' => 'Always us the title Related articles.',
             'default_value' => 'Related articles'
         ]));
 
@@ -49,14 +49,14 @@ class component_feature_news extends project_brick
             'instructions' => 'Select one or more sectors to filter the results by.'
         ]));
 
-        $this->add_field(new acf_fields\relationship( 'Cherry-picked news articles' , 'cherry_picked_articles' , '202002101443a', [
+        $this->add_field(new acf_fields\relationship( 'Select specific articles' , 'cherry_picked_articles' , '202002101443a', [
             'post_type' => 'post',
             'max' => 3,
             'filters' => array(
                 0 => 'search',
                 2 => 'taxonomy',
             ),
-            'instructions' => 'Optionally specify 1-3 news items to override any automatic results. You can order these news articles in the precise order you want them to appear.'
+            'instructions' => 'Maximum of 3 articles. You can select specific articles to show on the page. Type the name of the article in the search box or select the pillar, category, sector or type of news to filter the list to choose from.'
         ] ));
     }
 

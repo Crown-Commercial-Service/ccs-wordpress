@@ -23,11 +23,11 @@ $fg1 = ( new fewacf\field_group( 'Event Details', '202002061432a', $location, 10
 
 
 $fg1->add_field( new acf_fields\image( 'Event image', 'image', '202002061421a', [
-    'instructions' => 'Also used for the thumbnail. Minimum size: 160&times;80. Recommended size: 320&times;160.',
+    'instructions' => 'This image will be shown in featured events on a landing page and as the thumbnail image on the events page. Minimum size: 160&times;80. Recommended size: 320&times;160.',
 ] ) );
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Description', 'description', '202002061420a', [
-    'instructions' => '',
+    'instructions' => 'If you add an image in this section it will show in the body copy only.',
 ] ) );
 
 $fg1->add_field( new acf_fields\text( 'CTA Label', 'cta_label', '202002061456a', [

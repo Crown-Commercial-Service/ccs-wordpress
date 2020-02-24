@@ -25,6 +25,8 @@ $location = [
 $field_group = ( new fewacf\field_group( 'Lead Text', '202002181348a', $location, 20, [
 	'position' => 'acf_after_title',
 	'names_of_items_to_hide_on_screen' => [
+		'excerpt',
+		'comments'
 	]
 ] ));
 

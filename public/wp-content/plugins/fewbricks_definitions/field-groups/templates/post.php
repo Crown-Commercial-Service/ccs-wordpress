@@ -18,7 +18,9 @@ $location = [
 
 
 $fg7 = ( new fewacf\field_group( 'Lead Text', '201903111530a', $location, 5, [
-	'position' => 'acf_after_title',
+	'position'                         => 'acf_after_title',
+	'names_of_items_to_hide_on_screen' => [
+	]
 ] ) );
 
 $fg7->add_field( new acf_fields\text( 'Lead Text', 'post_lead_text', '201903111530b', [

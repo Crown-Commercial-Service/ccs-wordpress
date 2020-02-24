@@ -25,14 +25,21 @@ include('library/custom-revisionise.php');
 include('library/admin-styles.php');
 //include('library/admin-scripts.php');
 include('library/custom-queries.php');
-
-include('library/add-acf-fields-to-rest-api.php');
+include('library/custom-excerpts-descriptions.php');
 
 /**
  * Rest API Modifications
  */
 include('library/rest-api/restrict-api.php');
 include('library/rest-api/rest-api-modifications.php');
+include('library/add-acf-fields-to-rest-api.php');
+include('library/add-custom-metafields-to-rest-api-orderby-enumerator.php');
+
+
+
+
+
+
 
 //include('library/usersnap.php');
 

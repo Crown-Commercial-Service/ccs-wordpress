@@ -137,9 +137,9 @@ class RegenerateThumbnails_Regenerator {
 			$error = new WP_Error(
 				'regenerate_thumbnails_regenerator_file_not_found',
 				sprintf(
-					/* translators: The relative upload path to the attachment. */
-					__( "The fullsize image file cannot be found in your uploads directory at <code>%s</code>. Without it, new thumbnail images can't be generated.", 'regenerate-thumbnails' ),
-					_wp_relative_upload_path( $this->fullsizepath )
+                    __( "The fullsize image file cannot be found in your uploads directory at <code><a href=\"%s\">%s</a></code>. Without it, new thumbnail images can't be generated.", 'regenerate-thumbnails' ),
+                    $this->fullsizepath,
+                    _wp_relative_upload_path( $this->fullsizepath )
 				),
 				array(
 					'status'       => 404,

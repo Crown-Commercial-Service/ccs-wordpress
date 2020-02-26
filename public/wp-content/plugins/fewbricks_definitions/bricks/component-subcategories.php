@@ -23,6 +23,12 @@ class component_subcategories extends project_brick {
 	 */
 	public function set_fields() {
 
+	    $this->add_field( new acf_fields\image( 'Optional Image Icon', 'optional_icon', '202002051757a', [
+	        'instructions' => 'An optional icon to display above the heading. Minimum size: 600&times;400.',
+            'min_width' => 600,
+            'min_height' => 400,
+        ]) );
+
 		$this->add_field( new acf_fields\text( 'Heading', 'heading', '202001131517a', [
 			'instructions' => 'Keep the heading concise and under 200 characters (including spaces).',
 			'maxlength' => 200
@@ -34,7 +40,7 @@ class component_subcategories extends project_brick {
 			'button_label' => 'Add link',
 			'layout'       => 'row',
 			'min'          => '',
-			'max'          => 6,
+			'max'          => 9,
 		] );
 
 		$l = new layout( '', 'link', '202001131517d' );

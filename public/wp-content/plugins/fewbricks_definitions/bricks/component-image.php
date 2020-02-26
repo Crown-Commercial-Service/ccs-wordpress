@@ -23,7 +23,10 @@ class component_image extends project_brick
 	 */
 	public function set_fields()
 	{
-		$this->add_field(new acf_fields\image( 'Image' , 'image' , '202001031509a' ));
+		$this->add_field(new acf_fields\image( 'Image' , 'image' , '202001031509a',[
+			'instructions' => 'The height of this image is flexible. Minimum width: 618 px. Recommended size: 1236&times;818.',
+			'min_width' => 618,
+		] ));
 		$this->add_field(new acf_fields\wysiwyg( 'Caption' , 'caption' , '202001091137a' ));
 	}
 

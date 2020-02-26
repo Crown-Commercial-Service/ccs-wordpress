@@ -39,5 +39,4 @@ class SupplierMapping extends AbstractMapping
         ]
       ]
     ];
-
 }

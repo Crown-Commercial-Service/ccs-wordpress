@@ -23,7 +23,7 @@ class component_hero extends project_brick {
 	public function set_fields() {
 
 		$this->add_field( new acf_fields\image( 'Hero Image', 'image', '202001031023a', [
-			'instructions' => 'Leave blank if no hero required.',
+			'instructions' => 'Leave blank if no hero required. Minimum size: 1042&times;480. Recommended size: 2084&times;960.',
 			'min_width' => 1042,
 			'min_height' => 480,
 		] ) );
@@ -41,7 +41,8 @@ class component_hero extends project_brick {
 			'instructions' => 'Keep the text concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
 		] ));
 		$this->add_field( new acf_fields\text( 'Button destination', 'cta_destination', '20200108105a', [
-			'instructions' => 'Add a # before the destination name to indicate that this is an anchor link, i.e. a link which takes you to a different part of the same page. The destination name ought to be unique to the page and match the name you give your component.'
+			'instructions' => 'Leave the default value, `#js-contact-form` to take the user to the form section on the page.',
+			'default_value' => '#js-contact-form'
 		] ));
 
 	}

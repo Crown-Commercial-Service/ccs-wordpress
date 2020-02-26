@@ -31,8 +31,14 @@ class component_subcategory extends project_brick {
 		$this->add_field( new acf_fields\wysiwyg( 'Content', 'content', '202001131516b' ) );
 
 
-		$this->add_field( new acf_fields\page_link('Link', 'link', '202001131516c', [
-		    'post_type' => 'page'
+		$this->add_field( new acf_fields\text('Link URL', 'link_url', '202002061331a', [
+		    'instructions' => 'External links: use the whole URL including https://. For example https://www.pensionwise.gov.uk/en. Internal links: use the part of the link after gov.uk. For example If you want to link to www.crowncommercial.gov.uk/agreements/RM1063 you would enter /agreements/RM1063'
+            ]
+        ) );
+
+
+        $this->add_field( new acf_fields\text('Link Text', 'link_text', '202002031711a', [
+            'instructions' => 'Add text for the link. If you do not enter any text it will show \'Learn more\'.'
             ]
         ) );
 

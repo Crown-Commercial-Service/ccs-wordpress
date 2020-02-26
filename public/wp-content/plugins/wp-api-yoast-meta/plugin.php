@@ -53,6 +53,14 @@ class WPAPIYoastMeta {
 	}
 
     function wp_api_encode_yoast($post, $field_name, $request) {
+        $replacer = new WPSEO_Replace_Vars();
+
+        $newPostFormat = $post;
+
+        if(!empty($post['id'])) {
+            $newPostFormat = get_post($post['id']);
+        }
+
         $yoastMeta = array(
             'focuskw' => get_post_meta($post['id'],'_yoast_wpseo_focuskw', true),
             'title' => get_post_meta($post['id'], '_yoast_wpseo_title', true),
@@ -71,6 +79,10 @@ class WPAPIYoastMeta {
             'twitter-description' => get_post_meta($post['id'], '_yoast_wpseo_twitter-description', true),
             'twitter-image' => get_post_meta($post['id'], '_yoast_wpseo_twitter-image', true)
         );
+
+        foreach($yoastMeta as $key => $metaItem) {
+            $yoastMeta[$key] = $replacer->replace($metaItem ,$newPostFormat);
+        }
 
         return (array) $yoastMeta;
     }

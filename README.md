@@ -33,6 +33,11 @@ Post launch, we will have a number of deployment checks before merging new code 
 
 A step-by-step guide to get a development environment running on your machine.
 
+### Requirements
+
+* PHP 7.3+
+* MySQL 5.7+ 
+
 ### Database
 
 You will need to import an up-to-date version of the database into your local environment.
@@ -45,7 +50,29 @@ Within this `.env` file you will need to configure the various empty environment
 
 For the Salesforce import to work locally, you will also need to specify the correct connection details in this file (these environment variables are specified at the top of the file, and separated from the rest by clear comments)
 
-### Requirements
+## Continuous integration
 
-* PHP 7.2+
-* MySQL 5.7+ 
+We use [Travis CI](https://travis-ci.org/Crown-Commercial-Service/ccs-wordpress) to run automated tests on all merges into development, preprod and master. 
+
+### PHP CodeSniffer
+
+Application code (in the `src/` folder) must meet the ([PSR12](https://www.php-fig.org/psr/psr-12/)) coding standard. 
+Please note WordPress code is not checked for coding standards at present. We currently ignore
+long line lengths, though we can fix this in the future if desired. PHPCS configuration can be found 
+in `phpcs.xml.dist`.
+
+You can test for this via:
+
+```
+# Summary report
+vendor/bin/phpcs --report=summary
+
+# Full details
+vendor/bin/phpcs
+```
+
+Where possible you can auto-fix code via:
+
+```
+vendor/bin/phpcbf
+```

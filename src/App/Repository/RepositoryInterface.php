@@ -2,8 +2,8 @@
 
 namespace App\Repository;
 
-interface RepositoryInterface {
+interface RepositoryInterface
+{
 
-    function createModel($data = null);
-
+    public function createModel($data = null);
 }

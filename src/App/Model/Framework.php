@@ -4,8 +4,8 @@ namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
 
-class Framework extends AbstractModel {
-
+class Framework extends AbstractModel
+{
     use SalesforceMappingTrait;
 
     /**
@@ -334,8 +334,7 @@ class Framework extends AbstractModel {
     {
         $ids = [];
         /** @var \App\Model\Lot $lot */
-        foreach ($this->getLots() as $lot)
-        {
+        foreach ($this->getLots() as $lot) {
             $ids[] = $lot->getId();
         }
 
@@ -450,10 +449,8 @@ class Framework extends AbstractModel {
      */
     public function setStartDate($startDate, $format = 'Y-m-d'): Framework
     {
-        if (!$startDate instanceof \DateTime)
-        {
-            if (!$startDate = date_create_from_format($format, $startDate))
-            {
+        if (!$startDate instanceof \DateTime) {
+            if (!$startDate = date_create_from_format($format, $startDate)) {
                 $startDate = null;
             }
         }
@@ -480,10 +477,8 @@ class Framework extends AbstractModel {
      */
     public function setEndDate($endDate, $format = 'Y-m-d'): Framework
     {
-        if (!$endDate instanceof \DateTime)
-        {
-            if (!$endDate = date_create_from_format($format, $endDate))
-            {
+        if (!$endDate instanceof \DateTime) {
+            if (!$endDate = date_create_from_format($format, $endDate)) {
                 $endDate = null;
             }
         }
@@ -510,10 +505,8 @@ class Framework extends AbstractModel {
      */
     public function setTendersOpenDate($tendersOpenDate, $format = 'Y-m-d'): Framework
     {
-        if (!$tendersOpenDate instanceof \DateTime)
-        {
-            if (!$tendersOpenDate = date_create_from_format($format, $tendersOpenDate))
-            {
+        if (!$tendersOpenDate instanceof \DateTime) {
+            if (!$tendersOpenDate = date_create_from_format($format, $tendersOpenDate)) {
                 $tendersOpenDate = null;
             }
         }
@@ -540,10 +533,8 @@ class Framework extends AbstractModel {
      */
     public function setTendersCloseDate($tendersCloseDate, $format = 'Y-m-d'): Framework
     {
-        if (!$tendersCloseDate instanceof \DateTime)
-        {
-            if (!$tendersCloseDate = date_create_from_format($format, $tendersCloseDate))
-            {
+        if (!$tendersCloseDate instanceof \DateTime) {
+            if (!$tendersCloseDate = date_create_from_format($format, $tendersCloseDate)) {
                 $tendersCloseDate = null;
             }
         }
@@ -570,10 +561,8 @@ class Framework extends AbstractModel {
      */
     public function setExpectedLiveDate($expectedLiveDate, $format = 'Y-m-d'): Framework
     {
-        if (!$expectedLiveDate instanceof \DateTime)
-        {
-            if (!$expectedLiveDate = date_create_from_format($format, $expectedLiveDate))
-            {
+        if (!$expectedLiveDate instanceof \DateTime) {
+            if (!$expectedLiveDate = date_create_from_format($format, $expectedLiveDate)) {
                 $expectedLiveDate = null;
             }
         }
@@ -600,10 +589,8 @@ class Framework extends AbstractModel {
      */
     public function setExpectedAwardDate($expectedAwardDate, $format = 'Y-m-d'): Framework
     {
-        if (!$expectedAwardDate instanceof \DateTime)
-        {
-            if (!$expectedAwardDate = date_create_from_format($format, $expectedAwardDate))
-            {
+        if (!$expectedAwardDate instanceof \DateTime) {
+            if (!$expectedAwardDate = date_create_from_format($format, $expectedAwardDate)) {
                 $expectedAwardDate = null;
             }
         }
@@ -653,8 +640,7 @@ class Framework extends AbstractModel {
      */
     public function isPublishOnWebsite(): bool
     {
-        if (is_null($this->publishOnWebsite))
-        {
+        if (is_null($this->publishOnWebsite)) {
             return false;
         }
         return $this->publishOnWebsite;
@@ -666,8 +652,7 @@ class Framework extends AbstractModel {
      */
     public function setPublishOnWebsite(?bool $publishOnWebsite): Framework
     {
-        if (!empty($publishOnWebsite))
-        {
+        if (!empty($publishOnWebsite)) {
             $this->publishOnWebsite = $publishOnWebsite;
         } else {
             $this->publishOnWebsite = false;
@@ -786,5 +771,4 @@ class Framework extends AbstractModel {
           'upcoming_deal_details'   => $this->getUpcomingDealDetails(),
         ];
     }
-
 }

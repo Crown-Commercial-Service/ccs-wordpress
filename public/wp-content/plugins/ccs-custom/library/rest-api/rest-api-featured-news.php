@@ -75,7 +75,6 @@ if (!function_exists('modify_featured_news')) {
                         );
                     }
 
-
                     $the_query = new WP_Query($args);
 
                     if ($the_query->have_posts()) {

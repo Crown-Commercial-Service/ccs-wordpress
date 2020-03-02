@@ -160,7 +160,7 @@ function ccs_register_my_cpts() {
         "rewrite" => array("slug" => "whitepapers"),
         "query_var" => true,
         "menu_icon" => "dashicons-welcome-learn-more",
-        "supports" => array("title", "excerpt", "revisions", "thumbnail"),
+        "supports" => array("title", "revisions", "thumbnail"),
     );
 
     register_post_type( "whitepaper", $args) ;

@@ -50,6 +50,7 @@ if (!function_exists('modify_featured_news')) {
                             'taxonomy' => 'category',
                             'field'    => 'term_id',
                             'terms'    => $newsTypes,
+                            'operator' => 'IN'
                         );
                     }
 
@@ -74,7 +75,6 @@ if (!function_exists('modify_featured_news')) {
                             'operator' => 'IN',
                         );
                     }
-
 
                     $the_query = new WP_Query($args);
 

@@ -57,8 +57,8 @@ function ccs_custom_page_filter($query) {
      * Exclude Marketing Pages
      */
     if( !empty(get_query_var('content_pages')) ) {
-        $excludeIds = [1358];
-        $excludePages = get_pages(['child_of' => 1358]);
+        $excludeIds = [17779];
+        $excludePages = get_pages(['child_of' => 17779]);
         foreach ($excludePages as $page) {
             $excludeIds[] = $page->ID;
         }
@@ -70,8 +70,8 @@ function ccs_custom_page_filter($query) {
      * Only show marketing pages
      */
     if( !empty(get_query_var('marketing_pages')) ) {
-        $includeIds = [1358];
-        $includePages = get_pages(['child_of' => 1358]);
+        $includeIds = [17779];
+        $includePages = get_pages(['child_of' => 17779]);
         foreach ($includePages as $page) {
             $includeIds[] = $page->ID;
         }

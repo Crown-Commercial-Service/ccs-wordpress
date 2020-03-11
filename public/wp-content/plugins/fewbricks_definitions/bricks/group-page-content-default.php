@@ -64,6 +64,10 @@ class group_page_content_default extends project_brick
 		$l->add_brick(new component_sectors('sectors', '202002181437b'));
 		$fc->add_layout($l);
 
+		$l = new layout('', 'quote_and_image', '202010031547a');
+		$l->add_brick(new component_quote_and_image('quote_and_image', '202010031548b'));
+		$fc->add_layout($l);
+
 		$this->add_flexible_content($fc);
 
 	}

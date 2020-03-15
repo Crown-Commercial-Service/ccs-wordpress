@@ -3,6 +3,7 @@
 ## Table of contents
 
 * [Install information](INSTALL.md)
+* [ELASTICSEARCH](ELASTICSEARCH.md)
 * [Continuous Integration](CONTINUOUS_INTEGRATION.md)
 * [Data import](IMPORT_CLI_COMMANDS.md)
 * [Salesforce data sync process](SALESFORCE_DATA_SYNC.md)

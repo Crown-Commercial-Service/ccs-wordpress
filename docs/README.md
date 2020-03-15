@@ -9,6 +9,7 @@
 * [Salesforce data sync process](SALESFORCE_DATA_SYNC.md)
 * [Custom Fields (ACF and Fewbricks)](CUSTOM_FIELDS.md)
 * [Revisionise Workflow](REVISIONIZE.md)
+* [User Roles](USER_ROLES.md)
 
 ## Other docs
 

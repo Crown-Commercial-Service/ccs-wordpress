@@ -68,6 +68,10 @@ class group_page_content_default extends project_brick
 		$l->add_brick(new component_quote_and_image('quote_and_image', '202010031548b'));
 		$fc->add_layout($l);
 
+		$l = new layout('', 'achievement_and_image', '202019031723a');
+		$l->add_brick(new component_achievement_and_image('achievement_and_image', '202019031723b'));
+		$fc->add_layout($l);
+
 		$this->add_flexible_content($fc);
 
 	}

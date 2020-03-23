@@ -1,0 +1,49 @@
+<?php
+
+namespace fewbricks\bricks;
+
+use fewbricks\acf\fields as acf_fields;
+
+/**
+ * Class component_free_text
+ * @package fewbricks\bricks
+ */
+class component_free_text extends project_brick
+{
+
+	/**
+	 * @var string This will be the default label showing up in the editor area for the administrator.
+	 * It can be overridden by passing an item with the key "label" in the array that is the second argument when
+	 * creating a brick.
+	 */
+	protected $label = 'Free Text';
+
+	/**
+	 * Set all the fields for the brick.
+	 */
+	public function set_fields()
+	{
+		$this->add_field(new acf_fields\wysiwyg( 'Right Content Banner ' , 'right_content_banner_new' , '202017031528aa' ));
+		$this->add_field(new acf_fields\wysiwyg( 'Right Content' , 'right_content_new' , '202017031046a' ));
+		$this->add_field(new acf_fields\wysiwyg( 'Left Content Banner ' , 'left_content_banner_new' , '202017031528bb' ));
+        $this->add_field(new acf_fields\wysiwyg( 'Left Content' , 'left_content_new' , '202017031046b' ));
+
+	}
+
+	/**
+	 * This function will be used in the frontend when displaying the brick.
+	 * It will be called by the parents class function get_html(). See that function
+	 * for info on what data you have at your disposal.
+	 * @return array
+	 */
+	protected function get_brick_html()
+	{
+		// Use apply-filter on WYSIWYG fields
+		$data = [
+			'text'  => apply_filters( 'the_content' , $this->get_field( 'text' ) )
+		];
+
+		return $data;
+	}
+
+}

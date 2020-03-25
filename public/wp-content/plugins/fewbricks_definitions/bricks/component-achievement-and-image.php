@@ -16,7 +16,7 @@ class component_achievement_and_image extends project_brick {
 	 * It can be overridden by passing an item with the key "label" in the array that is the second argument when
 	 * creating a brick.
 	 */
-	protected $label = 'Quote and Image';
+	protected $label = 'Achievement and Image';
 
 	/**
 	 * This is where all the fields for the brick will be set-

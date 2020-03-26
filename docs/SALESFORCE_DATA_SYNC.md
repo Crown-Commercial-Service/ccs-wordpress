@@ -131,6 +131,19 @@ A full (all) import is run 4 times a day via the [Linux cron](https://github.com
 1. Updates all lot titles in WordPress to include the RM Number and the lot number
 1. Release lock (this happens automatically on fatal error)
 
+### Failure Notifications (Dead Man's Snitch)
+
+In order to ensure staff get notified in the event of a failed import, each import task is piped through Dead Man's Snitch, which sends an alert if no completion hook is triggered when the script finishes.
+
+### Lock files
+
+As noted in the lists above, the import is blocked by the creation of a "lock file" whilst it is running. The import script creates the following file:
+
+**/home/ec2-user/wp_import_sh.pid**
+
+This file is then deleted on completion of the import. This prevents multiple imports from running simultaneously. 
+
+
 ### importSingleFramework
 
 The following process is run to save a single framework record.

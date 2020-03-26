@@ -4,8 +4,9 @@
 
 * [Install information](INSTALL.md)
 * [Continuous Integration](CONTINUOUS_INTEGRATION.md)
-* [Data import CLI commands](IMPORT_CLI_COMMANDS.md)
+* [Data import](IMPORT_CLI_COMMANDS.md)
 * [Salesforce data sync process](SALESFORCE_DATA_SYNC.md)
+* [Revisionise Workflow](REVISIONIZE.md)
 
 ## Other docs
 

@@ -28,10 +28,10 @@ class component_free_text extends project_brick
 		$this->add_field(new acf_fields\wysiwyg( 'Left Content Banner ' , 'left_content_banner_new' , '202017031528bb' ));
         $this->add_field(new acf_fields\wysiwyg( 'Left Content' , 'left_content_new' , '202017031046b' ));
 		$this->add_field( new acf_fields\text( 'Button label', 'cta_label', '202027031116a', [
-			'Get in touch' => 'Keep the text concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
+			'Get in touchs' => 'Keep the text concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
 		] ));
 		$this->add_field( new acf_fields\text( 'Button destination', 'cta_destination', '2020270317a', [
-			'Getintouch' => 'Leave the default value, `#js-contact-form` to take the user to the form section on the page.',
+			'Getintouchs' => 'Leave the default value, `#js-contact-form` to take the user to the form section on the page.',
 			'default_value' => '#js-contact-form'
 		] ));
 	}

@@ -34,8 +34,10 @@ class component_achievement_and_image extends project_brick {
         'min_width' => 618,
     ] ));
 
-    $this->add_field(new acf_fields\wysiwyg( 'Text' , 'text' , '202019031724b' ));
-    
+    $this->add_field(new acf_fields\wysiwyg( 'Text' , 'text' , '202019031724b', [
+		'instructions' => 'Keep the heading concise and under 200 characters (including spaces).',
+		'maxlength' => 200,
+	] ));
     }
 
 

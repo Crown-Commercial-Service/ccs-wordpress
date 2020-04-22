@@ -3,9 +3,13 @@
 ## Table of contents
 
 * [Install information](INSTALL.md)
+* [ELASTICSEARCH](ELASTICSEARCH.md)
 * [Continuous Integration](CONTINUOUS_INTEGRATION.md)
-* [Data import CLI commands](IMPORT_CLI_COMMANDS.md)
+* [Data import](IMPORT_CLI_COMMANDS.md)
 * [Salesforce data sync process](SALESFORCE_DATA_SYNC.md)
+* [Custom Fields (ACF and Fewbricks)](CUSTOM_FIELDS.md)
+* [Revisionise Workflow](REVISIONIZE.md)
+* [User Roles](USER_ROLES.md)
 
 ## Other docs
 

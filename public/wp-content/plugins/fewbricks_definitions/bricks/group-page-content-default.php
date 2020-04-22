@@ -63,13 +63,21 @@ class group_page_content_default extends project_brick
 		$l = new layout('', 'sectors', '202002181437a');
 		$l->add_brick(new component_sectors('sectors', '202002181437b'));
 		$fc->add_layout($l);
-
+			
+		$l = new layout('', 'free_text', '202017031053a');
+		$l->add_brick(new component_free_text('free_text', '202017031053a'));
+		$fc->add_layout($l);
+			
 		$l = new layout('', 'quote_and_image', '202010031547a');
 		$l->add_brick(new component_quote_and_image('quote_and_image', '202010031548b'));
 		$fc->add_layout($l);
 
 		$l = new layout('', 'achievement_and_image', '202019031723a');
 		$l->add_brick(new component_achievement_and_image('achievement_and_image', '202019031723b'));
+		$fc->add_layout($l);
+
+		$l = new layout('', 'featured', '202006041022a');
+		$l->add_brick(new component_featured('featured', '202006041022b'));
 		$fc->add_layout($l);
 
 		$this->add_flexible_content($fc);

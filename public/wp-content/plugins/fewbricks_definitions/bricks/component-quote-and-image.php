@@ -35,8 +35,13 @@ class component_quote_and_image extends project_brick {
     ] ));
 
     $this->add_field(new acf_fields\wysiwyg( 'Quote' , 'quote' , '202010031540b' ));
-    }
     
+	
+	$this->add_field(new acf_fields\wysiwyg( 'Name' , 'name' , '202012031630a' ));
+	
+	
+	$this->add_field(new acf_fields\wysiwyg( 'Job' , 'job' , '202012031630b' ));
+    }
 
 
 	/**
@@ -47,7 +52,9 @@ class component_quote_and_image extends project_brick {
 
 		$data = [
             'image'  => $this->get_field( 'image' ),
-            'text'  => apply_filters( 'the_content' , $this->get_field( 'text' ) )
+			'quote'  => apply_filters( 'the_content' , $this->get_field( 'quote' ) ),
+			'name'  => apply_filters( 'the_content' , $this->get_field( 'name' ) ),
+			'job'  => apply_filters( 'the_content' , $this->get_field( 'job' ) )
 		];
 
 		return $data;

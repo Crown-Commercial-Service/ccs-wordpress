@@ -9,14 +9,14 @@ use fewbricks\acf\layout;
  * Class quote_and_image
  * @package fewbricks\bricks
  */
-class component_quote_and_image extends project_brick {
+class component_achievement_and_image extends project_brick {
 
 	/**
 	 * @var string This will be the default label showing up in the editor area for the administrator.
 	 * It can be overridden by passing an item with the key "label" in the array that is the second argument when
 	 * creating a brick.
 	 */
-	protected $label = 'Quote and Image';
+	protected $label = 'Achievement and Image';
 
 	/**
 	 * This is where all the fields for the brick will be set-

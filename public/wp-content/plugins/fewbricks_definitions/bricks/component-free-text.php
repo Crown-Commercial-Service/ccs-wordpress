@@ -23,17 +23,19 @@ class component_free_text extends project_brick
 	 */
 	public function set_fields()
 	{
-		$this->add_field(new acf_fields\wysiwyg( 'Right Content Banner ' , 'right_content_banner_new' , '202017031528aa' ));
-		$this->add_field(new acf_fields\wysiwyg( 'Right Content' , 'right_content_new' , '202017031046a' ));
-		$this->add_field(new acf_fields\wysiwyg( 'Left Content Banner ' , 'left_content_banner_new' , '202017031528bb' ));
+		
+		$this->add_field(new acf_fields\wysiwyg( 'Left Heading ' , 'left_heading' , '202017031528bb' ));
         $this->add_field(new acf_fields\wysiwyg( 'Left Content' , 'left_content_new' , '202017031046b' ));
-		$this->add_field( new acf_fields\text( 'Button label', 'cta_label', '202027031116a', [
-			'instructions ' => 'Keep the text concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
+		$this->add_field( new acf_fields\text( 'Button label', 'cta_label', '202030031101a', [
+			'instructions' => 'Keep the text concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
 		] ));
-		$this->add_field( new acf_fields\text( 'Button destination', 'cta_destination', '2020270317a', [
-			'instructions ' => 'Leave the default value, `#js-contact-form` to take the user to the form section on the page.',
+		$this->add_field( new acf_fields\text( 'Button destination', 'cta_destination', '202030031101b', [
+			'instructions' => 'Leave the default value, `#js-contact-form` to take the user to the form section on the page.',
 			'default_value' => '#js-contact-form'
 		] ));
+		$this->add_field(new acf_fields\wysiwyg( 'Right Heading ' , 'right_heading' , '202017031528a' ));
+		$this->add_field(new acf_fields\wysiwyg( 'Right Content' , 'right_content_new' , '202017031046a' ));
+
 	}
 
 	/**
@@ -46,9 +48,9 @@ class component_free_text extends project_brick
 	{
 		// Use apply-filter on WYSIWYG fields
 		$data = [
-			'text'  => apply_filters( 'the_content' , $this->get_field( 'text' )),
-			'cta_label' => $this->get_field( 'cta_label'),
-			'cta_destination' => $this->get_field( 'cta_destination' )
+			'text'  => apply_filters( 'the_content' , $this->get_field( 'text' ) ),
+			'cta_label'  => $this->get_field( 'cta_label' ),
+			'cta_destination'  => $this->get_field( 'cta_destination' )
 		];
 
 		return $data;

@@ -23,7 +23,6 @@ class component_free_text extends project_brick
 	 */
 	public function set_fields()
 	{
-		
 		$this->add_field(new acf_fields\wysiwyg( 'Left Heading ' , 'left_heading' , '202017031528bb' ));
         $this->add_field(new acf_fields\wysiwyg( 'Left Content' , 'left_content_new' , '202017031046b' ));
 		$this->add_field( new acf_fields\text( 'Button label', 'cta_label', '202030031101a', [
@@ -34,8 +33,7 @@ class component_free_text extends project_brick
 			'default_value' => '#js-contact-form'
 		] ));
 		$this->add_field(new acf_fields\wysiwyg( 'Right Heading ' , 'right_heading' , '202017031528a' ));
-		$this->add_field(new acf_fields\wysiwyg( 'Right Content' , 'right_content_new' , '202017031046a' ));
-
+		$this->add_field(new acf_fields\wysiwyg( 'Right Content' , 'right_content_new' , '202017031046a' )); 
 	}
 
 	/**

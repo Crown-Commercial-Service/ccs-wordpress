@@ -35,8 +35,8 @@ class component_achievement_and_image extends project_brick {
     ] ));
 
     $this->add_field(new acf_fields\wysiwyg( 'Text' , 'text' , '202019031724b', [
-		'instructions' => 'Keep the heading concise and under 200 characters (including spaces).',
-		'maxlength' => 200,
+		'instructions' => 'You will need to keep this section short. You have a limit of 280 characters (or roughly 60 words)',
+		'maxlength' => 280,
 	] ));
     }
 

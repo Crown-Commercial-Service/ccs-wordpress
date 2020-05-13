@@ -160,7 +160,7 @@ class Import
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function processTempData()
+    protected function processTempData()
     {
         $this->logger->info('Temp data refreshing');
 
@@ -424,7 +424,7 @@ class Import
         $this->addSuccess('Framework imported. ' . 'SF ID: ' . $framework->getSalesforceId(),
           'frameworks');
 
-        // Create or update framework title in WordPress
+        // Create framework title in WordPress
         try {
             $this->createFrameworkInWordpress($framework, $this->wordpressFrameworks);
         } catch (\Exception $e) {
@@ -642,7 +642,7 @@ class Import
      * Usage:
      * wp salesforce import syncText
      */
-    public function syncText()
+    protected function syncText()
     {
         $sync = new SyncText();
 
@@ -741,7 +741,7 @@ class Import
      * @param $framework
      * @return int|\WP_Error
      */
-    public function createFrameworkPostInWordpress($framework)
+    protected function createFrameworkPostInWordpress($framework)
     {
         // Create a new post
         $wordpressId = wp_insert_post(array(
@@ -763,7 +763,7 @@ class Import
      * @param $lot
      * @return int|\WP_Error
      */
-    public function createLotPostInWordpress($lot)
+    protected function createLotPostInWordpress($lot)
     {
         // Create a new post
         $wordpressId = wp_insert_post(array(
@@ -777,7 +777,7 @@ class Import
     /**
      * Update the entire ElasticSearch search index for Frameworks
      */
-    public function updateFrameworkSearchIndex() {
+    protected function updateFrameworkSearchIndex() {
         WP_CLI::success('Beginning Search index update on Frameworks.');
 
         $frameworks = $this->frameworkRepository->findAll();
@@ -812,7 +812,7 @@ class Import
     /**
      * Update the entire ElasticSearch search index for Suppliers
      */
-    public function updateSupplierSearchIndex() {
+    protected function updateSupplierSearchIndex() {
         WP_CLI::success('Beginning Search index update on Suppliers.');
 
         $suppliers = $this->supplierRepository->findAll();
@@ -883,7 +883,7 @@ class Import
      * Check if a supplier has any live frameworks
      *
      */
-    public function checkSupplierLiveFrameworks() {
+    protected function checkSupplierLiveFrameworks() {
 
         WP_CLI::success('Supplier check in progress to determine Live Framework status');
 
@@ -919,7 +919,7 @@ class Import
      *
      * @throws \Exception
      */
-    public function truncateTempTables()
+    protected function truncateTempTables()
     {
         $sql = "TRUNCATE TABLE temp_contact;";
         $query = $this->dbConnection->connection->prepare($sql);
@@ -947,7 +947,7 @@ class Import
      * @param $contacts
      * @throws \Exception
      */
-    public function saveContactsToTempTable($contacts)
+    protected function saveContactsToTempTable($contacts)
     {
         foreach ($contacts as $contact)
         {
@@ -973,7 +973,7 @@ class Import
      * @param null|string $salesforceId
      * @return null
      */
-    public function getLotWordpressIdBySalesforceId(?string $salesforceId)
+    protected function getLotWordpressIdBySalesforceId(?string $salesforceId)
     {
         $lotWordpressId = null;
 
@@ -998,7 +998,7 @@ class Import
      * @param $contacts
      * @throws \Exception
      */
-    public function saveMasterFrameworkLotContactsToTempTable($contacts)
+    protected function saveMasterFrameworkLotContactsToTempTable($contacts)
     {
 
 
@@ -1044,7 +1044,7 @@ class Import
      *
      * @throws \Exception
      */
-    public function updateFrameworkTitleInWordpress()
+    protected function updateFrameworkTitleInWordpress()
     {
         $sql = <<<EOD
 UPDATE ccs_15423_posts p 
@@ -1069,7 +1069,7 @@ EOD;
      *
      * @throws \Exception
      */
-    public function updateLotTitleInWordpress()
+    protected function updateLotTitleInWordpress()
     {
         $sql = <<<EOD
 UPDATE ccs_15423_posts p SET p.post_title = 

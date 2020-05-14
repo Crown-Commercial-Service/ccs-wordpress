@@ -53,4 +53,5 @@ class component_free_text extends project_brick
 
 		return $data;
 	}
+
 }

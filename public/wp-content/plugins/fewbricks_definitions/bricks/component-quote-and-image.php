@@ -37,10 +37,10 @@ class component_quote_and_image extends project_brick {
     $this->add_field(new acf_fields\wysiwyg( 'Quote' , 'quote' , '202010031540b' ));
     
 	
-	  $this->add_field(new acf_fields\wysiwyg( 'Name' , 'name' , '202012031630a' ));
+	$this->add_field(new acf_fields\wysiwyg( 'Name' , 'name' , '202012031630a' ));
 	
 	
-	  $this->add_field(new acf_fields\wysiwyg( 'Job' , 'job' , '202012031630b' ));
+	$this->add_field(new acf_fields\wysiwyg( 'Job' , 'job' , '202012031630b' ));
     }
 
 

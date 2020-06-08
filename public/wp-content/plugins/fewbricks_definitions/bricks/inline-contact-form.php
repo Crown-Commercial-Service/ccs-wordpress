@@ -25,6 +25,9 @@ class inline_contact_form extends project_brick
     {
         $this->add_field(new acf_fields\true_false('Show contact form?', 'show_contact_form', '202002031250a'));
 
+        $this->add_field(new acf_fields\true_false('Show newsletter form?', 'show_newsletter_form', '202005061114a', [
+            'instructions' => 'Select if specific newsletter form is to be displayed',
+        ]));
 
         $this->add_field(new acf_fields\text('Form heading', 'form_heading', '202002031251a', [
             'conditional_logic' => [

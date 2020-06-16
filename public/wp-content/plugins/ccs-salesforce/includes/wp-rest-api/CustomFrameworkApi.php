@@ -337,7 +337,9 @@ class CustomFrameworkApi
 
                 if($framework->getStatus() === 'Awarded (Pipeline)' || ($framework->getStatus() === 'Live' &&
                         $framework->getTerms() !== 'DPS')) {
-                    $awardedFrameworks[] = $framework->toArray();
+                    if ($framework->getExpectedLiveDate()->format('Y-m-d') > date("Y-m-d")){
+                        $awardedFrameworks[] = $framework->toArray();
+                    }
                 }
 
                 if($framework->getStatus() === 'Live' && $framework->getTerms() === 'DPS'){

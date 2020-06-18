@@ -53,7 +53,7 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
 
     echo "> > Adding additional package repos..."
     sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm
+    sudo yum install -y https://repo.ius.io/ius-release-el$(rpm -E '%{rhel}').rpm
 
     echo "> > Installing common web packages..."
     sudo amazon-linux-extras enable php7.3

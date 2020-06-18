@@ -22,7 +22,7 @@ echo "> Updating system software..."
 sudo yum update -y
 
 echo "> Set timezone..."
-    sudo -rm -f /etc/sysconfig/clock
+    sudo rm -f /etc/sysconfig/clock
     sudo mv -f \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/clock" \
         /etc/sysconfig/clock

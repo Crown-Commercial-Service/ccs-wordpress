@@ -16,7 +16,7 @@ $location = [
             'param'    => 'post_type',
             'operator' => '!=',
             'value'    => 'page'
-        ],
+        ]
     ]
 ];
 

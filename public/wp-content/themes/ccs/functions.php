@@ -322,4 +322,4 @@ require get_template_directory() . '/inc/template-tags.php';
  */
 require get_template_directory() . '/inc/customizer.php';
 
-add_post_type_support( 'whitepaper', 'excerpt' );
+add_post_type_support( 'whitepaper', 'excerpt' ); 

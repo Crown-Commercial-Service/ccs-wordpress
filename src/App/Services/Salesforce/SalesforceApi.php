@@ -173,7 +173,7 @@ EOD;
 
     public function getFrameworkLots($salesforceFrameworkId)
     {
-        return $this->getAllLots('Master_Framework__c = \'' . $salesforceFrameworkId . '\' AND Master_Framework_Lot_Number__c > \'0\' AND Hide_this_Lot_from_Website__c = FALSE');
+        return $this->getAllLots('Master_Framework__c = \'' . $salesforceFrameworkId . '\' AND Master_Framework_Lot_Number__c > \'0\'');
     }
 
     /**

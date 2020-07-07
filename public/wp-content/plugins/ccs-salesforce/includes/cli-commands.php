@@ -447,6 +447,17 @@ class Import
             $lotWordPressId = $this->getLotWordpressIdBySalesforceId($lot->getSalesforceId());
             $lot->setWordpressId($lotWordPressId);
 
+            if($lot->isHideLot()){
+                
+                $this->deleteLot($lot->getSalesforceId(), $lot->getLotNumber());
+
+                if($lotWordPressId != NULL){
+                    $this->deleteWordpressLot($lotWordPressId);
+                }
+                
+                continue;
+            }
+
             $lotSalesforceId = $lot->getSalesforceId();
 
             $this->addSuccess('Attempting to import Lot with SF ID: ' . $lotSalesforceId);
@@ -1039,6 +1050,30 @@ class Import
     }
 
 
+    /**
+     * @param $salesforceId
+     * @param $lotNumber
+     * Deleting lot from ccs_wordpress.ccs_lots
+     */
+    protected function deleteLot($salesforceId, $lotNumber)
+    {
+        $sql = " DELETE FROM ccs_lots WHERE salesforce_id = '" . $salesforceId . "' AND lot_number = '" . $lotNumber . "';";
+
+        $query = $this->dbConnection->connection->prepare($sql);
+        $query->execute();
+    }
+
+     /**
+     * @param $wordpressID
+     * Deleting lot from ccs_wordpress.ccs_15423_posts
+     */
+    protected function deleteWordpressLot($wordpressID)
+    {
+        $sql = " DELETE FROM ccs_15423_posts WHERE ID = '" . $wordpressID . "';";
+
+        $query = $this->dbConnection->connection->prepare($sql);
+        $query->execute();
+    }
     /**
      * Updates all framework titles in WordPress to include the RM Number
      *

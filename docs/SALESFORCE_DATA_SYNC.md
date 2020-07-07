@@ -52,8 +52,8 @@ Once we have saved the Framework above, we fetch the Lots attached to that Frame
 ```
 Master_Framework_Lot_Number__c > '0'
 AND
-Hide_this_Lot_from_Website__c = FALSE
 ```
+~~Hide_this_Lot_from_Website__c = FALSE~~
 
 We store each Lot locally in a database table.
 
@@ -154,6 +154,10 @@ The following process is run to save a single framework record.
 1. Gets lots for the framework from Salesforce
 1. For each lot:
     1. Get WordPress ID for existing lot from DB if it exists (`ccs_lots`)
+    1. If `Hide_this_Lot_from_Website__c` is checked on SF then it will:
+        1. Delete this lot from `ccs_lots` table
+        1. Delete this lot Wordpress from `ccs_15423_posts` table
+        1. Skip this lot from importing
     1. Save lot to DB  (create or update to `ccs_lots` table)
     1. Verify lot saved to DB
     1. Create lot in WordPress if it does not exist, updates wordpress_id in `ccs_lots` record

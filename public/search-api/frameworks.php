@@ -40,6 +40,14 @@ if (isset($_GET['category'])) {
       'condition' => 'AND',
       'value'     => $category
     ];
+
+    if ($category == "Energy"){
+        $filters['category'] = [
+            'field'     => 'category',
+            'condition' => 'OR',
+            'value'     => ["Energy", "Utilities & Fuels"]
+        ];
+    }
 }
 
 if (isset($_GET['status'])) {

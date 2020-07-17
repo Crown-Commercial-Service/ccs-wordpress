@@ -277,18 +277,18 @@ class Import
         // Import this Framework
         $framework = $this->importSingleFramework($framework);
 
-        // $this->updateFrameworkSearchIndexWithSingleFramework($framework);
+        $this->updateFrameworkSearchIndexWithSingleFramework($framework);
 
-        // // Mark whether a supplier has any live frameworks
-        // $this->checkSupplierLiveFrameworks();
+        // Mark whether a supplier has any live frameworks
+        $this->checkSupplierLiveFrameworks();
 
-        // $this->updateSupplierSearchIndex();
+        $this->updateSupplierSearchIndex();
 
-        // // Update framework titles in WordPress to include the RM number
-        // $this->updateFrameworkTitleInWordpress();
+        // Update framework titles in WordPress to include the RM number
+        $this->updateFrameworkTitleInWordpress();
 
-        // // Update lot titles in WordPress to include the RM number and the lot number
-        // $this->updateLotTitleInWordpress();
+        // Update lot titles in WordPress to include the RM number and the lot number
+        $this->updateLotTitleInWordpress();
 
         $response = [
           'importCount' => $this->importCount,

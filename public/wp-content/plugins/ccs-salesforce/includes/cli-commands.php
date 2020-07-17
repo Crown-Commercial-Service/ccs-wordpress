@@ -547,6 +547,20 @@ class Import
 
         }
 
+        $localLot = $this->getLotsalesforceIdByframeworkId($framework->getSalesforceId());
+
+        $SFlotsSaleforceId = $this->extractSaleforceIdFromLots($lots);
+
+        foreach ($localLot as $key => $value){
+            if (in_array($key, $SFlotsSaleforceId) == false){
+
+                $lotWordPressId = $this->getLotWordpressIdBySalesforceId($key);
+
+                $this->deleteLot($key, $value);
+                $this->deleteWordpressLot($lotWordPressId);
+            }
+        }
+
         return $framework;
 
     }
@@ -1000,6 +1014,41 @@ class Import
         }
 
         return $lotWordpressId;
+    }
+
+    /**
+     * @param null|string $frameworkId
+     * @return null
+     */
+    protected function getLotsalesforceIdByframeworkId(?string $frameworkId)
+    {
+        $sql = "SELECT salesforce_id, lot_number FROM ccs_lots WHERE framework_id = '" . $frameworkId . "';";
+
+        $query = $this->dbConnection->connection->prepare($sql);
+        $query->execute();
+
+        $sqlData = $query->fetchAll(\PDO::FETCH_KEY_PAIR);
+
+        if (count($sqlData) == 0 ){
+            $sqlData = NULL;
+        }
+
+        return $sqlData;
+    }
+
+    /**
+     * @param $lots
+     * @return array
+     */
+    protected function extractSaleforceIdFromLots($lots)
+    {
+        $SaleforceIds = [];
+
+        foreach ($lots as $lot) {
+            $SaleforceIds[] = $lot->getSalesforceId();
+        }
+
+        return $SaleforceIds;
     }
 
 

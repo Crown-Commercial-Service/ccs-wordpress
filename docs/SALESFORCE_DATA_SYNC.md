@@ -171,6 +171,9 @@ The following process is run to save a single framework record.
         1. Get contact details from temp contact tables (see previous step _Get all Salesforce contacts and save to temp tables_)
         1. Add contact details to LotSupplier object
         1. Save LotSupplier object to DB (`ccs_lot_supplier` table)
+1. If there are any lot that is deleted from SF then:
+    1. Delete the lot from `ccs_lots` table
+    1. Delete the lot Wordpress from `ccs_15423_posts` table
 
 ### checkSupplierLiveFrameworks
 

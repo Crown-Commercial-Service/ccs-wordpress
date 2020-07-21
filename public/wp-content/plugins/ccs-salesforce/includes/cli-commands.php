@@ -547,12 +547,12 @@ class Import
 
         }
 
-        $localLot = $this->getLotsalesforceIdByframeworkId($framework->getSalesforceId());
+        $localLot = $this->getLotSalesforceIdByFrameworkId($framework->getSalesforceId());
 
-        $SFlotsSaleforceId = $this->extractSaleforceIdFromLots($lots);
+        $SFlotsSalesforceId = $this->extractSalesforceIdFromLots($lots);
 
         foreach ($localLot as $key => $value){
-            if (in_array($key, $SFlotsSaleforceId) == false){
+            if (!in_array($key, $SFlotsSalesforceId)){
 
                 $lotWordPressId = $this->getLotWordpressIdBySalesforceId($key);
 
@@ -1020,7 +1020,7 @@ class Import
      * @param null|string $frameworkId
      * @return null
      */
-    protected function getLotsalesforceIdByframeworkId(?string $frameworkId)
+    protected function getLotSalesforceIdByFrameworkId(?string $frameworkId)
     {
         $sql = "SELECT salesforce_id, lot_number FROM ccs_lots WHERE framework_id = '" . $frameworkId . "';";
 
@@ -1040,15 +1040,15 @@ class Import
      * @param $lots
      * @return array
      */
-    protected function extractSaleforceIdFromLots($lots)
+    protected function extractSalesforceIdFromLots($lots)
     {
-        $SaleforceIds = [];
+        $SalesforceIds = [];
 
         foreach ($lots as $lot) {
-            $SaleforceIds[] = $lot->getSalesforceId();
+            $SalesforceIds[] = $lot->getSalesforceId();
         }
 
-        return $SaleforceIds;
+        return $SalesforceIds;
     }
 
 

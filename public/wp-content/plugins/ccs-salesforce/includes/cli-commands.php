@@ -549,10 +549,10 @@ class Import
 
         $localLot = $this->getLotSalesforceIdByFrameworkId($framework->getSalesforceId());
 
-        $SFlotsSalesforceId = $this->extractSalesforceIdFromLots($lots);
+        $salesforcelotsSalesforceId = $this->extractSalesforceIdFromLots($lots);
 
         foreach ($localLot as $key => $value){
-            if (!in_array($key, $SFlotsSalesforceId)){
+            if (!in_array($key, $salesforcelotsSalesforceId)){
 
                 $lotWordPressId = $this->getLotWordpressIdBySalesforceId($key);
 
@@ -1042,13 +1042,13 @@ class Import
      */
     protected function extractSalesforceIdFromLots($lots)
     {
-        $SalesforceIds = [];
+        $salesforceIds = [];
 
         foreach ($lots as $lot) {
-            $SalesforceIds[] = $lot->getSalesforceId();
+            $salesforceIds[] = $lot->getSalesforceId();
         }
 
-        return $SalesforceIds;
+        return $salesforceIds;
     }
 
 

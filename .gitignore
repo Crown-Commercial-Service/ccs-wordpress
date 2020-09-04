@@ -30,6 +30,8 @@ var/log/*.log
 .env
 vendor
 vendor/*
+.vscode
+.vscode/*
 
 # Wordpress
 # Account for plugins that include a vendor directory but no composer.json file

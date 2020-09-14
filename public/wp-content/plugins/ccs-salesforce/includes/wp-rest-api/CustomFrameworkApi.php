@@ -258,6 +258,11 @@ class CustomFrameworkApi
                     }
                 }
 
+                // Removing same supplier that has different contact detail 
+                if (in_array($supplier->getId(),array_column($suppliersData,'supplier_id'))) {
+                    continue;
+                }
+
                 $suppliersData[$index] =
                     [
                         'supplier_name' => $supplier->getName(),

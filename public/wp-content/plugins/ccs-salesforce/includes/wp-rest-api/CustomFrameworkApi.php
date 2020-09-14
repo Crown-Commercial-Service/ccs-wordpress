@@ -258,7 +258,7 @@ class CustomFrameworkApi
                     }
                 }
 
-                // Removing same supplier that has different contact detail 
+                // Ignore same supplier that has different contact detail (only show the supplier once )
                 if (in_array($supplier->getId(),array_column($suppliersData,'supplier_id'))) {
                     continue;
                 }

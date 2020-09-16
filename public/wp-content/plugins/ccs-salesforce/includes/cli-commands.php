@@ -447,17 +447,6 @@ class Import
             $lotWordPressId = $this->getLotWordpressIdBySalesforceId($lot->getSalesforceId());
             $lot->setWordpressId($lotWordPressId);
 
-            if($lot->isHideLot()){
-                
-                $this->deleteLot($lot->getSalesforceId(), $lot->getLotNumber());
-
-                if($lotWordPressId != NULL){
-                    $this->deleteWordpressLot($lotWordPressId);
-                }
-                
-                continue;
-            }
-
             $lotSalesforceId = $lot->getSalesforceId();
 
             $this->addSuccess('Attempting to import Lot with SF ID: ' . $lotSalesforceId);

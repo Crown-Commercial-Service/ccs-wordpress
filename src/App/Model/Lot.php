@@ -48,10 +48,7 @@ class Lot extends AbstractModel
      * @var bool
      */
     protected $hideSuppliers = false;
-    /**
-     * @var bool
-     */
-    protected $hideLot = false;
+
     /**
      * @return string
      */
@@ -241,22 +238,6 @@ class Lot extends AbstractModel
         $this->hideSuppliers = $hideSuppliers;
     }
 
-     /**
-     * @return bool
-     */
-    public function isHideLot(): bool
-    {
-        return $this->hideLot;
-    }
-
-    /**
-     * @param bool $hideLot
-     */
-    public function setHideLot(bool $hideLot): void
-    {
-        $this->hideLot = $hideLot;
-    }
-
     /**
      * Returns a simple text array representing the object
      *
@@ -271,7 +252,6 @@ class Lot extends AbstractModel
           'salesforce_id'   => $this->getSalesforceId(),
           'lot_number'      => $this->getLotNumber(),
           'title'           => $this->getTitle(),
-          'hideLot'         => $this->isHideLot(),
           'status'          => $this->getStatus(),
           'description'     => $this->getDescription(),
           'expiry_date'     => !empty($this->getExpiryDate()) ? $this->getExpiryDate()->format('Y-m-d') : null,

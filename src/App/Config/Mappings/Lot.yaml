@@ -7,4 +7,3 @@ properties:
   status: Status__c
   expiryDate: Expiry_Date__c
   hideSuppliers: Hide_Lot_Suppliers_from_Website__c
-  hideLot: Hide_this_Lot_from_Website__c

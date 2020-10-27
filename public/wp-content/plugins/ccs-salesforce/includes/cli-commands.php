@@ -512,6 +512,11 @@ class Import
                     $lotSupplier->setTradingName($tradingName);
                 }
 
+                if ($guarantorId = $this->salesforceApi->getLotSuppliersGuarantor($lotSalesforceId,$supplier->getSalesforceId())){
+                    $this->addSuccess('Framework supplier Guarantor found.');
+                    $lotSupplier->setGuarantorId($guarantorId);
+                }
+
                 $this->addSuccess('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());
 
                 try {
@@ -525,7 +530,7 @@ class Import
                     $this->addError('Supplier contact details for Lot ' . $lotSupplier->getLotId() . ' and Supplier ' . $lotSupplier->getSupplierId() . ' not found. Error: ' . $e->getMessage(), 'suppliers');
                 }
 
-
+                
                 try {
                     $this->lotSupplierRepository->create($lotSupplier);
                 } catch (\Exception $e) {

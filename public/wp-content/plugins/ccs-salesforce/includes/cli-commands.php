@@ -364,17 +364,17 @@ class Import
         }
 
         //Mark whether a supplier has any live frameworks
-        $this->checkSupplierLiveFrameworks();
+        // $this->checkSupplierLiveFrameworks();
 
         // Update elasticsearch
-        $this->updateFrameworkSearchIndex();
-        $this->updateSupplierSearchIndex();
+        // $this->updateFrameworkSearchIndex();
+        // $this->updateSupplierSearchIndex();
 
-        //Update framework titles in WordPress to include the RM number
-        $this->updateFrameworkTitleInWordpress();
+        // //Update framework titles in WordPress to include the RM number
+        // $this->updateFrameworkTitleInWordpress();
 
-        //Update lot titles in WordPress to include the RM number and the lot number
-        $this->updateLotTitleInWordpress();
+        // //Update lot titles in WordPress to include the RM number and the lot number
+        // $this->updateLotTitleInWordpress();
 
         $timer = round(microtime(true) - $this->startTime, 2);
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
@@ -499,7 +499,8 @@ class Import
                         $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
                         continue;
                     }
-                    $this->addSuccess('Supplier ' . $supplier->getSalesforceId() . ' imported.', 'suppliers');
+
+                $this->addSuccess('Supplier ' . $supplier->getSalesforceId() . ' imported.', 'suppliers');
 
                 $lotSupplier = new LotSupplier([
                   'lot_id'      => $lot->getSalesforceId(),
@@ -515,6 +516,14 @@ class Import
                 if ($guarantorId = $this->salesforceApi->getLotSuppliersGuarantor($lotSalesforceId,$supplier->getSalesforceId())){
                     $this->addSuccess('Framework supplier Guarantor found.');
                     $lotSupplier->setGuarantorId($guarantorId);
+
+                    $guarantorSupplier = $this->salesforceApi->getSupplier($lotSupplier->getGuarantorId());
+
+                    if (!$this->supplierRepository->createOrUpdateExcludingLiveFrameworkField('salesforce_id', $guarantorSupplier->getSalesforceId(), $guarantorSupplier)) {
+                        $this->addError('Guarantor Supplier ' . $guarantorSupplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
+                    }else{
+                        $this->addSuccess('Guarantor Supplier imported.');
+                    }
                 }
 
                 $this->addSuccess('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());

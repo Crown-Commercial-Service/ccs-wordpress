@@ -364,17 +364,17 @@ class Import
         }
 
         //Mark whether a supplier has any live frameworks
-        // $this->checkSupplierLiveFrameworks();
+        $this->checkSupplierLiveFrameworks();
 
         // Update elasticsearch
-        // $this->updateFrameworkSearchIndex();
-        // $this->updateSupplierSearchIndex();
+        $this->updateFrameworkSearchIndex();
+        $this->updateSupplierSearchIndex();
 
-        // //Update framework titles in WordPress to include the RM number
-        // $this->updateFrameworkTitleInWordpress();
+        //Update framework titles in WordPress to include the RM number
+        $this->updateFrameworkTitleInWordpress();
 
-        // //Update lot titles in WordPress to include the RM number and the lot number
-        // $this->updateLotTitleInWordpress();
+        //Update lot titles in WordPress to include the RM number and the lot number
+        $this->updateLotTitleInWordpress();
 
         $timer = round(microtime(true) - $this->startTime, 2);
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));

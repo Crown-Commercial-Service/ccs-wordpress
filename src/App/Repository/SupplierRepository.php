@@ -248,6 +248,20 @@ AND on_live_frameworks = TRUE ';
         return $this->findSingleRow($sql);
     }
 
+    /**
+     * Find a Supplier
+     *
+     * @param $salesforce_id
+     * @return mixed
+     */
+    public function findASupplierBySalesforceId($salesforce_id)
+    {
+
+        $sql = 'SELECT * from `ccs_suppliers` 
+WHERE salesforce_id = \'' . $salesforce_id. '\'';
+
+        return $this->findSingleRow($sql);
+    }
 
     /**
      * Count all unique suppliers for lots

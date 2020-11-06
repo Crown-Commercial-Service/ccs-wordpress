@@ -258,7 +258,7 @@ AND on_live_frameworks = TRUE ';
     {
 
         $sql = 'SELECT * from `ccs_suppliers` 
-WHERE salesforce_id = \'' . $salesforce_id. '\'';
+WHERE salesforce_id = \'' . $salesforce_id . '\'';
 
         return $this->findSingleRow($sql);
     }

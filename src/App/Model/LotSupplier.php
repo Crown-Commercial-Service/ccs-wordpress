@@ -36,7 +36,10 @@ class LotSupplier extends AbstractModel
      * @var string
      */
     protected $tradingName;
-
+    /**
+     * @var string
+     */
+    protected $guarantor_id;
     /**
      * @return string
      */
@@ -169,6 +172,24 @@ class LotSupplier extends AbstractModel
     public function setTradingName(?string $tradingName): LotSupplier
     {
         $this->tradingName = $tradingName;
+        return $this;
+    }
+
+     /**
+     * @return string
+     */
+    public function getGuarantorId(): ?string
+    {
+        return $this->guarantor_id;
+    }
+
+    /**
+     * @param string $guarantor_id
+     * @return LotSupplier
+     */
+    public function setGuarantorId(?string $guarantor_id): LotSupplier
+    {
+        $this->guarantor_id = $guarantor_id;
         return $this;
     }
 }

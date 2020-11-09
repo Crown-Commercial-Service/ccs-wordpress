@@ -499,7 +499,8 @@ class Import
                         $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
                         continue;
                     }
-                    $this->addSuccess('Supplier ' . $supplier->getSalesforceId() . ' imported.', 'suppliers');
+
+                $this->addSuccess('Supplier ' . $supplier->getSalesforceId() . ' imported.', 'suppliers');
 
                 $lotSupplier = new LotSupplier([
                   'lot_id'      => $lot->getSalesforceId(),
@@ -510,6 +511,19 @@ class Import
                   $supplier->getSalesforceId())) {
                     $this->addSuccess('Framework supplier trading name found.');
                     $lotSupplier->setTradingName($tradingName);
+                }
+
+                if ($guarantorId = $this->salesforceApi->getLotSuppliersGuarantor($lotSalesforceId,$supplier->getSalesforceId())){
+                    $this->addSuccess('Framework supplier Guarantor found.');
+                    $lotSupplier->setGuarantorId($guarantorId);
+
+                    $guarantorSupplier = $this->salesforceApi->getSupplier($lotSupplier->getGuarantorId());
+
+                    if (!$this->supplierRepository->createOrUpdateExcludingLiveFrameworkField('salesforce_id', $guarantorSupplier->getSalesforceId(), $guarantorSupplier)) {
+                        $this->addError('Guarantor Supplier ' . $guarantorSupplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
+                    }else{
+                        $this->addSuccess('Guarantor Supplier imported.');
+                    }
                 }
 
                 $this->addSuccess('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());
@@ -525,7 +539,7 @@ class Import
                     $this->addError('Supplier contact details for Lot ' . $lotSupplier->getLotId() . ' and Supplier ' . $lotSupplier->getSupplierId() . ' not found. Error: ' . $e->getMessage(), 'suppliers');
                 }
 
-
+                
                 try {
                     $this->lotSupplierRepository->create($lotSupplier);
                 } catch (\Exception $e) {

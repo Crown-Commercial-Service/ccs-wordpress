@@ -113,6 +113,9 @@ class CustomSupplierApi
                             $currentLotData['supplier_contact_email'] = $lotSupplier->getContactEmail();
                             $currentLotData['supplier_trading_name'] = $lotSupplier->getTradingName();
                             $currentLotData['supplier_website_contact'] = $lotSupplier->isWebsiteContact();
+                            if ($guarantorSupplier = $supplierRepository->findASupplierBySalesforceId($lotSupplier->getGuarantorId())){
+                                $currentLotData['guarantor_name'] = $guarantorSupplier->getName();
+                            }
 
                             // If the trading name isn't empty, then add it
                             // to the array of trading names for the supplier
@@ -125,6 +128,7 @@ class CustomSupplierApi
                             $currentLotData['supplier_contact_email'] = null;
                             $currentLotData['supplier_trading_name'] = null;
                             $currentLotData['supplier_website_contact'] = null;
+                            $currentLotData['guarantor_name'] = null;
                         }
 
                         $lotsData[] = $currentLotData;

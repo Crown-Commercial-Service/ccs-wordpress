@@ -885,6 +885,10 @@ class Import
             }
 
 
+            if($this->checkSupplierHaveGuarantor($supplier->getSalesforceId())){
+                $supplier->setHaveGuarantor(true);
+            }
+
             if (!$liveFrameworks) {
                 // Remove Supplier from index
                 $this->supplierSearchClient->removeDocument($supplier);
@@ -905,6 +909,40 @@ class Import
 
         return;
     }
+
+    /**
+     * Check if a supplier have any guarantor
+     *
+     */
+    private function checkSupplierHaveGuarantor($supplierSalesforceId) {
+        
+        $frameworkRepository = new FrameworkRepository();
+        $lotSupplierRepository = new LotSupplierRepository();
+        $lotRepository = new LotRepository();
+      
+        $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplierSalesforceId);
+        $have_guarantor = false;
+      
+        if($frameworks !== false) {
+
+            foreach($frameworks as $framework) {
+                $lots = $lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');                
+                
+                foreach($lots as $lot) {
+                    $lotSupplier = $lotSupplierRepository->findByLotIdAndSupplierId($lot->getSalesforceId(), $supplierSalesforceId);
+        
+                    if($lotSupplier && $lotSupplier->getGuarantorId() != null){
+                        $have_guarantor = true;
+                        continue;                        
+                    }
+                }
+                if($have_guarantor){
+                    continue;
+                }
+            }
+        }
+        return $have_guarantor;
+      }
 
 
     /**

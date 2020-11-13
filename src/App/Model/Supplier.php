@@ -68,6 +68,10 @@ class Supplier extends AbstractModel
      * @var bool
      */
     protected $onLiveFrameworks = false;
+    /**
+     * @var bool
+     */
+    protected $haveGuarantor = false;
     
     /**
      * @return string
@@ -320,6 +324,23 @@ class Supplier extends AbstractModel
         return $this;
     }
 
+    /**
+     * @return bool
+     */
+    public function getHaveGuarantor(): ?bool
+    {
+        return $this->haveGuarantor;
+    }
+
+    /**
+     * @param bool $haveGuarantor
+     * @return Supplier
+     */
+    public function setHaveGuarantor(?bool $haveGuarantor): Supplier
+    {
+        $this->haveGuarantor = $haveGuarantor;
+        return $this;
+    }
     /**
      * @return array
      */

@@ -37,7 +37,7 @@ require __DIR__ . '/includes/wp-rest-api/CustomSupplierApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/CustomTrainingApi.php';
 
-require __DIR__ . '/includes/wp-rest-api/CustomCallToActionApi.php';
+require __DIR__ . '/includes/wp-rest-api/CustomOptionCardsApi.php';
 
 
 /**
@@ -60,7 +60,7 @@ function run_plugin()
     $lotApi = new CustomLotApi();
     $supplierApi = new CustomSupplierApi();
     $trainingApi = new CustomTrainingApi();
-    $callToActionApi = new CustomCallToActionApi();
+    $optionCardsApi = new CustomOptionCardsApi();
 
 
     //Get all frameworks
@@ -139,10 +139,10 @@ function run_plugin()
     add_action('revisionize_after_publish', 'updated_post_meta', 20, 1);
 
      //Get the call to action data required for all pages
-     add_action('rest_api_init', function () use ($callToActionApi) {
-        register_rest_route('ccs/v1', '/call-to-actions/0', array(
+     add_action('rest_api_init', function () use ($optionCardsApi) {
+        register_rest_route('ccs/v1', '/option-cards/0', array(
             'methods' => 'GET',
-            'callback' => [$callToActionApi, 'get_call_to_actions']
+            'callback' => [$optionCardsApi, 'get_option_cards']
         ));
     });
 

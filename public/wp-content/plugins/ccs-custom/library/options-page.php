@@ -52,14 +52,14 @@ acf_add_options_page( array(
 acf_add_options_page( array(
 
     /* (string) The title displayed on the options page. Required. */
-    'page_title' => 'Page Call to Actions',
+    'page_title' => 'Option Cards',
 
     /* (string) The title displayed in the wp-admin sidebar. Defaults to page_title */
-    'menu_title' => 'Page Call to Actions',
+    'menu_title' => 'Page Option Cards',
 
     /* (string) The URL slug used to uniquely identify this options page.
     Defaults to a url friendly version of menu_title */
-    'menu_slug' => 'call-to-actions',
+    'menu_slug' => 'option-cards',
 
     /* (string) The capability required for this menu to be displayed to the user. Defaults to edit_posts.
     Read more about capability here: http://codex.wordpress.org/Roles_and_Capabilities */
@@ -94,6 +94,6 @@ acf_add_options_page( array(
     'update_button'		=> __('Update', 'acf'),
 
     /* (string) The message shown above the form on submit. Added in v5.6.0. */
-    'updated_message'	=> __("Page modules Updated", 'acf'),
+    'updated_message'	=> __("Option Cards Updated", 'acf'),
 
 ) );

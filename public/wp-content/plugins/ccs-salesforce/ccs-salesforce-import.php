@@ -138,7 +138,7 @@ function run_plugin()
     add_action('revisionize_after_publish', 'updated_post_details', 20, 1);
     add_action('revisionize_after_publish', 'updated_post_meta', 20, 1);
 
-     //Get the call to action data required for all pages
+     //Get the option cards data required for all pages
      add_action('rest_api_init', function () use ($optionCardsApi) {
         register_rest_route('ccs/v1', '/option-cards/0', array(
             'methods' => 'GET',

@@ -38,6 +38,7 @@ class CustomOptionCardsApi
                 $firstOptionCard['title'] = get_sub_field('title');
                 $firstOptionCard['description'] = get_sub_field('description');
                 $firstOptionCard['link'] = get_sub_field('link');
+                $firstOptionCard['link_url'] = rtrim(get_sub_field('link_url'));
             endwhile;
             
         endif;
@@ -48,6 +49,7 @@ class CustomOptionCardsApi
                 $secondOptionCard['title'] = get_sub_field('title');
                 $secondOptionCard['description'] = get_sub_field('description');
                 $secondOptionCard['link'] =  get_sub_field('link');
+                $secondOptionCard['link_url'] = rtrim(get_sub_field('link_url'));
             endwhile;
         endif;
 

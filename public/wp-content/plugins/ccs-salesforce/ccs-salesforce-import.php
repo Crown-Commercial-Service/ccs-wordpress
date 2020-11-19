@@ -37,6 +37,8 @@ require __DIR__ . '/includes/wp-rest-api/CustomSupplierApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/CustomTrainingApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/CustomOptionCardsApi.php';
+
 
 /**
  * Begins execution of the plugin.
@@ -58,6 +60,7 @@ function run_plugin()
     $lotApi = new CustomLotApi();
     $supplierApi = new CustomSupplierApi();
     $trainingApi = new CustomTrainingApi();
+    $optionCardsApi = new CustomOptionCardsApi();
 
 
     //Get all frameworks
@@ -134,6 +137,14 @@ function run_plugin()
     // Save WordPress data when Revisionize posts are "merged" back into their parent post
     add_action('revisionize_after_publish', 'updated_post_details', 20, 1);
     add_action('revisionize_after_publish', 'updated_post_meta', 20, 1);
+
+     //Get the option cards data required for all pages
+     add_action('rest_api_init', function () use ($optionCardsApi) {
+        register_rest_route('ccs/v1', '/option-cards/0', array(
+            'methods' => 'GET',
+            'callback' => [$optionCardsApi, 'get_option_cards']
+        ));
+    });
 
 }
 

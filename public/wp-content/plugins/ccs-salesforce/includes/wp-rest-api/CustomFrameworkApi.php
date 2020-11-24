@@ -243,6 +243,11 @@ class CustomFrameworkApi
         if ($suppliers !== false) {
             foreach ($suppliers as $index => $supplier) {
 
+                // Ignore same supplier that has different contact detail (only show the supplier once )
+                if (in_array($supplier->getId(),array_column($suppliersData,'supplier_id'))) {
+                    continue;
+                }
+
                 $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
                 $liveFrameworks = [];
 
@@ -339,7 +344,7 @@ class CustomFrameworkApi
                         $framework->getTerms() !== 'DPS')) {
 
                     $frameworkExpectedLiveDate = $framework->getExpectedLiveDate();
-                    
+
                     if($frameworkExpectedLiveDate == NULL){
                         continue;
                     }elseif($framework->getExpectedLiveDate()->format('Y-m-d') > date("Y-m-d")){

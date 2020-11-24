@@ -39,6 +39,8 @@ require __DIR__ . '/includes/wp-rest-api/CustomTrainingApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/CustomOptionCardsApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/CustomUpcomingDealsApi.php';
+
 
 /**
  * Begins execution of the plugin.
@@ -61,6 +63,7 @@ function run_plugin()
     $supplierApi = new CustomSupplierApi();
     $trainingApi = new CustomTrainingApi();
     $optionCardsApi = new CustomOptionCardsApi();
+    $upcomingDealsApi = new CustomUpcomingDealsApi();
 
 
     //Get all frameworks
@@ -143,6 +146,14 @@ function run_plugin()
         register_rest_route('ccs/v1', '/option-cards/0', array(
             'methods' => 'GET',
             'callback' => [$optionCardsApi, 'get_option_cards']
+        ));
+    });
+
+    //Get the upcoming deals data required for upcoming deals page
+    add_action('rest_api_init', function () use ($upcomingDealsApi) {
+        register_rest_route('ccs/v1', '/upcoming-deals-page/0', array(
+            'methods' => 'GET',
+            'callback' => [$upcomingDealsApi, 'get_upcoming_deals']
         ));
     });
 

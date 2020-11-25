@@ -41,6 +41,13 @@ class CustomUpcomingDealsApi
             
         endif;
 
+        $table0 = [];
+        if (have_rows('table_0', 'option')):
+            while (have_rows('table_0', 'option')): the_row();
+                $table0['title'] = get_sub_field('title');
+            endwhile;
+        endif;
+
         $table1 = [];
         if (have_rows('table_1', 'option')):
             while (have_rows('table_1', 'option')): the_row();
@@ -72,6 +79,7 @@ class CustomUpcomingDealsApi
 
         return [
           'upcomingDealsInfo'  => $upcomingDealsInfo,
+          'table_0' => $table0,
           'table_1' => $table1,
           'table_2' => $table2,
           'table_3' => $table3,

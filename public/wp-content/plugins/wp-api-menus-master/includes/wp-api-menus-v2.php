@@ -375,7 +375,7 @@ if ( ! class_exists( 'WP_REST_Menus' ) ) :
                 'order'       => (int) $item['menu_order'],
                 'parent'      => abs( $item['menu_item_parent'] ),
                 'title'       => $item['title'],
-                'url'         => $item['url'],
+                'url'         => $this->cleanURL($item['url']),
                 'attr'        => $item['attr_title'],
                 'target'      => $item['target'],
                 'classes'     => implode( ' ', $item['classes'] ),
@@ -395,8 +395,22 @@ if ( ! class_exists( 'WP_REST_Menus' ) ) :
             return apply_filters( 'rest_menus_format_menu_item', $menu_item );
         }
 
+        /**
+         * Format the url for direct use in the frontend.
+         *
+         * @param  string  $url
+         * @return string  $url formatted so the frontend can just assign it to menu button
+         */
+        private function cleanURL($url){
 
+            if(substr($url, 0, 1 ) == '/' ){
+                return getenv('CCS_FRONTEND_URL') . $url;
+            }elseif(strpos($url, getenv('WP_SITEURL_WITH_HTTP')) !== false){
+                return str_replace(getenv('WP_SITEURL_WITH_HTTP'),getenv('CCS_FRONTEND_URL'),$url);
+            }
+
+            return $url;
+        }
     }
-
 
 endif;

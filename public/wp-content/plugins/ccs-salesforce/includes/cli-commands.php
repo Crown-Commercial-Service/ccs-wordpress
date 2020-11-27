@@ -499,7 +499,8 @@ class Import
                         $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
                         continue;
                     }
-                    $this->addSuccess('Supplier ' . $supplier->getSalesforceId() . ' imported.', 'suppliers');
+
+                $this->addSuccess('Supplier ' . $supplier->getSalesforceId() . ' imported.', 'suppliers');
 
                 $lotSupplier = new LotSupplier([
                   'lot_id'      => $lot->getSalesforceId(),
@@ -510,6 +511,19 @@ class Import
                   $supplier->getSalesforceId())) {
                     $this->addSuccess('Framework supplier trading name found.');
                     $lotSupplier->setTradingName($tradingName);
+                }
+
+                if ($guarantorId = $this->salesforceApi->getLotSuppliersGuarantor($lotSalesforceId,$supplier->getSalesforceId())){
+                    $this->addSuccess('Framework supplier Guarantor found.');
+                    $lotSupplier->setGuarantorId($guarantorId);
+
+                    $guarantorSupplier = $this->salesforceApi->getSupplier($lotSupplier->getGuarantorId());
+
+                    if (!$this->supplierRepository->createOrUpdateExcludingLiveFrameworkField('salesforce_id', $guarantorSupplier->getSalesforceId(), $guarantorSupplier)) {
+                        $this->addError('Guarantor Supplier ' . $guarantorSupplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
+                    }else{
+                        $this->addSuccess('Guarantor Supplier imported.');
+                    }
                 }
 
                 $this->addSuccess('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());
@@ -525,7 +539,7 @@ class Import
                     $this->addError('Supplier contact details for Lot ' . $lotSupplier->getLotId() . ' and Supplier ' . $lotSupplier->getSupplierId() . ' not found. Error: ' . $e->getMessage(), 'suppliers');
                 }
 
-
+                
                 try {
                     $this->lotSupplierRepository->create($lotSupplier);
                 } catch (\Exception $e) {
@@ -871,6 +885,10 @@ class Import
             }
 
 
+            if($this->checkSupplierHaveGuarantor($supplier->getSalesforceId())){
+                $supplier->setHaveGuarantor(true);
+            }
+
             if (!$liveFrameworks) {
                 // Remove Supplier from index
                 $this->supplierSearchClient->removeDocument($supplier);
@@ -891,6 +909,40 @@ class Import
 
         return;
     }
+
+    /**
+     * Check if a supplier have any guarantor
+     *
+     */
+    private function checkSupplierHaveGuarantor($supplierSalesforceId) {
+        
+        $frameworkRepository = new FrameworkRepository();
+        $lotSupplierRepository = new LotSupplierRepository();
+        $lotRepository = new LotRepository();
+      
+        $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplierSalesforceId);
+        $have_guarantor = false;
+      
+        if($frameworks !== false) {
+
+            foreach($frameworks as $framework) {
+                $lots = $lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');                
+                
+                foreach($lots as $lot) {
+                    $lotSupplier = $lotSupplierRepository->findByLotIdAndSupplierId($lot->getSalesforceId(), $supplierSalesforceId);
+        
+                    if($lotSupplier && $lotSupplier->getGuarantorId() != null){
+                        $have_guarantor = true;
+                        continue;                        
+                    }
+                }
+                if($have_guarantor){
+                    continue;
+                }
+            }
+        }
+        return $have_guarantor;
+      }
 
 
     /**

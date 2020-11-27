@@ -116,7 +116,37 @@ $field_group = ( new fewacf\field_group( 'Page components', '202001031015a', $lo
  */
 $field_group->add_brick((new bricks\group_page_content_default('page_components', '202001031015b')));
 
-/*
- * Register the field group
+	/*
+	* Register the field group
  */
 $field_group->register();
+
+
+
+
+/**
+ * Define the field group
+ *
+ * Field groups with a lower menu_order will appear first on the edit screens (change by 10,20,30 increments to give yourself space to add)
+ */
+$field_group = ( new fewacf\field_group( 'Option Cards', '1605530119a', $location, 60, [
+	'position' => 'normal',
+]));
+
+/**
+ * Define the fields
+ */
+
+$field_group->add_field(new acf_fields\true_false('Include Option Cards?', 'option_cards', '1605530119b', [
+	'default_value' => ['value' => '1'],
+]));
+
+	/*
+	* Register the field group
+ */
+$field_group->register();
+
+
+
+
+

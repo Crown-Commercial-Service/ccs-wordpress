@@ -45,6 +45,7 @@ class CustomUpcomingDealsApi
         if (have_rows('table_0', 'option')):
             while (have_rows('table_0', 'option')): the_row();
                 $table0['title'] = get_sub_field('title');
+                $table0['caption'] = get_sub_field('caption');
             endwhile;
         endif;
 
@@ -60,6 +61,7 @@ class CustomUpcomingDealsApi
         if (have_rows('table_2', 'option')):
             while (have_rows('table_2', 'option')): the_row();
                 $table2['title'] = get_sub_field('title');
+                $table2['caption'] = get_sub_field('caption');
             endwhile;
         endif;
 
@@ -67,6 +69,7 @@ class CustomUpcomingDealsApi
         if (have_rows('table_3', 'option')):
             while (have_rows('table_3', 'option')): the_row();
                 $table3['title'] = get_sub_field('title');
+                $table3['caption'] = get_sub_field('caption');
             endwhile;
         endif;
 
@@ -74,6 +77,7 @@ class CustomUpcomingDealsApi
         if (have_rows('table_4', 'option')):
             while (have_rows('table_4', 'option')): the_row();
                 $table4['title'] = get_sub_field('title');
+                $table4['caption'] = get_sub_field('caption');
             endwhile;
         endif;
 

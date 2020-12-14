@@ -372,4 +372,18 @@ EOD;
 
         return $accountId = $queryResponse->records[0]->Trading_Name__c;
     }
+
+    public function getLotSuppliersGuarantor($frameworkLotId, $supplierId)
+    {
+        $queryResponse = $this->query("SELECT Guarantor__c from Supplier_Framework_Lot__c WHERE Supplier__c = '" . $supplierId . "' AND Master_Framework_Lot__c = '" . $frameworkLotId . "' ");
+
+        if ($queryResponse->totalSize == 0) {
+            return false;
+        }
+        if (empty($queryResponse->records[0]->Guarantor__c)) {
+            return false;
+        }
+
+        return $guarantorId = $queryResponse->records[0]->Guarantor__c;
+    }
 }

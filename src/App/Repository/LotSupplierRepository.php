@@ -14,6 +14,7 @@ class LotSupplierRepository extends AbstractRepository
       'contact_email'   => ':contact_email',
       'website_contact' => ':website_contact',
       'trading_name'    => ':trading_name',
+      'guarantor_id'    => ':guarantor_id',
     ];
 
     /**
@@ -121,6 +122,11 @@ class LotSupplierRepository extends AbstractRepository
         if (isset($databaseBindings['trading_name'])) {
             $tradingName = $lotSupplier->getTradingName();
             $query->bindParam(':trading_name', $tradingName, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['guarantor_id'])) {
+            $guarantor_id = $lotSupplier->getGuarantorId();
+            $query->bindParam(':guarantor_id', $guarantor_id, \PDO::PARAM_STR);
         }
 
         return $query;

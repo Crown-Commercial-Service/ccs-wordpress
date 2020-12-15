@@ -191,12 +191,12 @@ class SupplierRepository extends AbstractRepository
      */
     public function findLotSuppliers($lotIds, $paginate = false, $limit = 20, $page = 0, $unique = false)
     {
-        if($unique){
+        if ($unique) {
             $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, ls.trading_name, s.phone_number, s.street, s.city, s.postcode, s.website, s.country, ls.trading_name, IFNULL(ls.trading_name, s.name) as order_name FROM `ccs_suppliers` s
 JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
 WHERE ls.lot_id IN (\'' . $lotIds . '\')
 ORDER BY order_name';
-        }else{
+        } else {
             $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, ls.trading_name, s.phone_number, s.street, s.city, s.postcode, s.website, s.country, ls.contact_name, ls.contact_email, ls.trading_name, IFNULL(ls.trading_name, s.name) as order_name FROM `ccs_suppliers` s
 JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
 WHERE ls.lot_id IN (\'' . $lotIds . '\')

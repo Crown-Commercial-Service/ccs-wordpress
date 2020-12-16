@@ -1,7 +1,7 @@
 # CCS ElasticSearch Documentation
 
 ## Framework Search 
-The search term is compared against the following fields and results are displayed in decreasing order of score. The score can be determined by the number of fields matched to the search term. A boost (or multiplier) is applied to specific fields to increase the weight or relevance of that match. 
+The search term is compared against the following fields and results are displayed in decreasing order of score. The score can be determined by the number of fields matched to the search term. A boost (or multiplier, as indicated below) is applied to specific fields to increase the weight or relevance of that match. 
 
 - title ^3
 - rm_number_numerical ^3
@@ -12,7 +12,7 @@ The search term is compared against the following fields and results are display
 - how_to_buy
 
 ### Fuzziness
-Fuzziness is set to '1' - A typo of a single character is allowed in the string matches
+Fuzziness is set to '1' : A typo of a single character is allowed in the string matches
 
 ## Supplier Search 
 The search term is only compared against the name of the supplier. 

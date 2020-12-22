@@ -1,28 +1,13 @@
 # CCS ElasticSearch Documentation
 
-## Framework Search 
-The search term is compared against the following fields and results are displayed in decreasing order of score. The score can be determined by the number of fields matched to the search term. A boost (or multiplier, as indicated below) is applied to specific fields to increase the weight or relevance of that match. 
+## Indexing
+All framework and supplier data is imported into Wordpress from Salesforce. 
 
-- title ^3
-- rm_number_numerical ^3
-- description ^2
-- keywords ^2
-- summary
-- benefits
-- how_to_buy
+Suppliers are indexed after everything has been imported and saved, towards the end of a successful import run.
 
-### Fuzziness
-Fuzziness is set to '1' : A typo of a single character is allowed in the string matches
+Frameworks are indexed one by one, after each Framework has been imported/updated.
 
-## Supplier Search 
-The search term is only compared against the name of the supplier. 
-
-
-## Implementation
-
-The code for the Elastic Search endpoints can be found here:
-
-```public/search-api```
+Indexing is applied by Elasticsearch. 
 
 ## Manually indexing
 
@@ -39,3 +24,47 @@ Framework data can be manually indexed via the following CLI command (please run
 ```
 wp salesforce import updateFrameworkSearchIndex
 ```
+
+## Framework Search 
+The search term is compared against the following fields and results are displayed in decreasing order of score. The score can be determined by the number of fields matched to the search term. A boost (or multiplier, as indicated below) is applied to specific fields to increase the weight or relevance of that match. 
+
+ - 'id'                         
+ - 'title' ^3              
+ - 'start_date'      
+ - 'end_date'            
+ - 'rm_number'          
+ - 'rm_number_numerical’ ^3
+ - 'summary'             
+ - 'description' ^2         
+ - 'terms'              
+ - 'pillar'             
+ - 'category'           
+ - 'status'             
+ - 'published_status' 
+ - 'benefits'            
+ - 'how_to_buy'          
+ - 'keywords' ^2
+
+
+## Supplier Search 
+The search term is compared against the following fields and results are displayed in decreasing order of score. The score can be determined by the number of fields matched to the search term. A boost (or multiplier, as indicated below) is applied to specific fields to increase the weight or relevance of that match.
+
+- 'id'                        
+- 'salesforce_id'            
+- 'name' ^2                   
+- ‘encoded_name'             
+- 'duns_number'               
+- 'trading_name'              
+- 'alternative_trading_names' 
+- 'city'                      
+- 'postcode'                 
+- 'have_guarantor'   
+
+### Fuzziness
+Fuzziness is set to '1' : meaning 1 character can be out of place at the end or start of a string
+
+## Implementation
+
+The code for the Elastic Search endpoints can be found here:
+
+```public/search-api```

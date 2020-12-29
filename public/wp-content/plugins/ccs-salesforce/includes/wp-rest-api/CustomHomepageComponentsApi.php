@@ -65,6 +65,14 @@ class CustomHomepageComponentsApi
             
         endif;
 
+        $catalogueTitle = [];
+        if (have_rows('catalogue_title', 'option')):
+            while (have_rows('catalogue_title', 'option')): the_row();
+                $catalogueTitle['title'] = get_sub_field('title');
+            endwhile;
+            
+        endif;
+
         $catalogue1 = [];
         if (have_rows('catalogue1', 'option')):
             while (have_rows('catalogue1', 'option')): the_row();
@@ -100,6 +108,7 @@ class CustomHomepageComponentsApi
             while (have_rows('video', 'option')): the_row();
                 $video['title'] = get_sub_field('title');
                 $video['video_link'] = get_sub_field('video_link');
+                $video['video_caption'] = get_sub_field('video_caption');
                 $video['link_text'] = get_sub_field('link_text');
                 $video['link_url'] = get_sub_field('link');
             endwhile;
@@ -110,6 +119,7 @@ class CustomHomepageComponentsApi
           'how_to_buy'  => $howToBuy,
           'agreements'  => $agreements,
           'upcoming_deals'  => $upcomingDeals,
+          'catalogue_title' => $catalogueTitle,
           'catalogue1'  => $catalogue1,
           'catalogue2'  => $catalogue2,
           'catalogue3'  => $catalogue3,

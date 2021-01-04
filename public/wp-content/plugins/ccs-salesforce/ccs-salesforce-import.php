@@ -41,6 +41,8 @@ require __DIR__ . '/includes/wp-rest-api/CustomOptionCardsApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/CustomUpcomingDealsApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/CustomHomepageComponentsApi.php';
+
 
 /**
  * Begins execution of the plugin.
@@ -64,6 +66,7 @@ function run_plugin()
     $trainingApi = new CustomTrainingApi();
     $optionCardsApi = new CustomOptionCardsApi();
     $upcomingDealsApi = new CustomUpcomingDealsApi();
+    $homepageComponentsApi = new CustomHomepageComponentsApi();
 
 
     //Get all frameworks
@@ -154,6 +157,14 @@ function run_plugin()
         register_rest_route('ccs/v1', '/upcoming-deals-page/0', array(
             'methods' => 'GET',
             'callback' => [$upcomingDealsApi, 'get_upcoming_deals']
+        ));
+    });
+
+     //Get the homepage components data required for homepage
+     add_action('rest_api_init', function () use ($homepageComponentsApi) {
+        register_rest_route('ccs/v1', '/homepage-components/0', array(
+            'methods' => 'GET',
+            'callback' => [$homepageComponentsApi, 'get_homepage_components']
         ));
     });
 

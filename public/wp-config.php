@@ -27,7 +27,7 @@ $dotenv = new Dotenv();
 $dotenv->load($rootDir . '.env');
 
 // whether or not to use S3 storage for WordPress media
-define( 'AS3CF_AWS_USE_EC2_IAM_ROLE', getenv('AS3CF_ENABLED') );
+// define( 'AS3CF_AWS_USE_EC2_IAM_ROLE', getenv('AS3CF_ENABLED') );
 
 // ** MySQL settings ** //
 /** The name of the database for WordPress */
@@ -122,3 +122,6 @@ define('DISALLOW_FILE_EDIT', true);
 
 $disable_file_mods = (getenv('WP_DISABLE_FILE_MODS') == 1) ? true : false;
 define('DISALLOW_FILE_MODS', $disable_file_mods);
+
+// allow unfiltered uploads for admins
+define('ALLOW_UNFILTERED_UPLOADS', true);

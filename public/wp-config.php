@@ -122,3 +122,6 @@ define('DISALLOW_FILE_EDIT', true);
 
 $disable_file_mods = (getenv('WP_DISABLE_FILE_MODS') == 1) ? true : false;
 define('DISALLOW_FILE_MODS', $disable_file_mods);
+
+// allow unfiltered uploads for admins
+define('ALLOW_UNFILTERED_UPLOADS', true);

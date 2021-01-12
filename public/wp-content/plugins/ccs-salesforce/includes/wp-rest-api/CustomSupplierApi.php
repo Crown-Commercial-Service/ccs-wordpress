@@ -98,6 +98,11 @@ class CustomSupplierApi
 
         if ($frameworks !== false) {
             foreach ($frameworks as $index => $framework) {
+
+                if ($framework->getTerms() == 'DPS' || $framework->getType() == 'Dynamic purchasing system' ){
+                    continue;
+                }
+
                 $frameworksData[$index] = $framework->toArray();
                 $lotsData = [];
 

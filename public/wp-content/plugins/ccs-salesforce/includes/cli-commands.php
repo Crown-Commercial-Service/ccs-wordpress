@@ -805,7 +805,7 @@ class Import
     /**
      * Update the entire ElasticSearch search index for Frameworks
      */
-    protected function updateFrameworkSearchIndex() {
+    public function updateFrameworkSearchIndex() {
         WP_CLI::success('Beginning Search index update on Frameworks.');
 
         $frameworks = $this->frameworkRepository->findAll();
@@ -840,7 +840,7 @@ class Import
     /**
      * Update the entire ElasticSearch search index for Suppliers
      */
-    protected function updateSupplierSearchIndex() {
+    public function updateSupplierSearchIndex() {
         WP_CLI::success('Beginning Search index update on Suppliers.');
 
         $suppliers = $this->supplierRepository->findAll();
@@ -853,14 +853,22 @@ class Import
         foreach ($suppliers as $supplier) {
 
             $liveFrameworks = $this->frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
+            $dpsFrameworkCount = 0;
+            $totalFrameworkCount = 0;
 
             /** @var \App\Model\Framework $liveFramework */
             if (!empty($liveFrameworks))
             {
+                $totalFrameworkCount = count($liveFrameworks);
+
                 foreach ($liveFrameworks as $liveFramework)
                 {
                     $lots = $this->lotRepository->findAllByFrameworkIdSupplierId($liveFramework->getSalesforceId(), $supplier->getSalesforceId());
                     $liveFramework->setLots($lots);
+
+                    if ($liveFramework->getTerms() == 'DPS' || $liveFramework->getType() == 'Dynamic purchasing system' ){
+                        $dpsFrameworkCount++;
+                    }
                 }
             }
 
@@ -889,7 +897,7 @@ class Import
                 $supplier->setHaveGuarantor(true);
             }
 
-            if (!$liveFrameworks) {
+            if (!$liveFrameworks || $dpsFrameworkCount == $totalFrameworkCount ) {
                 // Remove Supplier from index
                 $this->supplierSearchClient->removeDocument($supplier);
             } else {

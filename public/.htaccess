@@ -40,7 +40,7 @@ Deny from all
 </IfModule>
 </Files>
 ServerSignature Off
-LimitRequestBody 10240000
+LimitRequestBody 20240000
 <Files wp-config.php>
 <IfModule mod_authz_core.c>
 Require all denied

@@ -37,6 +37,12 @@ require __DIR__ . '/includes/wp-rest-api/CustomSupplierApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/CustomTrainingApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/CustomOptionCardsApi.php';
+
+require __DIR__ . '/includes/wp-rest-api/CustomUpcomingDealsApi.php';
+
+require __DIR__ . '/includes/wp-rest-api/CustomHomepageComponentsApi.php';
+
 
 /**
  * Begins execution of the plugin.
@@ -58,6 +64,9 @@ function run_plugin()
     $lotApi = new CustomLotApi();
     $supplierApi = new CustomSupplierApi();
     $trainingApi = new CustomTrainingApi();
+    $optionCardsApi = new CustomOptionCardsApi();
+    $upcomingDealsApi = new CustomUpcomingDealsApi();
+    $homepageComponentsApi = new CustomHomepageComponentsApi();
 
 
     //Get all frameworks
@@ -134,6 +143,30 @@ function run_plugin()
     // Save WordPress data when Revisionize posts are "merged" back into their parent post
     add_action('revisionize_after_publish', 'updated_post_details', 20, 1);
     add_action('revisionize_after_publish', 'updated_post_meta', 20, 1);
+
+     //Get the option cards data required for all pages
+     add_action('rest_api_init', function () use ($optionCardsApi) {
+        register_rest_route('ccs/v1', '/option-cards/0', array(
+            'methods' => 'GET',
+            'callback' => [$optionCardsApi, 'get_option_cards']
+        ));
+    });
+
+    //Get the upcoming deals data required for upcoming deals page
+    add_action('rest_api_init', function () use ($upcomingDealsApi) {
+        register_rest_route('ccs/v1', '/upcoming-deals-page/0', array(
+            'methods' => 'GET',
+            'callback' => [$upcomingDealsApi, 'get_upcoming_deals']
+        ));
+    });
+
+     //Get the homepage components data required for homepage
+     add_action('rest_api_init', function () use ($homepageComponentsApi) {
+        register_rest_route('ccs/v1', '/homepage-components/0', array(
+            'methods' => 'GET',
+            'callback' => [$homepageComponentsApi, 'get_homepage_components']
+        ));
+    });
 
 }
 

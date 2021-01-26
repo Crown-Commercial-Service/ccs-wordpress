@@ -87,7 +87,7 @@ class AbstractSearchClient extends \Elastica\Client
             'analyzer' => array(
               'english_analyzer' => array(
                 'tokenizer' => 'standard',
-                'filter'    => array('lowercase', 'english_stemmer')
+                'filter'    => array('lowercase', 'english_stemmer', 'english_stop'),
               ),
             ),
             'filter'   => array(
@@ -95,6 +95,12 @@ class AbstractSearchClient extends \Elastica\Client
                 'type' => 'stemmer',
                 'name' => 'english'
               )
+            ),
+            'filter'   => array(
+                'english_stop' => array(
+                  'type' => 'stop',
+                  'stopwords' => '_english_'
+                )
             )
           )
         ];

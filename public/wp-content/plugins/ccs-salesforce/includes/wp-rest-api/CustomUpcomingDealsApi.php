@@ -33,8 +33,8 @@ class CustomUpcomingDealsApi
     public function get_upcoming_deals()
     {
         $upcomingDealsInfo = [];
-        if (have_rows('upcoming_deals_main', 'option')):
-            while (have_rows('upcoming_deals_main', 'option')): the_row();
+        if (have_rows('upcoming_deals', 'option')):
+            while (have_rows('upcoming_deals', 'option')): the_row();
                 $upcomingDealsInfo['title'] = get_sub_field('title');
                 $upcomingDealsInfo['page_description'] = get_sub_field('page_description');
             endwhile;

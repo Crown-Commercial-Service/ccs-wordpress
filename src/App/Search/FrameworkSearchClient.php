@@ -9,6 +9,7 @@ use Elastica\Mapping;
 use Elastica\Query;
 use Elastica\ResultSet;
 use Elastica\Search;
+use Elastica\Reindex;
 
 /**
  * Class FrameworkSearchClient
@@ -83,7 +84,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
         ];
 
         $lotData = [];
-        if (!empty($relationships)) {
+        if (    !empty($relationships)) {
             /** @var \App\Model\Lot $lot */
             foreach ($relationships as $lot) {
                 $tempLot['title'] = $lot->getTitle();
@@ -212,5 +213,32 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
     public function addAggregationsToQuery(Query $query): Query
     {
         return $query;
+    }
+
+    public function reindex () 
+    {
+        
+        $oldIndex = $this->getIndex($this->getQualifiedIndexName());
+        $newIndex = $this->getIndex('framework_local_v2');
+
+        // create new index with new index settings
+        // $this->createIndex();
+
+        // create an alias for old index
+        $oldIndex->addAlias('framework_local_v1');
+
+        // copy documents from old index to new index
+        $reindexAPI = new Reindex($oldIndex, $newIndex);
+        $reindexAPI->run();
+        // this works
+        // point oldindex alias to new index
+        $oldIndex->removeAlias('framework_local_v1');
+        $newIndex->addAlias('framework_local_v1');
+
+        // delete old index
+        $oldIndex->delete();
+
+        
+        
     }
 }

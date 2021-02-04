@@ -25,6 +25,7 @@ class AbstractSearchClient extends \Elastica\Client
     protected $defaultSortField = '_score';
 
     protected $synonyms = [];
+    
 
     /**
      * Client constructor.
@@ -94,13 +95,11 @@ class AbstractSearchClient extends \Elastica\Client
               'english_stemmer' => array(
                 'type' => 'stemmer',
                 'name' => 'english'
+              ),
+              'english_stop' => array(
+                'type' => 'stop',
+                'stopwords' => '_english_'
               )
-            ),
-            'filter'   => array(
-                'english_stop' => array(
-                  'type' => 'stop',
-                  'stopwords' => '_english_'
-                )
             )
           )
         ];

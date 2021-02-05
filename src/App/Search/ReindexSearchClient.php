@@ -26,7 +26,7 @@ class ReindexSearchClient extends AbstractSearchClient
     public function __construct(string $indexName)
     {
 
-        // initialise frameworks and supplier
+        // initialise frameworks or supplier
 
         if ($indexName == 'frameworks') {
             $this->indexClient = new FrameworkSearchClient();
@@ -48,7 +48,7 @@ class ReindexSearchClient extends AbstractSearchClient
         // initialise Elastica client
           $this->elasticaClient = new Client($config);
     }
-    
+
 
     /**
      * reindexes elasticsearch index

@@ -20,12 +20,23 @@ class ReindexSearchClient extends AbstractSearchClient
 {
     protected $elasticaClient;
 
-    public function __construct()
+    protected $indexClient;
+
+
+    public function __construct(string $indexName)
     {
 
         // initialise frameworks and supplier
-        $this->frameworksClient = new FrameworkSearchClient();
-        $this->supplierClient = new SupplierSearchClient();
+
+        if ($indexName == 'frameworks') {
+            $this->indexClient = new FrameworkSearchClient();
+        }
+
+        else if ($indexName == 'supplier') {
+            $this->indexClient = new SupplierSearchClient();
+        } else {
+            throw new \Exception('Please set a valid index name.');
+        }
 
         // config for elastica client
         $config = [
@@ -33,21 +44,23 @@ class ReindexSearchClient extends AbstractSearchClient
             'host'      => getenv('ELASTIC_HOST'),
             'port'      => getenv('ELASTIC_PORT'),
           ];
-          
+
         // initialise Elastica client
           $this->elasticaClient = new Client($config);
     }
+    
 
-
+    /**
+     * reindexes elasticsearch index
+     */
 
     public function reindex () 
     {
-        
-        $oldIndex = $this->elasticaClient->getIndex($this->frameworksClient->getQualifiedIndexName());
-        $newIndex = $this->elasticaClient->getIndex($this->frameworksClient->getQualifiedIndexName() . '_v1');
+        $oldIndex = $this->elasticaClient->getIndex($this->indexClient->getQualifiedIndexName());
+        $newIndex = $this->elasticaClient->getIndex($this->indexClient->getQualifiedIndexName() . '_v1');
 
         // create new temp index with new index settings to copy documents to
-        $this->createNewIndex($this->frameworksClient->getQualifiedIndexName() . '_v1');
+        $this->createNewIndex($this->indexClient->getQualifiedIndexName() . '_v1');
         
         // copy documents from old index to new index
         $reindexAPI = new Reindex($oldIndex, $newIndex);
@@ -57,7 +70,7 @@ class ReindexSearchClient extends AbstractSearchClient
         $oldIndex->delete();
 
         // create new index with same name as old index
-        $this->createNewIndex($this->frameworksClient->getQualifiedIndexName());
+        $this->createNewIndex($this->indexClient->getQualifiedIndexName());
 
         // copy documents from new temp index to old index(with the new data and settings)
         $reindexAPI = new Reindex($newIndex, $oldIndex);
@@ -96,6 +109,6 @@ class ReindexSearchClient extends AbstractSearchClient
 
         $index->create(['settings' => $analysis]);
 
-        $index->setMapping($this->frameworksClient->getIndexMapping());
+        $index->setMapping($this->indexClient->getIndexMapping());
     }
 }

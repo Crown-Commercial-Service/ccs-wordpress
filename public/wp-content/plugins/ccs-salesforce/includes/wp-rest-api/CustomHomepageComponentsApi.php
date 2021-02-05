@@ -33,8 +33,8 @@ class CustomHomepageComponentsApi
     public function get_homepage_components()
     {
         $howToBuy = [];
-        if (have_rows('hc_how_to_buy', 'option')):
-            while (have_rows('hc_how_to_buy', 'option')): the_row();
+        if (have_rows('how_to_buy', 'option')):
+            while (have_rows('how_to_buy', 'option')): the_row();
                 $howToBuy['title'] = get_sub_field('title');
                 $howToBuy['description'] = get_sub_field('description');
                 $howToBuy['link_text'] = get_sub_field('link_text');
@@ -44,8 +44,8 @@ class CustomHomepageComponentsApi
         endif;
 
         $agreements = [];
-        if (have_rows('hc_agreements', 'option')):
-            while (have_rows('hc_agreements', 'option')): the_row();
+        if (have_rows('agreements', 'option')):
+            while (have_rows('agreements', 'option')): the_row();
                 $agreements['title'] = get_sub_field('title');
                 $agreements['description'] = get_sub_field('description');
                 $agreements['link_text'] = get_sub_field('link_text');
@@ -55,8 +55,8 @@ class CustomHomepageComponentsApi
         endif;
 
         $upcomingDeals = [];
-        if (have_rows('hc_upcoming_deals', 'option')):
-            while (have_rows('hc_upcoming_deals', 'option')): the_row();
+        if (have_rows('upcoming_deals', 'option')):
+            while (have_rows('upcoming_deals', 'option')): the_row();
                 $upcomingDeals['title'] = get_sub_field('title');
                 $upcomingDeals['description'] = get_sub_field('description');
                 $upcomingDeals['link_text'] = get_sub_field('link_text');
@@ -66,16 +66,16 @@ class CustomHomepageComponentsApi
         endif;
 
         $catalogueTitle = [];
-        if (have_rows('hc_catalogue_title', 'option')):
-            while (have_rows('hc_catalogue_title', 'option')): the_row();
+        if (have_rows('catalogue_title', 'option')):
+            while (have_rows('catalogue_title', 'option')): the_row();
                 $catalogueTitle['title'] = get_sub_field('title');
             endwhile;
             
         endif;
 
         $catalogue1 = [];
-        if (have_rows('hc_catalogue1', 'option')):
-            while (have_rows('hc_catalogue1', 'option')): the_row();
+        if (have_rows('catalogue1', 'option')):
+            while (have_rows('catalogue1', 'option')): the_row();
                 $catalogue1['title'] = get_sub_field('title');
                 $catalogue1['link_url'] = get_sub_field('link');
                 $catalogue1['description'] = get_sub_field('description');
@@ -84,8 +84,8 @@ class CustomHomepageComponentsApi
         endif;
 
         $catalogue2 = [];
-        if (have_rows('hc_catalogue2', 'option')):
-            while (have_rows('hc_catalogue2', 'option')): the_row();
+        if (have_rows('catalogue2', 'option')):
+            while (have_rows('catalogue2', 'option')): the_row();
                 $catalogue2['title'] = get_sub_field('title');
                 $catalogue2['link_url'] = get_sub_field('link');
                 $catalogue2['description'] = get_sub_field('description');
@@ -94,8 +94,8 @@ class CustomHomepageComponentsApi
         endif;
 
         $catalogue3 = [];
-        if (have_rows('hc_catalogue3', 'option')):
-            while (have_rows('hc_catalogue3', 'option')): the_row();
+        if (have_rows('catalogue3', 'option')):
+            while (have_rows('catalogue3', 'option')): the_row();
                 $catalogue3['title'] = get_sub_field('title');
                 $catalogue3['link_url'] = get_sub_field('link');
                 $catalogue3['description'] = get_sub_field('description');
@@ -104,8 +104,8 @@ class CustomHomepageComponentsApi
         endif;
 
         $video= [];
-        if (have_rows('hc_video', 'option')):
-            while (have_rows('hc_video', 'option')): the_row();
+        if (have_rows('video', 'option')):
+            while (have_rows('video', 'option')): the_row();
                 $video['title'] = get_sub_field('title');
                 $video['video_link'] = get_sub_field('video_link');
                 $video['video_caption'] = get_sub_field('video_caption');

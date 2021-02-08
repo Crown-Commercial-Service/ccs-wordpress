@@ -213,5 +213,4 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
     {
         return $query;
     }
-
 }

@@ -18,6 +18,9 @@ use Elastica\Index;
 
 class ReindexSearchClient extends AbstractSearchClient
 {
+    /**
+     * @var Elastica\Client
+     */
     protected $elasticaClient;
 
     protected $indexClient;

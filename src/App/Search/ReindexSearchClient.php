@@ -53,10 +53,10 @@ class ReindexSearchClient extends AbstractSearchClient
     public function reindex()
     {
         $oldIndex = $this->elasticaClient->getIndex($this->indexClient->getQualifiedIndexName());
-        $newIndex = $this->elasticaClient->getIndex($this->indexClient->getQualifiedIndexName() . '_v1');
+        $newIndex = $this->elasticaClient->getIndex($this->indexClient->getQualifiedIndexName() . '_temp');
 
         // create new temp index with new index settings to copy documents to
-        $this->createNewIndex($this->indexClient->getQualifiedIndexName() . '_v1');
+        $this->createNewIndex($this->indexClient->getQualifiedIndexName() . '_temp');
         
         // copy documents from old index to new index
         $reindexAPI = new Reindex($oldIndex, $newIndex);

@@ -28,9 +28,7 @@ class ReindexSearchClient extends AbstractSearchClient
 
         if ($indexName == 'frameworks') {
             $this->indexClient = new FrameworkSearchClient();
-        }
-
-        else if ($indexName == 'supplier') {
+        } elseif ($indexName == 'supplier') {
             $this->indexClient = new SupplierSearchClient();
         } else {
             throw new \Exception('Please set a valid index name.');
@@ -52,7 +50,7 @@ class ReindexSearchClient extends AbstractSearchClient
      * reindexes elasticsearch index
      */
 
-    public function reindex () 
+    public function reindex()
     {
         $oldIndex = $this->elasticaClient->getIndex($this->indexClient->getQualifiedIndexName());
         $newIndex = $this->elasticaClient->getIndex($this->indexClient->getQualifiedIndexName() . '_v1');
@@ -76,11 +74,9 @@ class ReindexSearchClient extends AbstractSearchClient
         
         // delete new temp index
         $newIndex->delete();
-        
-        
     }
 
-    public function createNewIndex (string $indexName) 
+    public function createNewIndex(string $indexName)
     {
         $index = $this->elasticaClient->getIndex($indexName);
 

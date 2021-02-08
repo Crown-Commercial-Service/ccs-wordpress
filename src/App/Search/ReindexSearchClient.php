@@ -7,14 +7,9 @@ use App\Search\Mapping\FrameworkMapping;
 use App\Search\Mapping\SupplierMapping;
 use App\Search\FrameworkSearchClient;
 use App\Search\SupplierSearchClient;
-use Elastica\Document;
 use Elastica\Mapping;
-use Elastica\Query;
-use Elastica\ResultSet;
-use Elastica\Search;
 use Elastica\Reindex;
 use Elastica\Client;
-use Elastica\Index;
 
 class ReindexSearchClient extends AbstractSearchClient
 {
@@ -89,6 +84,7 @@ class ReindexSearchClient extends AbstractSearchClient
     {
         $index = $this->elasticaClient->getIndex($indexName);
 
+        // update index settings here
         $analysis = [
           'analysis' => array(
             'analyzer' => array(

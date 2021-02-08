@@ -9,7 +9,6 @@ use Elastica\Mapping;
 use Elastica\Query;
 use Elastica\ResultSet;
 use Elastica\Search;
-use Elastica\Reindex;
 
 /**
  * Class FrameworkSearchClient
@@ -84,7 +83,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
         ];
 
         $lotData = [];
-        if (    !empty($relationships)) {
+        if (!empty($relationships)) {
             /** @var \App\Model\Lot $lot */
             foreach ($relationships as $lot) {
                 $tempLot['title'] = $lot->getTitle();
@@ -215,62 +214,4 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
         return $query;
     }
 
-    public function reindex () 
-    {
-        
-        $oldIndex = $this->getIndex($this->getQualifiedIndexName());
-        $newIndex = $this->getIndex($this->getQualifiedIndexName() . '_v1');
-
-        // create new temp index with new index settings to copy documents to
-        $this->createNewIndex($this->getQualifiedIndexName() . '_v1');
-        
-        // copy documents from old index to new index
-        $reindexAPI = new Reindex($oldIndex, $newIndex);
-        $reindexAPI->run();
-
-        // delete old index
-        $oldIndex->delete();
-
-        // create new index with same name as old index
-        $this->createNewIndex($this->getQualifiedIndexName());
-
-        // copy documents from new temp index to old index(with the new data and settings)
-        $reindexAPI = new Reindex($newIndex, $oldIndex);
-        $reindexAPI->run();
-        
-        // delete new temp index
-        $newIndex->delete();
-        
-        
-    }
-
-    public function createNewIndex (string $indexName) 
-    {
-        $index = $this->getIndex($indexName);
-
-        $analysis = [
-          'analysis' => array(
-            'analyzer' => array(
-              'english_analyzer' => array(
-                'tokenizer' => 'standard',
-                'filter'    => array('lowercase', 'english_stemmer', 'english_stop'),
-              ),
-            ),
-            'filter'   => array(
-              'english_stemmer' => array(
-                'type' => 'stemmer',
-                'name' => 'english'
-              ),
-              'english_stop' => array(
-                'type' => 'stop',
-                'stopwords' => '_english_'
-              )
-            )
-          )
-        ];
-
-        $index->create(['settings' => $analysis]);
-
-        $index->setMapping($this->getIndexMapping());
-    }
 }

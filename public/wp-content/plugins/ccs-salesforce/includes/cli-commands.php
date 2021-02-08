@@ -17,6 +17,7 @@ require __DIR__ . '/../../../../../vendor/autoload.php';
 use App\Model\Framework;
 use App\Search\FrameworkSearchClient;
 use App\Search\SupplierSearchClient;
+use App\Search\ReindexSearchClient;
 use App\Services\Database\DatabaseConnection;
 use App\Services\Logger\ImportLogger;
 use App\Search\AbstractSearchClient;
@@ -130,6 +131,16 @@ class Import
      */
     protected $supplierSearchClient;
 
+     /**
+     * @var \App\Search\ReindexSearchClient
+     */
+    protected $reindexFrameworkSearchClient;
+
+     /**
+     * @var \App\Search\ReindexSearchClient
+     */
+    protected $reindexSupplierSearchClient;
+
     /**
      * Import constructor.
      *
@@ -151,6 +162,9 @@ class Import
         $this->dbConnection = new DatabaseConnection();
         $this->supplierSearchClient = new SupplierSearchClient();
         $this->frameworkSearchClient = new FrameworkSearchClient();
+        $this->reindexFrameworkSearchClient = new ReindexSearchClient('frameworks');
+        $this->reindexSupplierSearchClient = new ReindexSearchClient('supplier');
+
     }
 
     /**
@@ -369,6 +383,10 @@ class Import
         // Update elasticsearch
         $this->updateFrameworkSearchIndex();
         $this->updateSupplierSearchIndex();
+
+        // reindex elasticsearch
+        $this->reindexFrameworksSearchIndex();
+        $this->reindexSupplierSearchIndex();
 
         //Update framework titles in WordPress to include the RM number
         $this->updateFrameworkTitleInWordpress();
@@ -916,6 +934,32 @@ class Import
         WP_CLI::success('Operation completed successfully.');
 
         return;
+    }
+
+    /**
+     * reindex frameworks search
+     * 
+     */
+
+     public function reindexFrameworksSearchIndex () {
+         WP_CLI::success('Reindexing Frameworks Index.');
+
+         $this->reindexFrameworkSearchClient->reindex();
+
+         WP_CLI::success('Operation completed successfully.');
+     }
+
+       /**
+     * reindex supplier search
+     * 
+     */
+
+    public function reindexSupplierSearchIndex () {
+        WP_CLI::success('Reindexing Supplier Index.');
+
+        $this->reindexSupplierSearchClient->reindex();
+
+        WP_CLI::success('Operation completed successfully.');
     }
 
     /**

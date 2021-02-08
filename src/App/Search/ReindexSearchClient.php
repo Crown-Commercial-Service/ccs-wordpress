@@ -25,7 +25,6 @@ class ReindexSearchClient extends AbstractSearchClient
     {
 
         // initialise frameworks or supplier
-
         if ($indexName == 'frameworks') {
             $this->indexClient = new FrameworkSearchClient();
         } elseif ($indexName == 'supplier') {

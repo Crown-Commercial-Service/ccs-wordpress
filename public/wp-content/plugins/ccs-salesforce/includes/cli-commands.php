@@ -133,7 +133,7 @@ class Import
     protected $supplierSearchClient;
 
      /**
-     * @var \App\Search\ReindexFrameworkiClient
+     * @var \App\Search\ReindexFrameworkClient
      */
     protected $reindexFrameworkSearchClient;
 

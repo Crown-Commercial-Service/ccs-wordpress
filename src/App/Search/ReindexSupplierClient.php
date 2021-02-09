@@ -4,18 +4,12 @@ namespace App\Search;
 
 use App\Search\SupplierSearchClient;
 
-class ReindexSupplierClient extends ReindexSearchClient
+class ReindexSupplierClient extends AbstractSearchClient
 {
     /**
      * @var \App\Search\FrameworkSupplierClient
      */
     protected $indexName = 'supplier';
-
-    public function __construct()
-    {
-        // initialise client
-        $this->indexClient = new SupplierSearchClient();
-    }
     
     // update index settings here
     protected $analysis = [
@@ -39,8 +33,17 @@ class ReindexSupplierClient extends ReindexSearchClient
         )
       ];
 
+    public function __construct()
+    {
+        // initialise client
+        $this->indexClient = new SupplierSearchClient();
+    }
+
     public function reindexSupplier()
     {
+        // check to see if old index exists if not create it
+        $this->indexClient->getIndexOrCreate();
+
         $this->reindex($this->indexClient->getQualifiedIndexName(), $this->analysis);
     }
 }

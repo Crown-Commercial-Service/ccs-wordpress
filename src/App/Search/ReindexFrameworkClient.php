@@ -4,14 +4,14 @@ namespace App\Search;
 
 use App\Search\FrameworkSearchClient;
 
-class ReindexFrameworkClient extends ReindexSearchClient 
+class ReindexFrameworkClient extends ReindexSearchClient
 {
     /**
      * @var \App\Search\FrameworkSearchClient
      */
     protected $indexClient;
 
-    public function __construct () 
+    public function __construct()
     {
         // initialise client
         $this->indexClient = new FrameworkSearchClient();
@@ -39,8 +39,8 @@ class ReindexFrameworkClient extends ReindexSearchClient
         )
       ];
 
-    public function reindexFrameworks () 
+    public function reindexFrameworks()
     {
         $this->reindex($this->indexClient->getQualifiedIndexName(), $this->analysis);
-    } 
+    }
 }

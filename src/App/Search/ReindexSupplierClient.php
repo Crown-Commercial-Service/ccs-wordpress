@@ -11,7 +11,7 @@ class ReindexSupplierClient extends ReindexSearchClient
      */
     protected $indexName = 'supplier';
 
-    public function __construct () 
+    public function __construct()
     {
         // initialise client
         $this->indexClient = new SupplierSearchClient();
@@ -39,8 +39,8 @@ class ReindexSupplierClient extends ReindexSearchClient
         )
       ];
 
-    public function reindexSupplier () 
+    public function reindexSupplier()
     {
         $this->reindex($this->indexClient->getQualifiedIndexName(), $this->analysis);
-    }   
+    }
 }

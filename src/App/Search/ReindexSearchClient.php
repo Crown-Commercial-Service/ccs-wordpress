@@ -13,49 +13,16 @@ use Elastica\Client;
 
 class ReindexSearchClient extends AbstractSearchClient
 {
-    /**
-     * @var Elastica\Client
-     */
-    protected $elasticaClient;
-
-    protected $indexClient;
-
-
-    public function __construct(string $indexName)
+    public function reindex(string $indexName, array $analysis)
     {
-
-        // initialise frameworks or supplier
-        if ($indexName == 'frameworks') {
-            $this->indexClient = new FrameworkSearchClient();
-        } elseif ($indexName == 'supplier') {
-            $this->indexClient = new SupplierSearchClient();
-        } else {
-            throw new \Exception('Please set a valid index name.');
-        }
-
-        // config for elastica client
-        $config = [
-            'transport' => getenv('ELASTIC_TRANSPORT'),
-            'host'      => getenv('ELASTIC_HOST'),
-            'port'      => getenv('ELASTIC_PORT'),
-          ];
-
-        // initialise Elastica client
-          $this->elasticaClient = new Client($config);
-    }
-
-
-    /**
-     * reindexes elasticsearch index
-     */
-
-    public function reindex()
-    {
-        $oldIndex = $this->elasticaClient->getIndex($this->indexClient->getQualifiedIndexName());
-        $newIndex = $this->elasticaClient->getIndex($this->indexClient->getQualifiedIndexName() . '_temp');
+        // call parent constructer so we can get access to elastica client methods
+        parent::__construct();
+        
+        $oldIndex = $this->getIndex($indexName);
+        $newIndex = $this->getIndex($indexName . '_temp');
 
         // create new temp index with new index settings to copy documents to
-        $this->createNewIndex($this->indexClient->getQualifiedIndexName() . '_temp');
+        $this->createNewIndex($indexName . '_temp', $analysis);
         
         // copy documents from old index to new index
         $reindexAPI = new Reindex($oldIndex, $newIndex);
@@ -65,7 +32,7 @@ class ReindexSearchClient extends AbstractSearchClient
         $oldIndex->delete();
 
         // create new index with same name as old index
-        $this->createNewIndex($this->indexClient->getQualifiedIndexName());
+        $this->createNewIndex($indexName, $analysis);
 
         // copy documents from new temp index to old index(with the new data and settings)
         $reindexAPI = new Reindex($newIndex, $oldIndex);
@@ -75,31 +42,9 @@ class ReindexSearchClient extends AbstractSearchClient
         $newIndex->delete();
     }
 
-    public function createNewIndex(string $indexName)
+    public function createNewIndex(string $indexName, array $analysis)
     {
-        $index = $this->elasticaClient->getIndex($indexName);
-
-        // update index settings here
-        $analysis = [
-          'analysis' => array(
-            'analyzer' => array(
-              'english_analyzer' => array(
-                'tokenizer' => 'standard',
-                'filter'    => array('lowercase', 'english_stemmer', 'english_stop'),
-              ),
-            ),
-            'filter'   => array(
-              'english_stemmer' => array(
-                'type' => 'stemmer',
-                'name' => 'english'
-              ),
-              'english_stop' => array(
-                'type' => 'stop',
-                'stopwords' => '_english_'
-              )
-            )
-          )
-        ];
+        $index = $this->getIndex($indexName);
 
         $index->create(['settings' => $analysis]);
 

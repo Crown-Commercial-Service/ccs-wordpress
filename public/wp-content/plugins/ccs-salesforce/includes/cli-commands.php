@@ -930,7 +930,7 @@ class Import
      public function reindexFrameworkSearchIndex () {
          WP_CLI::success('Reindexing Frameworks Index.');
 
-         $this->frameworkSearchClient->overrideFrameworkIndex();
+         $this->frameworkSearchClient->reindex();
 
          WP_CLI::success('Operation completed successfully.');
      }
@@ -943,7 +943,7 @@ class Import
     public function reindexSupplierSearchIndex () {
         WP_CLI::success('Reindexing Supplier Index.');
 
-        $this->supplierSearchClient->overrideSupplierIndex();
+        $this->supplierSearchClient->reindex();
 
         WP_CLI::success('Operation completed successfully.');
     }

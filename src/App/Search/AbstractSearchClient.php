@@ -350,17 +350,17 @@ class AbstractSearchClient extends \Elastica\Client
 
     /**
      * reindexes search index
-     * 
+     *
      * @param string $indexName
      * @param array $analysis
-     * 
+     *
      */
 
     public function reindex(string $indexName, array $analysis)
-    {   
+    {
         // call parent constructer so we can get access to elastica client methods
         parent::__construct();
-        
+
         $oldIndex = $this->getIndex($indexName);
         $newIndex = $this->getIndex($indexName . '_temp');
 
@@ -387,10 +387,10 @@ class AbstractSearchClient extends \Elastica\Client
 
      /**
      * creates a new index and adds new analysis
-     * 
+     *
      * @param string $indexName
      * @param array $analysis
-     * 
+     *
      */
 
     public function createNewIndex(string $indexName, array $analysis)
@@ -399,6 +399,72 @@ class AbstractSearchClient extends \Elastica\Client
 
         $index->create(['settings' => $analysis]);
 
-        $index->setMapping($this->indexClient->getIndexMapping());
+        $index->setMapping($this->getIndexMapping());
+    }
+
+    /**
+     * overrides current index analysis for framework
+     */
+    public function overrideFrameworkIndex()
+    {
+    // update index setting here
+        $analysis = [
+        'analysis' => array(
+          'analyzer' => array(
+            'english_analyzer' => array(
+              'tokenizer' => 'standard',
+              'filter'    => array('lowercase', 'english_stemmer', 'english_stop'),
+            ),
+          ),
+          'filter'   => array(
+            'english_stemmer' => array(
+              'type' => 'stemmer',
+              'name' => 'english'
+            ),
+            'english_stop' => array(
+              'type' => 'stop',
+              'stopwords' => '_english_'
+            )
+          )
+        )
+        ];
+
+        // create old index if it doesn't exist
+        $this->getIndexOrCreate();
+
+        $this->reindex($this->getQualifiedIndexName(), $analysis);
+    }
+
+    /**
+     * overrides current index analysis for supplier
+     */
+    public function overrideSupplierIndex()
+    {
+    // update index setting here
+        $analysis = [
+        'analysis' => array(
+          'analyzer' => array(
+            'english_analyzer' => array(
+              'tokenizer' => 'standard',
+              'filter'    => array('lowercase', 'english_stemmer', 'english_stop'),
+            ),
+          ),
+          'filter'   => array(
+            'english_stemmer' => array(
+              'type' => 'stemmer',
+              'name' => 'english'
+            ),
+            'english_stop' => array(
+              'type' => 'stop',
+              'stopwords' => '_english_'
+            )
+          )
+        )
+        ];
+
+        // create old index if it doesn't exist
+        $this->getIndexOrCreate();
+
+        $this->reindex($this->getQualifiedIndexName(), $analysis);
     }
 }

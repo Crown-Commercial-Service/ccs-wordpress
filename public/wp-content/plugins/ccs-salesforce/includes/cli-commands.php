@@ -163,9 +163,6 @@ class Import
         $this->dbConnection = new DatabaseConnection();
         $this->supplierSearchClient = new SupplierSearchClient();
         $this->frameworkSearchClient = new FrameworkSearchClient();
-        $this->reindexFrameworkSearchClient = new ReindexFrameworkClient();
-        $this->reindexSupplierSearchClient = new ReindexSupplierClient();
-
     }
 
     /**
@@ -945,7 +942,7 @@ class Import
      public function reindexFrameworkSearchIndex () {
          WP_CLI::success('Reindexing Frameworks Index.');
 
-         $this->reindexFrameworkSearchClient->reindexFrameworks();
+         $this->frameworkSearchClient->overrideFrameworkIndex();
 
          WP_CLI::success('Operation completed successfully.');
      }
@@ -958,7 +955,7 @@ class Import
     public function reindexSupplierSearchIndex () {
         WP_CLI::success('Reindexing Supplier Index.');
 
-        $this->reindexSupplierSearchClient->reindexSupplier();
+        $this->supplierSearchClient->overrideSupplierIndex();
 
         WP_CLI::success('Operation completed successfully.');
     }

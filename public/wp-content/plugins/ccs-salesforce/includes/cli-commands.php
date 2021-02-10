@@ -370,6 +370,10 @@ class Import
         $this->updateFrameworkSearchIndex();
         $this->updateSupplierSearchIndex();
 
+        // reindex elasticsearch
+        $this->reindexFrameworkSearchIndex();
+        $this->reindexSupplierSearchIndex();
+
         //Update framework titles in WordPress to include the RM number
         $this->updateFrameworkTitleInWordpress();
 
@@ -916,6 +920,32 @@ class Import
         WP_CLI::success('Operation completed successfully.');
 
         return;
+    }
+
+    /**
+     * reindex frameworks search
+     * 
+     */
+
+     public function reindexFrameworkSearchIndex () {
+         WP_CLI::success('Reindexing Frameworks Index.');
+
+         $this->frameworkSearchClient->reindex();
+
+         WP_CLI::success('Operation completed successfully.');
+     }
+
+       /**
+     * reindex supplier search
+     * 
+     */
+
+    public function reindexSupplierSearchIndex () {
+        WP_CLI::success('Reindexing Supplier Index.');
+
+        $this->supplierSearchClient->reindex();
+
+        WP_CLI::success('Operation completed successfully.');
     }
 
     /**

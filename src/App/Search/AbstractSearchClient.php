@@ -84,20 +84,24 @@ class AbstractSearchClient extends \Elastica\Client
         $index = $this->getIndex($this->getQualifiedIndexName());
 
         $analysis = [
-          'analysis' => array(
-            'analyzer' => array(
-              'english_analyzer' => array(
-                'tokenizer' => 'standard',
-                'filter'    => array('lowercase', 'english_stemmer')
-              ),
+        'analysis' => array(
+          'analyzer' => array(
+            'english_analyzer' => array(
+              'tokenizer' => 'standard',
+              'filter'    => array('lowercase', 'english_stemmer', 'english_stop'),
             ),
-            'filter'   => array(
-              'english_stemmer' => array(
-                'type' => 'stemmer',
-                'name' => 'english'
-              )
+          ),
+          'filter'   => array(
+            'english_stemmer' => array(
+              'type' => 'stemmer',
+              'name' => 'english'
+            ),
+            'english_stop' => array(
+              'type' => 'stop',
+              'stopwords' => '_english_'
             )
           )
+        )
         ];
 
         $index->create(['settings' => $analysis]);
@@ -349,14 +353,14 @@ class AbstractSearchClient extends \Elastica\Client
     }
 
     /**
-     * reindexes search index
+     * Copies index from old index into and temp index and deletes temp index
      *
      * @param string $indexName
      * @param array $analysis
      *
      */
 
-    public function reindex(string $indexName, array $analysis)
+    public function copyIndex(string $indexName, array $analysis)
     {
         // call parent constructer so we can get access to elastica client methods
         parent::__construct();
@@ -405,7 +409,7 @@ class AbstractSearchClient extends \Elastica\Client
     /**
      * overrides current index analysis for framework
      */
-    public function overrideFrameworkIndex()
+    public function reindex()
     {
     // update index setting here
         $analysis = [
@@ -429,42 +433,6 @@ class AbstractSearchClient extends \Elastica\Client
         )
         ];
 
-        // create old index if it doesn't exist
-        $this->getIndexOrCreate();
-
-        $this->reindex($this->getQualifiedIndexName(), $analysis);
-    }
-
-    /**
-     * overrides current index analysis for supplier
-     */
-    public function overrideSupplierIndex()
-    {
-    // update index setting here
-        $analysis = [
-        'analysis' => array(
-          'analyzer' => array(
-            'english_analyzer' => array(
-              'tokenizer' => 'standard',
-              'filter'    => array('lowercase', 'english_stemmer', 'english_stop'),
-            ),
-          ),
-          'filter'   => array(
-            'english_stemmer' => array(
-              'type' => 'stemmer',
-              'name' => 'english'
-            ),
-            'english_stop' => array(
-              'type' => 'stop',
-              'stopwords' => '_english_'
-            )
-          )
-        )
-        ];
-
-        // create old index if it doesn't exist
-        $this->getIndexOrCreate();
-
-        $this->reindex($this->getQualifiedIndexName(), $analysis);
+        $this->copyIndex($this->getQualifiedIndexName(), $analysis);
     }
 }

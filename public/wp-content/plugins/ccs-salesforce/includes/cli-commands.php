@@ -17,8 +17,6 @@ require __DIR__ . '/../../../../../vendor/autoload.php';
 use App\Model\Framework;
 use App\Search\FrameworkSearchClient;
 use App\Search\SupplierSearchClient;
-use App\Search\ReindexFrameworkClient;
-use App\Search\ReindexSupplierClient;
 use App\Services\Database\DatabaseConnection;
 use App\Services\Logger\ImportLogger;
 use App\Search\AbstractSearchClient;
@@ -131,16 +129,6 @@ class Import
      * @var \App\Search\SupplierSearchClient
      */
     protected $supplierSearchClient;
-
-     /**
-     * @var \App\Search\ReindexFrameworkClient
-     */
-    protected $reindexFrameworkSearchClient;
-
-     /**
-     * @var \App\Search\ReindexSupplierClient
-     */
-    protected $reindexSupplierSearchClient;
 
     /**
      * Import constructor.

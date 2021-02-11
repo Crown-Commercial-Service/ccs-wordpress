@@ -43,6 +43,7 @@ require __DIR__ . '/includes/wp-rest-api/CustomUpcomingDealsApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/CustomHomepageComponentsApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/CustomRedirectionApi.php';
 
 /**
  * Begins execution of the plugin.
@@ -67,6 +68,7 @@ function run_plugin()
     $optionCardsApi = new CustomOptionCardsApi();
     $upcomingDealsApi = new CustomUpcomingDealsApi();
     $homepageComponentsApi = new CustomHomepageComponentsApi();
+    $redirectionApi = new CustomRedirectionApi();
 
 
     //Get all frameworks
@@ -166,6 +168,14 @@ function run_plugin()
             'methods' => 'GET',
             'callback' => [$homepageComponentsApi, 'get_homepage_components']
         ));
+    });
+
+    add_action('rest_api_init', function () use ($redirectionApi) {
+        register_rest_route('ccs/v1', '/redirections/0', array(
+            'methods' => 'GET',
+            'callback' => [$redirectionApi, 'getListOfRedirections']
+        ));
+    
     });
 
 }

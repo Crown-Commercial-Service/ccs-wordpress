@@ -40,6 +40,14 @@ if (isset($_GET['category'])) {
       'condition' => 'AND',
       'value'     => $category
     ];
+
+    if ($category == "Office and Travel"){
+        $filters['category'] = [
+            'field'     => 'category',
+            'condition' => 'OR',
+            'value'     => ["Office and Travel", "Travel"]
+        ];
+    }
 }
 
 if (isset($_GET['status'])) {

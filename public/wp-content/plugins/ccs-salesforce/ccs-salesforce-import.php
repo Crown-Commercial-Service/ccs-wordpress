@@ -171,7 +171,7 @@ function run_plugin()
     });
 
     add_action('rest_api_init', function () use ($redirectionApi) {
-        register_rest_route('ccs/v1', '/redirection/', array(
+        register_rest_route('ccs/v1', '/redirections/0', array(
             'methods' => 'GET',
             'callback' => [$redirectionApi, 'getListOfRedirections']
         ));

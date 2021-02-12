@@ -10,7 +10,6 @@ use Elastica\Query;
 use Elastica\Request;
 use Elastica\ResultSet;
 use Elastica\Search;
-use Elastica\Reindex;
 use Psr\Log\LoggerInterface;
 
 class AbstractSearchClient extends \Elastica\Client
@@ -84,24 +83,20 @@ class AbstractSearchClient extends \Elastica\Client
         $index = $this->getIndex($this->getQualifiedIndexName());
 
         $analysis = [
-        'analysis' => array(
-          'analyzer' => array(
-            'english_analyzer' => array(
-              'tokenizer' => 'standard',
-              'filter'    => array('lowercase', 'english_stemmer', 'english_stop'),
+          'analysis' => array(
+            'analyzer' => array(
+              'english_analyzer' => array(
+                'tokenizer' => 'standard',
+                'filter'    => array('lowercase', 'english_stemmer')
+              ),
             ),
-          ),
-          'filter'   => array(
-            'english_stemmer' => array(
-              'type' => 'stemmer',
-              'name' => 'english'
-            ),
-            'english_stop' => array(
-              'type' => 'stop',
-              'stopwords' => '_english_'
+            'filter'   => array(
+              'english_stemmer' => array(
+                'type' => 'stemmer',
+                'name' => 'english'
+              )
             )
           )
-        )
         ];
 
         $index->create(['settings' => $analysis]);
@@ -432,4 +427,5 @@ class AbstractSearchClient extends \Elastica\Client
 
         $this->copyIndex($this->getQualifiedIndexName(), $analysis);
     }
+
 }

@@ -362,9 +362,6 @@ class AbstractSearchClient extends \Elastica\Client
 
     public function copyIndex(string $indexName, array $analysis)
     {
-        // call parent constructer so we can get access to elastica client methods
-        parent::__construct();
-
         $oldIndex = $this->getIndex($indexName);
         $newIndex = $this->getIndex($indexName . '_temp');
 

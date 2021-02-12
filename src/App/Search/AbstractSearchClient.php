@@ -60,19 +60,19 @@ class AbstractSearchClient extends \Elastica\Client
     protected function checkForRequiredEnvVars()
     {
         if (!getenv('ELASTIC_TRANSPORT')) {
-            throw new() \Exception('Please set the ELASTIC_TRANSPORT environment variable before continuing.');
+            throw new \Exception('Please set the ELASTIC_TRANSPORT environment variable before continuing.');
         }
 
         if (!getenv('ELASTIC_HOST')) {
-            throw new() \Exception('Please set the ELASTIC_HOST environment variable before continuing.');
+            throw new \Exception('Please set the ELASTIC_HOST environment variable before continuing.');
         }
 
         if (!getenv('ELASTIC_PORT')) {
-            throw new() \Exception('Please set the ELASTIC_PORT environment variable before continuing.');
+            throw new \Exception('Please set the ELASTIC_PORT environment variable before continuing.');
         }
 
         if (!getenv('ELASTIC_SUFFIX')) {
-            throw new() \Exception('Please set the ELASTIC_SUFFIX environment variable before continuing.');
+            throw new \Exception('Please set the ELASTIC_SUFFIX environment variable before continuing.');
         }
     }
 
@@ -191,13 +191,13 @@ class AbstractSearchClient extends \Elastica\Client
     {
         
         if (is_array($filter['value'])) {
-            $newBoolQuery = new() Query\BoolQuery();
+            $newBoolQuery = new Query\BoolQuery();
             foreach ($filter['value'] as $value) {
                 $newBoolQuery = $this->addMatchQueryToBoolFilter($newBoolQuery, $filter['field'], $value, $filter['condition'] ?? null);
             }
             $boolQuery->addMust($newBoolQuery);
         } else {
-            $newBoolQuery = new() Query\BoolQuery();
+            $newBoolQuery = new Query\BoolQuery();
             $newBoolQuery = $this->addMatchQueryToBoolFilter($newBoolQuery, $filter['field'], $filter['value'], $filter['condition'] ?? null);
             $boolQuery->addMust($newBoolQuery);
         }
@@ -214,7 +214,7 @@ class AbstractSearchClient extends \Elastica\Client
      */
     protected function addMatchQueryToBoolFilter(Query\BoolQuery $boolQuery, $key, $value, $condition = 'AND'): Query\BoolQuery
     {
-        $matchQuery = new() Query\Match($key, $value);
+        $matchQuery = new Query\Match($key, $value);
 
         if (strtoupper($condition) == 'AND') {
             $boolQuery->addMust($matchQuery);
@@ -232,14 +232,14 @@ class AbstractSearchClient extends \Elastica\Client
      */
     protected function addNestedSearchFilter(Query\BoolQuery $boolQuery, $filter): Query\BoolQuery
     {
-        $newBoolQuery = new() Query\BoolQuery();
+        $newBoolQuery = new Query\BoolQuery();
 
         foreach ($filter['nested'] as $nestedFilter) {
             $nestedFilter['condition'] = $filter['condition'];
             $newBoolQuery = $this->addSimpleSearchFilter($newBoolQuery, $nestedFilter);
         }
 
-        $nested = new() Query\Nested();
+        $nested = new Query\Nested();
         $nested->setPath($filter['field']);
         $nested->setQuery($newBoolQuery);
         $boolQuery->addMust($nested);
@@ -313,7 +313,7 @@ class AbstractSearchClient extends \Elastica\Client
     {
         $search = new Search($this);
         $search->addIndex($this->getIndexOrCreate());
-        $matchAll = new() Query\MatchAll();
+        $matchAll = new Query\MatchAll();
         $query = new Query($matchAll);
         $query->setSize($limit);
         $query = $this->sortQuery($query, '', $sortField);

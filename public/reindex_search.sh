@@ -2,26 +2,15 @@
 
 # reindexes elasticsearch
 
-# loads elastic suffix from .env file
+# loads elastic suffix and elastic endpoint from .env file
 ELASTIC_SUFFIX=$(grep ELASTIC_SUFFIX ../.env | xargs)
+ELASTIC_ENDPOINT=$(grep ELASTIC_ENDPOINT ../.env | xargs)
+
 IFS='=' read -ra ELASTIC_SUFFIX <<< "$ELASTIC_SUFFIX"
+IFS='=' read -ra ELASTIC_ENDPOINT <<< "$ELASTIC_ENDPOINT"
+
 ELASTIC_SUFFIX=${ELASTIC_SUFFIX[1]//$'\r'}
-
-if [[ $ELASTIC_SUFFIX == "local" ]]; then
-  ELASTIC_ENDPOINT="localhost:9200"
-fi
-
-if [[ $ELASTIC_SUFFIX == "dev" ]]; then
-  ELASTIC_ENDPOINT="https://vpc-elasticsearch-ccs-dev-wvwrvhqdfoxbuhcdft7bk33dta.eu-west-1.es.amazonaws.com"
-fi
-
-if [[ $ELASTIC_SUFFIX == "uat" ]]; then
-  ELASTIC_ENDPOINT="https://vpc-elasticsearch-ccs-uat-ebfgjzsrb2rdyxm6z3oy2mnohi.eu-west-2.es.amazonaws.com"
-fi
-
-if [[ $ELASTIC_SUFFIX == "prod" ]]; then
-  ELASTIC_ENDPOINT="https://vpc-elasticsearch-ccs-prod-eur4vilhtjrxeumhbeqevtkcvi.eu-west-2.es.amazonaws.com"
-fi
+ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT[1]//$'\r'}
 
 echo "Reindexing Frameworks"
 curl -X PUT "${ELASTIC_ENDPOINT}/framework_${ELASTIC_SUFFIX}_temp?pretty" -H 'Content-Type: application/json' -d' {

@@ -443,4 +443,9 @@ curl -X PUT "${ELASTIC_ENDPOINT}/supplier_${ELASTIC_SUFFIX}?pretty" -H 'Content-
 curl -X POST "${ELASTIC_ENDPOINT}/_reindex?pretty" -H 'Content-Type: application/json' -d'{"source": {"index": "supplier_'${ELASTIC_SUFFIX}'_temp"},"dest": {"index": "supplier_'${ELASTIC_SUFFIX}'"}}' &&
 
 curl -X DELETE "${ELASTIC_ENDPOINT}/supplier_${ELASTIC_SUFFIX}_temp?pretty"
+
+wp salesforce import updateFrameworkSearchIndex
+
+wp salesforce import updateSupplierSearchIndex
+
 echo "Reindexing Complete"

@@ -2,15 +2,19 @@
 
 # reindexes elasticsearch
 
-# loads elastic suffix and elastic endpoint from .env file
+# loads variables from .env file
 ELASTIC_SUFFIX=$(grep ELASTIC_SUFFIX ../.env | xargs)
-ELASTIC_ENDPOINT=$(grep ELASTIC_ENDPOINT ../.env | xargs)
+ELASTIC_TRANSPORT=$(grep ELASTIC_TRANSPORT ../.env | xargs)
+ELASTIC_HOST=$(grep ELASTIC_HOST ../.env | xargs)
 
 IFS='=' read -ra ELASTIC_SUFFIX <<< "$ELASTIC_SUFFIX"
-IFS='=' read -ra ELASTIC_ENDPOINT <<< "$ELASTIC_ENDPOINT"
+IFS='=' read -ra ELASTIC_TRANSPORT <<< "$ELASTIC_TRANSPORT"
+IFS='=' read -ra ELASTIC_HOST <<< "$ELASTIC_HOST"
 
 ELASTIC_SUFFIX=${ELASTIC_SUFFIX[1]//$'\r'}
-ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT[1]//$'\r'}
+ELASTIC_TRANSPORT=${ELASTIC_TRANSPORT[1]//$'\r'}
+ELASTIC_HOST=${ELASTIC_HOST[1]//$'\r'}
+ELASTIC_ENDPOINT="${ELASTIC_TRANSPORT}://${ELASTIC_HOST}"
 
 echo "Reindexing Frameworks"
 curl -X PUT "${ELASTIC_ENDPOINT}/framework_${ELASTIC_SUFFIX}_temp?pretty" -H 'Content-Type: application/json' -d' {

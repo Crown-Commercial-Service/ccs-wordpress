@@ -49,6 +49,8 @@ class component_feature_news extends project_brick
             'instructions' => 'Select one or more sectors to filter the results by.'
         ]));
 
+        add_action('init', 'removing_post_tag_from_taxonomy_list');
+
         $this->add_field(new acf_fields\relationship( 'Select specific articles' , 'cherry_picked_articles' , '202002101443a', [
             'post_type' => 'post',
             'max' => 3,

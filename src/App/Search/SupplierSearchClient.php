@@ -185,7 +185,7 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
     protected function frameworkShouldBeIndexed(Framework $framework)
     {
 
-        if ($framework->getType() == 'Dynamic purchasing system') {
+        if ($framework->getTerms() == 'DPS' || $framework->getType() == 'Dynamic purchasing system') {
             return false;
         }
 

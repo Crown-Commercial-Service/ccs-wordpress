@@ -195,3 +195,14 @@ acf_add_options_page( array(
     'updated_message'	=> __("Homepage Components Updated", 'acf'),
 
 ) );
+
+$option_page = acf_add_options_page(array(
+    'page_title'    => __('Redirection'),
+    'menu_title'    => __('Redirection'),
+    'menu_slug'     => 'redirection',
+    'capability'    => 'edit_pages',
+    'icon_url' => 'dashicons-external',
+    'redirect'      => false,
+    'update_button'		=> __('Save', 'acf'),
+    'updated_message'	=> __("Redirection Saved", 'acf')
+));

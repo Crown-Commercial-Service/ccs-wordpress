@@ -236,17 +236,12 @@ class CustomFrameworkApi
         $supplierRepository = new SupplierRepository();
         $suppliersCount = $supplierRepository->countAllSuppliers($lotIds);
         //Retrieve all suppliers for specific lots, based on their salesforce id
-        $suppliers = $supplierRepository->findLotSuppliers($lotIds, true, $limit, $page);
+        $suppliers = $supplierRepository->findLotSuppliers($lotIds, true, $limit, $page, true);
 
         $suppliersData = [];
 
         if ($suppliers !== false) {
             foreach ($suppliers as $index => $supplier) {
-
-                // Ignore same supplier that has different contact detail (only show the supplier once )
-                if (in_array($supplier->getId(),array_column($suppliersData,'supplier_id'))) {
-                    continue;
-                }
 
                 $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
                 $liveFrameworks = [];
@@ -267,8 +262,6 @@ class CustomFrameworkApi
                     [
                         'supplier_name' => $supplier->getName(),
                         'supplier_id' => $supplier->getId(),
-                        'supplier_contact_name' => $supplier->getContactName(),
-                        'supplier_contact_email' => $supplier->getContactEmail(),
                         'live_frameworks' => $liveFrameworks
                     ];
 

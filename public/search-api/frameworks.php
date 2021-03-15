@@ -15,6 +15,7 @@ $searchClient = new FrameworkSearchClient();
 
 // Set empty vars
 $dataToReturn = [];
+$statuses = [];
 $filters = [];
 $keyword = '';
 $page = 0;
@@ -51,25 +52,37 @@ if (isset($_GET['category'])) {
 }
 
 if (isset($_GET['status'])) {
-    if (!is_array(($_GET['status']))) {
-        $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
-    } else {
-        foreach ($_GET['status'] as $status) {
-            if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'EXPIRED') {
-                $status = 'Expired - Data Still Received';
-            } else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'LIVE') {
-                $status = 'Live';
-            }
-            $statuses[] = filter_var($status, FILTER_SANITIZE_STRING);
+   
+    $statusArray  = explode(",", filter_var($_GET['status'], FILTER_SANITIZE_STRING));
+
+    foreach ($statusArray as $eachStatus) {
+        if( $eachStatus == 'all' ){
+            $statuses[] = 'Expired - Data Still Received';
+            $statuses[] = 'Live';
+            $statuses[] = 'Future (Pipeline)';
+            $statuses[] = 'Planned (Pipeline)';
+            $statuses[] = 'Underway (Pipeline)';
+            $statuses[] = 'Awarded (Pipeline)';
+            break;
+        } else if ($eachStatus == 'expired') {
+            $statuses[] = 'Expired - Data Still Received';
+        } else if ($eachStatus == 'live') {
+            $statuses[] = 'Live';
+        } else if ($eachStatus == 'upcoming') {
+            $statuses[] = 'Future (Pipeline)';
+            $statuses[] = 'Planned (Pipeline)';
+            $statuses[] = 'Underway (Pipeline)';
+            $statuses[] = 'Awarded (Pipeline)';
         }
     }
 
-    $filters['status'] = [
-      'field'     => 'status',
-      'condition' => 'OR',
-      'value'     => $statuses
-    ];
-
+    if (!empty($statuses)){
+        $filters['status'] = [
+            'field'     => 'status',
+            'condition' => 'OR',
+            'value'     => $statuses
+          ];
+    }
 }
 
 if (isset($_GET['pillar'])) {

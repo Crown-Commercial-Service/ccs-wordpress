@@ -15,7 +15,9 @@ $searchClient = new FrameworkSearchClient();
 
 // Set empty vars
 $dataToReturn = [];
+$allStatus = ['Live', 'Expired - Data Still Received', 'Future (Pipeline)', 'Planned (Pipeline)', 'Underway (Pipeline)', 'Awarded (Pipeline)'];
 $statuses = [];
+$sortField = '';
 $filters = [];
 $keyword = '';
 $page = 0;
@@ -31,6 +33,10 @@ if (isset($_GET['page'])) {
 
 if (isset($_GET['keyword'])) {
     $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_STRING);
+}
+
+if (isset($_GET['sort'])) {
+    $sortField = filter_var($_GET['sort'], FILTER_SANITIZE_STRING);
 }
 
 if (isset($_GET['category'])) {
@@ -52,27 +58,27 @@ if (isset($_GET['category'])) {
 }
 
 if (isset($_GET['status'])) {
-   
-    $statusArray  = explode(",", filter_var($_GET['status'], FILTER_SANITIZE_STRING));
-
-    foreach ($statusArray as $eachStatus) {
-        if( $eachStatus == 'all' ){
-            $statuses[] = 'Expired - Data Still Received';
-            $statuses[] = 'Live';
-            $statuses[] = 'Future (Pipeline)';
-            $statuses[] = 'Planned (Pipeline)';
-            $statuses[] = 'Underway (Pipeline)';
-            $statuses[] = 'Awarded (Pipeline)';
-            break;
-        } else if ($eachStatus == 'expired') {
-            $statuses[] = 'Expired - Data Still Received';
-        } else if ($eachStatus == 'live') {
-            $statuses[] = 'Live';
-        } else if ($eachStatus == 'upcoming') {
-            $statuses[] = 'Future (Pipeline)';
-            $statuses[] = 'Planned (Pipeline)';
-            $statuses[] = 'Underway (Pipeline)';
-            $statuses[] = 'Awarded (Pipeline)';
+    if (!is_array(($_GET['status']))) {
+        $dada = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
+        if (filter_var($_GET['status'], FILTER_SANITIZE_STRING) == 'all'){
+            $statuses = $allStatus;
+        } else {
+            $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
+        }
+    } else {
+        foreach ($_GET['status'] as $eachStatus) {
+            if ($eachStatus == 'all'){
+                $statuses = $allStatus;
+            } elseif ($eachStatus == 'expired') {
+                $statuses[] = 'Expired - Data Still Received';
+            } else if ($eachStatus == 'live') {
+                $statuses[] = 'Live';
+            } else if ($eachStatus == 'upcoming') {
+                $statuses[] = 'Future (Pipeline)';
+                $statuses[] = 'Planned (Pipeline)';
+                $statuses[] = 'Underway (Pipeline)';
+                $statuses[] = 'Awarded (Pipeline)';
+            }
         }
     }
 
@@ -102,7 +108,7 @@ if (isset($_GET['pillar'])) {
 }
 
 
-$resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);
+$resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters, $sortField);
 $frameworks = $resultSet->getResults();
 $buckets = $resultSet->getAggregations();
 

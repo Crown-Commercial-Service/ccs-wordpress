@@ -121,7 +121,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
     {
         $search = new Search($this);
 
-        $search->addIndex($this->getIndexOrCreate());
+        $search->addIndex($this->getIndex($this->getQualifiedIndexName()));
 
         // Create a bool query to allow us to set up multiple query types
         $boolQuery = new Query\BoolQuery();

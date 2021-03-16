@@ -15,8 +15,7 @@ $searchClient = new FrameworkSearchClient();
 
 // Set empty vars
 $dataToReturn = [];
-$allStatus = ['Live', 'Expired - Data Still Received', 'Future (Pipeline)', 'Planned (Pipeline)', 'Underway (Pipeline)', 'Awarded (Pipeline)'];
-$statuses = [];
+$statuses = ['Live', 'Expired - Data Still Received', 'Future (Pipeline)', 'Planned (Pipeline)', 'Underway (Pipeline)', 'Awarded (Pipeline)'];
 $sortField = '';
 $filters = [];
 $keyword = '';
@@ -59,36 +58,39 @@ if (isset($_GET['category'])) {
 
 if (isset($_GET['status'])) {
     if (!is_array(($_GET['status']))) {
-        $dada = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
-        if (filter_var($_GET['status'], FILTER_SANITIZE_STRING) == 'all'){
-            $statuses = $allStatus;
-        } else {
-            $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
-        }
+        $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
     } else {
-        foreach ($_GET['status'] as $eachStatus) {
-            if ($eachStatus == 'all'){
-                $statuses = $allStatus;
-            } elseif ($eachStatus == 'expired') {
-                $statuses[] = 'Expired - Data Still Received';
-            } else if ($eachStatus == 'live') {
-                $statuses[] = 'Live';
-            } else if ($eachStatus == 'upcoming') {
-                $statuses[] = 'Future (Pipeline)';
-                $statuses[] = 'Planned (Pipeline)';
-                $statuses[] = 'Underway (Pipeline)';
-                $statuses[] = 'Awarded (Pipeline)';
+        
+        if (!in_array('live', $_GET['status'])) {
+            $pos = array_search('Live', $statuses);
+            unset($statuses[$pos]);
+        }
+
+        if (!in_array('expired', $_GET['status'])) {
+            $pos = array_search('Expired - Data Still Received', $statuses);
+            unset($statuses[$pos]);
+        }
+
+        if (!in_array('upcoming', $_GET['status'])) {
+            $pos = [];
+            $pos[] = array_search('Future (Pipeline)', $statuses);
+            $pos[] = array_search('Planned (Pipeline)', $statuses);
+            $pos[] = array_search('Underway (Pipeline)', $statuses);
+            $pos[] = array_search('Awarded (Pipeline)', $statuses);
+
+            foreach($pos as $eachPos) {
+                unset($statuses[$eachPos]);
             }
         }
     }
+}
 
-    if (!empty($statuses)){
-        $filters['status'] = [
-            'field'     => 'status',
-            'condition' => 'OR',
-            'value'     => $statuses
-          ];
-    }
+if (!empty($statuses)){
+    $filters['status'] = [
+        'field'     => 'status',
+        'condition' => 'OR',
+        'value'     => $statuses
+      ];
 }
 
 if (isset($_GET['pillar'])) {

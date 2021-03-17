@@ -13,9 +13,13 @@ $dotenv->load($rootDir . '.env');
 
 $searchClient = new FrameworkSearchClient();
 
+$liveStatus = ['Live'];
+$expiredStatus = ['Expired - Data Still Received'];
+$upcomingStatus = ['Future (Pipeline)', 'Planned (Pipeline)', 'Underway (Pipeline)', 'Awarded (Pipeline)'];
+
 // Set empty vars
 $dataToReturn = [];
-$statuses = ['Live', 'Expired - Data Still Received', 'Future (Pipeline)', 'Planned (Pipeline)', 'Underway (Pipeline)', 'Awarded (Pipeline)'];
+$statuses = [];
 $sortField = '';
 $filters = [];
 $keyword = '';
@@ -60,29 +64,20 @@ if (isset($_GET['status'])) {
     if (!is_array(($_GET['status']))) {
         $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
     } else {
-        
-        if (!in_array('live', $_GET['status'])) {
-            $pos = array_search('Live', $statuses);
-            unset($statuses[$pos]);
-        }
-
-        if (!in_array('expired', $_GET['status'])) {
-            $pos = array_search('Expired - Data Still Received', $statuses);
-            unset($statuses[$pos]);
-        }
-
-        if (!in_array('upcoming', $_GET['status'])) {
-            $pos = [];
-            $pos[] = array_search('Future (Pipeline)', $statuses);
-            $pos[] = array_search('Planned (Pipeline)', $statuses);
-            $pos[] = array_search('Underway (Pipeline)', $statuses);
-            $pos[] = array_search('Awarded (Pipeline)', $statuses);
-
-            foreach($pos as $eachPos) {
-                unset($statuses[$eachPos]);
+        foreach ($_GET['status'] as $status) {
+            if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'EXPIRED') {
+                $statuses = array_merge($statuses, $expiredStatus);
+            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'LIVE') {
+                $statuses = array_merge($statuses, $liveStatus);
+            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'UPCOMING') {
+                $statuses = array_merge($statuses, $upcomingStatus);
             }
         }
     }
+} else {
+    $statuses = array_merge($statuses, $liveStatus);
+    $statuses = array_merge($statuses, $expiredStatus);
+    $statuses = array_merge($statuses, $upcomingStatus);
 }
 
 if (!empty($statuses)){

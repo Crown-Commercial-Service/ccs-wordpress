@@ -65,7 +65,12 @@ if (isset($_GET['status'])) {
         $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
     } else {
         foreach ($_GET['status'] as $status) {
-            if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'EXPIRED') {
+            if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'ALL') {
+                $statuses = array_merge($statuses, $liveStatus);
+                $statuses = array_merge($statuses, $expiredStatus);
+                $statuses = array_merge($statuses, $upcomingStatus);
+                break;
+            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'EXPIRED') {
                 $statuses = array_merge($statuses, $expiredStatus);
             }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'LIVE') {
                 $statuses = array_merge($statuses, $liveStatus);
@@ -76,8 +81,6 @@ if (isset($_GET['status'])) {
     }
 } else {
     $statuses = array_merge($statuses, $liveStatus);
-    $statuses = array_merge($statuses, $expiredStatus);
-    $statuses = array_merge($statuses, $upcomingStatus);
 }
 
 if (!empty($statuses)){

@@ -28,7 +28,7 @@ $fg1->add_field( new acf_fields\text( 'Whitepaper URL', 'whitepaper_url', '20210
     'instructions' => 'Absolute Full URL for whitepaper brochure'
 ]) );
 
-$fg1->add_field( new acf_fields\text( 'Whitepaper URL Text', 'whitepaper_text', '202103231655a') );
+$fg1->add_field( new acf_fields\text( 'Whitepaper URL Text', 'whitepaper_url_text', '202103231655a') );
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Whitepaper Form Introduction', 'form_introduction', '202002281430a', [
     'instructions' => 'Optional text to display above the form when requesting access to the Whitepaper'

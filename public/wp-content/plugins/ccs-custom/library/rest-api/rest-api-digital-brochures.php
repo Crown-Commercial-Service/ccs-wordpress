@@ -23,7 +23,7 @@ if (!function_exists('digital_brochures_add_data')) {
             $linkText = get_field('link_text', $postId);
 
             $response->data['acf']['digital_brochures_list_digital_brochures'][$key]->ccs_digital_brochure_file = $file;
-            $response->data['acf']['digital_brochures_list_digital_brochures'][$key]->ccs_digital_brochure_image = ($featuredImageId != "" ? intval($featuredImageId) : null);
+            $response->data['acf']['digital_brochures_list_digital_brochures'][$key]->ccs_digital_brochure_featured_image = ($featuredImageId != "" ? intval($featuredImageId) : null);
             $response->data['acf']['digital_brochures_list_digital_brochures'][$key]->link_text = $linkText;
         }
 

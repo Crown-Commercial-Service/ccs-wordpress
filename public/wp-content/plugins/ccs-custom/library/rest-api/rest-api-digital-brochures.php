@@ -10,12 +10,12 @@ if (!function_exists('digital_brochures_add_data')) {
             return $response;
         }
 
-        foreach($response->data['acf']['digital_brochures_list_digital_brochures'] as $key => $whitepaper) {
-            if(!isset($whitepaper->ID)) {
+        foreach($response->data['acf']['digital_brochures_list_digital_brochures'] as $key => $digital_brochure) {
+            if(!isset($digital_brochure->ID)) {
                 continue;
             }
 
-            $postId = $whitepaper->ID;
+            $postId = $digital_brochure->ID;
 
             $file = get_field('digital_brochure_file', $postId);
 

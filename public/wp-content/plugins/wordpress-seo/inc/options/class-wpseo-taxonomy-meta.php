@@ -61,6 +61,7 @@ class WPSEO_Taxonomy_Meta extends WPSEO_Option {
 		'wpseo_content_score'         => '',
 		'wpseo_focuskeywords'         => '[]',
 		'wpseo_keywordsynonyms'       => '[]',
+		'wpseo_is_cornerstone'        => '0',
 
 		// Social fields.
 		'wpseo_opengraph-title'       => '',
@@ -94,17 +95,11 @@ class WPSEO_Taxonomy_Meta extends WPSEO_Option {
 	 * @todo [JRF => testers] Check if the extra actions below would run into problems if an option
 	 * is updated early on and if so, change the call to schedule these for a later action on add/update
 	 * instead of running them straight away.
-	 *
-	 * @return \WPSEO_Taxonomy_Meta
 	 */
 	protected function __construct() {
 		parent::__construct();
 
 		self::$name = $this->option_name;
-
-		/* On succesfull update/add of the option, flush the W3TC cache. */
-		add_action( 'add_option_' . $this->option_name, [ 'WPSEO_Utils', 'flush_w3tc_cache' ] );
-		add_action( 'update_option_' . $this->option_name, [ 'WPSEO_Utils', 'flush_w3tc_cache' ] );
 	}
 
 	/**
@@ -334,7 +329,7 @@ class WPSEO_Taxonomy_Meta extends WPSEO_Option {
 						$clean[ $key ] = WPSEO_Utils::sanitize_text_field( $meta_data[ $key ] );
 					}
 
-					if ( 'wpseo_focuskw' === $key ) {
+					if ( $key === 'wpseo_focuskw' ) {
 						$search = [
 							'&lt;',
 							'&gt;',

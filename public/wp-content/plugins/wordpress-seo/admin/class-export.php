@@ -29,7 +29,7 @@ class WPSEO_Export {
 	/**
 	 * Holds whether the export was a success.
 	 *
-	 * @var boolean
+	 * @var bool
 	 */
 	public $success;
 
@@ -145,33 +145,5 @@ class WPSEO_Export {
 			$val = '"' . $val . '"';
 		}
 		$this->write_line( $key . ' = ' . $val );
-	}
-
-	/* ********************* DEPRECATED METHODS ********************* */
-
-	/**
-	 * Returns true when the property error has a value.
-	 *
-	 * @deprecated 11.9 Obsolete since the export setting refactor in 9.2.
-	 *
-	 * @codeCoverageIgnore
-	 *
-	 * @return bool
-	 */
-	public function has_error() {
-		_deprecated_function( __METHOD__, 'WPSEO 11.9' );
-
-		return false;
-	}
-
-	/**
-	 * Sets the error hook, to display the error to the user.
-	 *
-	 * @deprecated 11.9 Obsolete since the export setting refactor in 9.2.
-	 *
-	 * @codeCoverageIgnore
-	 */
-	public function set_error_hook() {
-		_deprecated_function( __METHOD__, 'WPSEO 11.9' );
 	}
 }

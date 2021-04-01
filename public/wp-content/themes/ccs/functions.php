@@ -322,7 +322,9 @@ require get_template_directory() . '/inc/template-tags.php';
  */
 require get_template_directory() . '/inc/customizer.php';
 
-add_post_type_support( 'whitepaper', 'excerpt' ); 
+add_post_type_support( 'whitepaper', 'excerpt' );
+
+add_post_type_support( 'digital_brochure', 'excerpt' );
 
 function removing_post_tag_from_taxonomy_list(){
     register_taxonomy('post_tag', array());

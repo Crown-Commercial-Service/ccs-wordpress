@@ -104,6 +104,7 @@ function register_pillars_taxonomy() {
 	register_taxonomy( 'pillars', array(
 		'page',
 		'whitepaper',
+		'digital_brochure',
 		'webinar'
 	), $args );
 	// We'll use this to make sure post types are attached inside filter callback that run during parse_request or pre_get_posts

@@ -329,3 +329,17 @@ add_post_type_support( 'digital_brochure', 'excerpt' );
 function removing_post_tag_from_taxonomy_list(){
     register_taxonomy('post_tag', array());
 }
+
+/**
+ * Remove Wordpress default routes
+ */
+add_filter('rest_endpoints', function( $endpoints ) {
+
+    foreach( $endpoints as $route => $endpoint ){
+        if( 0 === stripos( $route, '/wp/v2/event' ) ){
+            unset( $endpoints[ $route ] );
+        }
+    }
+
+    return $endpoints;
+});

@@ -81,6 +81,7 @@ $field_group->add_brick((new bricks\resources_intro('resources_intro', '20200110
 $field_group->add_brick((new bricks\brochures_list('brochures_list', '202001101634a')));
 $field_group->add_brick((new bricks\whitepapers_list('whitepapers_list', '202001131114a')));
 $field_group->add_brick((new bricks\webinars_list('webinars_list', '202001131712a')));
+$field_group->add_brick((new bricks\digital_brochures_list('digital_brochures_list', '202103291085a')));
 
 /*
  * Register the field group

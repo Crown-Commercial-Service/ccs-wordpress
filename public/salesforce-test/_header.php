@@ -4,7 +4,7 @@ use Symfony\Component\Dotenv\Dotenv;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-$dotenv = new Dotenv();
+$dotenv = new Dotenv(true);
 $dotenv->load(__DIR__ . '/../../.env');
 
 ?>

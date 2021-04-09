@@ -865,32 +865,35 @@ class WP_REST_Server {
 			if ( ! isset( $this->route_options[ $route ] ) ) {
 				$this->route_options[ $route ] = array();
 			}
+			
+			if (is_array($handlers) || is_object($handlers)) {
 
-			foreach ( $handlers as $key => &$handler ) {
+				foreach ( $handlers as $key => &$handler ) {
 
-				if ( ! is_numeric( $key ) ) {
-					// Route option, move it to the options.
-					$this->route_options[ $route ][ $key ] = $handler;
-					unset( $handlers[ $key ] );
-					continue;
-				}
+					if ( ! is_numeric( $key ) ) {
+						// Route option, move it to the options.
+						$this->route_options[ $route ][ $key ] = $handler;
+						unset( $handlers[ $key ] );
+						continue;
+					}
 
-				$handler = wp_parse_args( $handler, $defaults );
+					$handler = wp_parse_args( $handler, $defaults );
 
-				// Allow comma-separated HTTP methods.
-				if ( is_string( $handler['methods'] ) ) {
-					$methods = explode( ',', $handler['methods'] );
-				} elseif ( is_array( $handler['methods'] ) ) {
-					$methods = $handler['methods'];
-				} else {
-					$methods = array();
-				}
+					// Allow comma-separated HTTP methods.
+					if ( is_string( $handler['methods'] ) ) {
+						$methods = explode( ',', $handler['methods'] );
+					} elseif ( is_array( $handler['methods'] ) ) {
+						$methods = $handler['methods'];
+					} else {
+						$methods = array();
+					}
 
-				$handler['methods'] = array();
+					$handler['methods'] = array();
 
-				foreach ( $methods as $method ) {
-					$method                        = strtoupper( trim( $method ) );
-					$handler['methods'][ $method ] = true;
+					foreach ( $methods as $method ) {
+						$method                        = strtoupper( trim( $method ) );
+						$handler['methods'][ $method ] = true;
+					}
 				}
 			}
 		}

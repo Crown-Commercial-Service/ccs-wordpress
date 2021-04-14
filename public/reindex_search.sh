@@ -11,14 +11,13 @@ ELASTIC_STOPWORDS_ID=$(grep ELASTIC_STOPWORDS_ID ../.env | xargs)
 IFS='=' read -ra ELASTIC_SUFFIX <<< "$ELASTIC_SUFFIX"
 IFS='=' read -ra ELASTIC_TRANSPORT <<< "$ELASTIC_TRANSPORT"
 IFS='=' read -ra ELASTIC_HOST <<< "$ELASTIC_HOST"
+IFS='=' read -ra ELASTIC_STOPWORDS_ID <<< "$ELASTIC_STOPWORDS_ID"
 
 ELASTIC_SUFFIX=${ELASTIC_SUFFIX[1]//$'\r'}
 ELASTIC_TRANSPORT=${ELASTIC_TRANSPORT[1]//$'\r'}
 ELASTIC_HOST=${ELASTIC_HOST[1]//$'\r'}
 ELASTIC_STOPWORDS_ID=${ELASTIC_STOPWORDS_ID[1]//$'\r'}
-ELASTIC_ENDPOINT="${ELASTIC_TRANSPORT}://${ELASTIC_HOST}"
-
-"${ELASTIC}"
+ELASTIC_ENDPOINT="${ELASTIC_TRANSPORT}://${ELASTIC_HOST}:9200"
 
 echo "Reindexing Frameworks"
 curl -X PUT "${ELASTIC_ENDPOINT}/framework_${ELASTIC_SUFFIX}_temp?pretty" -H 'Content-Type: application/json' -d' {
@@ -31,7 +30,7 @@ curl -X PUT "${ELASTIC_ENDPOINT}/framework_${ELASTIC_SUFFIX}_temp?pretty" -H 'Co
         },
         "english_stop": {
           "type": "stop",
-          "stopwords_path": '"analyzers/${ELASTIC_STOPWORDS_ID}"',
+          "stopwords_path": "analyzers/'${ELASTIC_STOPWORDS_ID}'",
           "updateable": true
         }
       },
@@ -149,7 +148,7 @@ curl -X PUT "${ELASTIC_ENDPOINT}/framework_${ELASTIC_SUFFIX}?pretty" -H 'Content
         },
         "english_stop": {
           "type": "stop",
-          "stopwords_path": '"analyzers/${ELASTIC_STOPWORDS_ID}"',
+          "stopwords_path": "analyzers/'${ELASTIC_STOPWORDS_ID}'",
           "updateable": true
         }
       },
@@ -267,7 +266,7 @@ curl -X PUT "${ELASTIC_ENDPOINT}/supplier_${ELASTIC_SUFFIX}_temp?pretty" -H 'Con
           "type": "stemmer"
         },
         "english_stop": {
-          "stopwords_path": '"analyzers/${ELASTIC_STOPWORDS_ID}"',
+          "stopwords_path": "analyzers/'${ELASTIC_STOPWORDS_ID}'",
           "updateable": true
         }
       },
@@ -366,7 +365,7 @@ curl -X PUT "${ELASTIC_ENDPOINT}/supplier_${ELASTIC_SUFFIX}?pretty" -H 'Content-
         },
         "english_stop": {
           "type": "stop",
-          "stopwords_path": '"analyzers/${ELASTIC_STOPWORDS_ID}"',
+          "stopwords_path": "analyzers/'${ELASTIC_STOPWORDS_ID}'",
           "updateable": true
         }
       },

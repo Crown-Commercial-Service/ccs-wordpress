@@ -266,6 +266,7 @@ curl -X PUT "${ELASTIC_ENDPOINT}/supplier_${ELASTIC_SUFFIX}_temp?pretty" -H 'Con
           "type": "stemmer"
         },
         "english_stop": {
+          "type": "stop",
           "stopwords_path": "analyzers/'${ELASTIC_STOPWORDS_ID}'",
           "updateable": true
         }

@@ -84,8 +84,8 @@ class acf_field_wysiwyg extends acf_field {
 		
 		
 		// Added in 4.4
-		if( function_exists('wp_make_content_images_responsive') ) {
-			add_filter( 'acf_the_content', 'wp_make_content_images_responsive' );
+		if( function_exists('wp_filter_content_tags') ) {
+			add_filter( 'acf_the_content', 'wp_filter_content_tags' );
 		}
 		
 		add_filter( 'acf_the_content', 'do_shortcode', 11);

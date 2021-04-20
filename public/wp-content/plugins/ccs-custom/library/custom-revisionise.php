@@ -90,7 +90,43 @@ add_action('post_submitbox_start','hideRevisioniseButton',200,1);
 
 
 
-// Admin bar
+function validateFrameworkDescription($post) {
+
+	$frameworkDescription = $_POST['acf']["201902041237a_201902041416a"];
+
+	if ($post["post_type"] == 'framework' && empty($frameworkDescription) && $post["post_status"] == 'pending') { 
+		update_option('my_admin_errors', 'Please enter the framework description');
+		return ;
+	}
+
+	return $post;
+}
+
+add_action( 'wp_insert_post_data',  'validateFrameworkDescription' );
+
+
+function displayFrameworkDescriptionError() {
+
+    $errors = get_option('my_admin_errors');
+
+    if($errors) {
+        echo '<div class="error"><p>' . $errors . '</p></div>';
+    }
+
+	update_option('my_admin_errors', false);
+}
+
+add_action( 'admin_notices', 'displayFrameworkDescriptionError' );
+
+
+function disableSuccessMessage( $messages )
+{
+    unset($messages['post'][10]);
+    return $messages;
+}
+
+add_filter( 'post_updated_messages', 'disableSuccessMessage' );
+
 
 function hideRevisioniseAdminBar($admin_bar) {
 

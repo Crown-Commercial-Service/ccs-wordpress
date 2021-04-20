@@ -66,8 +66,12 @@ class component_intro extends project_brick {
 
 		$this->add_flexible_content( $fc );
 
-		$this->add_field(new acf_fields\true_false('Flip media and text?', 'flip_media_text', '2021033004562b', [
-			'instructions' => 'Checking this box will make media appear on the left and the text on the right',
+		$this->add_field(new acf_fields\radio('Media and text', 'flip_media_text', '2021033004562b', [
+			'instructions' => 'Select how the image and text will appear on the site',
+			'choices' 	   => [
+				'image_right' => 'Image right, text left (default)',
+				'image_left' => 'Image left, text right'
+			]
 		]));
 
 	}

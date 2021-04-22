@@ -4,6 +4,7 @@ use App\Repository\FrameworkRepository;
 use App\Repository\LotRepository;
 use App\Repository\LotSupplierRepository;
 use App\Repository\SupplierRepository;
+use App\Utils\StringHelpers;
 
 class CustomSupplierApi
 {
@@ -149,6 +150,7 @@ class CustomSupplierApi
         $supplierData = $supplier->toArray();
         $supplierData['live_frameworks'] = $frameworksData;
         $supplierData['trading_names'] = $supplierTradingNamesFinal;
+        $supplierData['slug'] = StringHelpers::slugify($supplier->getName());
 
         header('Content-Type: application/json');
         return rest_ensure_response($supplierData);

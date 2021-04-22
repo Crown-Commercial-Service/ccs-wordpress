@@ -129,6 +129,17 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
         $publishedStatusQuery = new Query\Match('published_status', 'publish');
         $boolQuery->addMust($publishedStatusQuery);
 
+        $statusBool = new Query\BoolQuery();
+        $liveStatusQuery = new Query\Match('status', 'Live');
+        $expiredStatusQuery = new Query\Match('status', 'Expired - Data Still Received');
+
+        $statusBool->addShould($liveStatusQuery);
+        $statusBool->addShould($expiredStatusQuery);
+        $statusBool->setMinimumShouldMatch(1);
+
+        $boolQuery->addMust($statusBool);
+
+
         if (!empty($keyword)) {
             $keywordBool = new Query\BoolQuery();
 

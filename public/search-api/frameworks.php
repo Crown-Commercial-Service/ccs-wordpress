@@ -13,14 +13,8 @@ $dotenv->load($rootDir . '.env');
 
 $searchClient = new FrameworkSearchClient();
 
-$liveStatus = ['Live'];
-$expiredStatus = ['Expired - Data Still Received'];
-$upcomingStatus = ['Future (Pipeline)', 'Planned (Pipeline)', 'Underway (Pipeline)', 'Awarded (Pipeline)'];
-
 // Set empty vars
 $dataToReturn = [];
-$statuses = [];
-$sortField = '';
 $filters = [];
 $keyword = '';
 $page = 0;
@@ -36,10 +30,6 @@ if (isset($_GET['page'])) {
 
 if (isset($_GET['keyword'])) {
     $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_STRING);
-}
-
-if (isset($_GET['sort'])) {
-    $sortField = filter_var($_GET['sort'], FILTER_SANITIZE_STRING);
 }
 
 if (isset($_GET['category'])) {
@@ -65,30 +55,21 @@ if (isset($_GET['status'])) {
         $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
     } else {
         foreach ($_GET['status'] as $status) {
-            if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'ALL') {
-                $statuses = array_merge($statuses, $liveStatus);
-                $statuses = array_merge($statuses, $expiredStatus);
-                $statuses = array_merge($statuses, $upcomingStatus);
-                break;
-            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'EXPIRED') {
-                $statuses = array_merge($statuses, $expiredStatus);
-            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'LIVE') {
-                $statuses = array_merge($statuses, $liveStatus);
-            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'UPCOMING') {
-                $statuses = array_merge($statuses, $upcomingStatus);
+            if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'EXPIRED') {
+                $status = 'Expired - Data Still Received';
+            } else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'LIVE') {
+                $status = 'Live';
             }
+            $statuses[] = filter_var($status, FILTER_SANITIZE_STRING);
         }
     }
-} else {
-    $statuses = array_merge($statuses, $liveStatus);
-}
 
-if (!empty($statuses)){
     $filters['status'] = [
-        'field'     => 'status',
-        'condition' => 'OR',
-        'value'     => $statuses
-      ];
+      'field'     => 'status',
+      'condition' => 'OR',
+      'value'     => $statuses
+    ];
+
 }
 
 if (isset($_GET['pillar'])) {
@@ -108,7 +89,7 @@ if (isset($_GET['pillar'])) {
 }
 
 
-$resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters, $sortField);
+$resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters);
 $frameworks = $resultSet->getResults();
 $buckets = $resultSet->getAggregations();
 

@@ -150,7 +150,7 @@ class CustomSupplierApi
         $supplierData = $supplier->toArray();
         $supplierData['live_frameworks'] = $frameworksData;
         $supplierData['trading_names'] = $supplierTradingNamesFinal;
-        $supplierData['slug'] = StringHelpers::slugify($supplier->getName());
+        $supplierData['slugArray'] = $this->getSlugArray($supplierTradingNamesFinal, $supplier->getName());
 
         header('Content-Type: application/json');
         return rest_ensure_response($supplierData);
@@ -301,5 +301,21 @@ class CustomSupplierApi
         }
 
         return $tradingNamesFinal;
+    }
+
+    private function getSlugArray($arrayOfTradingName, $supplierName){
+
+        $listOfSlugName = [];
+
+        $listOfSlugName[] = StringHelpers::slugify($supplierName);
+
+        if ($arrayOfTradingName != null){
+            foreach($arrayOfTradingName as $tradingName){
+                $listOfSlugName[] = StringHelpers::slugify($tradingName['name']);
+            }
+        }
+       
+        return $listOfSlugName;
+
     }
 }

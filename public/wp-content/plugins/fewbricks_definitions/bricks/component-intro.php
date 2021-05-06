@@ -49,7 +49,6 @@ class component_intro extends project_brick {
 			'instructions' => 'Link to a page on the same domain by writing e.g. /agreements',
 		] ));
 
-
 		$fc = new acf_fields\flexible_content( 'Media', 'media', '2020011440a', [
 			'button_label' => 'Add media to section',
 			'layout'       => 'row',
@@ -66,6 +65,14 @@ class component_intro extends project_brick {
 		$fc->add_layout( $l );
 
 		$this->add_flexible_content( $fc );
+
+		$this->add_field(new acf_fields\radio('Media and text', 'flip_media_text', '2021033004562b', [
+			'instructions' => 'Select how the image and text will appear on the site',
+			'choices' 	   => [
+				'image_right' => 'Image right, text left (default)',
+				'image_left' => 'Image left, text right'
+			]
+		]));
 
 	}
 

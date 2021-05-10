@@ -29,7 +29,7 @@ if (!function_exists('modify_featured_events')) {
                         'posts_per_page' => 2,
                         'meta_key'	     => 'start_datetime',
                         'orderby'		 => 'meta_value',
-                        'order'			 => 'DESC'
+                        'order'			 => 'ASC'
                     );
 
                     if (!empty($productsServices) || !empty($sectors)) {

@@ -93,9 +93,9 @@ add_action('post_submitbox_start','hideRevisioniseButton',200,1);
 function validateFrameworkDescription($post) {
 
 	$frameworkDescription = $_POST['acf']["201902041237a_201902041416a"];
-    $FrameworkType = $_POST['radio_tax_input']['framework_type'][0];
+	$frameworkType = $_POST['radio_tax_input']['framework_type'][0];
 
-	if ($FrameworkType != "33" && $post["post_type"] == 'framework' && empty($frameworkDescription) && $post["post_status"] == 'pending') { 
+	if ($frameworkType != "33" && $post["post_type"] == 'framework' && empty($frameworkDescription) && $post["post_status"] == 'pending') { 
 		update_option('my_admin_errors', 'Please enter the framework description');
 		return ;
 	}

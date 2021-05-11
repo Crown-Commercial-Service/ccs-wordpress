@@ -329,11 +329,3 @@ add_post_type_support( 'digital_brochure', 'excerpt' );
 function removing_post_tag_from_taxonomy_list(){
     register_taxonomy('post_tag', array());
 }
-
-function making_acf_field_required( $field ) {
-	$field['required'] = true;
-	
-	return $field;
-}
-
-add_filter('acf/load_field/name=framework_description', 'making_acf_field_required');

@@ -329,3 +329,10 @@ add_post_type_support( 'digital_brochure', 'excerpt' );
 function removing_post_tag_from_taxonomy_list(){
     register_taxonomy('post_tag', array());
 }
+
+add_filter ('wp_insert_attachment_data','unattach_media_from_post', 10, 2);
+
+function unattach_media_from_post ($data, $postarr) {
+  $data['post_parent'] = 0;
+  return $data;
+};

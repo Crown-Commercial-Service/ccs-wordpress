@@ -14,8 +14,16 @@ if (!function_exists('modify_news_navigation')) {
 
         $currentindex = array_search( get_the_ID(), array_column($posts, 'ID') );
 
-        $prevID = $posts[ $currentindex-1 ]['ID'];
-        $nextID = $posts[ $currentindex+1 ]['ID'];
+        $prevID = null;
+        $nextID = null;
+
+        if (isset($posts[ $currentindex-1 ])) {
+            $prevID = $posts[ $currentindex-1 ]['ID'];
+        }
+
+        if (isset($posts[ $currentindex+1 ])) {
+            $nextID = $posts[ $currentindex+1 ]['ID'];
+        }
 
         $response->data['acf']["previous_text"] = getPostTitleFromPostID($prevID, $currentindex - 1, $posts);
 		$response->data['acf']["previous_link"] = getSlugFromPostID($prevID);

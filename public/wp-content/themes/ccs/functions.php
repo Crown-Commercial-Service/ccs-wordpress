@@ -336,3 +336,55 @@ function unattach_media_from_post ($data, $postarr) {
   $data['post_parent'] = 0;
   return $data;
 };
+
+// Add the custom column to the post type
+add_filter( 'manage_framework_posts_columns', 'itsg_add_custom_column' );
+function itsg_add_custom_column( $columns ) {
+    $columns['modified'] = 'Last Modified';
+
+    return $columns;
+}
+
+// Add the data to the custom column
+add_action( 'manage_framework_posts_custom_column' , 'itsg_add_custom_column_data', 10, 2 );
+function itsg_add_custom_column_data( $column, $post_id ) {
+    switch ( $column ) {
+        case 'modified' :
+			$date_format = 'Y/m/d';
+			$post = get_post( $post_id );
+			echo get_the_modified_date( $date_format, $post ); // the data that is displayed in the column
+            break;
+    }
+}
+
+// Make the custom column sortable
+add_filter( 'manage_edit-framework_sortable_columns', 'itsg_add_custom_column_make_sortable' );
+
+function itsg_add_custom_column_make_sortable( $columns ) {
+	$columns['modified'] = 'modified';
+
+	return $columns;
+}
+
+// Add custom column sort request to post list page
+add_action( 'load-edit.php', 'itsg_add_custom_column_sort_request' );
+function itsg_add_custom_column_sort_request() {
+	add_filter( 'request', 'itsg_add_custom_column_do_sortable' );
+}
+
+// Handle the custom column sorting
+function itsg_add_custom_column_do_sortable( $vars ) {
+	// check if sorting has been applied
+	if ( isset( $vars['orderby'] ) && 'modified' == $vars['orderby'] ) {
+
+		// apply the sorting to the post list
+		$vars = array_merge(
+			$vars,
+			array(
+				'orderby' => 'post_modified'
+			)
+		);
+	}
+
+	return $vars;
+}

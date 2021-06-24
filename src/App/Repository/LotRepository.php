@@ -72,6 +72,8 @@ class LotRepository extends AbstractRepository
      */
     public function update($searchField, $searchValue, Lot $lot)
     {
+        $originaldatabaseBindings = $this->databaseBindings;
+
         // Remove the field which we're using for the update command
         if (isset($this->databaseBindings[$searchField])) {
             unset($this->databaseBindings[$searchField]);
@@ -95,6 +97,8 @@ class LotRepository extends AbstractRepository
         $query->bindParam(':searchValue', $searchValue, \PDO::PARAM_STR);
 
         $query = $this->bindValues($this->databaseBindings, $query, $lot);
+
+        $this->databaseBindings = $originaldatabaseBindings;
 
         return $query->execute();
     }

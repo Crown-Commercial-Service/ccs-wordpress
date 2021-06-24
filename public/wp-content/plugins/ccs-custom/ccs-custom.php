@@ -33,6 +33,7 @@ include('library/custom-excerpts-descriptions.php');
 include('library/rest-api/restrict-api.php');
 include('library/rest-api/rest-api-modifications.php');
 include('library/add-acf-fields-to-rest-api.php');
+include('library/rest-api/rest-api-news-navigation.php');
 include('library/add-custom-metafields-to-rest-api-orderby-enumerator.php');
 
 

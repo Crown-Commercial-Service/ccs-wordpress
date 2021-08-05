@@ -2,6 +2,7 @@
 
 namespace WPMailSMTP\Providers\Sendgrid;
 
+use WPMailSMTP\MailCatcherInterface;
 use WPMailSMTP\Providers\MailerAbstract;
 use WPMailSMTP\WP;
 
@@ -35,11 +36,11 @@ class Mailer extends MailerAbstract {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param \WPMailSMTP\MailCatcher $phpmailer
+	 * @param MailCatcherInterface $phpmailer The MailCatcher object.
 	 */
 	public function __construct( $phpmailer ) {
 
-		// We want to prefill everything from \WPMailSMTP\MailCatcher class, which extends \PHPMailer.
+		// We want to prefill everything from MailCatcher class, which extends PHPMailer.
 		parent::__construct( $phpmailer );
 
 		$this->set_header( 'Authorization', 'Bearer ' . $this->options->get( $this->mailer, 'api_key' ) );
@@ -273,11 +274,14 @@ class Mailer extends MailerAbstract {
 				continue;
 			}
 
+			$filetype = str_replace( ';', '', trim( $attachment[4] ) );
+
 			$data[] = array(
-				'content'     => base64_encode( $file ),
-				'type'        => $attachment[4],
-				'filename'    => $attachment[2],
-				'disposition' => $attachment[6],
+				'content'     => base64_encode( $file ), // string, 1 character.
+				'type'        => $filetype, // string, no ;, no CRLF.
+				'filename'    => empty( $attachment[2] ) ? 'file-' . wp_hash( microtime() ) . '.' . $filetype : trim( $attachment[2] ), // required string, no CRLF.
+				'disposition' => in_array( $attachment[6], array( 'inline', 'attachment' ), true ) ? $attachment[6] : 'attachment', // either inline or attachment.
+				'content_id'  => empty( $attachment[7] ) ? '' : trim( (string) $attachment[7] ), // string, no CRLF.
 			);
 		}
 
@@ -348,7 +352,7 @@ class Mailer extends MailerAbstract {
 	 *
 	 * @return string
 	 */
-	protected function get_response_error() {
+	public function get_response_error() { // phpcs:ignore
 
 		$body = (array) wp_remote_retrieve_body( $this->response );
 
@@ -370,6 +374,8 @@ class Mailer extends MailerAbstract {
 					$error_text[] = $error->message . ( ! empty( $extra ) ? ' - ' . $extra : '' );
 				}
 			}
+		} elseif ( ! empty( $this->error_message ) ) {
+			$error_text[] = $this->error_message;
 		}
 
 		return implode( '<br>', array_map( 'esc_textarea', $error_text ) );

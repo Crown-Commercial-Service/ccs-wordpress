@@ -61,7 +61,7 @@ class PluginCore
         $rootDir = __DIR__ . '/../../../../../';
 
         require_once($rootDir . 'vendor/autoload.php');
-        $dotenv = new Dotenv();
+        $dotenv = new Dotenv(true);
         $dotenv->load($rootDir . '.env');
     }
 

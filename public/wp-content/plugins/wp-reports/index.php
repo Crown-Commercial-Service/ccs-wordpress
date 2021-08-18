@@ -162,12 +162,12 @@ class WpReportsPlugin {
             $permalink = $framework['permalink'];
             ?>
             <tr> 
-                <td><a href="<?php echo $permalink ?>"><?php echo $noAndTitle[0]?></a></td>
-                <td><a href="<?php echo $permalink ?>"><?php echo $noAndTitle[1]?></a></td>
-                <td><a href="<?php echo $permalink ?>"><?php echo $framework['post_status']?></a></td>
-                <td><a href="<?php echo $permalink ?>"><?php echo $framework['post_author']?></a></td>
-                <td><a href="<?php echo $permalink ?>"><?php echo $framework['post_written']?></a></td>
-                <td><a href="<?php echo $permalink ?>"><?php echo $framework['post_modified']?></a></td>
+                <td><?php echo $noAndTitle[0]?></td>
+                <td><?php echo $noAndTitle[1]?></td>
+                <td><?php echo $framework['post_status']?></td>
+                <td><?php echo $framework['post_author']?></td>
+                <td><?php echo $framework['post_written']?></td>
+                <td><?php echo $framework['post_modified']?></td>
                 <td>
                     <?php 
                         foreach($framework['associated_lots'] as $lot_index => $lot) {
@@ -219,10 +219,10 @@ class WpReportsPlugin {
                     $permalink = $author['authored_frameworks'][0]['permalink'];
                     ?>
                      <tr>
-                        <td><a href="<?php echo $permalink ?>"><?php echo $author['author_name'] ?></a></td>
-                        <td><a href="<?php echo $permalink ?>"><?php echo implode(" ", $author['last_login']) ?></a></td>
-                        <td><a href="<?php echo $permalink ?>"><?php echo $author['authored_frameworks'][0]['title'] ?></a></td>
-                        <td><a href="<?php echo $permalink ?>"><?php echo $author['authored_frameworks'][0]['post_modified'] ?></a></td>
+                        <td><?php echo $author['author_name'] ?></td>
+                        <td><?php echo implode(" ", $author['last_login']) ?></td>
+                        <td><?php echo $author['authored_frameworks'][0]['title'] ?></td>
+                        <td><?php echo $author['authored_frameworks'][0]['post_modified'] ?></td>
                     </tr>
                 <?php
                     }
@@ -280,12 +280,12 @@ class WpReportsPlugin {
                 $permalink = "/news/frameworks/".$doc['post_name'];
                 ?>
                 <tr>
-                    <td><a href="<?php echo $permalink ?>"><?php echo $doc['document_name'] ?></a></td>
-                    <td><a href="<?php echo $permalink ?>"><?php echo $doc['post_mime_type'] ?></a></td>
-                    <td class="upload-date_column"><a href="<?php echo $permalink ?>"><?php echo $doc['post_date'] ?></a></td>
-                    <!-- <td><a href="<?php echo $permalink ?>"><?php echo $doc['title'] ?></a></td> -->
-                    <td><a href="<?php echo $permalink ?>"><?php echo $doc['title'] ?></a></td>
-                    <td><a href="<?php echo $permalink ?>"><?php echo $doc['display_name'] ?></a></td>
+                    <td><?php echo $doc['document_name'] ?></td>
+                    <td><?php echo $doc['post_mime_type'] ?></td>
+                    <td class="upload-date_column"><?php echo $doc['post_date'] ?></td>
+                    <!-- <td><?php echo $doc['title'] ?></td> -->
+                    <td><?php echo $doc['title'] ?></td>
+                    <td><?php echo $doc['display_name'] ?></td>
                     <!-- <td></td> -->
                 </tr>
             <?php

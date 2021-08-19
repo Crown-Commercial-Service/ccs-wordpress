@@ -215,3 +215,15 @@ By default the query will use the **_score** field to sort the data. The **_scor
 If the query has no keyword, the data will be ordered by default by the class property **$defaultSortField** ﻿
 
 
+## Reindexing
+
+Reindexing will have to be performed whenever there is an update to the index settings, analyzer or in some cases the index mappings. 
+
+Reindexing is performed manually via a script which located in the public folder of the wordpress repository.
+
+Once in the public folder, the reindex script can be run by calling the following command:
+
+```
+./reindex_search.sh
+```
+This will reindex both the framework and supplier indexes.

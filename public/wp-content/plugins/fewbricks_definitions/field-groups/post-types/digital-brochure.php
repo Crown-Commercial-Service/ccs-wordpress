@@ -39,7 +39,7 @@ $fg1->add_field( new acf_fields\text( 'Link text', 'link_text', '202103294610a',
 ] ) );
 
 $fg1->add_field( new acf_fields\text( 'Document Type', 'document_type', '202109021654a', [
-    'value' => 'Digital Brochure',
+    'default_value' => 'Digital Brochure',
     'instructions' => 'The text to be displayed at the top of the form. Note default is Digital Brochure'
 ] ) );
 

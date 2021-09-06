@@ -12,11 +12,14 @@ if ( ! defined('ABSPATH')) exit; // exit if accessed directly
 
 class WpReportsPlugin {
 
-    private $authorsAPI = 'http://ccs-agreements.cabinetoffice.localhost/wp-json/wp-reports-plugin/v2/authors';
-    private $frameworksAPI = 'http://ccs-agreements.cabinetoffice.localhost/wp-json/wp-reports-plugin/v2/frameworks';
-    private $documentsAPI = "http://ccs-agreements.cabinetoffice.localhost/wp-json/wp-reports-plugin/v2/documents/type=frameworks";
+    private $authorsAPI;
+    private $frameworksAPI;
+    private $documentsAPI;
 
     function __construct() {
+        $authorsAPI = getenv('WP_SITEURL_WITH_HTTP') . '/wp-json/wp-reports-plugin/v2/authors';
+        $frameworksAPI = getenv('WP_SITEURL_WITH_HTTP') . '/wp-json/wp-reports-plugin/v2/frameworks';
+        $documentsAPI = getenv('WP_SITEURL_WITH_HTTP') . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
         add_action('admin_menu', array($this, 'reportsMenu'));
         add_action('admin_init', array($this, 'reportsSettings'));
     }

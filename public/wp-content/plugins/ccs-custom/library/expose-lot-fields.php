@@ -47,25 +47,31 @@ function ccs_expose_lots_for_framework() {
 
         $lots_query = new WP_Query(array('post__in' => $lot_post_ids, 'post_type' => 'lot', 'orderby' => 'ID', 'order' => 'ASC'));
 
-        if ( $lots_query->have_posts() ) {
-            echo '<h3>This Framework has the following lots attached to it:</h3>';
+        
 
-            echo '<style>';
-            echo '.lot-edit-display { list-style: none; margin: 0 0 0 10px; }';
-            echo '.lot-edit-display li { padding: 1px 1px 1px 20px; position: relative; }';
-            echo '.lot-edit-display li:before { content: attr(data-lot-number); left: 1px; position: absolute; top: 1px; }';
-            echo '.lot-edit-display h4 { margin: 0 0 3px 0; }';
-            echo '</style>';
-            echo '<ol class="lot-edit-display">';
+        if ( $lots_query->have_posts() ) {
             while ( $lots_query->have_posts() ) {
                 $lots_query->the_post();
                 $lot_id = get_the_ID();
+                $lot_title = get_the_title();
                 $editLink = get_edit_post_link($lot_id);
-                echo '<li data-lot-number="' . $lot_custom_data[$lot_id]['lot_number'] . '"><h4><a href="' . $editLink . '">' . get_the_title() . '</a></h4></li>';
-            }
-            echo '</ol>';
-        }
+                // variables for tinymce editor
+                $content   = get_the_content($lot_id);
+                $editor_id = 'lots-editor' . $lot_id; 
+                $editor_settings = [
+                    'textarea_name' => 'lotContent[' . $lot_id . ']',
+                ]?>
+                
+                <div>
+                    <input type="text" name="lotTitles[<?php echo $lot_id ?>]" value="<?php echo $lot_title; ?>" style="width:100%" />
+                    <div class="custom-lots-editor" style="margin-top : 20px;">
+                        <?php echo wp_editor( $content, $editor_id, $editor_settings); ?>
+                    </div>     
+                </div>
 
+                <?php
+            }
+        }
         wp_reset_postdata();
     }
 }

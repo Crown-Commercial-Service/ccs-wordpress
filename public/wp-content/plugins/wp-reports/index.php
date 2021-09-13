@@ -6,9 +6,9 @@ Version: 2.0
 Description: A plugin to display custom admin reports
 */
 
-$authorsPath = getenv('WP_SITEURL_WITH_HTTP') . '/wp-json/wp-reports-plugin/v2/authors';
-$frameworksPath = getenv('WP_SITEURL_WITH_HTTP') . '/wp-json/wp-reports-plugin/v2/frameworks';
-$documentsPath = getenv('WP_SITEURL_WITH_HTTP') . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
+$authorsPath = getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/authors';
+$frameworksPath = getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/frameworks';
+$documentsPath = getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
 
 $WpReportsPlugin = new WpReportsPlugin($authorsPath, $frameworksPath,$documentsPath);
 

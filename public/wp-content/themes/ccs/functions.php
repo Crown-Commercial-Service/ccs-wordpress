@@ -391,39 +391,46 @@ function framework_add_custom_column_do_sortable( $vars ) {
 
 add_action('save_post_framework', 'update_lot_data');
 function update_lot_data ($post_id) {
-		// get lot titles and content from request method
-		$lotTitles = $_REQUEST['lotTitles'];
-		$lotContent = $_REQUEST['lotContent'];
-		$lotKeys = array_keys($lotTitles);
+		// get lot content from request method
+		$lot_content = $_REQUEST['lotContent'];
+		$lot_keys = array_keys($lot_content);
 
-		// build an array
-		$lotData = [];
-
-		if(lot_data_valid($lotTitles, $lotContent)) {
-			// can use either lotTitle or lotContent for count as we will assume same length for both might need to use lot keys and validate that
-			$lotLength = count($lotTitles);
-			foreach ($lotKeys as $lotKey) {
-				$lotData[] = [$lotKey, $lotTitles[$lotKey], $lotContent[$lotKey]];
+		// update each lot post
+		if(lot_data_valid($lot_content, $lot_keys)) {
+			foreach ($lot_keys as $lot_key) {
+				update_lot_post($lot_key,$lot_content[$lot_key]);	
 			}
 		}
-
-		var_dump($lotData);
-		die();
-
-		// update appropriate lot post by looping through array
     	
 }
 
-function lot_data_valid ($lotTitles, $lotContent) {
+function lot_data_valid ($lot_content, $lot_keys) {
 
-	$lotTitlesLength = count($lotTitles);
-	$lotContentLength = count($lotContent); 
+	$lot_content_length = count($lot_content); 
+	$lot_keys_length = count($lot_keys);
 
-	if ($lotTitlesLength  > 0 && $lotContentLength > 0 ) {
-		if ($lotTitlesLength == $lotContentLength) {
+	if (!empty($lot_content_length) ) {
+		// confirm that all lotdata is there by all lot arrays having the same length
+		if ($lot_content_length == $lot_keys_length) {
 			return true;
 		}
 	}
 
 	return false;
+}
+
+function update_lot_post ($lot_id,$lot_content) {
+
+	// update post args
+	$update_lot_args = [
+		'ID' => $lot_id,
+		'post_content' => $lot_content,
+	];
+
+	// check if lot post type has no revision, this avoids infinite loop as save post is called again
+	if ( ! wp_is_post_revision( $lot_id ) ){ 
+        // update the post which calls save_post again
+        wp_update_post( $update_lot_args );
+    }		
+
 }

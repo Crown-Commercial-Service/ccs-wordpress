@@ -61,12 +61,18 @@ function ccs_expose_lots_for_framework() {
                 $editor_settings = [
                     'textarea_name' => 'lotContent[' . $lot_id . ']',
                 ]?>
-                
-                <div>
-                    <input type="text" name="lotTitles[<?php echo $lot_id ?>]" value="<?php echo $lot_title; ?>" style="width:100%" />
-                    <div class="custom-lots-editor" style="margin-top : 20px;">
-                        <?php echo wp_editor( $content, $editor_id, $editor_settings); ?>
-                    </div>     
+                <div class="postbox closed">
+                    <div class="postbox-header" style="display:block">
+                        <h2 style="display:inline-block"><?php echo $lot_title; ?></h2>
+                        <div class="handle-actions hide-if-no-js" style="display:inline-block; float:right">
+                            <button type="button" class="handlediv" aria-expanded="false"><span class="screen-reader-text">Toggle panel: Lot</span><span class="toggle-indicator" aria-hidden="true"></span></button>
+                        </div>
+                        <div class="inside">
+                            <div class="custom-lots-editor" style="margin-top : 20px;">
+                                <?php echo wp_editor( $content, $editor_id, $editor_settings); ?>
+                            </div>     
+                        </div>
+                    </div>
                 </div>
 
                 <?php

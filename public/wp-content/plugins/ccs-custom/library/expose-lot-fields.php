@@ -47,25 +47,36 @@ function ccs_expose_lots_for_framework() {
 
         $lots_query = new WP_Query(array('post__in' => $lot_post_ids, 'post_type' => 'lot', 'orderby' => 'ID', 'order' => 'ASC'));
 
-        if ( $lots_query->have_posts() ) {
-            echo '<h3>This Framework has the following lots attached to it:</h3>';
+        
 
-            echo '<style>';
-            echo '.lot-edit-display { list-style: none; margin: 0 0 0 10px; }';
-            echo '.lot-edit-display li { padding: 1px 1px 1px 20px; position: relative; }';
-            echo '.lot-edit-display li:before { content: attr(data-lot-number); left: 1px; position: absolute; top: 1px; }';
-            echo '.lot-edit-display h4 { margin: 0 0 3px 0; }';
-            echo '</style>';
-            echo '<ol class="lot-edit-display">';
+        if ( $lots_query->have_posts() ) {
             while ( $lots_query->have_posts() ) {
                 $lots_query->the_post();
                 $lot_id = get_the_ID();
-                $editLink = get_edit_post_link($lot_id);
-                echo '<li data-lot-number="' . $lot_custom_data[$lot_id]['lot_number'] . '"><h4><a href="' . $editLink . '">' . get_the_title() . '</a></h4></li>';
-            }
-            echo '</ol>';
-        }
+                $lot_title = get_the_title();
+                // variables for tinymce editor
+                $content   = get_the_content($lot_id);
+                $editor_id = 'lots-editor' . $lot_id; 
+                $editor_settings = [
+                    'textarea_name' => 'lotContent[' . $lot_id . ']',
+                ]?>
+                <div class="postbox closed">
+                    <div class="postbox-header" style="display:block">
+                        <h2 style="display:inline-block"><?php echo $lot_title; ?></h2>
+                        <div class="handle-actions hide-if-no-js" style="display:inline-block; float:right">
+                            <button type="button" class="handlediv" aria-expanded="false"><span class="screen-reader-text">Toggle panel: Lot</span><span class="toggle-indicator" aria-hidden="true"></span></button>
+                        </div>
+                        <div class="inside">
+                            <div class="custom-lots-editor" style="margin-top : 20px;">
+                                <?php echo wp_editor( $content, $editor_id, $editor_settings); ?>
+                            </div>     
+                        </div>
+                    </div>
+                </div>
 
+                <?php
+            }
+        }
         wp_reset_postdata();
     }
 }

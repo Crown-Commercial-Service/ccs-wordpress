@@ -388,3 +388,49 @@ function framework_add_custom_column_do_sortable( $vars ) {
 
 	return $vars;
 }
+
+add_action('save_post_framework', 'update_lot_data');
+function update_lot_data ($post_id) {
+		// get lot content from request method
+		$lot_content = $_REQUEST['lotContent'];
+		$lot_keys = array_keys($lot_content);
+
+		// update each lot post
+		if(lot_data_valid($lot_content, $lot_keys)) {
+			foreach ($lot_keys as $lot_key) {
+				update_lot_post($lot_key,$lot_content[$lot_key]);	
+			}
+		}
+    	
+}
+
+function lot_data_valid ($lot_content, $lot_keys) {
+
+	$lot_content_length = count($lot_content); 
+	$lot_keys_length = count($lot_keys);
+
+	if (!empty($lot_content_length) ) {
+		// confirm that all lotdata is there by all lot arrays having the same length
+		if ($lot_content_length == $lot_keys_length) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+function update_lot_post ($lot_id,$lot_content) {
+
+	// update post args
+	$update_lot_args = [
+		'ID' => $lot_id,
+		'post_content' => $lot_content,
+	];
+
+	// check if lot post type has no revision, this avoids infinite loop as save post is called again
+	if ( ! wp_is_post_revision( $lot_id ) ){ 
+        // update the post which calls save_post again
+        wp_update_post( $update_lot_args );
+    }		
+
+}

@@ -135,38 +135,24 @@
 
     function documentsQuery($post_type) {
         global $wpdb;
+
         $frameworksQuery = "
             SELECT 
-                display_name,
-                rm_number,
+                u.display_name,
+                f.rm_number,
+                f.title,
                 p.post_author,
                 p.post_date,
                 p.post_name,
-                p.post_title as title,
-                url,
-                document_name,
-                post_mime_type
-            FROM (
-                SELECT 
-                    rm_number,
-                    meta_value,
-                    original_source_path as document_name,
-                    Concat(bucket,'/',path) as url
-                FROM (
-                    SELECT 
-                        rm_number,
-                        title as Framework_title,
-                        pm.meta_value
-                    FROM ccs_frameworks f
-                    JOIN ccs_15423_postmeta pm
-                    WHERE f.wordpress_id = pm.post_id AND pm.meta_key RLIKE '^framework\_documents\_[0-9]'
-                ) temp
-                JOIN ccs_15423_as3cf_items i
-                WHERE temp.meta_value = i.source_id
-            ) temp2
-            JOIN ccs_15423_posts p
-            JOIN ccs_wordpress.ccs_15423_users u
-            WHERE temp2.meta_value = p.id AND p.post_author = u.ID";
+                p.post_title AS document_title,
+                p.guid AS url,
+                p.post_name AS document_name,
+                p.post_mime_type
+            FROM ccs_15423_posts p
+            JOIN ccs_frameworks f
+            JOIN ccs_15423_users u
+            WHERE f.wordpress_id = p.post_parent AND post_type = 'attachment' AND p.post_author = u.ID
+        ";
         
 
         if($post_type === "frameworks") {
@@ -175,28 +161,6 @@
         } 
     }
 
-    function frameworksByAuthorQuery($author) {
-        $frameworksByAuthor = new WP_Query(array(
-            'post_type' => 'framework', 
-            'meta_key' => 'post_author',
-            'meta_query' => array(array(
-                'key' => 'post_author',
-                'compare' => '===',
-                'value' => $author
-            ))
-        ));
-        $results = array();
-        while($frameworksByAuthor->have_posts()) {
-            $frameworks->the_post();
-            array_push($results, array(
-                'title' => get_the_title(),
-                'post_author' => get_the_author(),
-                'author_ID' => get_the_author_ID(),
-                'post_modified' => get_the_modified_date(),
-            ));
-        }
-        return $results;
-    }
 ?>
 
 

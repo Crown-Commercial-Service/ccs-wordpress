@@ -130,7 +130,7 @@ class WpReportsPlugin {
     ?>
         <!-- <label for="sortByMenu">Sort Documents By:</label> -->
         <select name="sortByMenu" id="sortByMenu" >
-            <option value="title" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Document Title</option>
+            <option value="document_name" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Document Title</option>
             <option value="post_mime_type" <?php echo esc_attr($selectedOption) === "post_mime_type" ? "selected" : ""; ?>>File Type</option>
             <option value="post_date" <?php echo esc_attr($selectedOption) === "post_date" ? "selected" : ""; ?>>Date Uploaded</option>
             <option value="title" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Framework Title</option>
@@ -167,7 +167,7 @@ class WpReportsPlugin {
             // echo "Author ID: ";
             // var_dump($framework['author_ID']);
             $noAndTitle = explode(':', $framework['title']);
-            $permalink = $framework['permalink'];
+            // $permalink = $framework['permalink'];
             ?>
             <tr> 
                 <td><?php echo $noAndTitle[0]?></td>
@@ -224,7 +224,7 @@ class WpReportsPlugin {
                     foreach($authors as $author) { 
                     // var_dump($author['authored_frameworks']);
                     usort($author['authored_frameworks'], 'compareDate');
-                    $permalink = $author['authored_frameworks'][0]['permalink'];
+                    // $permalink = $author['authored_frameworks'][0]['permalink'];
                     ?>
                      <tr>
                         <td><?php echo $author['author_name'] ?></td>
@@ -258,9 +258,7 @@ class WpReportsPlugin {
 
    
     function frameworksDocsHTML($documents) { 
-        $sortBy = esc_attr(get_option('sortByMenu'));
-        $sortedDocuments = sortData($documents, $sortBy);
-        // var_dump($sortBy);
+        $sortedDocuments = sortData($documents);
         ob_start(); ?>
         <div class="wrap">
             <!-- <h1>Reports Options</h1> -->
@@ -285,13 +283,13 @@ class WpReportsPlugin {
             </tr>
             <?php 
             foreach($sortedDocuments as $doc) {
-                $permalink = "/news/frameworks/".$doc['post_name'];
+                // $permalink = "/news/frameworks/".$doc['post_name'];
+                $fileType = $doc['post_mime_type'] == '' ? "N/A" : $doc['post_mime_type'];
                 ?>
                 <tr>
                     <td><?php echo $doc['document_name'] ?></td>
-                    <td><?php echo $doc['post_mime_type'] ?></td>
+                    <td><?php echo $fileType ?></td>
                     <td class="upload-date_column"><?php echo $doc['post_date'] ?></td>
-                    <!-- <td><?php echo $doc['title'] ?></td> -->
                     <td><?php echo $doc['title'] ?></td>
                     <td><?php echo $doc['display_name'] ?></td>
                     <!-- <td></td> -->
@@ -320,6 +318,7 @@ function sortData($dataArray) {
 }
 
 function compareSubarrays($a, $b) {
+    // if sorting by date, then sort descending, otherwise ascending
     if(get_option('sortByMenu') === "post_date") {
         return strcmp($b[get_option('sortByMenu')], $a[get_option('sortByMenu')]);     
     }

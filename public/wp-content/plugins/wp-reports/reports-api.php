@@ -24,7 +24,7 @@ class ReportsApi {
         ) );
     
         // DEV: https://webdev-cms.crowncommercial.gov.uk/wp-json/wp-reports-plugin/v2/documents/type=frameworks
-        // LOCAL: http://ccs-agreements.cabinetoffice.localhost/wp-json/wp-reports-plugin/v2/documents
+        // LOCAL: http://ccs-agreements.cabinetoffice.localhost/wp-json/wp-reports-plugin/v2/documents/type=frameworks
         register_rest_route( 'wp-reports-plugin/v2', 'documents/type=(?P<type>[a-zA-Z0-9-]+)', array(
             'methods' => 'GET',
             'callback' => array($this,'documents'),

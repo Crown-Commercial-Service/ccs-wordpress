@@ -34,11 +34,16 @@ body {
 
 .reports-table .upload-date_column,
 .reports-table .author_column {
-  min-width: 8rem;
+  min-width: 10rem;
 }
 
-.reports-table .file-type_column {
-  max-width: 10rem;
+.reports-table .file-type_column,
+.reports-table .doc-title_column {
+  max-width: 20rem;
+}
+
+.reports-table .framework-title_column {
+  min-width: 20rem;
 }
 
 a:focus {

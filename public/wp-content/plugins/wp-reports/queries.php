@@ -1,10 +1,10 @@
 <?php
 
-    function query() {
-        global $wpdb;
-        $db_results = $wpdb->get_results("SELECT * FROM ccs_wordpress.ccs_lots");
-        echo "<pre>"; print_r($db_results); echo "</pre>";
-    }
+    // function query() {
+    //     global $wpdb;
+    //     $db_results = $wpdb->get_results("SELECT * FROM ccs_wordpress.ccs_lots");
+    //     echo "<pre>"; print_r($db_results); echo "</pre>";
+    // }
 
     function frameworksLotsQuery($frameworkID) {
         global $wpdb;
@@ -36,21 +36,27 @@
     }
 
     function frameworksQuery() {
-        $frameworks = new WP_Query(array(
-            'post_type' => 'framework',
-            // 'meta_key' => 'post_status',
-            // 'meta_query' => array(
-            //     array(
-            //         'key' => 'post_status',
-            //         'compare' => '===',
-            //         'value' => 'publish'
-            //     )
-            // ),
-            // 's' => sanitize_text_field($data['term'])
-        ));
+        global $wpdb;
+        $frameworks = $wpdb->get_results(
+            $wpdb->prepare("
+                SELECT 
+                    wordpress_id,
+                    rm_number,
+                    title,
+                    display_name,
+                    post_author,
+                    published_status,
+                    date_created,
+                    date_updated
+                FROM ccs_frameworks f
+                JOIN ccs_15423_posts p
+                JOIN ccs_15423_users u
+                WHERE f.wordpress_id = p.post_parent AND p.post_author = u.ID
+            ", null)
+            , ARRAY_A);
+
         $results = array();
-        while($frameworks->have_posts()) {
-            $frameworks->the_post();
+        foreach($frameworks as $framework) {
             $frameworksLots = array_map(
                 function ($lot) {
                     return [
@@ -58,23 +64,24 @@
                         'lot_id' => $lot['id']
                     ];
                 },
-                frameworksLotsQuery(get_the_id()) // lots array by framework id
+                frameworksLotsQuery($framework['wordpress_id']) // lots array by framework id
             );
-            // $frameworksDocuments = frameworksDocumentsQuery(get_the_id());
+            // $frameworksDocuments = frameworksDocumentsQuery($framework['wordpress_id']);
             array_push($results, array(
-                'post_id' => get_the_id(),
-                'title' => get_the_title(),
-                'post_author' => get_the_author(),
-                'author_ID' => get_the_author_ID(),
-                'post_status' => get_post_status(),
-                'post_written' => get_the_date(),
-                'post_modified' => get_the_modified_date(),
-                'associated_lots' => $frameworksLots,
-                'permalink' => get_the_permalink(get_the_id())
+                'post_id' => $framework['wordpress_id'],
+                'rm_number' => $framework['rm_number'],
+                'title' => $framework['title'],
+                'post_author' => $framework['display_name'],
+                'author_ID' => $framework['post_author'],
+                'post_status' => $framework['published_status'], 
+                'post_written' => $framework['date_created'],
+                'post_modified' => $framework['date_updated'],
+                'associated_lots' => $frameworksLots
             ));   
         }
         return $results;
     }
+
 
     function authorsQuery() {
         $args = array(

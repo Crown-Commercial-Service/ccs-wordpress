@@ -38,6 +38,11 @@ $fg1->add_field( new acf_fields\text( 'Link text', 'link_text', '202103294610a',
     'instructions' => 'Optionally add link text to display underneath the Digital Brochure when listing it.'
 ] ) );
 
+$fg1->add_field( new acf_fields\text( 'Document Type', 'document_type', '202109021654a', [
+    'default_value' => 'Digital Brochure',
+    'instructions' => 'The text to be displayed at the top of the form. Note default is Digital Brochure'
+] ) );
+
 $fg1->add_field( new acf_fields\text( 'Description', 'description', '202103290739a', [
     'instructions' => 'This hidden description is sent to Salesforce when the form is submitted.'
 ] ) );

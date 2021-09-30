@@ -6,9 +6,9 @@ Version: 2.0
 Description: A plugin to display custom admin reports
 */
 
-$authorsPath = 'http://ccs-agreements.cabinetoffice.localhost' . '/wp-json/wp-reports-plugin/v2/authors';
-$frameworksPath = 'http://ccs-agreements.cabinetoffice.localhost' . '/wp-json/wp-reports-plugin/v2/frameworks';
-$documentsPath = 'http://ccs-agreements.cabinetoffice.localhost' . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
+$authorsPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/authors';
+$frameworksPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/frameworks';
+$documentsPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
 
 $WpReportsPlugin = new WpReportsPlugin($authorsPath, $frameworksPath,$documentsPath);
 

@@ -6,9 +6,9 @@ Version: 2.0
 Description: A plugin to display custom admin reports
 */
 
-$authorsPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/authors';
-$frameworksPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/frameworks';
-$documentsPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
+$authorsPath = 'http://ccs-agreements.cabinetoffice.localhost' . '/wp-json/wp-reports-plugin/v2/authors';
+$frameworksPath = 'http://ccs-agreements.cabinetoffice.localhost' . '/wp-json/wp-reports-plugin/v2/frameworks';
+$documentsPath = 'http://ccs-agreements.cabinetoffice.localhost' . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
 
 $WpReportsPlugin = new WpReportsPlugin($authorsPath, $frameworksPath,$documentsPath);
 
@@ -227,8 +227,8 @@ class WpReportsPlugin {
                     ?>
                      <tr>
                         <td><?php echo $author['author_name'] ?></td>
-                        <td><?php echo implode(" ", $author['last_login']) ?></td>
-                        <td><?php echo $author['authored_frameworks'][0]['title'] ?></td>
+                        <td><?php echo $author['last_login'] ?></td>
+                        <td class="last-updated-framework"><?php echo $author['authored_frameworks'][0]['title'] ?></td>
                         <td><?php echo $author['authored_frameworks'][0]['post_modified'] ?></td>
                     </tr>
                 <?php
@@ -259,9 +259,8 @@ class WpReportsPlugin {
     function frameworksDocsHTML($documents) { 
         $sortedDocuments = sortData($documents);
         ob_start(); ?>
-        <div class="wrap">
-            <!-- <h1>Reports Options</h1> -->
-            <form action="options.php" method="POST">
+        <div>
+         <form action="options.php" method="POST">
                 <?php
                 settings_errors();
                 do_settings_sections('documents-reports');
@@ -269,8 +268,6 @@ class WpReportsPlugin {
                 submit_button();
                 ?>
             </form>
-        </div>
-        <div>
         <table class="reports-table">
             <tr>
                 <th class="doc-title_column">Document Title</th>

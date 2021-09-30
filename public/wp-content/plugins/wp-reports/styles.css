@@ -46,6 +46,10 @@ body {
   min-width: 20rem;
 }
 
+.reports-table .last-updated-framework {
+  max-width: 20rem;
+}
+
 a:focus {
   box-shadow: none;
 }

@@ -130,11 +130,11 @@ class WpReportsPlugin {
     ?>
         <!-- <label for="sortByMenu">Sort Documents By:</label> -->
         <select name="sortByMenu" id="sortByMenu" >
-            <option value="document_name" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Document Title</option>
-            <option value="post_mime_type" <?php echo esc_attr($selectedOption) === "post_mime_type" ? "selected" : ""; ?>>File Type</option>
-            <option value="post_date" <?php echo esc_attr($selectedOption) === "post_date" ? "selected" : ""; ?>>Date Uploaded</option>
-            <option value="title" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Framework Title</option>
-            <option value="display_name" <?php echo esc_attr($selectedOption) === "display_name" ? "selected" : ""; ?>>Author</option>
+            <option value="document_name" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Document Title – ascending</option>
+            <option value="post_mime_type" <?php echo esc_attr($selectedOption) === "post_mime_type" ? "selected" : ""; ?>>File Type – ascending</option>
+            <option value="post_date" <?php echo esc_attr($selectedOption) === "post_date" ? "selected" : ""; ?>>Date Uploaded – descending</option>
+            <option value="title" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Framework Title – ascending</option>
+            <option value="display_name" <?php echo esc_attr($selectedOption) === "display_name" ? "selected" : ""; ?>>Author – ascending</option>
         </select>
      <?php
     }
@@ -147,7 +147,7 @@ class WpReportsPlugin {
         $json = file_get_contents($this->frameworksAPI);
         $frameworks = json_decode($json, TRUE);
         // echo '$frameworks: ';
-        // var_dump($frameworks);
+        //var_dump($frameworks);
         ?>
         <div>
         <h1>Frameworks Report</h1>
@@ -164,19 +164,15 @@ class WpReportsPlugin {
             </tr>
         <?php
         foreach ($frameworks as $framework) { 
-            // echo "Author ID: ";
-            // var_dump($framework['author_ID']);
-            $noAndTitle = explode(':', $framework['title']);
-            // $permalink = $framework['permalink'];
             ?>
             <tr> 
-                <td><?php echo $noAndTitle[0]?></td>
-                <td><?php echo $noAndTitle[1]?></td>
-                <td><?php echo $framework['post_status']?></td>
-                <td><?php echo $framework['post_author']?></td>
-                <td><?php echo $framework['post_written']?></td>
-                <td><?php echo $framework['post_modified']?></td>
-                <td>
+                <td valign="top"><?php echo $framework['rm_number'] ?></td>
+                <td valign="top"><?php echo $framework['title']?></td>
+                <td valign="top"><?php echo $framework['post_status']?></td>
+                <td valign="top"><?php echo $framework['post_author']?></td>
+                <td valign="top"><?php echo $framework['post_written']?></td>
+                <td valign="top"><?php echo $framework['post_modified']?></td>
+                <td valign="top" >
                     <?php 
                         foreach($framework['associated_lots'] as $lot_index => $lot) {
                             // $keys = implode(" ", array_keys($lot));
@@ -184,10 +180,13 @@ class WpReportsPlugin {
                             // echo "\r\n";
                             // $values = implode("\r\n ", $lot);
                             // echo "<p>";
-                            echo "Lot ID: ".$lot['lot_id'].",\r\n";
-                            echo "Lot title: ".$lot['lot_title'].";";
-                            // echo "</p>";
-                            if ($lot_index != 0 && $lot_index < (sizeof($framework['associated_lots'])) - 1 ) {
+                            echo "Lot ID: ".$lot['lot_id']; ?>
+                            <br>
+                            <?php
+                            echo "Lot Title: ".$lot['lot_title']; ?>
+                            <br>
+                            <?php
+                            if ($lot_index < (sizeof($framework['associated_lots'])) - 1 ) {
                                 echo "<hr>";
                             }
                         }
@@ -212,7 +211,7 @@ class WpReportsPlugin {
         //var_dump($authors);
         ?>
         <div>
-        <h1>Frameworks' Authors Report</h1>
+        <h1>Frameworks Authors Report</h1>
         <table class="reports-table">
             <tr>
                 <th>Author Name</th>
@@ -228,8 +227,8 @@ class WpReportsPlugin {
                     ?>
                      <tr>
                         <td><?php echo $author['author_name'] ?></td>
-                        <td><?php echo implode(" ", $author['last_login']) ?></td>
-                        <td><?php echo $author['authored_frameworks'][0]['title'] ?></td>
+                        <td><?php echo $author['last_login'] ?></td>
+                        <td class="last-updated-framework"><?php echo $author['authored_frameworks'][0]['title'] ?></td>
                         <td><?php echo $author['authored_frameworks'][0]['post_modified'] ?></td>
                     </tr>
                 <?php
@@ -260,9 +259,8 @@ class WpReportsPlugin {
     function frameworksDocsHTML($documents) { 
         $sortedDocuments = sortData($documents);
         ob_start(); ?>
-        <div class="wrap">
-            <!-- <h1>Reports Options</h1> -->
-            <form action="options.php" method="POST">
+        <div>
+         <form action="options.php" method="POST">
                 <?php
                 settings_errors();
                 do_settings_sections('documents-reports');
@@ -270,14 +268,12 @@ class WpReportsPlugin {
                 submit_button();
                 ?>
             </form>
-        </div>
-        <div>
         <table class="reports-table">
             <tr>
-                <th>Document Title</th>
+                <th class="doc-title_column">Document Title</th>
                 <th class="file-type_column">File Type</th>
                 <th class="upload-date_column">Date of Upload</th>
-                <th>Associated Framework Title</th>
+                <th class="framework-title_column" >Associated Framework Title</th>
                 <th class="author_column">Author</th>
                 <!-- <th>Associated Pages</th> -->
             </tr>

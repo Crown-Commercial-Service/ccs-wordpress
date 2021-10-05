@@ -37,26 +37,35 @@
 
     function frameworksQuery() {
         global $wpdb;
-        $frameworks = $wpdb->get_results(
+
+        $frameworks_db = $wpdb->get_results(
             $wpdb->prepare("
-                SELECT 
-                    wordpress_id,
-                    rm_number,
-                    title,
-                    display_name,
-                    post_author,
-                    published_status,
-                    date_created,
-                    date_updated
-                FROM ccs_frameworks f
-                JOIN ccs_15423_posts p
-                JOIN ccs_15423_users u
-                WHERE f.wordpress_id = p.post_parent AND p.post_author = u.ID
+            SELECT DISTINCT
+                f.wordpress_id,
+                f.rm_number,
+                f.wordpress_id,
+                p.post_parent,
+                title,
+                u.display_name,
+                p.post_author,
+                f.published_status,
+                p.post_modified_gmt AS post_modified,
+                p.post_date,
+                p.post_name AS doc_name,
+                p.post_mime_type AS doc_type,
+                f.date_created,
+                f.date_updated
+            FROM ccs_wordpress.ccs_frameworks f
+            JOIN ccs_wordpress.ccs_15423_posts p
+            JOIN ccs_wordpress.ccs_15423_users u
+            WHERE f.wordpress_id = p.post_parent AND p.post_author = u.ID
+            GROUP BY post_modified
+            ORDER BY post_modified DESC;
             ", null)
             , ARRAY_A);
 
-        $results = array();
-        foreach($frameworks as $framework) {
+        $frameworks_list = array();
+        foreach($frameworks_db as $framework) {
             $frameworksLots = array_map(
                 function ($lot) {
                     return [
@@ -67,21 +76,24 @@
                 frameworksLotsQuery($framework['wordpress_id']) // lots array by framework id
             );
             // $frameworksDocuments = frameworksDocumentsQuery($framework['wordpress_id']);
-            array_push($results, array(
-                'post_id' => $framework['wordpress_id'],
-                'rm_number' => $framework['rm_number'],
-                'title' => $framework['title'],
-                'post_author' => $framework['display_name'],
-                'author_ID' => $framework['post_author'],
-                'post_status' => $framework['published_status'], 
-                'post_written' => $framework['date_created'],
-                'post_modified' => $framework['date_updated'],
-                'associated_lots' => $frameworksLots
-            ));   
+            if (!in_array($framework['rm_number'], array_column($frameworks_list, 'rm_number'))) {
+                array_push($frameworks_list, array(
+                  //  'post_id' => $framework['wordpress_id'],
+                    'rm_number' => $framework['rm_number'],
+                    'title' => $framework['title'],
+                    'post_author' => $framework['display_name'],
+                    'author_ID' => $framework['post_author'],
+                    'post_status' => $framework['published_status'], 
+                    'last_published' => $framework['date_updated'],
+                    'post_modified' => $framework['post_modified'],
+                    'doc_name' => $framework['doc_name'] ? $framework['doc_name'] : 'N/A',
+                    'doc_type' => $framework['doc_type'] ? $framework['doc_type'] : 'N/A' ,
+                    'associated_lots' => $frameworksLots
+                ));  
+            }
         }
-        return $results;
+        return $frameworks_list;
     }
-
 
     function authorsQuery() {
         global $wpdb;
@@ -96,11 +108,9 @@
                 login_date,
                 display_name
             FROM(
-                SELECT 
-                    max(login_date) AS login_date,
-                    a.user_id
-                FROM ccs_wordpress.ccs_15423_aiowps_login_activity a
-                GROUP BY a.user_id
+                SELECT user_id, meta_key, meta_value AS login_date
+                FROM ccs_wordpress.ccs_15423_usermeta 
+                WHERE meta_key='last_login_time'
             ) temp
             JOIN ccs_wordpress.ccs_15423_posts p
                 ON temp.user_id = p.post_author
@@ -112,22 +122,6 @@
             ORDER BY u.ID, post_modified DESC;    
             ", null)
         , ARRAY_A);
-
-        // $loginDetails = $wpdb->get_results(
-        //     $wpdb->prepare("
-        //         SELECT 
-        //             display_name,
-        //             login_date,
-        //             post_author,
-        //         FROM ccs_frameworks f
-        //         JOIN ccs_15423_posts p
-        //             ON f.wordpress_id = p.post_parent 
-        //         JOIN ccs_15423_users u
-        //             ON p.post_author = u.ID
-        //         JOIN ccs_15423_aiowps_login_activity a
-        //             ON a.user_id = u.ID
-        //     ", null)
-        // , ARRAY_A);
 
         $authors = array();
         foreach($frameworks as $framework) {
@@ -168,67 +162,11 @@
         return $authors;
     }
 
-    // function authorsQuery() {
-    //     $args = array(
-    //         'post_type' => 'framework', 
-    //     );
-    //     $allFrameworks = new WP_Query($args);
- 
-    //     $authors = array();
-  
-    //     while($allFrameworks->have_posts()) {
-    //         $allFrameworks->the_post();
-    //         $currentAuthorID = get_the_author_ID();
-
-    //         // check if author details already added
-    //         $arrColumn = array_map(function($element) {
-    //             return $element['author_ID'];
-    //           }, $authors);
-    //         $alreadyAdded = array_search($currentAuthorID, $arrColumn);
-    //         $frameworkDetails = array(
-    //             'post_id' => get_the_id(),
-    //             'title' => get_the_title(),
-    //             'post_written' => get_the_date(),
-    //             'post_modified' => get_the_modified_date(),
-    //             'post_status' => get_post_status(),
-    //             'permalink' => get_the_permalink(get_the_id())
-    //         );
-           
-    //         // check if author details already added
-    //         if($alreadyAdded == null && $alreadyAdded !== 0) {
-    //             array_push($authors, array(
-    //                 'author_name' => get_the_author(),
-    //                 'author_ID' => get_the_author_ID(),
-    //                 'last_login' => get_user_meta(get_the_author_ID(), 'last_login_time'),
-    //                 'authored_frameworks' => array()
-    //             ));
-    //         }
-            
-    //         // locate the 'authored_frameworks' subarray for current author
-    //         $arrColumn = array_map(function($element) {
-    //             return $element['author_ID'];
-    //           }, $authors);
-    //         $key = array_search($currentAuthorID, $arrColumn);
-    //         array_push($authors[$key]['authored_frameworks'], $frameworkDetails );
-    //         // $frameworksSorted = sortFrameworks($authors[$key]);
-    //         // array_push($authors[$key]['authored_frameworks'], $frameworksSorted );
-            
-    //     }
-    //     return $authors;
-    // }
-
-    function sortFrameworks($frameworks) {
-        $sortedFrameworks = array();
-            foreach ($frameworks as $index => $row){
-                $sortedFrameworks[$index] = $row['authored_frameworks'];
-            }
-            array_multisort($sortedFrameworks, SORT_DESC, $frameworks);
-    }
 
     function documentsQuery($post_type) {
         global $wpdb;
 
-        $frameworksQuery = "
+        $frameworksDocsQuery = "
             SELECT 
                 u.display_name,
                 f.rm_number,
@@ -248,7 +186,7 @@
         
 
         if($post_type === "frameworks") {
-            $frameworksResults = $wpdb->get_results($wpdb->prepare($frameworksQuery, null), ARRAY_A);
+            $frameworksResults = $wpdb->get_results($wpdb->prepare($frameworksDocsQuery, null), ARRAY_A);
             return $frameworksResults;
         } 
     }

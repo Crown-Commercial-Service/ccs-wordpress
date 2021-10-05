@@ -55,9 +55,9 @@
                 p.post_mime_type AS doc_type,
                 f.date_created,
                 f.date_updated
-            FROM ccs_wordpress.ccs_frameworks f
-            JOIN ccs_wordpress.ccs_15423_posts p
-            JOIN ccs_wordpress.ccs_15423_users u
+            FROM ccs_frameworks f
+            JOIN ccs_15423_posts p
+            JOIN ccs_15423_users u
             WHERE f.wordpress_id = p.post_parent AND p.post_author = u.ID
             GROUP BY post_modified
             ORDER BY post_modified DESC;
@@ -109,12 +109,12 @@
                 display_name
             FROM(
                 SELECT user_id, meta_key, meta_value AS login_date
-                FROM ccs_wordpress.ccs_15423_usermeta 
+                FROM ccs_15423_usermeta 
                 WHERE meta_key='last_login_time'
             ) temp
-            JOIN ccs_wordpress.ccs_15423_posts p
+            JOIN ccs_15423_posts p
                 ON temp.user_id = p.post_author
-            JOIN ccs_wordpress.ccs_15423_users u
+            JOIN ccs_15423_users u
                 ON temp.user_id = u.ID
             WHERE 
                 post_type = 'framework' AND post_status = 'publish'

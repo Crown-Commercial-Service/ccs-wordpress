@@ -9,7 +9,7 @@ body {
   border-collapse: collapse;
   background-color: inherit;
   table-layout: auto;
-  width: 100%;
+  width: 98%;
 }
 
 .reports-table th {
@@ -21,6 +21,7 @@ body {
 
 .reports-table td {
   padding: .6rem .7rem;
+  word-break: break-all;
 }
   
 .reports-table td, .reports-table th {
@@ -28,34 +29,8 @@ body {
   height: 2.5rem;
 }
 
-.reports-table tr:hover {
-  background-color: #ddd;
-}
-
-.reports-table .upload-date_column,
-.reports-table .author_column {
-  min-width: 10rem;
-}
-
-.reports-table .file-type_column,
-.reports-table .doc-title_column {
-  max-width: 20rem;
-}
-
-.reports-table .framework-title_column {
-  min-width: 20rem;
-}
-
-.reports-table .last-updated-framework {
-  max-width: 20rem;
-}
-
 a:focus {
   box-shadow: none;
-}
-
-td a:hover {
-  color: #50575e;
 }
 
 .wrap {

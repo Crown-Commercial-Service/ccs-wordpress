@@ -26,7 +26,7 @@ class WpReportsPlugin {
         $this->frameworksAPI = $frameworksPath;
         $this->documentsAPI = $documentsPath;
         add_action('admin_menu', array($this, 'reportsMenu'));
-        add_action('admin_init', array($this, 'reportsSettings'));
+        add_action('admin_init', array($this, 'registerReportsSettings'));
     }
     
     function reportsMenu () {
@@ -34,19 +34,21 @@ class WpReportsPlugin {
         $page_browser_title = 'Reports'; // browser tab title
         $page_menu_title = 'Reports'; // title in admin sidebar
         $capability = 'manage_options'; // required user permissions
-        $main_page_slug = 'wp-reports'; // menu slug
-        $callback = array($this, 'frameworksReportsPage'); // the html output
+        $main_page_slug = 'authors-reports'; // make Authors page the main page
+        $callback = array($this, 'authorsReportsPage'); // make Authors page the main page
         $icon = 'dashicons-clipboard'; // icon that will appear in the admin menu
         $position = 1; // position in the admin menu
         
         $main_page_hook = add_menu_page($page_browser_title, $page_menu_title, $capability, $main_page_slug, $callback, $icon, $position);
-        
+    
 
-        // Main-Submenu Page
-        // $submenu_browser_title = "Reports Overview";
-        // $submenu_title = "Reports Overview";
-        
-        // $submenu_page_hook = add_submenu_page($main_page_slug, $submenu_browser_title, $submenu_title, $capability, $main_page_slug, $callback);
+        // Authors Page
+        $authors_page_title = "Authors Reports";
+        $authors_menu_title = "Authors";
+        $authors_page_slug = "authors-reports";
+        $authors_page_HTML = array($this, 'authorsReportsPage');
+
+        $authorsPageHook = add_submenu_page($main_page_slug, $authors_page_title, $authors_menu_title, $capability, $authors_page_slug, $authors_page_HTML);
 
 
         // Frameworks Page – (Main-Submenu Page)
@@ -55,16 +57,9 @@ class WpReportsPlugin {
         $frameworks_page_slug = "frameworks-reports";
         $frameworks_page_HTML = array($this, "frameworksReportsPage");
     
-        $frameworksPageHook = add_submenu_page($main_page_slug, $frameworks_page_title, $frameworks_menu_title, $capability, $main_page_slug, $frameworks_page_HTML);
+        $frameworksPageHook = add_submenu_page($main_page_slug, $frameworks_page_title, $frameworks_menu_title, $capability, $frameworks_page_slug, $frameworks_page_HTML);
         
-        // Authors Page
-        $authors_page_title = "Authors Reports";
-        $authors_menu_title = "Authors";
-        $authors_page_slug = "authors-reports";
-        $authors_page_HTML = array($this, 'authorsReportsPage');
-
-        $authorsPageHook = add_submenu_page($main_page_slug, $authors_page_title, $authors_menu_title, $capability, $authors_page_slug, $authors_page_HTML);
-        
+ 
         // Documents Page
         $documents_page_title = "Documents Reports";
         $documents_menu_title = "Documents";
@@ -87,9 +82,35 @@ class WpReportsPlugin {
     }
 
 
-    function reportsSettings() {
+    function registerReportsSettings() {
 
-        // registerSettingsTest();
+
+        // AUTHORS SETTINGS
+
+        $authors_settings_section_name = "reports-settings-authors";
+        $authors_settings_section_title = "";
+        $authors_settings_section_head = null;
+        $authors_settins_slug = "authors-reports";
+        add_settings_section($authors_settings_section_name, $authors_settings_section_title, $authors_settings_section_head, $authors_settins_slug);
+
+        register_setting('authorsSettings', 'sortByMenu_3');
+        add_settings_field('sort-by-menu-3', 'Sort By', array($this, 'sortByAuthorsMenuHTML'), $authors_settins_slug, $authors_settings_section_name);
+
+
+        // FRAMEWORKS SETTINGS
+
+        $frameworks_settings_section_name = "reports-settings-frameworks";
+        $frameworks_settings_section_title = "";
+        $frameworks_settings_section_head = null;
+        $frameworks_settins_slug = "wp-reports";
+        add_settings_section($frameworks_settings_section_name, $frameworks_settings_section_title, $frameworks_settings_section_head, $frameworks_settins_slug);
+
+        register_setting('frameworksSettings', 'sortByMenu_2');
+        add_settings_field('sort-by-menu-2', 'Sort By', array($this, 'sortByFrameworksMenuHTML'), $frameworks_settins_slug, $frameworks_settings_section_name);
+
+
+        // DOCUMENTS SETTINGS
+
         $documents_settings_section_name = "reports-settings-documents";
         $documents_settings_section_title = "";
         $documents_settings_section_head = null;
@@ -97,130 +118,92 @@ class WpReportsPlugin {
         add_settings_section($documents_settings_section_name, $documents_settings_section_title, $documents_settings_section_head, $documents_settins_slug);
 
         register_setting('documentsSettings', 'sortByMenu');
-        add_settings_field('sort-by-menu', 'Sort By', array($this, 'sortByMenuHTML'), 'documents-reports', 'reports-settings-documents');
-
-        // register_setting('documentsSettings', 'searchDocuments');
-        // add_settings_field('search-documents', 'Search', array($this, 'searchDocumentsHTML'), 'documents-reports', 'reports-settings-documents');
+        add_settings_field('sort-by-menu', 'Sort By', array($this, 'sortByDocsMenuHTML'), $documents_settins_slug, $documents_settings_section_name);
         
     }
 
     /**
-     * HTML methods
+     * HTML OPTION MENUS
      */
 
-    function toggleDocumentsSelectHTML() { ?>
-
-        <label for="toggleDocumentsSelect">Choose Document Type:</label>
-            <select name="toggleDocumentsSelect" id="toggleDocumentsSelect" >
-            <option value="frameworks" <?php echo esc_attr(get_option('toggleDocumentsSelect', 1)) === "frameworks" ? "selected" : ""; ?>>Frameworks</option>
-            <option value="all-posts" <?php echo esc_attr(get_option('toggleDocumentsSelect', 1)) === "all-posts" ? "selected" : ""; ?>>All Posts</option>
-        </select>
-        <?php
-    }
-
-    function searchDocumentsHTML() {
-    ?>
-        <!-- <label for="searchDocuments">Search for:</label> -->
-        <input type="text" name="searchDocuments" value="<?php echo esc_attr(get_option('searchDocuemnts', "")) ?>">
-    <?php
-    }
-
-    function sortByMenuHTML() {
-        $selectedOption = !get_option('sortByMenu') ? "framework-title" : get_option('sortByMenu');
-    ?>
-        <!-- <label for="sortByMenu">Sort Documents By:</label> -->
-        <select name="sortByMenu" id="sortByMenu" >
-            <option value="document_name" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Document Title – ascending</option>
-            <option value="post_mime_type" <?php echo esc_attr($selectedOption) === "post_mime_type" ? "selected" : ""; ?>>File Type – ascending</option>
-            <option value="post_date" <?php echo esc_attr($selectedOption) === "post_date" ? "selected" : ""; ?>>Date Uploaded – descending</option>
-            <option value="title" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Framework Title – ascending</option>
-            <option value="display_name" <?php echo esc_attr($selectedOption) === "display_name" ? "selected" : ""; ?>>Author – ascending</option>
+    function sortByAuthorsMenuHTML() {
+        $selectedOption = !esc_attr(get_option('sortByMenu_3')) ? "author_name" : esc_attr(get_option('sortByMenu_3'));?>
+        <select name="sortByMenu_3" id="sortByMenu_3" >
+            <option value="author_name" <?php echo esc_attr($selectedOption) === "author_name" ? "selected" : ""; ?>>Author Name – ascending</option>
+            <option value="last_login" <?php echo esc_attr($selectedOption) === "last_login" ? "selected" : ""; ?>>Last Accessed Wordpress – descending</option>
+            <option value="post_modified" <?php echo esc_attr($selectedOption) === "post_modified" ? "selected" : ""; ?>>Last Updated Date – descending</option>
+            <option value="title" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Last Updated Framework – ascending</option>
         </select>
      <?php
     }
 
-    /**
-     *  FRAMEWORKS PAGE HTML METHOD
-     */
-    
-    function frameworksReportsPage() {
-        $json = file_get_contents($this->frameworksAPI);
-        $frameworks = json_decode($json, TRUE);
-        // echo '$frameworks: ';
-        //var_dump($frameworks);
-        ?>
-        <div>
-        <h1>Frameworks Report</h1>
-        <table class="reports-table">
-            <tr>
-                <th>Framework RM No</th>
-                <th>Framework Name</th>
-                <th>Status</th>
-                <th>Author</th>
-                <th>Date Created</th>
-                <th>Last Published</th>
-                <th>Associated Lot Pages</th>
-                <!-- <th>Linked Documents</th> -->
-            </tr>
-        <?php
-        foreach ($frameworks as $framework) { 
-            ?>
-            <tr> 
-                <td valign="top"><?php echo $framework['rm_number'] ?></td>
-                <td valign="top"><?php echo $framework['title']?></td>
-                <td valign="top"><?php echo $framework['post_status']?></td>
-                <td valign="top"><?php echo $framework['post_author']?></td>
-                <td valign="top"><?php echo $framework['post_written']?></td>
-                <td valign="top"><?php echo $framework['post_modified']?></td>
-                <td valign="top" >
-                    <?php 
-                        foreach($framework['associated_lots'] as $lot_index => $lot) {
-                            // $keys = implode(" ", array_keys($lot));
-                            // echo $keys;
-                            // echo "\r\n";
-                            // $values = implode("\r\n ", $lot);
-                            // echo "<p>";
-                            echo "Lot ID: ".$lot['lot_id']; ?>
-                            <br>
-                            <?php
-                            echo "Lot Title: ".$lot['lot_title']; ?>
-                            <br>
-                            <?php
-                            if ($lot_index < (sizeof($framework['associated_lots'])) - 1 ) {
-                                echo "<hr>";
-                            }
-                        }
-                    ?>
-                </td>
-            </tr>
-        
-        <?php 
-        } ?>
-        </table>
-        </div>
-    <?php } 
+    function sortByFrameworksMenuHTML() {
+        $selectedOption = !esc_attr(get_option('sortByMenu_2')) ? "post_modified" : esc_attr(get_option('sortByMenu_2'));?>
+        <select name="sortByMenu_2" id="sortByMenu_2" >
+            <option value="post_modified" <?php echo esc_attr($selectedOption) === "post_modified" ? "selected" : ""; ?>>Last Modified – descending</option>
+            <option value="post_author" <?php echo esc_attr($selectedOption) === "post_author" ? "selected" : ""; ?>>Modified By – ascending</option>
+            <option value="last_published" <?php echo esc_attr($selectedOption) === "last_published" ? "selected" : ""; ?>>Last Published Date – descending</option>
+            <option value="title" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Framework Title – ascending</option>
+            <option value="rm_number" <?php echo esc_attr($selectedOption) === "rm_number" ? "selected" : ""; ?>>RM Number – ascending</option>
+            <option value="doc_name" <?php echo esc_attr($selectedOption) === "doc_name" ? "selected" : ""; ?>>Linked Document – ascending</option>
+            <option value="doc_type" <?php echo esc_attr($selectedOption) === "doc_type" ? "selected" : ""; ?>>Document Type – ascending</option>
+        </select>
+     <?php
+    }
+
+    function sortByDocsMenuHTML() {
+        $selectedOption = !esc_attr(get_option('sortByMenu')) ? "framework-title" : esc_attr(get_option('sortByMenu'));?>
+        <select name="sortByMenu" id="sortByMenu" >
+            <option value="document_name" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Document Title – ascending</option>
+            <option value="post_mime_type" <?php echo esc_attr($selectedOption) === "post_mime_type" ? "selected" : ""; ?>>File Type – ascending</option>
+            <option value="post_date" <?php echo esc_attr($selectedOption) === "post_date" ? "selected" : ""; ?>>Date Uploaded – descending</option>
+            <option value="title" <?php echo esc_attr($selectedOption) === "title" ? "selected" : ""; ?>>Associated Framework – ascending</option>
+            <option value="display_name" <?php echo esc_attr($selectedOption) === "display_name" ? "selected" : ""; ?>>Author – ascending</option>
+        </select>
+     <?php
+    }
     
 
+
     /**
-     *  AUTHORS PAGE HTML METHOD
+     *  AUTHORS PAGE HTML
      */
 
     function authorsReportsPage() {
         $json = file_get_contents($this->authorsAPI);
         $authors = json_decode($json, TRUE);
-        //var_dump($authors);
+        echo $this->authorsPageHTML($authors);
+    }
+
+    function authorsPageHTML($authors) {
+        $sortedAuthors = sortAuthors($authors);
+        ob_start();
         ?>
         <div>
         <h1>Frameworks Authors Report</h1>
+        <!-- <div>
+            <span><b>Author Name:</b> author name per each published framework</span><br>
+            <span><b>Last Accessed Wordpress:</b> last login date of this author</span><br>
+            <span><b>Last Updated Framework:</b> title of the most recently updated framework by this author</span><br>
+            <span><b>Last Update Date:</b> date of this update</span><br><br>
+        </div> -->
+        <form action="options.php" method="POST">
+            <?php
+                settings_errors();
+                do_settings_sections('authors-reports');
+                settings_fields('authorsSettings');
+                submit_button();
+            ?>
+        </form>
         <table class="reports-table">
             <tr>
                 <th>Author Name</th>
                 <th>Last Accessed Wordpress</th>
-                <th>Last Updated Framework</th>
                 <th>Last Update Date</th>
+                <th style="width: 30rem;">Last Updated Framework</th>
             </tr>
                 <?php
-                    foreach($authors as $author) { 
+                    foreach($sortedAuthors as $author) { 
                     // var_dump($author['authored_frameworks']);
                     usort($author['authored_frameworks'], 'compareDate');
                     // $permalink = $author['authored_frameworks'][0]['permalink'];
@@ -228,28 +211,117 @@ class WpReportsPlugin {
                      <tr>
                         <td><?php echo $author['author_name'] ?></td>
                         <td><?php echo $author['last_login'] ?></td>
-                        <td class="last-updated-framework"><?php echo $author['authored_frameworks'][0]['title'] ?></td>
                         <td><?php echo $author['authored_frameworks'][0]['post_modified'] ?></td>
+                        <td styles="max-width: 20rem;"><?php echo $author['authored_frameworks'][0]['title'] ?></td>
                     </tr>
                 <?php
                     }
                 ?>
         </table>
         <?php
+        return ob_get_clean();
     }
 
+
     /**
-     *  DOCUMENTS PAGE HTML METHOD
+     *  FRAMEWORKS PAGE HTML
+     */
+    
+    function frameworksReportsPage() {
+        $json = file_get_contents($this->frameworksAPI);
+        $frameworks = json_decode($json, TRUE);
+        echo $this->frameworksPageHTML($frameworks);
+    } 
+
+    function frameworksPageHTML($frameworks) {
+        $sortedFrameworks = sortFrameworks($frameworks);
+        ob_start();
+        // echo '$frameworks: ';
+        //var_dump($frameworks);
+        ?>
+        <div>
+        <h1>Frameworks Report</h1>
+        <!-- <div>
+            <span><b>Last Modified:</b>date of most recent modification of the framework post</span><br>
+            <span><b>Modified By:</b> name of the person who made this modification </span><br>
+            <span><b>Published Date:</b> date when the framework was published</span><br>
+            <span><b>Framework Name:</b> framework name</span><br>
+            <span><b>Framework RM No:</b> framework RM number</span><br>
+            <span><b>Associated Lot Pages:</b> lot pages associated to this framework</span><br>
+            <span><b>Linked Document:</b> details of document linked to this framework</span><br>
+            <span><b>Doc Type:</b> document type</span><br><br>
+        </div> -->
+        <form action="options.php" method="POST">
+            <?php
+                settings_errors();
+                do_settings_sections('wp-reports');
+                settings_fields('frameworksSettings');
+                submit_button();
+            ?>
+        </form>
+        <table class="reports-table">
+            <tr>
+                <th style="width: 5rem;">Last Modified</th>
+                <th style="width: 7rem;">Modified By</th>
+                <th style="width: 5rem;">Last Published Date</th>
+                <th style="width: 12rem;">Framework Title</th>
+                <th>Framework RM Number</th>
+                <!-- <th>Status</th> -->
+                <th style="width: 18rem;">Associated Lot Pages</th>
+                <th style="width: 7rem;">Linked Document</th>
+                <th style="width: 4rem;">Document Type</th>
+                <!-- <th>Linked Documents</th> -->
+            </tr>
+        <?php
+        foreach ($sortedFrameworks as $framework) { 
+            ?>
+            <tr> 
+                <td valign="top"><?php echo $framework['post_modified']?></td>
+                <td valign="top"><?php echo $framework['post_author']?></td>
+                <td valign="top"><?php echo $framework['last_published']?></td>
+                <td valign="top"><?php echo $framework['title']?></td>
+                <td valign="top"><?php echo $framework['rm_number'] ?></td>
+                <!-- <td valign="top"><?php echo $framework['post_status']?></td> -->
+                <td valign="top" >
+                    <?php 
+                        if (count($framework['associated_lots']) > 0) {
+                            foreach($framework['associated_lots'] as $lot_index => $lot) {
+                                echo "Lot ID: ".$lot['lot_id']; ?>
+                                <br>
+                                <?php
+                                echo "Lot Title: ".$lot['lot_title']; ?>
+                                <br>
+                                <?php
+                                if ($lot_index < (sizeof($framework['associated_lots'])) - 1 ) {
+                                    echo "<hr>";
+                                }
+                            }
+                        }
+                        else {
+                            echo "N/A";
+                        }
+                    ?>
+                </td>
+                <td style="width: 8rem;" valign="top"><?php echo $framework['doc_name'] ?></td>
+                <td style="width: 8rem;" valign="top"><?php echo $framework['doc_type'] ?></td>
+            </tr>
+        <?php 
+        } ?>
+        </table>
+        </div>
+    <?php 
+    return ob_get_clean();
+    }
+    
+
+    /**
+     *  DOCUMENTS PAGE HTML
      */
 
     function documentsReportsPage() {
-        // $documentType = esc_attr(get_option('toggleDocumentsSelect'));
         $restURL = $this->documentsAPI;
-        // var_dump($documentType);
         $json = file_get_contents($restURL);
         $documents = json_decode($json, TRUE);
-        //echo '$documents: ';
-        //var_dump($documents);
         echo $this->frameworksDocsHTML($documents);
         ?>
     <?php
@@ -257,24 +329,30 @@ class WpReportsPlugin {
 
    
     function frameworksDocsHTML($documents) { 
-        $sortedDocuments = sortData($documents);
+        $sortedDocuments = sortDocuments($documents);
         ob_start(); ?>
         <div>
-         <form action="options.php" method="POST">
-                <?php
+        <h1>Frameworks Documents Report</h1>
+        <!-- <span><b>Document Title:</b> document title</span><br>
+        <span><b>File Type:</b> file type of this document </span><br>
+        <span><b>Date of Upload:</b> upload date of this document </span><br>
+        <span><b>Associated Framework Title:</b> framework title this document is linked to</span><br>
+        <span><b>Author:</b> author of this document attachment</span><br><br> -->
+        <form action="options.php" method="POST">
+            <?php
                 settings_errors();
                 do_settings_sections('documents-reports');
                 settings_fields('documentsSettings');
                 submit_button();
-                ?>
-            </form>
+            ?>
+        </form>
         <table class="reports-table">
             <tr>
-                <th class="doc-title_column">Document Title</th>
-                <th class="file-type_column">File Type</th>
-                <th class="upload-date_column">Date of Upload</th>
-                <th class="framework-title_column" >Associated Framework Title</th>
-                <th class="author_column">Author</th>
+                <th style="max-width: 15rem;">Document Title</th>
+                <th style="max-width: 15rem;">File Type</th>
+                <th style="width: 5rem;">Date of Upload</th>
+                <th style="max-width: 18rem;" >Associated Framework Title</th>
+                <th style="width: 12rem;">Author</th>
                 <!-- <th>Associated Pages</th> -->
             </tr>
             <?php 
@@ -285,7 +363,7 @@ class WpReportsPlugin {
                 <tr>
                     <td><?php echo $doc['document_name'] ?></td>
                     <td><?php echo $fileType ?></td>
-                    <td class="upload-date_column"><?php echo $doc['post_date'] ?></td>
+                    <td><?php echo $doc['post_date'] ?></td>
                     <td><?php echo $doc['title'] ?></td>
                     <td><?php echo $doc['display_name'] ?></td>
                     <!-- <td></td> -->
@@ -302,21 +380,72 @@ class WpReportsPlugin {
 
 
 /**
- * HELPER METHODS
+ * SORTING HELPER METHODS
  */
+
+
 function compareDate($a, $b) {
     return strcmp($a['post_modified'],$b['post_modified']);
 }
 
-function sortData($dataArray) {
-    usort($dataArray, 'compareSubarrays');
+// SORT AUTHORS
+
+function sortAuthors($dataArray) {
+    // var_dump($dataArray);
+    usort($dataArray, 'compareAuthorsSubarrays');
     return $dataArray;
 }
 
-function compareSubarrays($a, $b) {
+function compareAuthorsSubarrays($a, $b) {
+    $option = esc_attr(get_option('sortByMenu_3'));
+
+    if($option === "last_login") {
+        return strcmp($b[$option], $a[$option]);     
+    }
+    if($option === 'post_modified') {
+        return strcmp($b['authored_frameworks'][0][$option], $a['authored_frameworks'][0][$option]);
+    }
+    if($option === 'title') {
+        return strcmp($a['authored_frameworks'][0][$option], $b['authored_frameworks'][0][$option]);
+    }
+    return strcmp($a[$option], $b[$option]); 
+}
+
+// SORT FRAMEWORKS
+
+function sortFrameworks($dataArray) {
+    // var_dump($dataArray);
+    usort($dataArray, 'compareFrameworkSubarrays');
+    return $dataArray;
+}
+
+function compareFrameworkSubarrays($a, $b) {
+    $option = esc_attr(get_option('sortByMenu_2'));
+    // var_dump($option);
     // if sorting by date, then sort descending, otherwise ascending
-    if(get_option('sortByMenu') === "post_date") {
+    if($option === "post_modified" || $option === "last_published") {
+        return strcmp($b[$option], $a[$option]);     
+    }
+    return strcmp($a[$option], $b[$option]); 
+}
+
+
+// SORT DOCUMENTS
+
+function sortDocuments($dataArray) {
+    usort($dataArray, 'compareDocSubarrays');
+    return $dataArray;
+}
+
+function compareDocSubarrays($a, $b) {
+    // if sorting by date, then sort descending, otherwise ascending
+    $option = esc_attr(get_option('sortByMenu'));
+    if($option === "post_date") {
         return strcmp($b[get_option('sortByMenu')], $a[get_option('sortByMenu')]);     
     }
-    return strcmp($a[get_option('sortByMenu')], $b[get_option('sortByMenu')]); 
+    return strcmp($a[$option], $b[$option]); 
 }
+
+
+
+

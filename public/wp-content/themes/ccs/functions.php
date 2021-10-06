@@ -434,4 +434,3 @@ function update_lot_post ($lot_id,$lot_content) {
     }		
 
 }
-

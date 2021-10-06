@@ -1,0 +1,64 @@
+/* Font family and color from generic wp-admin color palette */
+body {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+  color: #50575e;
+  font-size: .8rem;
+}
+
+.reports-table {
+  border-collapse: collapse;
+  background-color: inherit;
+  table-layout: auto;
+  width: 100%;
+}
+
+.reports-table th {
+  padding: .8rem .7rem;
+  text-align: left;
+  background-color: #2271b1;
+  color: white;
+}
+
+.reports-table td {
+  padding: .6rem .7rem;
+}
+  
+.reports-table td, .reports-table th {
+  border: 1px solid #ddd;
+  height: 2.5rem;
+}
+
+.reports-table tr:hover {
+  background-color: #ddd;
+}
+
+.reports-table .upload-date_column,
+.reports-table .author_column {
+  min-width: 10rem;
+}
+
+.reports-table .file-type_column,
+.reports-table .doc-title_column {
+  max-width: 20rem;
+}
+
+.reports-table .framework-title_column {
+  min-width: 20rem;
+}
+
+.reports-table .last-updated-framework {
+  max-width: 20rem;
+}
+
+a:focus {
+  box-shadow: none;
+}
+
+td a:hover {
+  color: #50575e;
+}
+
+.wrap {
+    margin: 20px;
+}
+

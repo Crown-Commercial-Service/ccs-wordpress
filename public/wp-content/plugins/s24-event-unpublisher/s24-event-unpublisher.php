@@ -46,7 +46,8 @@ function getAllEventPastEndDates() {
 	$sql            .= "WHERE $postsTable.post_type = 'event' ";
 	$sql            .= "AND $postsTable.post_status = 'publish' ";
 	$sql            .= "AND $postsMetaTable.meta_value <> '' ";
-	$sql            .= "AND DATE($postsMetaTable.meta_value) < DATE(NOW()) ";
+	$sql            .= "AND $postsMetaTable.meta_key = 'end_datetime' ";
+	$sql            .= "AND DATE($postsMetaTable.meta_value) <= DATE(NOW()) ";
 
 	$query          = $dbh->prepare( $sql );
 

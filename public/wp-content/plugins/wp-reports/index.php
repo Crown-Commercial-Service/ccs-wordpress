@@ -6,9 +6,9 @@ Version: 2.0
 Description: A plugin to display custom admin reports
 */
 
-$authorsPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/authors';
-$frameworksPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/frameworks';
-$documentsPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
+$authorsPath = 'http://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/authors';
+$frameworksPath = 'http://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/frameworks';
+$documentsPath = 'http://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
 
 $WpReportsPlugin = new WpReportsPlugin($authorsPath, $frameworksPath,$documentsPath);
 
@@ -27,20 +27,29 @@ class WpReportsPlugin {
         $this->documentsAPI = $documentsPath;
         add_action('admin_menu', array($this, 'reportsMenu'));
         add_action('admin_init', array($this, 'registerReportsSettings'));
+        add_action('admin_post_authors_form', array($this, 'downloadAuthorsReport'));
+        add_action('admin_post_frameworks_form', array($this, 'downloadFrameworksReport'));
+        add_action('admin_post_documents_form', array($this, 'downloadDocumentsReport'));
     }
-    
+
     function reportsMenu () {
         // Main Reports Page
         $page_browser_title = 'Reports'; // browser tab title
         $page_menu_title = 'Reports'; // title in admin sidebar
         $capability = 'manage_options'; // required user permissions
-        $main_page_slug = 'authors-reports'; // make Authors page the main page
-        $callback = array($this, 'authorsReportsPage'); // make Authors page the main page
+        $main_page_slug = 'download-reports'; // make Authors page the main page
+        $callback = array($this, 'downloadReportsPage'); // make Authors page the main page
         $icon = 'dashicons-clipboard'; // icon that will appear in the admin menu
         $position = 1; // position in the admin menu
         
         $main_page_hook = add_menu_page($page_browser_title, $page_menu_title, $capability, $main_page_slug, $callback, $icon, $position);
     
+        // Download Page
+        $download_page_title = "Download Reports";
+        $download_menu_title = "Download";
+        $download_page_slug = "download-reports";
+        $download_page_HTML = array($this, 'downloadReportsPage');
+        $downloadPageHook = add_submenu_page($main_page_slug, $download_page_title, $download_menu_title, $capability, $download_page_slug, $download_page_HTML);
 
         // Authors Page
         $authors_page_title = "Authors Reports";
@@ -162,8 +171,6 @@ class WpReportsPlugin {
         </select>
      <?php
     }
-    
-
 
     /**
      *  AUTHORS PAGE HTML
@@ -309,8 +316,8 @@ class WpReportsPlugin {
         } ?>
         </table>
         </div>
-    <?php 
-    return ob_get_clean();
+        <?php 
+        return ob_get_clean();
     }
     
 
@@ -376,9 +383,93 @@ class WpReportsPlugin {
         <?php
         return ob_get_clean();
     }
+    
+    function downloadAuthorsReport() {
+        $json = file_get_contents($this->authorsAPI);
+        $authors = json_decode($json, TRUE);
+        
+        $selectedOptions = array_keys($_POST);
+        if (($key = array_search('action', $selectedOptions)) !== false) {
+            unset($selectedOptions[$key]);
+        }
+        $csv = __DIR__ . "/authors.csv";
+        $file_pointer = fopen($csv, 'w');
+        fputcsv($file_pointer, $selectedOptions);
+
+        for($i = 0; $i < count($authors); $i++) {
+            $line = $authors[$i];
+            $last_updated_framework = $line['authored_frameworks'][0];
+            $firstLineValues = array();
+            for ($j = 0; $j < count($selectedOptions); $j++) {
+                $current_key = $selectedOptions[$j];
+                if(array_key_exists($current_key, $line)) {
+                    array_push(
+                    $firstLineValues, $line[$current_key]);
+                }
+                else if(array_key_exists($current_key, $last_updated_framework)){
+                    array_push(
+                        $firstLineValues, $last_updated_framework[$current_key]
+                    );
+                }
+            }
+            fputcsv($file_pointer, $firstLineValues);
+        }
+        fclose($file_pointer);
+        $_POST = array();
+    }
+    /**
+     * * DOWNLOAD PAGE HTML
+    */
+    function downloadReportsPage() {
+        $selectedOption = !esc_attr(get_option('sortByMenu_3')) ? "author_name" : esc_attr(get_option('sortByMenu_3'));?>
+        <div>
+            <!-- <form action="options.php" method="POST"> -->
+            <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
+            <div class='documents-wrap'>
+                <label for="author_name"> Author Name </label>
+                <input type="checkbox" id="author_name" name="author_name" value="author_name" <?php $selectedOption === "author_name" ? "selected" : ""; ?>>
+                <label for="last_login"> Last Accessed Wordpress </label>
+                <input type="checkbox" id="last_login" name="last_login" value="last_login" <?php $selectedOption === "last_login" ? "selected" : ""; ?>>
+                <label for="post_modified"> Last Updated Date </label>
+                <input type="checkbox" id="post_modified" name="post_modified" value="post_modified" <?php $selectedOption === "post_modified" ? "selected" : ""; ?>>
+                <label for="title"> Last Updated Framework </label>
+                <input type="checkbox" id="title" name="title" value="title" <?php $selectedOption === "title" ? "selected" : ""; ?>>
+                <input type="hidden" name="action" value="authors_form">
+                <button>Download Autors CSV</button>
+            </div>
+        </form>
+        <?php $selectedOption = !esc_attr(get_option('sortByMenu_2')) ? "post_modified" : esc_attr(get_option('sortByMenu_2'));
+        //var_dump($selectedOption); ?>
+        <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
+        <div class='documents-wrap'>
+            <label for="post_modified"> Last Modified </label><input type="checkbox" id="post_modified" name="post_modified" value="post_modified">
+            <label for="post_author"> Modified By </label><input type="checkbox" id="post_author" name="post_author" value="post_author">
+            <label for="last_published"> Last Updated Date </label><input type="checkbox" id="last_published" name="last_published" value="last_published">
+            <label for="title"> Framework Title </label><input type="checkbox" id="title" name="title" value="title">
+            <label for="rm_number"> RM Number </label><input type="checkbox" id="rm_number" name="rm_number" value="rm_number">
+            <label for="doc_name"> Linked Document </label><input type="checkbox" id="doc_name" name="doc_name" value="doc_name">
+            <label for="doc_type"> Document Type </label><input type="checkbox" id="doc_type" name="doc_type" value="doc_type">
+            <input type="hidden" name="action" value="frameworks_form">
+            <button>Download Frameworks CSV</button>
+        </div>
+        </form>
+        <?php $selectedOption = !esc_attr(get_option('sortByMenu')) ? "framework-title" : esc_attr(get_option('sortByMenu'));
+        // var_dump($selectedOption); ?>
+        <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
+        <div class='documents-wrap'>
+            <label for="document_name"> Document Title </label><input type="checkbox" id="document_name" name="document_name" value="document_name">
+            <label for="post_mime_type"> File Type </label><input type="checkbox" id="post_mime_type" name="post_mime_type" value="post_mime_type">
+            <label for="post_date"> Date Uploaded </label><input type="checkbox" id="post_date" name="post_date" value="post_date">
+            <label for="title"> Associated Framework </label><input type="checkbox" id="title" name="title" value="title">
+            <!-- <label for="display_name"> Author </label><input type="checkbox" id="display_name" name="display_name" value="display_name"> -->
+            <input type="hidden" name="action" value="documents_form">
+            <button>Download Documents CSV</button>
+        </div>
+        </form>
+        <?php
+    }
+
 }
-
-
 /**
  * SORTING HELPER METHODS
  */
@@ -397,7 +488,7 @@ function sortAuthors($dataArray) {
 }
 
 function compareAuthorsSubarrays($a, $b) {
-    $option = esc_attr(get_option('sortByMenu_3'));
+    $option = esc_attr(get_option('sortByMenu_3')) ? esc_attr(get_option('sortByMenu_3')) : 'author_name';
 
     if($option === "last_login") {
         return strcmp($b[$option], $a[$option]);     
@@ -408,6 +499,7 @@ function compareAuthorsSubarrays($a, $b) {
     if($option === 'title') {
         return strcmp($a['authored_frameworks'][0][$option], $b['authored_frameworks'][0][$option]);
     }
+
     return strcmp($a[$option], $b[$option]); 
 }
 
@@ -439,7 +531,7 @@ function sortDocuments($dataArray) {
 
 function compareDocSubarrays($a, $b) {
     // if sorting by date, then sort descending, otherwise ascending
-    $option = esc_attr(get_option('sortByMenu'));
+    $option = esc_attr(get_option('sortByMenu')) ? esc_attr(get_option('sortByMenu')) : 'document_name';
     if($option === "post_date") {
         return strcmp($b[get_option('sortByMenu')], $a[get_option('sortByMenu')]);     
     }

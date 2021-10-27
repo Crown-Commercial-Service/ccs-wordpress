@@ -1,34 +1,26 @@
 <?php 
 include 'reports-api.php';
+require_once('util.php');
 /*
 Plugin Name: WP Reports Plugin
 Version: 3.0
 Description: This plugin downlods csv reports for Authors, Frameworks, and Documents, based on selected parameters
 */
 
-$authorsPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/authors';
-$frameworksPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/frameworks';
-$documentsPath = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
 
-$WpReportsPlugin = new WpReportsPlugin($authorsPath, $frameworksPath,$documentsPath);
+$WpReportsPlugin = new WpReportsPlugin();
 
 if ( ! defined('ABSPATH')) exit; // exit if accessed directly
 
 class WpReportsPlugin {
 
-    private $authorsAPI;
-    private $frameworksAPI;
-    private $documentsAPI;
 
-    function __construct($authorsPath, $frameworksPath, $documentsPath) {
-
-        $this->authorsAPI = $authorsPath;
-        $this->frameworksAPI = $frameworksPath;
-        $this->documentsAPI = $documentsPath;
+    function __construct() {
+        $this->util = new Util();
         add_action('admin_menu', array($this, 'reportsMenu'));
-        add_action('admin_post_authors_form', array($this, 'downloadAuthorsReport'));
-        add_action('admin_post_frameworks_form', array($this, 'downloadFrameworksReport'));
-        add_action('admin_post_documents_form', array($this, 'downloadDocumentsReport'));
+        add_action('admin_post_authors_form', array($this->util, 'downloadAuthorsReport'));
+        add_action('admin_post_frameworks_form', array($this->util, 'downloadFrameworksReport'));
+        add_action('admin_post_documents_form', array($this->util, 'downloadDocumentsReport'));
     }
 
     function reportsMenu () {
@@ -65,8 +57,7 @@ class WpReportsPlugin {
     /**
      * * DOWNLOAD PAGE HTML
     */
-    function downloadReportsPage() {
-        $selectedOption = !esc_attr(get_option('sortByMenu_3')) ? "author_name" : esc_attr(get_option('sortByMenu_3'));?>
+    function downloadReportsPage() { ?>
         <div>
             <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
             <div class='download-form'>
@@ -80,7 +71,7 @@ class WpReportsPlugin {
                     <input type="checkbox" id="last_login" name="last_login" value="last_login" >
                 </div>
                 <div>
-                    <label for="post_modified"> Last Updated Date </label>
+                    <label for="post_modified"> Last Update Date </label>
                     <input type="checkbox" id="post_modified" name="post_modified" value="post_modified" >
                 </div>
                 <div>
@@ -95,7 +86,6 @@ class WpReportsPlugin {
               
             </div>
         </form>
-        <?php $selectedOption = !esc_attr(get_option('sortByMenu_2')) ? "post_modified" : esc_attr(get_option('sortByMenu_2')); ?>
         <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
         <div class='download-form'>
             <h2>Framework Reports</h2>
@@ -108,7 +98,7 @@ class WpReportsPlugin {
                 <input type="checkbox" id="post_author" name="post_author" value="post_author">
             </div>
             <div>
-                <label for="last_published"> Last Updated Date </label>
+                <label for="last_published"> Last Update Date </label>
                 <input type="checkbox" id="last_published" name="last_published" value="last_published">
             </div>
             <div>
@@ -134,7 +124,6 @@ class WpReportsPlugin {
             <div><button type="reset" value="Reset">Reset</button></div>
         </div>
         </form>
-        <?php $selectedOption = !esc_attr(get_option('sortByMenu')) ? "framework-title" : esc_attr(get_option('sortByMenu')); ?>
         <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
         <div class='download-form'>
             <h2>Document Reports</h2>
@@ -164,178 +153,6 @@ class WpReportsPlugin {
         <?php
     }
 
-    // DOWNLOAD AUTHORS
-  
-    function downloadAuthorsReport() {
-
-        $json = file_get_contents($this->authorsAPI);
-        $authors = json_decode($json, TRUE);
-        
-        $selectedOptions = array_keys($_POST);
-        if (($key = array_search('action', $selectedOptions)) !== false) {
-            unset($selectedOptions[$key]);
-        }
-        $csv = __DIR__ . "/authors-report.csv";
-
-        $file_pointer = fopen($csv, 'w');
-        fputcsv($file_pointer, $selectedOptions);
-
-        for($i = 0; $i < count($authors); $i++) {
-            $line = $authors[$i];
-            $last_updated_framework = $line['authored_frameworks'][0];
-            $firstLineValues = array();
-            for ($j = 0; $j < count($selectedOptions); $j++) {
-                $current_key = $selectedOptions[$j];
-                if(array_key_exists($current_key, $line)) {
-                    array_push(
-                    $firstLineValues, $line[$current_key]);
-                }
-                else if(array_key_exists($current_key, $last_updated_framework)){
-                    array_push(
-                        $firstLineValues, $last_updated_framework[$current_key]
-                    );
-                }
-            }
-            fputcsv($file_pointer, $firstLineValues);
-        }
-        fclose($file_pointer);
-        $_POST = array();
-
-        if (file_exists($csv)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename='.basename($csv));
-            header('Content-Transfer-Encoding: binary');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($csv));
-            ob_clean();
-            flush();
-            readfile($csv);
-            unlink($csv);
-            exit;
-        }
-        else {
-            echo "<p> Could not download the file </p>";
-        }
-    }
-
-
-    // DOWNLOAD FRAMEWORKS
-
-    function downloadFrameworksReport() {
-
-        $json = file_get_contents($this->frameworksAPI);
-        $frameworks = json_decode($json, TRUE);
-
-        $selectedOptions = array_keys($_POST);
-        if (($key = array_search('action', $selectedOptions)) !== false) {
-            unset($selectedOptions[$key]);
-        }
-
-        $csv = __DIR__ . "/frameworks-report.csv";
-        $file_pointer = fopen($csv, 'w');
-        fputcsv($file_pointer, $selectedOptions);
-
-        for($i = 0; $i < count($frameworks); $i++) {
-            $line = $frameworks[$i];
-            $frameworkKeys = false;
-            $frameworks_lots = $line['associated_lots'];
-            $firstLineValues = array();
-
-            for ($j = 0; $j < count($selectedOptions); $j++) {
-                $current_key = $selectedOptions[$j];
-                if(array_key_exists($current_key, $line)) {
-                    array_push(
-                        $firstLineValues, $line[$current_key]
-                    );
-                }
-                else if (array_key_exists($current_key, $frameworks_lots)) {
-                    array_push(
-                        $firstLineValues, $frameworks_lots[$current_key]
-                    );
-                }
-            }
-            fputcsv($file_pointer, $firstLineValues);
-        }
-        fclose($file_pointer);
-        $_POST = array();
-        
-        if (file_exists($csv)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename='.basename($csv));
-            header('Content-Transfer-Encoding: binary');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($csv));
-            ob_clean();
-            flush();
-            readfile($csv);
-            unlink($csv);
-            exit;
-        }
-        else {
-            echo "<p> Could not download the file </p>";
-        }
-    }
-
-
-    // DOWNLOAD DOCUMENTS
-
-    function downloadDocumentsReport() {
-
-        $json = file_get_contents($this->documentsAPI);
-        $documents = json_decode($json, TRUE);
-
-        $selectedOptions = array_keys($_POST);
-        if (($key = array_search('action', $selectedOptions)) !== false) {
-            unset($selectedOptions[$key]);
-        }
-
-        $csv = __DIR__ . "/documents-report.csv";
-        $file_pointer = fopen($csv, 'w');
-        fputcsv($file_pointer, $selectedOptions);
-
-        for($i = 0; $i < count($documents); $i++) {
-            $line = $documents[$i];
-            $frameworkKeys = false;
-            $firstLineValues = array();
-
-            for ($j = 0; $j < count($selectedOptions); $j++) {
-                $current_key = $selectedOptions[$j];
-                if(array_key_exists($current_key, $line)) {
-                    array_push(
-                        $firstLineValues, $line[$current_key]
-                    );
-                }
-            }
-            fputcsv($file_pointer, $firstLineValues);
-        }
-        fclose($file_pointer);
-        $_POST = array();
-
-        if (file_exists($csv)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename='.basename($csv));
-            header('Content-Transfer-Encoding: binary');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($csv));
-            ob_clean();
-            flush();
-            readfile($csv);
-            unlink($csv);
-            exit;
-        }
-        else {
-            echo "<p> Could not download the file </p>";
-        }
-    }
 }
 
 

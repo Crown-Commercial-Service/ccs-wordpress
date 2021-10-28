@@ -50,9 +50,10 @@ class Util {
 
         $csvLables = $this->mapToLabels($selectedOptions, "authors");
         
-        $csv = __DIR__ . "/authors-report.csv";
-
-        $file_pointer = fopen($csv, 'w');
+        header("Content-type: application/csv");
+        header("Content-Disposition: attachment; filename=authors-report.csv");
+        ob_clean();
+        $file_pointer = fopen('php://output', 'w');
         fputcsv($file_pointer, $csvLables);
         //fputcsv($file_pointer, $selectedOptions);
 
@@ -77,24 +78,6 @@ class Util {
         fclose($file_pointer);
         $_POST = array();
 
-        if (file_exists($csv)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename='.basename($csv));
-            header('Content-Transfer-Encoding: binary');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($csv));
-            ob_clean();
-            flush();
-            readfile($csv);
-            unlink($csv);
-            exit;
-        }
-        else {
-            echo "<p> Could not download the file </p>";
-        }
     }
 
 
@@ -111,9 +94,12 @@ class Util {
         }
 
         $csvLables = $this->mapToLabels($selectedOptions, "frameworks");
+        
+        header("Content-type: application/csv");
+        header("Content-Disposition: attachment; filename=frameworks-report.csv");
+        ob_clean();
+        $file_pointer = fopen('php://output', 'w');
 
-        $csv = __DIR__ . "/frameworks-report.csv";
-        $file_pointer = fopen($csv, 'w');
         fputcsv($file_pointer, $csvLables);
 
         for($i = 0; $i < count($frameworks); $i++) {
@@ -140,24 +126,6 @@ class Util {
         fclose($file_pointer);
         $_POST = array();
         
-        if (file_exists($csv)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename='.basename($csv));
-            header('Content-Transfer-Encoding: binary');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($csv));
-            ob_clean();
-            flush();
-            readfile($csv);
-            unlink($csv);
-            exit;
-        }
-        else {
-            echo "<p> Could not download the file </p>";
-        }
     }
 
     // DOWNLOAD DOCUMENTS
@@ -174,8 +142,10 @@ class Util {
         
         $csvLabels = $this->mapToLabels($selectedOptions, "documents");
 
-        $csv = __DIR__ . "/documents-report.csv";
-        $file_pointer = fopen($csv, 'w');
+        header("Content-type: application/csv");
+        header("Content-Disposition: attachment; filename=documents-report.csv");
+        ob_clean();
+        $file_pointer = fopen('php://output', 'w');
         fputcsv($file_pointer, $csvLabels);
 
         for($i = 0; $i < count($documents); $i++) {
@@ -196,29 +166,11 @@ class Util {
         fclose($file_pointer);
         $_POST = array();
 
-        if (file_exists($csv)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename='.basename($csv));
-            header('Content-Transfer-Encoding: binary');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($csv));
-            ob_clean();
-            flush();
-            readfile($csv);
-            unlink($csv);
-            exit;
-        }
-        else {
-            echo "<p> Could not download the file </p>";
-        }
     }
 
     function mapToLabels($selectedOptions, $formType) {
-        echo "Selected options:";
-        var_dump($selectedOptions);
+        // echo "Selected options:";
+        // var_dump($selectedOptions);
         switch($formType) {
             case "authors": 
                 return array_values(array_intersect_key($this->authorsLabelMap, array_flip($selectedOptions)));

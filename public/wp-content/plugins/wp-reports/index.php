@@ -82,7 +82,7 @@ class WpReportsPlugin {
                     <input type="hidden" name="action" value="authors_form">
                 </div>
                 <div><button>Download Authors CSV</button></div>
-                <div><button type="reset" value="Reset">Reset</button></div>
+                <div><button type="reset" value="Clear">Clear</button></div>
               
             </div>
         </form>
@@ -121,7 +121,7 @@ class WpReportsPlugin {
                 <input type="hidden" name="action" value="frameworks_form">
             </div>
             <div><button>Download Frameworks CSV</button></div>
-            <div><button type="reset" value="Reset">Reset</button></div>
+            <div><button type="reset" value="Clear">Clear</button></div>
         </div>
         </form>
         <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
@@ -147,7 +147,7 @@ class WpReportsPlugin {
                 <input type="hidden" name="action" value="documents_form">
             </div>
             <div><button>Download Documents CSV</button></div>
-            <div><button type="reset" value="Reset">Reset</button></div>
+            <div><button type="reset" value="Clear">Clear</button></div>
         </div>
         </form>
         <?php

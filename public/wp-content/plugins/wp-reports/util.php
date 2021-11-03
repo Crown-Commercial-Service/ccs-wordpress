@@ -21,6 +21,8 @@ class Util {
             "last_published" => "Last Update Date",
             "title" => "Framework Title",
             "rm_number" => "RM Number",
+            "lot_title" => "Lot Title",
+            "lot_id" => "Lot ID",
             "doc_name" => "Linked Document",
             "doc_type" => "Document Type"
         );
@@ -29,7 +31,8 @@ class Util {
             "document_name" => "Document Title",
             "post_mime_type" => "File Type",
             "post_date" => "Date Uploaded",
-            "title" => "Associated Framework"
+            "title" => "Associated Framework",
+            "author" => "Author"
         );
     }
 
@@ -105,7 +108,11 @@ class Util {
         for($i = 0; $i < count($frameworks); $i++) {
             $line = $frameworks[$i];
             $frameworkKeys = false;
-            $frameworks_lots = $line['associated_lots'];
+            $frameworks_lots = array();
+            // check if lots array is not empty
+            if (count($line['associated_lots']) > 0) {
+                $frameworks_lots = $line['associated_lots'][0];
+            }
             $firstLineValues = array();
 
             for ($j = 0; $j < count($selectedOptions); $j++) {

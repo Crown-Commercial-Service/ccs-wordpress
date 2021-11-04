@@ -168,7 +168,7 @@
 
         $frameworksDocsQuery = "
             SELECT 
-                u.display_name,
+                u.display_name as author,
                 f.rm_number,
                 f.title,
                 p.post_author,

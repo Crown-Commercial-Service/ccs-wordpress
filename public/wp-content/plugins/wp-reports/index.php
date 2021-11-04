@@ -83,7 +83,6 @@ class WpReportsPlugin {
                 </div>
                 <div><button>Download Authors CSV</button></div>
                 <div><button type="reset" value="Clear">Clear</button></div>
-              
             </div>
         </form>
         <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="post">
@@ -108,6 +107,14 @@ class WpReportsPlugin {
             <div>
                 <label for="rm_number"> RM Number </label>
                 <input type="checkbox" id="rm_number" name="rm_number" value="rm_number">
+            </div>
+            <div>
+                <label for="lot_title"> Associated Lot Title </label>
+                <input type="checkbox" id="lot_title" name="lot_title" value="lot_title">
+            </div>
+            <div>
+                <label for="lot_id"> Associated Lot ID </label>
+                <input type="checkbox" id="lot_id" name="lot_id" value="lot_id">
             </div>
             <div>
                 <label for="doc_name"> Linked Document </label>
@@ -142,6 +149,10 @@ class WpReportsPlugin {
             <div>
                 <label for="title"> Associated Framework </label>
                 <input type="checkbox" id="title" name="title" value="title">
+            </div>
+            <div>
+                <label for="author"> Author </label>
+                <input type="checkbox" id="author" name="author" value="author">
             </div>
             <div>
                 <input type="hidden" name="action" value="documents_form">

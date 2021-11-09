@@ -434,3 +434,21 @@ function update_lot_post ($lot_id,$lot_content) {
     }		
 
 }
+
+add_filter( 'ajax_query_attachments_args', 'show_document_only_for_framework_author' );
+function show_document_only_for_framework_author( $query ) {
+	
+	$user = wp_get_current_user();
+	$filtered_mime_types = array();
+
+	foreach( get_allowed_mime_types() as $key => $type ):
+		if( false === strpos( $type, 'image' ) )
+			$filtered_mime_types[] = $type;
+	endforeach;
+
+	if ( in_array( 'framework_author', (array) $user->roles) and (!array_key_exists('post_mime_type', $query) or $query['post_mime_type'] == "image")) {
+		$query['post_mime_type'] = implode( ',', $filtered_mime_types );
+	}
+
+	return $query;
+}

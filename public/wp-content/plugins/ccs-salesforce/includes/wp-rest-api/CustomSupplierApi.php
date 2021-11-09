@@ -144,6 +144,10 @@ class CustomSupplierApi
             }
         }
 
+        if (empty($frameworksData)){
+            return new WP_Error('invalid_request', 'supplier is only on G-cloud, DOS or DPS', array('status' => 404));
+        }
+
         $supplierTradingNamesFinal = $this->clean_supplier_names($supplierTradingNames);
 
         //Populate the framework array with data

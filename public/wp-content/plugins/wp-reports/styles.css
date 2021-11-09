@@ -1,39 +1,19 @@
-/* Font family and color from generic wp-admin color palette */
-body {
-  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
-  color: #50575e;
-  font-size: .8rem;
+
+.download-form {
+    margin: 50px;
+    display: flex;
+    flex-direction: column;
+    width: 300px;
 }
 
-.reports-table {
-  border-collapse: collapse;
-  background-color: inherit;
-  table-layout: auto;
+.download-form > div {
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.download-form button {
   width: 98%;
-}
-
-.reports-table th {
-  padding: .8rem .7rem;
-  text-align: left;
-  background-color: #2271b1;
-  color: white;
-}
-
-.reports-table td {
-  padding: .6rem .7rem;
-  word-break: break-all;
-}
-  
-.reports-table td, .reports-table th {
-  border: 1px solid #ddd;
-  height: 2.5rem;
-}
-
-a:focus {
-  box-shadow: none;
-}
-
-.wrap {
-    margin: 20px;
 }
 

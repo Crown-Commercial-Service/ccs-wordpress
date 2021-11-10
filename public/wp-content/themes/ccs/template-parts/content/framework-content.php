@@ -100,6 +100,14 @@ $framework_id = get_the_ID();
             </div>
         <?php endif; ?>
 
+        <?php if(!empty(get_field('framework_gm_summary'))): ?>
+            <div class="accordion-title" data-associated-accordion="framework-gm_summary">
+                <h2>Guided Match Summary</h2>
+            </div>
+            <div class="accordion-content" id="framework-gm_summary">
+                <?= get_field('framework_gm_summary'); ?>
+            </div>
+        <?php endif; ?>
 
         <?php if(have_rows('framework_documents') || !empty(get_field('framework_documents_updates')) ): ?>
             <div class="accordion-title" data-associated-accordion="framework-documents">

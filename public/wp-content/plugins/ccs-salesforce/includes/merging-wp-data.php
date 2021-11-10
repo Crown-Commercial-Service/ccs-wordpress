@@ -144,6 +144,11 @@ function save_framework_acf_data ($post_id) {
         $framework->setKeywords(get_field('framework_keywords'));
     }
 
+    if(get_field('framework_gm_summary') !== null)
+    {
+        $framework->setGmSummary(get_field('framework_gm_summary'));
+    }
+
     if(get_field('framework_upcoming_deal_details') !== null)
     {
         $framework->setUpcomingDealDetails(get_field('framework_upcoming_deal_details'));

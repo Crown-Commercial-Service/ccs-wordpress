@@ -25,6 +25,7 @@ class SyncText
             'framework_how_to_buy'              => 'how_to_buy',
             'framework_documents_updates'       => 'document_updates',
             'framework_keywords'                => 'keywords',
+            'framework_gm_summary'              => 'gm_summary',
             'framework_upcoming_deal_details'   => 'upcoming_deal_details',
         ],
         'lots' => [

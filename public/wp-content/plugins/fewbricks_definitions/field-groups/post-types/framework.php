@@ -91,3 +91,12 @@ $fg4->add_field( new acf_fields\wysiwyg( 'Upcoming Deal Details', 'framework_upc
 ] ) );
 
 $fg4->register();
+
+$fg5 = ( new fewacf\field_group( 'Guided Match Summary', '201903081628a', $location, 30 ));
+
+$fg5->add_field( new acf_fields\textarea( 'Guided Match Summary', 'framework_gm_summary', '201903081629a', [
+    'instructions' => 'This field will be used for guided match summary for this framework and NOT visible at all on the website.',
+    'maxlength' => 3000
+] ) );
+
+$fg5->register();

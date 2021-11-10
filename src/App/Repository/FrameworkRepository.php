@@ -34,6 +34,7 @@ class FrameworkRepository extends AbstractRepository
       'publish_on_website'      => ':publish_on_website',
       'published_status'        => ':published_status',
       'keywords'                => ':keywords',
+      'gm_summary'              => ':gm_summary',
       'upcoming_deal_details'   => ':upcoming_deal_details',
     ];
 
@@ -60,6 +61,7 @@ class FrameworkRepository extends AbstractRepository
       'document_updates',
       'published_status',
       'keywords',
+      'gm_summary',
       'upcoming_deal_details'
     ];
 
@@ -283,6 +285,11 @@ class FrameworkRepository extends AbstractRepository
         if (isset($databaseBindings['keywords'])) {
             $keywords = $framework->getKeywords();
             $query->bindParam(':keywords', $keywords, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['gm_summary'])) {
+            $gmSummary = $framework->getGmSummary();
+            $query->bindParam(':gm_summary', $gmSummary, \PDO::PARAM_STR);
         }
 
         if (isset($databaseBindings['upcoming_deal_details'])) {

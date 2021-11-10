@@ -117,7 +117,10 @@ class Framework extends AbstractModel
      * @var string
      */
     protected $keywords;
-
+    /**
+     * @var string
+     */
+    protected $gmSummary;
     /**
      * @var string
      */
@@ -700,6 +703,24 @@ class Framework extends AbstractModel
     /**
      * @return string
      */
+    public function getGmSummary(): ?string
+    {
+        return $this->gmSummary;
+    }
+
+    /**
+     * @param string $keywords
+     * @return Framework
+     */
+    public function setGmSummary(?string $gmSummary): Framework
+    {
+        $this->gmSummary = $gmSummary;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
     public function getPublishUpcomingDeals(): ?string
     {
         return $this->publishUpcomingDeals;
@@ -768,6 +789,7 @@ class Framework extends AbstractModel
           'documents'               => null,
           'published_status'        => $this->getPublishedStatus(),
           'keywords'                => $this->getKeywords(),
+          'gm_summary'              => !empty($this->getGmSummary()) ? $this->getGmSummary() : $this->getSummary(),
           'upcoming_deal_details'   => $this->getUpcomingDealDetails(),
         ];
     }

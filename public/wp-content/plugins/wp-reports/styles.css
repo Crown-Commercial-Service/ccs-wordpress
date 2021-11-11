@@ -1,0 +1,19 @@
+
+.download-form {
+    margin: 50px;
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+}
+
+.download-form > div {
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.download-form button {
+  width: 98%;
+}
+

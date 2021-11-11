@@ -54,7 +54,6 @@ function ccs_expose_lots_for_framework() {
                 $lots_query->the_post();
                 $lot_id = get_the_ID();
                 $lot_title = get_the_title();
-                $editLink = get_edit_post_link($lot_id);
                 // variables for tinymce editor
                 $content   = get_the_content($lot_id);
                 $editor_id = 'lots-editor' . $lot_id; 

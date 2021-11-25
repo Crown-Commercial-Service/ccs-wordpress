@@ -43,3 +43,5 @@ public/wp-content/themes/twentytwenty/package-lock.json
 .idea
 .phpcs-cache
 .phplint-cache
+
+**/.DS_Store

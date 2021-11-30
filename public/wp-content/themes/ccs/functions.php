@@ -452,3 +452,19 @@ function show_document_only_for_framework_author( $query ) {
 
 	return $query;
 }
+
+function wpse_20160421_get_author_meta($object, $field_name, $request) {
+
+	$displayName = get_userdata( $object['author'] )->display_name;
+    return $displayName;
+}
+
+function wpse_20160421_register_author_meta_rest_field() {
+    register_rest_field('post', 'authorName', array(
+        'get_callback'    => 'wpse_20160421_get_author_meta',
+        'update_callback' => null,
+        'schema'          => null,
+    ));
+}
+
+add_action('rest_api_init', 'wpse_20160421_register_author_meta_rest_field');

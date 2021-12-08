@@ -135,8 +135,8 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
             /etc/cron.d/
 
         echo "> Installing Dead Mans Snitch field agent..."
-        sudo curl -O https://bin.equinox.io/c/kToLfSsFgCw/field-agent-stable-linux-amd64.tgz
-        sudo tar zxvf field-agent-stable-linux-amd64.tgz -C /usr/local/bin
+        sudo curl -O https://releases.deadmanssnitch.com/field-agent/1.0.8/dms_1.0.8_linux_amd64.tar.gz
+        sudo tar zxvf dms_1.0.8_linux_amd64.tar.gz -C /usr/local/bin
 
 echo "> Installing import-specific wp_import cron script..."
 

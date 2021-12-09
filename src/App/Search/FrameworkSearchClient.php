@@ -139,6 +139,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
             $multiMatchQuery->setQuery($keyword);
             $multiMatchQuery->setFields(['description^2', 'summary', 'benefits', 'how_to_buy', 'keywords^2']);
             $multiMatchQuery->setFuzziness(1);
+            $multiMatchQuery->setPrefixLength(3);
             $keywordBool->addShould($multiMatchQuery);
 
             // Add a boost to the title
@@ -146,6 +147,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
             $multiMatchQueryForNameField->setQuery($keyword);
             $multiMatchQueryForNameField->setFields(['title^3']);
             $multiMatchQueryForNameField->setFuzziness(1);
+            $multiMatchQueryForNameField->setPrefixLength(3);
             $keywordBool->addShould($multiMatchQueryForNameField);
 
             // RM Number search

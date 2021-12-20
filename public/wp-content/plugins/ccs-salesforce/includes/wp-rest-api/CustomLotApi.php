@@ -120,6 +120,6 @@ class CustomLotApi
         ];
 
         header('Content-Type: application/json');
-        return rest_ensure_response(['meta' => $meta, 'results' => "dada"]);
+        return rest_ensure_response(['meta' => $meta, 'results' => $suppliersData]);
     }
 }

@@ -44,7 +44,7 @@ class CustomLotApi
 
         $frameworkData = $framework->toArray();
 
-        if (!isset($request['lot_number'])) {
+        if (!isset($request['lot_number']) || $framework->getType() == "Dynamic purchasing system" || $framework->getType() == "G-cloud/DOS") {
             return new WP_Error('bad_request', 'request is invalid', array('status' => 400));
         }
 

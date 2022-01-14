@@ -468,3 +468,16 @@ function wpse_20160421_register_author_meta_rest_field() {
 }
 
 add_action('rest_api_init', 'wpse_20160421_register_author_meta_rest_field');
+
+add_filter( 'rest_prepare_post', 'post_featured_image_and_category_type_json', 10, 3 );
+
+function post_featured_image_and_category_type_json( $data ) {
+	$featured_image_id = $data->data['featured_media']; 
+	$featured_image_url = wp_get_attachment_image_src( $featured_image_id, 'news-size-m' );
+	
+	$data->data['featured_image_url'] = $featured_image_url ? $featured_image_url[0] : false;
+	$data->data['alt_text'] = get_post_meta($featured_image_id, '_wp_attachment_image_alt', true);;
+	$data->data['category_type'] = get_the_category($data->data['id'])[0]->name;
+
+	return $data;
+  }

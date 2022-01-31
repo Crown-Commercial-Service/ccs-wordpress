@@ -34,3 +34,17 @@ $fg7->add_field( new acf_fields\text( 'Lead Text', 'post_lead_text', '2019031115
 ] ) );
 
 $fg7->register();
+
+
+$fg9 = ( new fewacf\field_group( 'Author Name', '202201261530a', $location, 6, [
+    'position' => 'acf_after_title',
+    'names_of_items_to_hide_on_screen' => [
+    ]
+] ));
+
+$fg9->add_field( new acf_fields\text( 'Author Name', 'author_name_text', '202201261530b', [
+    'instructions' => 'Optionally enter author name (maximum length, 30 characters)',
+    'maxlength' => 30
+] ) );
+
+$fg9->register();

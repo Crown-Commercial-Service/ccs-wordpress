@@ -483,7 +483,7 @@ function post_featured_image_and_category_type_json( $data ) {
 }
 
 function add_cors_http_header(){
-	$frontendUrl = getenv('FRONTEND_SITEURL');
+	$frontendUrl = getenv('CCS_FRONTEND_URL');
     header('Access-Control-Allow-Origin: ' . $frontendUrl);
 	header('Access-Control-Allow-Methods: GET');
 	header("Access-Control-Allow-Headers: X-Requested-With");

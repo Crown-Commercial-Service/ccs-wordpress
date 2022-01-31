@@ -481,15 +481,3 @@ function post_featured_image_and_category_type_json( $data ) {
 
 	return $data;
   }
-
-add_action( 'rest_api_init', function() {
-
-	remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
-	add_filter( 'rest_pre_serve_request', function( $value ) {
-		header( 'Access-Control-Allow-Origin: ' . getenv('FRONTEND_SITEURL'));
-		header( 'Access-Control-Allow-Methods: GET' );
-		header( 'Access-Control-Allow-Headers: X-Requested-With');
-
-		return $value;
-	});
-}, 15 );

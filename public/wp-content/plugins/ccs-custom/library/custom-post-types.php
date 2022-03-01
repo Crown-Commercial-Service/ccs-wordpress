@@ -246,7 +246,47 @@ function ccs_register_my_cpts() {
         "supports" => array("title", "revisions", "thumbnail"),
     );
 
-    register_post_type( "digital_brochure", $args) ;
+    register_post_type("digital_brochure", $args);
+
+    // Downloadable Resource(s) content type
+    $labels = array(
+        "name" => __('Downloadable Resources', ''),
+        "singular_name" => __('Downloadable Resource', ''),
+        "menu_name" => __('Downloadable Resources', ''),
+        "name_admin_bar" => __('Downloadable Resources', ''),
+        'add_new'            => __('Add New', 'Downloadable Resources', ''),
+        'add_new_item'       => __('Add New Downloadable Resources', ''),
+        'new_item'           => __('New Downloadable Resources', ''),
+        'edit_item'          => __('Edit Downloadable Resources', ''),
+        'view_item'          => __('View Downloadable Resources', ''),
+        'all_items'          => __('All Downloadable Resources', ''),
+        'search_items'       => __('Search Downloadable Resources', ''),
+        'parent_item_colon'  => __('Parent Downloadable Resources:', ''),
+        'not_found'          => __('No Downloadable Resources found.', ''),
+        'not_found_in_trash' => __('No Downloadable Resources found in Trash.', '')
+    );
+
+    $args = array(
+        "labels" => $labels,
+        "description" => "",
+        "public" => true,
+        "publicly_queryable" => true,
+        "show_ui" => true,
+        "show_in_rest" => true,
+        "rest_base" => "",
+        "has_archive" => true,
+        "show_in_menu" => true,
+        "exclude_from_search" => false,
+        "capability_type" => "whitepaper",
+        "map_meta_cap" => true,
+        "hierarchical" => false,
+        "rewrite" => array("slug" => "downloadable"),
+        "query_var" => true,
+        "menu_icon" => "dashicons-media-document",
+        "supports" => array("title", "revisions", "thumbnail"),
+    );
+
+    register_post_type("downloadable", $args);
 
 
     // Event(s) content type

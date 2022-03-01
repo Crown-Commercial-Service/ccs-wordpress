@@ -22,11 +22,9 @@ class downloadable_list extends project_brick {
      */
     public function set_fields() {
 
-        $this->add_field( (new acf_fields\repeater('Downloadable Resources', 'downloadable_list', '202201091647a', ['button_label' => 'Add Downloadable Resources']))
-            ->add_sub_field(new acf_fields\file('Downloadable Resources', 'Downloadable Resources', '202201091649a', [
-                'required' => 1
-            ]))
-        );
+        $this->add_field((new acf_fields\relationship('Downloadable Resources', 'downloadable_resource', '202203299533a', [
+            'post_type' => 'downloadable'
+        ])));
 
     }
 

@@ -7,11 +7,11 @@
 if (!function_exists('downloadable_add_data')) {
     function downloadable_add_data($response, $post)
     {
-        if (!isset($response->data['acf']['downloadable_list_downloadable']) || empty($response->data['acf']['downloadable_list_downloadable'])) {
+        if (!isset($response->data['acf']['downloadable_list_downloadable_resource']) || empty($response->data['acf']['downloadable_list_downloadable_resource'])) {
             return $response;
         }
 
-        foreach ($response->data['acf']['downloadable_list_downloadable'] as $key => $downloadable) {
+        foreach ($response->data['acf']['downloadable_list_downloadable_resource'] as $key => $downloadable) {
             if (!isset($downloadable->ID)) {
                 continue;
             }
@@ -21,11 +21,11 @@ if (!function_exists('downloadable_add_data')) {
             $file = get_field('downloadable_file', $postId);
 
             $featuredImageId = get_post_thumbnail_id($postId);
-            $linkText = get_field('link_text', $postId);
+            $linkText = get_field('link_text', $postId);    
 
-            $response->data['acf']['downloadable_list_downloadable'][$key]->ccs_downloadable_file = $file;
-            $response->data['acf']['downloadable_list_downloadable'][$key]->ccs_downloadable_featured_image = ($featuredImageId != "" ? intval($featuredImageId) : null);
-            $response->data['acf']['downloadable_list_downloadable'][$key]->link_text = $linkText;
+            $response->data['acf']['downloadable_list_downloadable_resource'][$key]->ccs_downloadable_file = $file;
+            $response->data['acf']['downloadable_list_downloadable_resource'][$key]->ccs_downloadable_featured_image = ($featuredImageId != "" ? intval($featuredImageId) : null);
+            $response->data['acf']['downloadable_list_downloadable_resource'][$key]->link_text = $linkText;
         }
 
         return $response;

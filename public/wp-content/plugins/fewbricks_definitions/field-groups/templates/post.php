@@ -43,8 +43,7 @@ $fg9 = ( new fewacf\field_group( 'Author Name', '202201261530a', $location, 6, [
 ] ));
 
 $fg9->add_field( new acf_fields\text( 'Author Name', 'author_name_text', '202201261530b', [
-    'instructions' => 'Optionally enter author name (maximum length, 30 characters)',
-    'maxlength' => 30
+    'instructions' => 'Optionally enter author name:',
 ] ) );
 
 $fg9->register();

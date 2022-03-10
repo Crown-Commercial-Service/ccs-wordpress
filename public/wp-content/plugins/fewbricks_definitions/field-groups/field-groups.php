@@ -16,6 +16,7 @@ include('post-types/whitepaper.php');
 include('post-types/webinar.php');
 include('post-types/event.php');
 include('post-types/digital-brochure.php');
+include('post-types/downloadable.php');
 
 
 

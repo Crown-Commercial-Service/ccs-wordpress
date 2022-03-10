@@ -326,6 +326,8 @@ add_post_type_support( 'whitepaper', 'excerpt' );
 
 add_post_type_support( 'digital_brochure', 'excerpt' );
 
+add_post_type_support('downloadable', 'excerpt');
+
 function removing_post_tag_from_taxonomy_list(){
     register_taxonomy('post_tag', array());
 }

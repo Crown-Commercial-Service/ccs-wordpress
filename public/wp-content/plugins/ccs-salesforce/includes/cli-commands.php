@@ -812,9 +812,15 @@ class Import
 
         WP_CLI::success(count($frameworks) . ' Frameworks found');
 
+        $indexStatus = array('Live', 'Expired - Data Still Received', 'Future (Pipeline)', 'Planned (Pipeline)', 'Underway (Pipeline)', 'Awarded (Pipeline)');
+
         foreach ($frameworks as $framework)
         {
-            $this->updateFrameworkSearchIndexWithSingleFramework($framework);
+            if (in_array($framework->getStatus(), $indexStatus)) {
+                $this->updateFrameworkSearchIndexWithSingleFramework($framework);
+            }else{
+                $this->frameworkSearchClient->removeDocument($framework);
+            }
         }
 
         WP_CLI::success('Operation completed successfully.');

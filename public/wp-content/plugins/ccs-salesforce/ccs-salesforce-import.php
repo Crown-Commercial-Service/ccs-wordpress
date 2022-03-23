@@ -87,6 +87,14 @@ function run_plugin()
         ));
     });
 
+     //Get an individual lot
+     add_action('rest_api_init', function () use ($frameworkApi) {
+        register_rest_route('ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-.]+)/lot/(?P<lot_number>[a-zA-Z0-9-.]+)', array(
+            'methods' => 'GET',
+            'callback' => [$frameworkApi, 'get_individual_lot']
+        ));
+    });
+
     //Get suppliers on a framework
     add_action('rest_api_init', function () use ($frameworkApi) {
         register_rest_route('ccs/v1', '/framework-suppliers/(?P<rm_number>[a-zA-Z0-9-.]+)', array(

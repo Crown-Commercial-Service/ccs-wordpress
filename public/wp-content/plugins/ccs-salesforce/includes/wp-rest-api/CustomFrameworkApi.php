@@ -287,6 +287,48 @@ class CustomFrameworkApi
     }
 
     /**
+     * Endpoint that returns an individual lot based on the RM number and lot number
+     *
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response | WP_Error
+     */
+    function get_individual_lot(WP_REST_Request $request) {
+
+        if (!isset($request['rm_number']) || !isset($request['lot_number'])) {
+            return new WP_Error( 'bad_request', 'request is invalid', array('status' => 400) );
+        }
+
+        $rmNumber = $request['rm_number'];
+        $frameworkRepository = new FrameworkRepository();
+        $framework = $frameworkRepository->findLiveOrUpcomingFramework($rmNumber);
+
+        if ($framework === false) {
+            return new WP_Error('rest_invalid_param', 'framework not found', array('status' => 404));
+        }
+
+        $lotRepository = new LotRepository();
+
+        // Find all lots for the retrieved framework
+        $lots = $lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');
+        $lotData = [];
+
+        if ($lots !== false) {
+            foreach ($lots as $lot) {
+                if ($lot->getLotNumber() == $request['lot_number']){
+                    $lotData = $lot->toArray();
+                    break; 
+                }
+            }
+        }
+        if ($lotData == []) {
+            return new WP_Error('rest_invalid_param', 'lot not found', array('status' => 404));
+        }
+
+        header('Content-Type: application/json');
+        return rest_ensure_response($lotData);
+    }
+
+    /**
      * Endpoint that returns a paginated list of upcoming deals in a json format
      *
      * @param WP_REST_Request $request

@@ -162,7 +162,7 @@ class SalesforceApi
         //Build the query for getting all frameworks
         $sql = <<<EOD
 SELECT {$fieldsToReturn} from {$frameworkMappings['objectName']}
-WHERE Don_t_publish_on_website__c = FALSE
+WHERE Create_draft_web_page__c = TRUE
 EOD;
         // Make API Request
         $response = $this->query($sql);

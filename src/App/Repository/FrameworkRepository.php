@@ -103,6 +103,8 @@ class FrameworkRepository extends AbstractRepository
      */
     public function update($searchField, $searchValue, Framework $framework)
     {
+        $originalDataBindings = $this->databaseBindings;
+        
         // Remove the field which we're using for the update command
         if (isset($this->databaseBindings[$searchField])) {
             unset($this->databaseBindings[$searchField]);
@@ -132,6 +134,8 @@ class FrameworkRepository extends AbstractRepository
             $info = $query->errorInfo();
             throw new DbException(sprintf('Update framework record failed. Error %s: %s', $info[0], $info[2]));
         }
+
+        $this->databaseBindings = $originalDataBindings;
 
         return $result;
     }

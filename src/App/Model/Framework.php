@@ -121,7 +121,7 @@ class Framework extends AbstractModel
     /**
      * @var string
      */
-    protected $publishUpcomingDeals;
+    protected $createDraftPage;
 
     /**
      * @var string
@@ -700,18 +700,18 @@ class Framework extends AbstractModel
     /**
      * @return string
      */
-    public function getPublishUpcomingDeals(): ?string
+    public function getcreateDraftPage(): ?string
     {
-        return $this->publishUpcomingDeals;
+        return $this->createDraftPage;
     }
 
     /**
-     * @param string $publishUpcomingDeals
+     * @param string $createDraftPage
      * @return Framework
      */
-    public function setPublishUpcomingDeals(?string $publishUpcomingDeals): Framework
+    public function setcreateDraftPage(?string $createDraftPage): Framework
     {
-        $this->publishUpcomingDeals = $publishUpcomingDeals;
+        $this->createDraftPage = $createDraftPage;
         return $this;
     }
 

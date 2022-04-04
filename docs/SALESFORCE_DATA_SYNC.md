@@ -40,7 +40,7 @@ We fetch and store every entry in these objects before running the import, *ever
 The first object we fetch is Frameworks (Salesforce object: `Master_Framework__c`). We retrieve every Framework with the following criteria:
 
 ```
-WHERE Don_t_publish_on_website__c = FALSE
+WHERE Create_draft_web_page__c = TRUE
 ```
 
 We store each of these Framework's locally in a database table. We then check whether this Framework has been imported before or not. If not, we create a new post in Wordpress.

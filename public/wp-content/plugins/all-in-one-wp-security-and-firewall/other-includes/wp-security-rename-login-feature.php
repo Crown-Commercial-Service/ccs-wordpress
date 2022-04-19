@@ -1014,7 +1014,7 @@ switch ( $action ) {
 				'confirm',
 				sprintf(
 					/* translators: %s: Link to the login page. */
-					__( 'Check your email for the confirmation link, then visit the <a href="%s">login page</a>.' ),
+					__( 'If you are a valid user, please check your email for the confirmation link, then visit the <a href="%s">login page</a>.' ),
 					wp_login_url()
 				),
 				'message'

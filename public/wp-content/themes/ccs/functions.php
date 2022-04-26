@@ -512,7 +512,7 @@ add_action('pre_get_posts', function ($query) {
 		array_push($taxArray, $each["taxonomy"]);
 	}
 
-	if ($query->query["post_type"] == "post" && $query->query["posts_per_page"] != 100 && !(in_array("products_services", $taxArray) || in_array("sectors", $taxArray))) {
+	if (! is_user_logged_in() && $query->query["post_type"] == "post" && $query->query["posts_per_page"] != 100 && !(in_array("products_services", $taxArray) || in_array("sectors", $taxArray))) {
 		$hiddenPostsID = getAllHiddenPosts();
 		$query->set('post__not_in', $hiddenPostsID);
 	}

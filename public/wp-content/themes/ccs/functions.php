@@ -483,3 +483,39 @@ function post_featured_image_and_category_type_json( $data ) {
 
 	return $data;
   }
+
+function getAllHiddenPosts()
+{
+
+	$args = array(
+		'fields'          => 'ids',
+		'numberposts'   => 100,
+		'post_type'		=> 'post',
+		'meta_query'	=> array(
+			'relation'		=> 'AND',
+			array(
+				'key'	  	=> 'Hide_from_View_All',
+				'value'	  	=> '1',
+				'compare' 	=> '=',
+			),
+		),
+	);
+
+	return get_posts($args);
+}
+
+add_action('pre_get_posts', function ($query) {
+
+	$taxArray = array();
+
+	foreach ((array)$query->query["tax_query"] as $each) {
+		array_push($taxArray, $each["taxonomy"]);
+	}
+	//checking if the request is from API and it is not called from getAllHiddenPosts()
+	if(! is_user_logged_in() && $query->query["post_type"] == "post" && $query->query["posts_per_page"] != 100){
+		if (!(in_array("products_services", $taxArray) || in_array("sectors", $taxArray))) {
+			$hiddenPostsID = getAllHiddenPosts();
+			$query->set('post__not_in', $hiddenPostsID);
+		}
+	}
+});

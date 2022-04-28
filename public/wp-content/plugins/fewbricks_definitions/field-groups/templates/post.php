@@ -47,3 +47,14 @@ $fg9->add_field( new acf_fields\text( 'Author Name', 'author_name_text', '202201
 ] ) );
 
 $fg9->register();
+
+
+$fg10 = ( new fewacf\field_group( 'Hide from "View All"/ Only show when filter is selected', '202204261430a', $location, 7, [
+]));
+
+$fg10->add_field(new acf_fields\true_false('Hide from "View All"', 'Hide_from_View_All', '202204261430b', [
+	'default_value' => '0',
+    
+]));
+
+$fg10->register();

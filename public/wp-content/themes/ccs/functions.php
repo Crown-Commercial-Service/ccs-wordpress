@@ -511,9 +511,11 @@ add_action('pre_get_posts', function ($query) {
 	foreach ((array)$query->query["tax_query"] as $each) {
 		array_push($taxArray, $each["taxonomy"]);
 	}
-
-	if (! is_user_logged_in() && $query->query["post_type"] == "post" && $query->query["posts_per_page"] != 100 && !(in_array("products_services", $taxArray) || in_array("sectors", $taxArray))) {
-		$hiddenPostsID = getAllHiddenPosts();
-		$query->set('post__not_in', $hiddenPostsID);
+	//checking if the request is from API and it is not called from getAllHiddenPosts()
+	if(! is_user_logged_in() && $query->query["post_type"] == "post" && $query->query["posts_per_page"] != 100){
+		if (!(in_array("products_services", $taxArray) || in_array("sectors", $taxArray))) {
+			$hiddenPostsID = getAllHiddenPosts();
+			$query->set('post__not_in', $hiddenPostsID);
+		}
 	}
 });

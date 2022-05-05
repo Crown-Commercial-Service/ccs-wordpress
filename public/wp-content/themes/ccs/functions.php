@@ -530,3 +530,11 @@ function wpb_disable_feed() {
 
 add_action('do_feed_rss', 'wpb_disable_feed', 1);
 add_action('do_feed_rss2', 'wpb_disable_feed', 1);
+
+add_action('template_redirect', function () {
+
+    if ( is_author() ) {
+		wp_redirect(get_option('home'), 301); 
+		exit; 	
+    }
+});

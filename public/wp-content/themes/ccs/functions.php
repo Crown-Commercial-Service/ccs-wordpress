@@ -519,3 +519,22 @@ add_action('pre_get_posts', function ($query) {
 		}
 	}
 });
+
+add_filter( 'wpseo_sitemap_exclude_author', function ($users) {
+	return false;
+  }, 10, 2);
+
+function wpb_disable_feed() {
+	wp_die();
+}
+
+add_action('do_feed_rss', 'wpb_disable_feed', 1);
+add_action('do_feed_rss2', 'wpb_disable_feed', 1);
+
+add_action('template_redirect', function () {
+
+    if ( is_author() ) {
+		wp_redirect(get_option('home'), 301); 
+		exit; 	
+    }
+});

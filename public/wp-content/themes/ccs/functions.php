@@ -538,3 +538,25 @@ add_action('template_redirect', function () {
 		exit; 	
     }
 });
+
+add_filter('get_post_metadata', function ($value, $post_id, $meta_key, $single){
+
+	//this condidtion ensure the following code run once only
+	if($meta_key == "framework_id"){
+		$post = get_post($post_id);
+		$terms = get_the_terms($post->ID, 'framework_type');
+		
+		foreach ((array)$terms as $term ){
+			if ($term->slug == "cas-framework"){
+				add_filter("acf/prepare_field/name=framework_how_to_buy", function(){return false;});
+				add_filter("acf/prepare_field/name=framework_info_docs_for_suppliers", function(){return false;});
+				add_filter("acf/prepare_field/name=framework_updates", function(){return false;});
+			}else{
+				add_filter("acf/prepare_field/name=framework_availability", function(){return false;});
+				add_filter("acf/prepare_field/name=framework_cannot_use", function(){return false;});
+				add_filter("acf/prepare_field/name=framework_contract_length", function(){return false;});
+				add_filter("acf/prepare_field/name=framework_cas_updates", function(){return false;});
+			}
+		}
+	}
+}, 10, 4);

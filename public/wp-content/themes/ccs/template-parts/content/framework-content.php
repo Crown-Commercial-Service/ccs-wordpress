@@ -100,6 +100,32 @@ $framework_id = get_the_ID();
             </div>
         <?php endif; ?>
 
+        <?php if(!empty(get_field('framework_availability'))): ?>
+            <div class="accordion-title" data-associated-accordion="framework-availability">
+                <h2>Framework Availability</h2>
+            </div>
+            <div class="accordion-content" id="framework-availability">
+                <?= get_field('framework_availability'); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if(!empty(get_field('framework_cannot_use'))): ?>
+            <div class="accordion-title" data-associated-accordion="framework-cannot-use">
+                <h2>Framework Cannot Use</h2>
+            </div>
+            <div class="accordion-content" id="framework-cannot-use">
+                <?= get_field('framework_cannot_use'); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if(!empty(get_field('framework_contract_length'))): ?>
+            <div class="accordion-title" data-associated-accordion="framework-contract-length">
+                <h2>Framework Contract Length</h2>
+            </div>
+            <div class="accordion-content" id="framework-contract-length">
+                <?= get_field('framework_contract_length'); ?>
+            </div>
+        <?php endif; ?>
 
         <?php if(have_rows('framework_documents') || !empty(get_field('framework_documents_updates')) ): ?>
             <div class="accordion-title" data-associated-accordion="framework-documents">

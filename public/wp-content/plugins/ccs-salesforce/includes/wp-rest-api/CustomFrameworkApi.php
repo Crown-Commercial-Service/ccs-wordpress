@@ -179,6 +179,19 @@ class CustomFrameworkApi
         $frameworkData['documents'] = $frameworkDocuments;
         $frameworkData['total_suppliers'] = $uniqueSuppliers;
 
+        if ($framework->getType() == 'CAS framework'){
+            $frameworkData['cas_updates']              = $this->getAndSortCasUpdates($framework->getWordpressId());
+
+            $frameworkData['customer_guide']           = get_field('framework_customer_guide', $framework->getWordpressId());
+            $frameworkData['core_terms_conditions']    = get_field('framework_core_terms_conditions', $framework->getWordpressId());
+            $frameworkData['call_off_order_form']      = get_field('framework_call_off_order_form', $framework->getWordpressId());
+
+            $frameworkData['joint_schedules']          = $this->preparing_cas_documents_content( get_field('framework_cas_joint_schedules_joint_schedule', $framework->getWordpressId()), 'joint_schedule');
+            $frameworkData['call_off_schedules']       = $this->preparing_cas_documents_content( get_field('framework_cas_call_off_schedules_call_off_schedule', $framework->getWordpressId()), 'call_off_schedule');
+            $frameworkData['framework_schedules']      = $this->preparing_cas_documents_content( get_field('framework_cas_framework_schedules_framework_schedule', $framework->getWordpressId()), 'framework_schedule');
+            $frameworkData['templates']                = get_field('framework_templates', $framework->getWordpressId());
+        }
+        
         header('Content-Type: application/json');
         return rest_ensure_response($frameworkData);
     }
@@ -436,6 +449,48 @@ class CustomFrameworkApi
     }
 
     /**
+     * preparing CAS document content for frontend to display
+     *
+     * @param $wordpressId
+     * @return array
+     */
+    public function preparing_cas_documents_content($documentsArray, $typeOfSchedules)
+    {
+
+        foreach ((array)$documentsArray as $key => $eachEntry) {
+
+            $mediaId = $eachEntry[$typeOfSchedules . '_document'];
+            $attachment = acf_get_attachment($mediaId);
+            if ($attachment != null) {
+                $documentsArray[$key][$typeOfSchedules . '_document'] = $attachment['url'];
+            }
+
+            switch ($eachEntry[$typeOfSchedules . '_document_type']) {
+                case 'essential':
+                    $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Essential document';
+                    break;
+                case 'optional':
+                    $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Optional document';
+                    break;
+            }
+
+            switch ($eachEntry[$typeOfSchedules . '_document_usage']) {
+                case 'read_only':
+                    $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'Read only';
+                    break;
+                case 'enter_detail':
+                    $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'You will need to enter details in this document';
+                    break;
+                case 'enter_detail_optional':
+                    $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'If you use this schedule, you will need to enter details in this document';
+                    break;
+            }
+        }
+
+        return $documentsArray;
+    }
+
+    /**
      * Natural sort the data for the lots array based on the lot number
      *
      * @param $lots
@@ -454,6 +509,28 @@ class CustomFrameworkApi
         return $lotsData;
     }
 
+    /**
+     * Get CAS framework updates content from acf and sorting it with the latest first
+     *
+     * @param $wordpressId
+     * @return array
+     */
+    public function getAndSortCasUpdates($wordpressId)
+    {
+        $casUpdates = get_field('framework_cas_updates', $wordpressId);
+
+        if ($casUpdates == false){
+            return null;
+        }
+
+        $casUpdates = (array) $casUpdates;
+
+        usort($casUpdates, function ($x, $y) {
+            return strtotime($x['framework_cas_updates_date']) < strtotime($y['framework_cas_updates_date']);
+        });
+
+        return $casUpdates;
+    }
 
     /**
      * Keyword search functionality for all frameworks

@@ -482,6 +482,7 @@ function post_featured_image_and_category_type_json( $data ) {
 	$data->data['category_type'] = get_the_category($data->data['id'])[0]->name;
 
 	return $data;
+
   }
 
 function getAllHiddenPosts()

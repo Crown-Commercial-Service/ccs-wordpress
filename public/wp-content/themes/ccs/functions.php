@@ -482,4 +482,60 @@ function post_featured_image_and_category_type_json( $data ) {
 	$data->data['category_type'] = get_the_category($data->data['id'])[0]->name;
 
 	return $data;
+
+  }
+
+function getAllHiddenPosts()
+{
+
+	$args = array(
+		'fields'          => 'ids',
+		'numberposts'   => 100,
+		'post_type'		=> 'post',
+		'meta_query'	=> array(
+			'relation'		=> 'AND',
+			array(
+				'key'	  	=> 'Hide_from_View_All',
+				'value'	  	=> '1',
+				'compare' 	=> '=',
+			),
+		),
+	);
+
+	return get_posts($args);
 }
+
+add_action('pre_get_posts', function ($query) {
+
+	$taxArray = array();
+
+	foreach ((array)$query->query["tax_query"] as $each) {
+		array_push($taxArray, $each["taxonomy"]);
+	}
+	//checking if the request is from API and it is not called from getAllHiddenPosts()
+	if(! is_user_logged_in() && $query->query["post_type"] == "post" && $query->query["posts_per_page"] != 100){
+		if (!(in_array("products_services", $taxArray) || in_array("sectors", $taxArray))) {
+			$hiddenPostsID = getAllHiddenPosts();
+			$query->set('post__not_in', $hiddenPostsID);
+		}
+	}
+});
+
+add_filter( 'wpseo_sitemap_exclude_author', function ($users) {
+	return false;
+  }, 10, 2);
+
+function wpb_disable_feed() {
+	wp_die();
+}
+
+add_action('do_feed_rss', 'wpb_disable_feed', 1);
+add_action('do_feed_rss2', 'wpb_disable_feed', 1);
+
+add_action('template_redirect', function () {
+
+    if ( is_author() ) {
+		wp_redirect(get_option('home'), 301); 
+		exit; 	
+    }
+});

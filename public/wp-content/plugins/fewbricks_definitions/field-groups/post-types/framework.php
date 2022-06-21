@@ -16,6 +16,21 @@ $location = [
     ]
 ];
 
+$notCasLocation = [
+    [
+        [
+            'param' => 'post_type',
+            'operator' => '==',
+            'value' => 'framework'
+        ],
+        [
+            'param' => 'post_taxonomy',
+            'operator' => '!=',
+            'value' => 'framework_type:cas-framework'
+        ]
+    ]
+];
+
 $fg1 = ( new fewacf\field_group( 'Framework Details', '201902041237a', $location, 10, [
     'names_of_items_to_hide_on_screen' => [
         'the_content',
@@ -36,11 +51,39 @@ $fg1->add_field( new acf_fields\wysiwyg( 'Summary', 'framework_summary', '201902
     'instructions' => 'A few short sentences - a maximum of 180 characters.'
 ] ) );
 
+$fg1->add_field( new acf_fields\wysiwyg('Available for', 'framework_availability', '202205101128a'));
+
 $fg1->add_field( new acf_fields\wysiwyg('Updates', 'framework_updates', '201902251546a'));
+
+$fg1->add_field( (new acf_fields\repeater('CAS Updates', 'framework_cas_updates', '202205130119a', [
+    'button_label' => 'Add Update'
+]))
+    ->add_sub_field( new acf_fields\date_picker( 'Date', 'date', '202002061422a', [
+        'instructions' => 'Date of the update',
+        'display_format' => 'd-m-Y',
+        'return_format' => 'd-m-Y',
+        'required' => 1,
+        'wrapper' => array (
+            'width' => '20',
+            'class' => '',
+            'id' => '')
+    ] ) )
+    ->add_sub_field( new acf_fields\wysiwyg( 'Update', 'update', '202205130119b', [
+        'required' => 1,
+        'wrapper' => array (
+            'width' => '80',
+            'class' => '',
+            'id' => '')
+    ] ) )
+);
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Description', 'framework_description', '201902041416a', [
     'instructions' => '',
 ] ) );
+
+$fg1->add_field( new acf_fields\wysiwyg('When you can\'t use this agreement', 'framework_cannot_use', '202205101129a'));
+
+$fg1->add_field( new acf_fields\wysiwyg('Contract length', 'framework_contract_length', '202205101130a'));
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Benefits', 'framework_benefits', '201902041814a', [
     'instructions' => '',
@@ -58,7 +101,7 @@ $fg1->register();
 
 
 
-$fg2 = ( new fewacf\field_group( 'Documents', '201902051045a', $location, 20 ));
+$fg2 = ( new fewacf\field_group( 'Documents', '201902051045a', $notCasLocation, 20 ));
 
 $fg2->add_field( new acf_fields\wysiwyg( 'Documents - Updates', 'framework_documents_updates', '201902051044a', [
     'instructions' => '',
@@ -85,7 +128,7 @@ $fg3->register();
 
 
 
-$fg4 = ( new fewacf\field_group( 'Upcoming Deal Details', '201903081626a', $location, 30 ));
+$fg4 = ( new fewacf\field_group( 'Upcoming Deal Details', '201903081626a', $notCasLocation, 30 ));
 
 $fg4->add_field( new acf_fields\wysiwyg( 'Upcoming Deal Details', 'framework_upcoming_deal_details', '201903081627a', [
 ] ) );

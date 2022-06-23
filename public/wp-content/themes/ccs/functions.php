@@ -507,6 +507,11 @@ function getAllHiddenPosts()
 
 add_action('pre_get_posts', function ($query) {
 
+	//The frontend uses slug to locate the the post, no action need when the request contain slug
+	if (!empty($query->query["post_name__in"])){
+		return;
+	}
+
 	$taxArray = array();
 
 	foreach ((array)$query->query["tax_query"] as $each) {

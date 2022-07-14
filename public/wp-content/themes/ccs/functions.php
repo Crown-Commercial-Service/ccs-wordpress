@@ -512,14 +512,19 @@ add_action('pre_get_posts', function ($query) {
 		return;
 	}
 
-	$taxArray = array();
+	$hideHiddenPosts = true;
 
-	foreach ((array)$query->query["tax_query"] as $each) {
-		array_push($taxArray, $each["taxonomy"]);
-	}
+    if (isset($query->query["tax_query"])){
+		$queryCondition = flatten_array($query->query["tax_query"]);
+		$target = array('products_services', 'sectors');
+
+		if(count(array_intersect($queryCondition, $target)) > 0){
+			$hideHiddenPosts = false;
+		}
+    }
 	//checking if the request is from API and it is not called from getAllHiddenPosts()
 	if(! is_user_logged_in() && $query->query["post_type"] == "post" && $query->query["posts_per_page"] != 100){
-		if (!(in_array("products_services", $taxArray) || in_array("sectors", $taxArray))) {
+		if ($hideHiddenPosts) {
 			$hiddenPostsID = getAllHiddenPosts();
 			$query->set('post__not_in', $hiddenPostsID);
 		}
@@ -544,3 +549,9 @@ add_action('template_redirect', function () {
 		exit; 	
     }
 });
+
+function flatten_array(array $inputArray) {
+    $result = array();
+    array_walk_recursive($inputArray, function($array) use (&$result) { $result[] = $array; });
+    return $result;
+}

@@ -45,6 +45,8 @@ require __DIR__ . '/includes/wp-rest-api/CustomHomepageComponentsApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/CustomRedirectionApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/GlossaryApi.php';
+
 /**
  * Begins execution of the plugin.
  *
@@ -69,6 +71,7 @@ function run_plugin()
     $upcomingDealsApi = new CustomUpcomingDealsApi();
     $homepageComponentsApi = new CustomHomepageComponentsApi();
     $redirectionApi = new CustomRedirectionApi();
+    $glossaryApi = new GlossaryApi();
 
 
     //Get all frameworks
@@ -186,6 +189,13 @@ function run_plugin()
     
     });
 
+    add_action('rest_api_init', function () use ($glossaryApi) {
+        register_rest_route('ccs/v1', '/glossary/0', array(
+            'methods' => 'GET',
+            'callback' => [$glossaryApi, 'getListOfGlossary']
+        ));
+    
+    });
 }
 
 function import_all()

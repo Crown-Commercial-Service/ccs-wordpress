@@ -577,3 +577,30 @@ function flatten_array(array $inputArray) {
     array_walk_recursive($inputArray, function($array) use (&$result) { $result[] = $array; });
     return $result;
 }
+
+add_filter('acf/validate_value/type=repeater', 'validateGlossary', 10, 4);
+
+function validateGlossary($valid, $value, $field, $input) {
+
+	if( $valid !== true ) {
+        return $valid;
+    }
+
+	$used = [];
+	if (!empty($value)){
+		foreach ( $value as $index => $row) {
+		$first_entry = trim(strtolower(reset($row)));
+		if ($first_entry) {
+			if (!in_array($first_entry, $used)) {
+				$used[] = $first_entry;
+			} else {
+				$valid = 'The value "' . reset($row) . '" is used more than once.';
+				break;
+			}
+		}
+	}
+}
+	
+
+	return $valid;
+}

@@ -206,3 +206,14 @@ $option_page = acf_add_options_page(array(
     'update_button'		=> __('Save', 'acf'),
     'updated_message'	=> __("Redirection Saved", 'acf')
 ));
+
+$option_page = acf_add_options_page(array(
+    'page_title'    => __('Glossary'),
+    'menu_title'    => __('Glossary'),
+    'menu_slug'     => 'glossary',
+    'capability'    => 'edit_pages',
+    'icon_url' => 'dashicons-tag',
+    'redirect'      => false,
+    'update_button'		=> __('Save', 'acf'),
+    'updated_message'	=> __("Glossary Saved", 'acf')
+));

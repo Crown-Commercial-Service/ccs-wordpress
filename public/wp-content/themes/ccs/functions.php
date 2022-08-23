@@ -558,7 +558,6 @@ add_filter('get_post_metadata', function ($value, $post_id, $meta_key, $single){
 		
 		foreach ((array)$terms as $term ){
 			if ($term->slug == "cas-framework"){
-				add_filter("acf/prepare_field/name=framework_how_to_buy", function(){return false;});
 				add_filter("acf/prepare_field/name=framework_info_docs_for_suppliers", function(){return false;});
 				add_filter("acf/prepare_field/name=framework_updates", function(){return false;});
 			}else{

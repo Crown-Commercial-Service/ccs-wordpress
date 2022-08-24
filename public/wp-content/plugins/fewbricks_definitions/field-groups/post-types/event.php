@@ -52,6 +52,15 @@ $fg1->add_field( new acf_fields\date_time_picker( 'Event end date (and time)', '
     'required' => 1
 ] ) );
 
+$fg1->add_field( new acf_fields\radio( 'Event Location Type', 'location_type', '202208221314b', [
+    'choices' => array(
+        'online'	=> 'Online',
+        'in-person'	=> 'In Person',
+        'hybrid'	=> 'Hybrid'
+    ),
+    'required' => 1,
+] ) );
+
 $fg1->add_field( new acf_fields\textarea( 'Event location', 'location', '202002061424a', [
     'instructions' => '',
 ] ) );

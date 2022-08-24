@@ -558,8 +558,9 @@ add_filter('get_post_metadata', function ($value, $post_id, $meta_key, $single){
 		$terms = get_the_terms($post->ID, 'framework_type');
 		
 		foreach ((array)$terms as $term ){
-			if ($term->slug == "cas-framework"){
-				add_filter("acf/prepare_field/name=framework_how_to_buy", function(){return false;});
+			if ($term != false && $term->slug == "cas-framework"){
+				add_filter("acf/prepare_field/name=framework_summary", 'casField_summary');
+				add_filter('acf/prepare_field/name=framework_how_to_buy', 'casField_way_to_buy');
 				add_filter("acf/prepare_field/name=framework_info_docs_for_suppliers", function(){return false;});
 				add_filter("acf/prepare_field/name=framework_updates", function(){return false;});
 			}else{
@@ -572,6 +573,16 @@ add_filter('get_post_metadata', function ($value, $post_id, $meta_key, $single){
 	}
 }, 10, 4);
 
+function casField_way_to_buy( $field ) {
+	$field['label'] = "Ways to buy from this agreement";
+	$field['instructions'] = "Explain the ways to buy from this agreement, for example, one stage further competition, two stage further competition, direct award, eAuction and aggregation.";
+	return $field;
+}
+
+function casField_summary( $field ) {
+	$field['instructions'] = "Write a short description of what your agreement will cover. This should be no more than two sentences.";
+	return $field;
+}
 
 function flatten_array(array $inputArray) {
     $result = array();
@@ -605,3 +616,16 @@ function validateGlossary($valid, $value, $field, $input) {
 
 	return $valid;
 }
+
+function help_text_framework_type() {
+    ?>
+    <script>
+        (function($) {
+            $(function(){
+                $('#radio-framework_typediv').find('.inside').prepend("<b>Select the template that is appropriate for your agreement.</b> <br> To select the framework template for CAS choose the \'CAS framework\' option below and click \'save\' in the publish box. <br> This will change the standard agreement template to the CAS agreement template.");
+            });
+        })(jQuery);
+    </script>
+    <?php
+}
+add_action( 'admin_head', 'help_text_framework_type' );

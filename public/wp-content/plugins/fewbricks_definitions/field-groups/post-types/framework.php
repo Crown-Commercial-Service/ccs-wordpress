@@ -51,7 +51,9 @@ $fg1->add_field( new acf_fields\wysiwyg( 'Summary', 'framework_summary', '201902
     'instructions' => 'A few short sentences - a maximum of 180 characters.'
 ] ) );
 
-$fg1->add_field( new acf_fields\wysiwyg('Available for', 'framework_availability', '202205101128a'));
+$fg1->add_field( new acf_fields\wysiwyg('Available for', 'framework_availability', '202205101128a', [
+    'instructions' => 'Include who can use this agreement. For example, central government, charities, devolved administrations or other.'
+]));
 
 $fg1->add_field( new acf_fields\wysiwyg('Updates', 'framework_updates', '201902251546a'));
 
@@ -78,15 +80,19 @@ $fg1->add_field( (new acf_fields\repeater('CAS Updates', 'framework_cas_updates'
 );
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Description', 'framework_description', '201902041416a', [
-    'instructions' => '',
+    'instructions' => 'Describe what the agreement can be used for and what kind of products or services can be bought.',
 ] ) );
 
-$fg1->add_field( new acf_fields\wysiwyg('When you can\'t use this agreement', 'framework_cannot_use', '202205101129a'));
+$fg1->add_field( new acf_fields\wysiwyg('When you can\'t use this agreement', 'framework_cannot_use', '202205101129a', [
+    'instructions' => 'Describe what can\'t be procured through this agreement. If there is a more suitable agreement for these needs, list those.',
+]));
 
-$fg1->add_field( new acf_fields\wysiwyg('Contract length', 'framework_contract_length', '202205101130a'));
+$fg1->add_field( new acf_fields\wysiwyg('Contract length', 'framework_contract_length', '202205101130a', [
+    'instructions' => 'State how long the agreement can run for plus any extensions.',
+]));
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Benefits', 'framework_benefits', '201902041814a', [
-    'instructions' => '',
+    'instructions' => 'List the benefits of using this specific agreement (not the benefits of using CCS).',
 ] ) );
 
 $fg1->add_field( new acf_fields\wysiwyg( 'How to buy', 'framework_how_to_buy', '201902041411a', [

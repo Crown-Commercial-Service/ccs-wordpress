@@ -456,34 +456,35 @@ class CustomFrameworkApi
      */
     public function preparing_cas_documents_content($documentsArray, $typeOfSchedules)
     {
+        if($documentsArray != false){
+            foreach ((array)$documentsArray as $key => $eachEntry) {
 
-        foreach ((array)$documentsArray as $key => $eachEntry) {
+                $mediaId = $eachEntry[$typeOfSchedules . '_document'];
+                $attachment = acf_get_attachment($mediaId);
+                if ($attachment != null) {
+                    $documentsArray[$key][$typeOfSchedules . '_document'] = $attachment['url'];
+                }
 
-            $mediaId = $eachEntry[$typeOfSchedules . '_document'];
-            $attachment = acf_get_attachment($mediaId);
-            if ($attachment != null) {
-                $documentsArray[$key][$typeOfSchedules . '_document'] = $attachment['url'];
-            }
+                switch ($eachEntry[$typeOfSchedules . '_document_type']) {
+                    case 'essential':
+                        $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Essential document';
+                        break;
+                    case 'optional':
+                        $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Optional document';
+                        break;
+                }
 
-            switch ($eachEntry[$typeOfSchedules . '_document_type']) {
-                case 'essential':
-                    $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Essential document';
-                    break;
-                case 'optional':
-                    $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Optional document';
-                    break;
-            }
-
-            switch ($eachEntry[$typeOfSchedules . '_document_usage']) {
-                case 'read_only':
-                    $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'Read only';
-                    break;
-                case 'enter_detail':
-                    $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'You will need to enter details in this document';
-                    break;
-                case 'enter_detail_optional':
-                    $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'If you use this schedule, you will need to enter details in this document';
-                    break;
+                switch ($eachEntry[$typeOfSchedules . '_document_usage']) {
+                    case 'read_only':
+                        $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'Read only';
+                        break;
+                    case 'enter_detail':
+                        $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'You will need to enter details in this document';
+                        break;
+                    case 'enter_detail_optional':
+                        $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'If you use this schedule, you will need to enter details in this document';
+                        break;
+                }
             }
         }
 

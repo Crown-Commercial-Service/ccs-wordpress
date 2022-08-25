@@ -2,9 +2,6 @@
 use fewbricks\bricks AS bricks;
 use fewbricks\acf AS fewacf;
 use fewbricks\acf\fields AS acf_fields;
-use Fewbricks\ACF\Fields\Text;
-use Fewbricks\ACF\ConditionalLogicRule;
-use Fewbricks\ACF\ConditionalLogicRuleGroup;
 
 
 // --- Setting up fields for the framework custom post type ---
@@ -196,7 +193,7 @@ $address_region = new acf_fields\text( 'Address Region', 'address_region', '2022
     ]
 ] );
 
-$address_county = new acf_fields\text( 'Address County', 'address_county', '202208251601b', [
+$address_country = new acf_fields\text( 'Address Country', 'address_country', '202208251601b', [
     'instructions' => '',
     'conditional_logic' => [
         [
@@ -222,7 +219,7 @@ $fg2->add_field($street_address);
 $fg2->add_field($address_locality);
 $fg2->add_field($postal_code);
 $fg2->add_field($address_region);
-$fg2->add_field($address_county);
+$fg2->add_field($address_country);
 
 $fg2->register();
 

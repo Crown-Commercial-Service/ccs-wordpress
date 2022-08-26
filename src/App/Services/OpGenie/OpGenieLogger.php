@@ -22,7 +22,8 @@ class OpGenieLogger
         $this->client = new Client(['base_uri' => 'https://api.eu.opsgenie.com']);
     }
 
-    public function sendToOPGenie($json){
+    public function sendToOPGenie($json)
+    {
         $response = $this->client->request('POST', '/v1/incidents/create', [
             'headers' => ['Content-Type' => 'application/json', 'Authorization' => getenv('OpGenieKey')],
             'json'    => $json

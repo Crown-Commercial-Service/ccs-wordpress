@@ -87,7 +87,7 @@ class SalesforceApi
         } catch (ClientException $e) {
             $OpGenieLogger = new OpGenieLogger();
 
-            $OpGenieLogger->sendToOPGenie([  
+            $OpGenieLogger->sendToOPGenie([
                 'priority' => 'P2',
                 'message' => 'Website - Salesforce import failed',
                 'description' => 'The import process has failed, please check the salesforce credentials',

@@ -11,6 +11,7 @@ use App\Utils\YamlLoader;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use WP_CLI;
+use App\Services\OpGenie\OpGenieLogger;
 
 /**
  * Class SalesforceApi
@@ -84,7 +85,16 @@ class SalesforceApi
             'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
             ]);
         } catch (ClientException $e) {
-            $this->sendToOPGenie();
+            $OpGenieLogger = new OpGenieLogger();
+
+            $OpGenieLogger->sendToOPGenie([  
+                'priority' => 'P2',
+                'message' => 'Website - Salesforce import failed',
+                'description' => 'The import process has failed, please check the salesforce credentials',
+                'impactedServices' => [getenv('websiteProjectIDOnOPGenie')],
+                'tags' => [strtoupper(getenv('CCS_FRONTEND_APP_ENV'))]
+                ]);
+
             WP_CLI::error("Salesforce connection error", true);
         }
 
@@ -392,19 +402,5 @@ EOD;
         }
 
         return $guarantorId = $queryResponse->records[0]->Guarantor__c;
-    }
-
-    private function sendToOPGenie()
-    {
-        $client = new Client(['base_uri' => 'https://api.eu.opsgenie.com']);
-
-        $response = $client->request('POST', '/v1/incidents/create', [
-                                    'headers' => ['Content-Type' => 'application/json', 'Authorization' => getenv('OpGenieKey')],
-                                    'json'    => [  'priority' => 'P2',
-                                                    'message' => 'Website - Salesforce import failed',
-                                                    'description' => 'The import process has failed, please check the salesforce credentials',
-                                                    'impactedServices' => [getenv('websiteProjectIDOnOPGenie')],
-                                                    'tags' => [strtoupper(getenv('CCS_FRONTEND_APP_ENV'))]]
-                                    ]);
     }
 }

@@ -565,7 +565,6 @@ add_filter('get_post_metadata', function ($value, $post_id, $meta_key, $single){
 			}else{
 				add_filter("acf/prepare_field/name=framework_availability", function(){return false;});
 				add_filter("acf/prepare_field/name=framework_cannot_use", function(){return false;});
-				add_filter("acf/prepare_field/name=framework_contract_length", function(){return false;});
 				add_filter("acf/prepare_field/name=framework_cas_updates", function(){return false;});
 			}
 		}
@@ -573,7 +572,6 @@ add_filter('get_post_metadata', function ($value, $post_id, $meta_key, $single){
 }, 10, 4);
 
 function casField_way_to_buy( $field ) {
-	$field['label'] = "Ways to buy from this agreement";
 	$field['instructions'] = "Explain the ways to buy from this agreement, for example, one stage further competition, two stage further competition, direct award, eAuction and aggregation.";
 	return $field;
 }

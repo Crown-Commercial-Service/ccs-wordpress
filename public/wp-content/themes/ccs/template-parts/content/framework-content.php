@@ -118,15 +118,6 @@ $framework_id = get_the_ID();
             </div>
         <?php endif; ?>
 
-        <?php if(!empty(get_field('framework_contract_length'))): ?>
-            <div class="accordion-title" data-associated-accordion="framework-contract-length">
-                <h2>Framework Contract Length</h2>
-            </div>
-            <div class="accordion-content" id="framework-contract-length">
-                <?= get_field('framework_contract_length'); ?>
-            </div>
-        <?php endif; ?>
-
         <?php if(have_rows('framework_documents') || !empty(get_field('framework_documents_updates')) ): ?>
             <div class="accordion-title" data-associated-accordion="framework-documents">
                 <h2>Documents</h2>

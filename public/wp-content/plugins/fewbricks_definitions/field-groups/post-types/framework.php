@@ -87,10 +87,6 @@ $fg1->add_field( new acf_fields\wysiwyg('When you can\'t use this agreement', 'f
     'instructions' => 'Describe what can\'t be procured through this agreement. If there is a more suitable agreement for these needs, list those.',
 ]));
 
-$fg1->add_field( new acf_fields\wysiwyg('Contract length', 'framework_contract_length', '202205101130a', [
-    'instructions' => 'State how long the agreement can run for plus any extensions.',
-]));
-
 $fg1->add_field( new acf_fields\wysiwyg( 'Benefits', 'framework_benefits', '201902041814a', [
     'instructions' => 'List the benefits of using this specific agreement (not the benefits of using CCS).',
 ] ) );

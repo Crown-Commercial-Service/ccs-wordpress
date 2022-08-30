@@ -37,7 +37,6 @@ class FrameworkRepository extends AbstractRepository
       'upcoming_deal_details'   => ':upcoming_deal_details',
       'availability'            => ':availability',
       'cannot_use'              => ':cannot_use',
-      'contract_length'         => ':contract_length',
     ];
 
      /**
@@ -66,7 +65,6 @@ class FrameworkRepository extends AbstractRepository
       'upcoming_deal_details',
       'availability',
       'cannot_use',
-      'contract_length'
     ];
 
     public function createModel($data = null)
@@ -308,11 +306,6 @@ class FrameworkRepository extends AbstractRepository
         if (isset($databaseBindings['cannot_use'])) {
             $cannotUse = $framework->getCannotUse();
             $query->bindParam(':cannot_use', $cannotUse, \PDO::PARAM_STR);
-        }
-
-        if (isset($databaseBindings['contract_length'])) {
-            $contractLength = $framework->getContractLength();
-            $query->bindParam(':contract_length', $contractLength, \PDO::PARAM_STR);
         }
 
         return $query;

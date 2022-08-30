@@ -51,10 +51,6 @@ class Framework extends AbstractModel
     /**
      * @var string
      */
-    protected $contractLength;
-    /**
-     * @var string
-     */
     protected $updates;
     /**
      * @var string
@@ -318,24 +314,6 @@ class Framework extends AbstractModel
     public function setCannotUse(?string $cannotUse): Framework
     {
         $this->cannotUse = $cannotUse;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getContractLength(): ?string
-    {
-        return $this->contractLength;
-    }
-
-    /**
-     * @param string $contractLength
-     * @return Framework
-     */
-    public function setContractLength(?string $contractLength): Framework
-    {
-        $this->contractLength = $contractLength;
         return $this;
     }
 
@@ -818,7 +796,6 @@ class Framework extends AbstractModel
           'availability'            => $this->getAvailability(),
           'description'             => $this->getDescription(),
           'cannot_use'               => $this->getCannotUse(),
-          'contract_length'          => $this->getContractLength(),
           'updates'                 => $this->getUpdates(),
           'benefits'                => $this->getBenefits(),
           'how_to_buy'              => $this->getHowToBuy(),

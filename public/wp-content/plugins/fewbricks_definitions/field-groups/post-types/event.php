@@ -62,7 +62,7 @@ $online = [
     [
         'field' => '202208221314b',
         'operator' => '==',
-        'value' => 'online'
+        'value' => 'Online'
     ]
 ];
 
@@ -70,7 +70,7 @@ $in_person =  [
     [
         'field' => '202208221314b',
         'operator' => '==',
-        'value' => 'in-person'
+        'value' => 'In Person'
     ]
 ];
 
@@ -78,7 +78,7 @@ $hybrid = [
     [
         'field' => '202208221314b',
         'operator' => '==',
-        'value' => 'hybrid'
+        'value' => 'Online and In Person'
     ]
 ];
 
@@ -89,20 +89,20 @@ $fg2 = ( new fewacf\field_group( 'Event Location', '202208251516a', $location, 1
 
 $fg2->add_field( new acf_fields\radio( 'Event Location Type', 'location_type', '202208221314b', [
     'choices' => array(
-        'online'	=> 'Online',
-        'in-person'	=> 'In Person',
-        'hybrid'	=> 'Hybrid'
+        'Online'	=> 'Online',
+        'In Person'	=> 'In Person',
+        'Online and In Person'	=> 'Online and In Person'
     ),
     'layout' => 'horizontal',
     'default_value' => 'online',
     'required' => 1,
 ] ) );
 
-$event_url = new acf_fields\text( 'Event URL', 'event_url', '202208251724b', [
-    'instructions' => '',
-    'conditional_logic' => [ $online, $hybrid ],
-    'required' => 1,
-] );
+// $event_url = new acf_fields\text( 'Event URL', 'event_url', '202208251724b', [
+//     'instructions' => '',
+//     'conditional_logic' => [ $online, $hybrid ],
+//     'required' => 1,
+// ] );
 
 $place_name = new acf_fields\text( 'Place Name', 'place_name', '202208251556b', [
     'instructions' => '',
@@ -112,7 +112,8 @@ $place_name = new acf_fields\text( 'Place Name', 'place_name', '202208251556b', 
 
 $street_address = new acf_fields\text( 'Street Address', 'street_address', '202208251557b', [
     'instructions' => '',
-    'conditional_logic' => [ $in_person, $hybrid ]
+    'conditional_logic' => [ $in_person, $hybrid ],
+    'required' => 1,
 ] );
 
 $address_locality = new acf_fields\text( 'Town or City', 'address_locality', '202208251558b', [
@@ -127,18 +128,19 @@ $postal_code = new acf_fields\text( 'Postal Code', 'postal_code', '202208251559b
     'required' => 1,
 ] );
 
-$address_region = new acf_fields\text( 'Address Region', 'address_region', '202208251600b', [
-    'instructions' => '',
-    'conditional_logic' => [ $in_person, $hybrid ]
-] );
-
-$address_country = new acf_fields\text( 'Address Country', 'address_country', '202208251601b', [
+$address_region = new acf_fields\text( 'Region', 'address_region', '202208251600b', [
     'instructions' => '',
     'conditional_logic' => [ $in_person, $hybrid ],
     'required' => 1,
 ] );
 
-$fg2->add_field($event_url);
+$address_country = new acf_fields\text( 'Country', 'address_country', '202208251601b', [
+    'instructions' => '',
+    'conditional_logic' => [ $in_person, $hybrid ],
+    'required' => 1,
+] );
+
+// $fg2->add_field($event_url);
 $fg2->add_field($place_name);
 $fg2->add_field($street_address);
 $fg2->add_field($address_locality);

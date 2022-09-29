@@ -482,7 +482,6 @@ function post_featured_image_and_category_type_json( $data ) {
 	$data->data['category_type'] = get_the_category($data->data['id'])[0]->name;
 
 	return $data;
-
   }
 
 function getAllHiddenPosts()
@@ -550,8 +549,80 @@ add_action('template_redirect', function () {
     }
 });
 
+add_filter('get_post_metadata', function ($value, $post_id, $meta_key, $single){
+
+	//this condidtion ensure the following code run once only
+	if($meta_key == "framework_id"){
+		$post = get_post($post_id);
+		$terms = get_the_terms($post->ID, 'framework_type');
+		
+		foreach ((array)$terms as $term ){
+			if ($term != false && $term->slug == "cas-framework"){
+				add_filter("acf/prepare_field/name=framework_summary", 'casField_summary');
+				add_filter('acf/prepare_field/name=framework_how_to_buy', 'casField_way_to_buy');
+				add_filter("acf/prepare_field/name=framework_info_docs_for_suppliers", function(){return false;});
+				add_filter("acf/prepare_field/name=framework_updates", function(){return false;});
+			}else{
+				add_filter("acf/prepare_field/name=framework_availability", function(){return false;});
+				add_filter("acf/prepare_field/name=framework_cannot_use", function(){return false;});
+				add_filter("acf/prepare_field/name=framework_cas_updates", function(){return false;});
+			}
+		}
+	}
+}, 10, 4);
+
+function casField_way_to_buy( $field ) {
+	$field['instructions'] = "Explain the ways to buy from this agreement, for example, one stage further competition, two stage further competition, direct award, eAuction and aggregation.";
+	return $field;
+}
+
+function casField_summary( $field ) {
+	$field['instructions'] = "Write a short description of what your agreement will cover. This should be no more than two sentences.";
+	return $field;
+}
+
 function flatten_array(array $inputArray) {
     $result = array();
     array_walk_recursive($inputArray, function($array) use (&$result) { $result[] = $array; });
     return $result;
 }
+
+add_filter('acf/validate_value/type=repeater', 'validateGlossary', 10, 4);
+
+function validateGlossary($valid, $value, $field, $input) {
+
+	if( $valid !== true ) {
+        return $valid;
+    }
+
+	$used = [];
+	if (!empty($value)){
+		foreach ( $value as $index => $row) {
+		$first_entry = trim(strtolower(reset($row)));
+		if ($first_entry) {
+			if (!in_array($first_entry, $used)) {
+				$used[] = $first_entry;
+			} else {
+				$valid = 'The value "' . reset($row) . '" is used more than once.';
+				break;
+			}
+		}
+	}
+}
+	
+
+	return $valid;
+}
+
+function help_text_framework_type() {
+    ?>
+    <script>
+        (function($) {
+            $(function(){
+                $('#radio-framework_typediv').find('.inside').prepend("<b>Select the template that is appropriate for your agreement.</b> <br> To select the framework template for CAS choose the \'CAS framework\' option below and click \'save\' in the publish box. <br> This will change the standard agreement template to the CAS agreement template.");
+            });
+        })(jQuery);
+    </script>
+    <?php
+}
+add_action( 'admin_head', 'help_text_framework_type' );

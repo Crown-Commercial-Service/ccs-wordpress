@@ -26,6 +26,8 @@ class SyncText
             'framework_documents_updates'       => 'document_updates',
             'framework_keywords'                => 'keywords',
             'framework_upcoming_deal_details'   => 'upcoming_deal_details',
+            'framework_availability'            => 'availability',
+            'framework_cannot_use'              => 'cannot_use',
         ],
         'lots' => [
             'lot_description'                   => 'description',

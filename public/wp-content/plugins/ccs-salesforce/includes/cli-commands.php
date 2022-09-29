@@ -28,6 +28,7 @@ use App\Repository\LotRepository;
 use App\Repository\LotSupplierRepository;
 use App\Repository\SupplierRepository;
 use App\Services\Salesforce\SalesforceApi;
+use App\Services\OpGenie\OpGenieLogger;
 
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
@@ -378,6 +379,8 @@ class Import
 
         $timer = round(microtime(true) - $this->startTime, 2);
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
+
+        $this->checkEventCron();
 
         $response = [
           'importCount' => $this->importCount,
@@ -1228,6 +1231,35 @@ EOD;
         }
     }
 
+    /**
+     * Check if the event cron job still exist in PROD
+     *
+     */
+    public function checkEventCron() {
+        $cron_jobs = get_option('cron');
+        
+        $check_event_dates = false;
+        foreach ((array) $cron_jobs as $cron_job) {
+            if (array_key_exists("check_event_dates", (array) $cron_job)){
+                $check_event_dates = true;
+                $this->addSuccess('"check_event_dates" cron job exist');
+
+                break;
+            }
+        }
+
+        if ($check_event_dates == false && getenv('CCS_FRONTEND_APP_ENV') == 'prod'){
+            $OpGenieLogger = new OpGenieLogger();
+
+            $OpGenieLogger->sendToOPGenie([  
+                'priority' => 'P2',
+                'message' => 'Website - Event Cron job disappear',
+                'description' => 'The check_event_dates cron job has disappear, please start the "S24 Event Unpublisher" plugin on Wordpress.',
+                'impactedServices' => [getenv('websiteProjectIDOnOPGenie')],
+                'tags' => [strtoupper(getenv('CCS_FRONTEND_APP_ENV'))]
+                ]);
+        }
+    }
 }
 
 

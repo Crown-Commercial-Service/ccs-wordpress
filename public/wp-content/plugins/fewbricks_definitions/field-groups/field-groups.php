@@ -10,6 +10,7 @@ use fewbricks\acf\fields AS acf_fields;
  * Import field groups for post types
  */
 include('post-types/framework.php');
+include('post-types/cas-framework.php');
 include('post-types/lot.php');
 include('post-types/supplier.php');
 include('post-types/whitepaper.php');

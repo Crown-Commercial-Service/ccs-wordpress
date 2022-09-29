@@ -149,6 +149,17 @@ function save_framework_acf_data ($post_id) {
         $framework->setUpcomingDealDetails(get_field('framework_upcoming_deal_details'));
     }
 
+    if(get_field('framework_availability') !== null)
+    {
+        $framework->setAvailability(get_field('framework_availability'));
+    }
+
+    if(get_field('framework_cannot_use') !== null)
+    {
+        $framework->setCannotUse(get_field('framework_cannot_use'));
+    }
+
+
     //Save the Wordpress data back into the custom database
     $frameworkRepository->update('wordpress_id', $framework->getWordpressId(), $framework);
 

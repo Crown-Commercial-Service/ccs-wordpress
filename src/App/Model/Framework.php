@@ -39,7 +39,15 @@ class Framework extends AbstractModel
     /**
      * @var string
      */
+    protected $availability;
+    /**
+     * @var string
+     */
     protected $description;
+    /**
+     * @var string
+     */
+    protected $cannotUse;
     /**
      * @var string
      */
@@ -258,6 +266,24 @@ class Framework extends AbstractModel
     /**
      * @return string
      */
+    public function getAvailability(): ?string
+    {
+        return $this->availability;
+    }
+
+    /**
+     * @param string $availability
+     * @return Framework
+     */
+    public function setAvailability(?string $availability): Framework
+    {
+        $this->availability = $availability;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
     public function getDescription(): ?string
     {
         return $this->description;
@@ -270,6 +296,24 @@ class Framework extends AbstractModel
     public function setDescription(?string $description): Framework
     {
         $this->description = $description;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCannotUse(): ?string
+    {
+        return $this->cannotUse;
+    }
+
+    /**
+     * @param string $cannotUse
+     * @return Framework
+     */
+    public function setCannotUse(?string $cannotUse): Framework
+    {
+        $this->cannotUse = $cannotUse;
         return $this;
     }
 
@@ -749,7 +793,9 @@ class Framework extends AbstractModel
           'title'                   => $this->getTitle(),
           'type'                    => $this->getType(),
           'summary'                 => $this->getSummary(),
+          'availability'            => $this->getAvailability(),
           'description'             => $this->getDescription(),
+          'cannot_use'              => $this->getCannotUse(),
           'updates'                 => $this->getUpdates(),
           'benefits'                => $this->getBenefits(),
           'how_to_buy'              => $this->getHowToBuy(),

@@ -7,7 +7,10 @@ class GlossaryApi{
         $results  = [];
         if (have_rows('list_of_glossary', 'option')):
             while (have_rows('list_of_glossary', 'option')): the_row();
-                $results[] = ['term' => ucfirst(get_sub_field('term')),'meaning' => strtolower(get_sub_field('meaning'))];
+                $results[] = [
+                                'term' => get_sub_field('term'),
+                                'meaning' => get_sub_field('meaning')
+                            ];
             endwhile;
         endif;
 

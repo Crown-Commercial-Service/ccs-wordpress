@@ -51,9 +51,6 @@ $fg1->add_field( new acf_fields\date_time_picker( 'Event end date (and time)', '
     'required' => 1
 ] ) );
 
-// $fg1->add_field( new acf_fields\textarea( 'Event location', 'location', '202002061424a', [
-//     'instructions' => '',
-// ] ) );
 
 // Setting up fields for event location
 
@@ -96,12 +93,6 @@ $fg2->add_field( new acf_fields\radio( 'Event Location Type', 'location_type', '
     'default_value' => 'online',
     'required' => 1,
 ] ) );
-
-// $event_url = new acf_fields\text( 'Event URL', 'event_url', '202208251724b', [
-//     'instructions' => '',
-//     'conditional_logic' => [ $online, $hybrid ],
-//     'required' => 1,
-// ] );
 
 $place_name = new acf_fields\text( 'Place Name', 'place_name', '202208251556b', [
     'instructions' => '',

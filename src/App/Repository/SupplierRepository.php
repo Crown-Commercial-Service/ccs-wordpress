@@ -19,6 +19,7 @@ class SupplierRepository extends AbstractRepository
       'website'             => ':website',
       'trading_name'        => ':trading_name',
       'on_live_frameworks'  => ':on_live_frameworks',
+      'crp_url'             => ':crp_url'
     ];
 
     /**
@@ -175,6 +176,11 @@ class SupplierRepository extends AbstractRepository
         if (isset($databaseBindings['on_live_frameworks'])) {
             $onLiveFrameworks = $supplier->isOnLiveFrameworks();
             $query->bindParam(':on_live_frameworks', $onLiveFrameworks, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['crp_url'])) {
+            $CRPurl = $supplier->getCRPurl();
+            $query->bindParam(':crp_url', $onLiveFrameworks, \PDO::PARAM_STR);
         }
 
         return $query;

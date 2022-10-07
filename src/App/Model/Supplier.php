@@ -72,6 +72,10 @@ class Supplier extends AbstractModel
      * @var bool
      */
     protected $haveGuarantor = false;
+    /**
+     * @var string
+     */
+    protected $CRPurl;
     
     /**
      * @return string
@@ -361,6 +365,24 @@ class Supplier extends AbstractModel
     }
 
     /**
+     * @return string
+     */
+    public function getCRPurl(): ?string
+    {
+        return $this->CRPurl;
+    }
+
+    /**
+     * @param string $CRPurl
+     * @return Supplier
+     */
+    public function setCRPurl(?string $CRPurl): Supplier
+    {
+        $this->CRPurl = $CRPurl;
+        return $this;
+    }
+
+    /**
      * Returns a simple text array representing the object
      *
      * @return array
@@ -379,7 +401,7 @@ class Supplier extends AbstractModel
             'postcode'            => $this->getPostcode(),
             'website'             => $this->getWebsite(),
             'trading_name'        => $this->getTradingName(),
-
+            'crp_url'             => $this->getCRPurl()
         ];
     }
 }

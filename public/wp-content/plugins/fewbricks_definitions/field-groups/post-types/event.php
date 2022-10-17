@@ -1,5 +1,4 @@
 <?php
-use fewbricks\bricks AS bricks;
 use fewbricks\acf AS fewacf;
 use fewbricks\acf\fields AS acf_fields;
 
@@ -52,9 +51,94 @@ $fg1->add_field( new acf_fields\date_time_picker( 'Event end date (and time)', '
     'required' => 1
 ] ) );
 
-$fg1->add_field( new acf_fields\textarea( 'Event location', 'location', '202002061424a', [
-    'instructions' => '',
+
+// Setting up fields for event location
+
+$online = [
+    [
+        'field' => '202208221314b',
+        'operator' => '==',
+        'value' => 'Online'
+    ]
+];
+
+$in_person =  [
+    [
+        'field' => '202208221314b',
+        'operator' => '==',
+        'value' => 'In Person'
+    ]
+];
+
+$hybrid = [
+    [
+        'field' => '202208221314b',
+        'operator' => '==',
+        'value' => 'Online and In Person'
+    ]
+];
+
+
+$fg2 = ( new fewacf\field_group( 'Event Location', '202208251516a', $location, 10, [
+    'conditional_logic' => 1
+]));
+
+$fg2->add_field( new acf_fields\radio( 'Event Location Type', 'location_type', '202208221314b', [
+    'choices' => array(
+        'Online'	=> 'Online',
+        'In Person'	=> 'In Person',
+        'Online and In Person'	=> 'Online and In Person'
+    ),
+    'layout' => 'horizontal',
+    'default_value' => 'online',
+    'required' => 1,
 ] ) );
+
+$place_name = new acf_fields\text( 'Place Name', 'place_name', '202208251556b', [
+    'instructions' => '',
+    'conditional_logic' => [ $in_person, $hybrid ],
+    'required' => 1,
+] );
+
+$street_address = new acf_fields\text( 'Street Address', 'street_address', '202208251557b', [
+    'instructions' => '',
+    'conditional_logic' => [ $in_person, $hybrid ],
+    'required' => 1,
+] );
+
+$address_locality = new acf_fields\text( 'Town or City', 'address_locality', '202208251558b', [
+    'instructions' => '',
+    'conditional_logic' => [ $in_person, $hybrid ],
+    'required' => 1,
+] );
+
+$postal_code = new acf_fields\text( 'Postal Code', 'postal_code', '202208251559b', [
+    'instructions' => '',
+    'conditional_logic' => [ $in_person, $hybrid ],
+    'required' => 1,
+] );
+
+$address_region = new acf_fields\text( 'Region', 'address_region', '202208251600b', [
+    'instructions' => '',
+    'conditional_logic' => [ $in_person, $hybrid ],
+    'required' => 1,
+] );
+
+$address_country = new acf_fields\text( 'Country', 'address_country', '202208251601b', [
+    'instructions' => '',
+    'conditional_logic' => [ $in_person, $hybrid ],
+    'required' => 1,
+] );
+
+$fg2->add_field($place_name);
+$fg2->add_field($street_address);
+$fg2->add_field($address_locality);
+$fg2->add_field($postal_code);
+$fg2->add_field($address_region);
+$fg2->add_field($address_country);
+
+$fg2->register();
+
 
 $fg1->add_field( new acf_fields\text( 'Secondary CTA Label', 'secondary_cta_label', '202002061517a', [
     'instructions' => 'A secondary CTA to display beneath the event location (appears in the sidebar on large screens)',

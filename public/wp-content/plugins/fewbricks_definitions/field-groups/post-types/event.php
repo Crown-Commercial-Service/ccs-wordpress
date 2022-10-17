@@ -130,7 +130,6 @@ $address_country = new acf_fields\text( 'Country', 'address_country', '202208251
     'required' => 1,
 ] );
 
-// $fg2->add_field($event_url);
 $fg2->add_field($place_name);
 $fg2->add_field($street_address);
 $fg2->add_field($address_locality);

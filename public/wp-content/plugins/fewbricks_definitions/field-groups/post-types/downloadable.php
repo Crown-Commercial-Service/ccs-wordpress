@@ -50,7 +50,9 @@ $fg1->add_field(new acf_fields\wysiwyg('Downloadable Resources URL', 'downloadab
     'instructions' => 'URL to be displayed on confirmation page (the first link)'
 ]));
 
-$fg1->add_field(new acf_fields\file('Downloadable Resources File', 'downloadable_resources_file', '202203291846a'));
+$fg1->add_field(new acf_fields\file('Downloadable Resources File', 'downloadable_resources_file', '202203291846a', [
+    'required' => 1
+]));
 
 $fg1->add_field(new acf_fields\text('Downloadable Resources File Text', 'downloadable_resources_file_text', '202203251648a'));
 

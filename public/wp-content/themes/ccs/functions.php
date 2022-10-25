@@ -478,8 +478,22 @@ function post_featured_image_and_category_type_json( $data ) {
 	$featured_image_url = wp_get_attachment_image_src( $featured_image_id, 'news-size-m' );
 	
 	$data->data['featured_image_url'] = $featured_image_url ? $featured_image_url[0] : false;
-	$data->data['alt_text'] = get_post_meta($featured_image_id, '_wp_attachment_image_alt', true);;
-	$data->data['category_type'] = get_the_category($data->data['id'])[0]->name;
+	$data->data['alt_text'] = get_post_meta($featured_image_id, '_wp_attachment_image_alt', true);
+
+	$postType = $data->data["type"];
+	switch ($postType) {
+		case "post" :
+			$data->data['category_type'] = get_the_category($data->data['id'])[0]->name;
+			break;
+		case "whitepaper":
+			$data->data['category_type'] = "Whitepaper";
+			$data->data['categories'] = array(000);
+			break;
+		case "webinar":
+			$data->data['category_type'] = "Webinar";
+			$data->data['categories'] = array(000);
+			break;
+	}
 
 	return $data;
   }
@@ -504,6 +518,29 @@ function getAllHiddenPosts()
 	return get_posts($args);
 }
 
+add_filter( 'rest_post_query', 'perpareWhitepaperAndWebinar', 10, 3 );
+
+function perpareWhitepaperAndWebinar( $args, $request ) {
+
+	$postTypeArray = array('post');
+
+	if( $request->get_param( 'noPost' ) == '1' ) {
+		unset($postTypeArray[0]);
+	}
+
+	if( $request->get_param( 'whitepaper' ) == '1' ) {
+		$postTypeArray[] = 'whitepaper';
+	}
+
+	if( $request->get_param( 'webinar' ) == '1' ) {
+		$postTypeArray[] = 'webinar';
+	}
+
+	$args["post_type"] = $postTypeArray;
+
+	return $args; 
+}
+
 add_action('pre_get_posts', function ($query) {
 
 	//The frontend uses slug to locate the the post, no action need when the request contain slug
@@ -522,13 +559,38 @@ add_action('pre_get_posts', function ($query) {
 		}
     }
 	//checking if the request is from API and it is not called from getAllHiddenPosts()
-	if(! is_user_logged_in() && $query->query["post_type"] == "post" && $query->query["posts_per_page"] != 100){
+	if(! is_user_logged_in() && $query->query["posts_per_page"] != 100){
+
+		$query = addingWhitepaperAndWebinarToTaxQuery($query);
+
 		if ($hideHiddenPosts) {
 			$hiddenPostsID = getAllHiddenPosts();
 			$query->set('post__not_in', $hiddenPostsID);
 		}
 	}
 });
+
+function addingWhitepaperAndWebinarToTaxQuery($query){
+
+	if (!empty($query->tax_query->queries)){
+		$orginal = $query->tax_query->queries;
+		$orginal['relation'] = "AND";
+
+		$taxquery = array(
+			'relation' => 'OR',
+			$orginal,
+			array(
+				'taxonomy' => 'category',
+				'field' => 'term_id',
+				'operator' => 'NOT EXISTS'
+			),
+		);
+
+		$query->set('tax_query', $taxquery );
+	}
+
+	return $query;
+}
 
 add_filter( 'wpseo_sitemap_exclude_author', function ($users) {
 	return false;

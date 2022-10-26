@@ -41,6 +41,10 @@ class LotSupplier extends AbstractModel
      */
     protected $guarantor_id;
     /**
+     * @var string
+     */
+    protected $CRPurl;
+    /**
      * @return string
      */
     public function getId(): ?string
@@ -121,6 +125,14 @@ class LotSupplier extends AbstractModel
     }
 
     /**
+     * @return string;
+     */
+    public function getCRPurl(): ?string
+    {
+        return $this->CRPurl;
+    }
+
+    /**
      * @param string $contactEmail
      * @return LotSupplier
      */
@@ -190,6 +202,16 @@ class LotSupplier extends AbstractModel
     public function setGuarantorId(?string $guarantor_id): LotSupplier
     {
         $this->guarantor_id = $guarantor_id;
+        return $this;
+    }
+
+    /**
+     * @param string $CRPurl
+     * @return LotSupplier
+     */
+    public function setCRPurl(?string $CRPurl): LotSupplier
+    {
+        $this->CRPurl = $CRPurl;
         return $this;
     }
 }

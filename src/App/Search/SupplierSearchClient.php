@@ -85,6 +85,7 @@ class SupplierSearchClient extends AbstractSearchClient implements SearchClientI
           'city'                      => $supplier->getCity(),
           'postcode'                  => $supplier->getPostcode(),
           'have_guarantor'            => $supplier->getHaveGuarantor(),
+          'crp_url'                   => $supplier->getCRPurl()
         ];
 
         $frameworkData = [];

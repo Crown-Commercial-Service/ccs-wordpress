@@ -26,6 +26,7 @@ class SupplierMapping extends AbstractMapping
       'alternative_trading_names' => ['type' => 'text'],
       'city'                      => ['type' => 'text'],
       'postcode'                  => ['type' => 'text'],
+      'crp_url'                   => ['type' => 'text'],
       'live_frameworks'           => [
         'type'       => 'nested',
         'properties' => [

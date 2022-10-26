@@ -22,7 +22,9 @@ $fg1 = ( new fewacf\field_group( 'Whitepaper Details', '202001131107a', $locatio
     ]
 ]));
 
-$fg1->add_field( new acf_fields\file( 'Whitepaper', 'whitepaper_file', '202001131109a' ) );
+$fg1->add_field( new acf_fields\file( 'Whitepaper', 'whitepaper_file', '202001131109a', [
+    'required' => 1
+] ) );
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Whitepaper Form Introduction', 'form_introduction', '202002281430a', [
     'instructions' => 'Optional text to display above the form when requesting access to the Whitepaper'

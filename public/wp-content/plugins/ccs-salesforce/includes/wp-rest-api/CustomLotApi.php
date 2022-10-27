@@ -97,7 +97,8 @@ class CustomLotApi
                         'supplier_contact_name' => $supplier->getContactName(),
                         'supplier_contact_email' => $supplier->getContactEmail(),
                         'supplier_have_guarantor' => $supplier->getHaveGuarantor(),
-                        'live_frameworks' => $liveFrameworks
+                        'live_frameworks' => $liveFrameworks,
+                        'crp_url' => $supplier->getCRPurl()
                     ];
 
                 //If the trading name exists, show this as the supplier name

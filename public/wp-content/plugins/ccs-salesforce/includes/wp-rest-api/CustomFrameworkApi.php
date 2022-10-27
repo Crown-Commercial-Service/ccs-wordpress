@@ -141,6 +141,9 @@ class CustomFrameworkApi
         $lotRepository = new LotRepository();
         $supplierRepository = new SupplierRepository();
 
+        //Set to true if at least one supplier on the framework has CRP url
+        $crpCompliant = false;
+
         // Find all lots for the retrieved framework
         $lots = $lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');
         $lotsData = [];
@@ -156,6 +159,9 @@ class CustomFrameworkApi
 
                 if ($suppliers !== false) {
                     foreach ($suppliers as $supplier) {
+                        if ($supplier->getCRPurl()) {
+                            $crpCompliant = true;
+                        }
                         $suppliersData[] = $supplier->toArray();
                         $uniqueSuppliers[] = $supplier->getId();
                     }
@@ -178,6 +184,7 @@ class CustomFrameworkApi
         $frameworkData['lots'] = $sortedLotsData;
         $frameworkData['documents'] = $frameworkDocuments;
         $frameworkData['total_suppliers'] = $uniqueSuppliers;
+        $frameworkData['crp_compliant'] = $crpCompliant;
 
         if ($framework->getType() == 'CAS framework'){
             $frameworkData['cas_updates']              = $this->getAndSortCasUpdates($framework->getWordpressId());

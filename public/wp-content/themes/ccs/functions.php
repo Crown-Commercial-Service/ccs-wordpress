@@ -559,7 +559,7 @@ add_action('pre_get_posts', function ($query) {
 		}
     }
 	//checking if the request is from API and it is not called from getAllHiddenPosts()
-	if(! is_user_logged_in() && $query->query["posts_per_page"] != 100){
+	if(! is_user_logged_in() && $query->query["post_type"] == "post" && $query->query["posts_per_page"] != 100){
 
 		$query = addingWhitepaperAndWebinarToTaxQuery($query);
 

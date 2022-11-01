@@ -28,7 +28,9 @@ $fg1->add_field( new acf_fields\text( 'Digital Brochure URL', 'digital_brochure_
 
 $fg1->add_field( new acf_fields\text( 'Digital Brochure URL Text', 'digital_brochure_url_text', '202103301654a' ) );
 
-$fg1->add_field( new acf_fields\file( 'Digital Brochure File', 'digital_brochure_file', '202103291846a' ) );
+$fg1->add_field( new acf_fields\file( 'Digital Brochure File', 'digital_brochure_file', '202103291846a', [
+    'required' => 1
+] ) );
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Digital Brochure Form Introduction', 'form_introduction', '202103297695a', [
     'instructions' => 'Optional text to display above the form when requesting access to the Digital Brochure'

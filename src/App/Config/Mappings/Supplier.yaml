@@ -10,3 +10,4 @@ properties:
   postcode: BillingPostalCode
   website: Website
   tradingName: Trading_Name__c
+  crpUrl: Supplier_Carbon_Reduction_Plan__c

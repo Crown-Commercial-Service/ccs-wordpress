@@ -815,6 +815,7 @@ class Framework extends AbstractModel
           'published_status'        => $this->getPublishedStatus(),
           'keywords'                => $this->getKeywords(),
           'upcoming_deal_details'   => $this->getUpcomingDealDetails(),
+          'crp_compliant'           => null
         ];
     }
 }

@@ -55,6 +55,10 @@ class Supplier extends AbstractModel
     /**
      * @var string
      */
+    protected $crpStatus;
+    /**
+     * @var string
+     */
     protected $contactEmail;
     /**
      * @var string
@@ -272,6 +276,24 @@ class Supplier extends AbstractModel
     public function setCrpUrl(?string $crpUrl): Supplier
     {
         $this->crpUrl = $crpUrl;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCrpStatus(): ?string
+    {
+        return $this->crpStatus;
+    }
+
+    /**
+     * @param string $crpStatus
+     * @return Supplier
+     */
+    public function setCrpStatus(?string $crpStatus): Supplier
+    {
+        $this->crpStatus = $crpStatus;
         return $this;
     }
 

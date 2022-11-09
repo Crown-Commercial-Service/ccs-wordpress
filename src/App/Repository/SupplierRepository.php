@@ -47,6 +47,10 @@ class SupplierRepository extends AbstractRepository
     {
         $originalDataBindings = $this->databaseBindings;
 
+        if ($object->getCrpStatus() != 'Accepted') {
+            $object->setCrpUrl(null);
+        }
+
         if (isset($this->databaseBindings['on_live_frameworks'])) {
             unset($this->databaseBindings['on_live_frameworks']);
         }

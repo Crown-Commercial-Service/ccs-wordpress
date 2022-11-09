@@ -147,7 +147,7 @@ class CustomFrameworkApi
         $uniqueSuppliers = [];
 
         // Set to true if at least one supplier on the framework has CRP url
-        $crpCompliant = false;
+        $crpCompliant = null;
 
         if ($lots !== false) {
             foreach ($lots as $lot) {

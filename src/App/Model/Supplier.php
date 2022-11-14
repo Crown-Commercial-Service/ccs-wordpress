@@ -51,6 +51,14 @@ class Supplier extends AbstractModel
     /**
      * @var string
      */
+    protected $crpUrl;
+    /**
+     * @var string
+     */
+    protected $crpStatus;
+    /**
+     * @var string
+     */
     protected $contactEmail;
     /**
      * @var string
@@ -256,6 +264,42 @@ class Supplier extends AbstractModel
     /**
      * @return string
      */
+    public function getCrpUrl(): ?string
+    {
+        return $this->crpUrl;
+    }
+
+    /**
+     * @param string $CRPurl
+     * @return Supplier
+     */
+    public function setCrpUrl(?string $crpUrl): Supplier
+    {
+        $this->crpUrl = $crpUrl;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCrpStatus(): ?string
+    {
+        return $this->crpStatus;
+    }
+
+    /**
+     * @param string $crpStatus
+     * @return Supplier
+     */
+    public function setCrpStatus(?string $crpStatus): Supplier
+    {
+        $this->crpStatus = $crpStatus;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
     public function getTradingName(): ?string
     {
         return $this->tradingName;
@@ -378,6 +422,7 @@ class Supplier extends AbstractModel
             'country'             => $this->getCountry(),
             'postcode'            => $this->getPostcode(),
             'website'             => $this->getWebsite(),
+            'crp_url'             => $this->getCrpUrl(),
             'trading_name'        => $this->getTradingName(),
 
         ];

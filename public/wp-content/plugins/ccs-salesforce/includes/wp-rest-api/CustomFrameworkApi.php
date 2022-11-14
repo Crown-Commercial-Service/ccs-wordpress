@@ -146,6 +146,9 @@ class CustomFrameworkApi
         $lotsData = [];
         $uniqueSuppliers = [];
 
+        // Set to true if at least one supplier on the framework has CRP url
+        $crpCompliant = null;
+
         if ($lots !== false) {
             foreach ($lots as $lot) {
                 $singleLotData = $lot->toArray();
@@ -158,6 +161,9 @@ class CustomFrameworkApi
                     foreach ($suppliers as $supplier) {
                         $suppliersData[] = $supplier->toArray();
                         $uniqueSuppliers[] = $supplier->getId();
+                        if ($supplier->getCrpUrl()) {
+                            $crpCompliant = true;
+                        }
                     }
                 }
 
@@ -178,6 +184,13 @@ class CustomFrameworkApi
         $frameworkData['lots'] = $sortedLotsData;
         $frameworkData['documents'] = $frameworkDocuments;
         $frameworkData['total_suppliers'] = $uniqueSuppliers;
+
+        if ($framework->getType() == 'G-cloud/DOS' or $framework->getType() == 'Dynamic purchasing system') {
+            $frameworkData['crp_compliant'] = null;
+        } else {
+            $frameworkData['crp_compliant'] = $crpCompliant;
+        }
+
 
         if ($framework->getType() == 'CAS framework'){
             $frameworkData['cas_updates']              = $this->getAndSortCasUpdates($framework->getWordpressId());
@@ -275,6 +288,7 @@ class CustomFrameworkApi
                     [
                         'supplier_name' => $supplier->getName(),
                         'supplier_id' => $supplier->getId(),
+                        'supplier_crp_url' => $supplier->getCrpUrl(),
                         'live_frameworks' => $liveFrameworks
                     ];
 

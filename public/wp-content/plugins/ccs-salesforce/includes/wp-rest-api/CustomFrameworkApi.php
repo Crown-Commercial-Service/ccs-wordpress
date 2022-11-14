@@ -288,6 +288,7 @@ class CustomFrameworkApi
                     [
                         'supplier_name' => $supplier->getName(),
                         'supplier_id' => $supplier->getId(),
+                        'supplier_crp_url' => $supplier->getCrpUrl(),
                         'live_frameworks' => $liveFrameworks
                     ];
 

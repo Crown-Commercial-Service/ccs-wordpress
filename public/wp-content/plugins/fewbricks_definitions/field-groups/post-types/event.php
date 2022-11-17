@@ -121,7 +121,6 @@ $postal_code = new acf_fields\text( 'Postal Code', 'postal_code', '202208251559b
 $address_region = new acf_fields\text( 'Region', 'address_region', '202208251600b', [
     'instructions' => '',
     'conditional_logic' => [ $in_person, $hybrid ],
-    'required' => 1,
 ] );
 
 $address_country = new acf_fields\text( 'Country', 'address_country', '202208251601b', [

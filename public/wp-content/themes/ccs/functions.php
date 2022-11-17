@@ -559,7 +559,7 @@ add_action('pre_get_posts', function ($query) {
 		}
     }
 	//checking if the request is from API and it is not called from getAllHiddenPosts()
-	if(! is_user_logged_in() && $query->query["post_type"] == "post" && $query->query["posts_per_page"] != 100){
+	if(! is_user_logged_in() && newsEndpoint($query->query["post_type"]) && $query->query["posts_per_page"] != 100){
 
 		$query = addingWhitepaperAndWebinarToTaxQuery($query);
 
@@ -569,6 +569,13 @@ add_action('pre_get_posts', function ($query) {
 		}
 	}
 });
+
+function newsEndpoint( $types){
+
+	if ($types == "post" or in_array_any(["whitepaper", "webinar"], (array) $types)){
+		return true;
+	}
+}
 
 function addingWhitepaperAndWebinarToTaxQuery($query){
 
@@ -648,6 +655,10 @@ function flatten_array(array $inputArray) {
     array_walk_recursive($inputArray, function($array) use (&$result) { $result[] = $array; });
     return $result;
 }
+
+function in_array_any($needles, $haystack) {
+	return !empty(array_intersect($needles, $haystack));
+ }
 
 add_filter('acf/validate_value/type=repeater', 'validateGlossary', 10, 4);
 

@@ -16,7 +16,7 @@ function ccs_register_my_taxonomies() {
 		'show_in_rest' => true
 	) );
 
-	register_taxonomy( 'products_services', array( 'post', 'event' ), array(
+	register_taxonomy( 'products_services', array( 'post', 'event', 'whitepaper', 'webinar' ), array(
 		'hierarchical' => true,
 		'label'        => 'Products and Services',
 		'capabilities' => [ 'assign_terms' => 'edit_posts' ],
@@ -32,7 +32,7 @@ function ccs_register_my_taxonomies() {
 
 
 
-	register_taxonomy( 'sectors', array( 'post', 'event', 'page' ), array(
+	register_taxonomy( 'sectors', array( 'post', 'event', 'page', 'whitepaper', 'webinar' ), array(
 		'hierarchical' => true,
 		'label'        => 'Sectors',
 		'capabilities' => [ 'assign_terms' => 'edit_posts' ],

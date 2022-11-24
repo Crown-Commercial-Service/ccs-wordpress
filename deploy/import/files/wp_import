@@ -1,4 +1,4 @@
 0 2 * * * ec2-user /home/ec2-user/wp_import_dms.sh import_1
 0 10 * * * ec2-user /home/ec2-user/wp_import_dms.sh import_2
 0 12 * * * ec2-user /home/ec2-user/wp_import_dms.sh import_3
-0 15 * * * ec2-user /home/ec2-user/wp_import_dms.sh import_4
+0 17 * * * ec2-user /home/ec2-user/wp_import_dms.sh import_4

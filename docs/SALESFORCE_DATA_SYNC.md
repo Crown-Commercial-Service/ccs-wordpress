@@ -97,7 +97,7 @@ We have now completed the import. A summary of the number of imported items, err
 
 ### Scheduled Cron Jobs
 
-A full (all) import is run 4 times a day via the [Linux cron](https://github.com/Crown-Commercial-Service/ccs-wordpress/blob/master/deploy/import/files/wp_import) at: 02:00, 10:00, 12:00, 15:00.
+A full (all) import is run 4 times a day via the [Linux cron](https://github.com/Crown-Commercial-Service/ccs-wordpress/blob/master/deploy/import/files/wp_import) at: **02:00, 10:00, 12:00, 17:00**.
 
 ### Single import
 
@@ -131,9 +131,9 @@ A full (all) import is run 4 times a day via the [Linux cron](https://github.com
 1. Updates all lot titles in WordPress to include the RM Number and the lot number
 1. Release lock (this happens automatically on fatal error)
 
-### Failure Notifications (Dead Man's Snitch)
+### Failure Notifications (Dead Man's Snitch and OpsGenie)
 
-In order to ensure staff get notified in the event of a failed import, each import task is piped through Dead Man's Snitch, which sends an alert if no completion hook is triggered when the script finishes.
+In order to ensure staff get notified in the event of a failed import, each import task is piped through Dead Man's Snitch and opsgenie, which sends an alert if no completion hook is triggered when the script finishes. We also get alert on opsgenie when there is a Salesforce connection error which is caused by incorrect API or Salesforce account getting locked up.
 
 ### Lock files
 

@@ -217,3 +217,14 @@ $option_page = acf_add_options_page(array(
     'update_button'		=> __('Save', 'acf'),
     'updated_message'	=> __("Glossary Saved", 'acf')
 ));
+
+$option_page = acf_add_options_page(array(
+    'page_title'    => __('CSC Message'),
+    'menu_title'    => __('CSC Message'),
+    'menu_slug'     => 'CSC_Message',
+    'capability'    => 'edit_pages',
+    'icon_url' => 'dashicons-calendar',
+    'redirect'      => false,
+    'update_button'		=> __('Save', 'acf'),
+    'updated_message'	=> __("CSC message updated", 'acf')
+));

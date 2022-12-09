@@ -699,3 +699,32 @@ function help_text_framework_type() {
     <?php
 }
 add_action( 'admin_head', 'help_text_framework_type' );
+
+function validateContentType() {
+	echo "<script type='text/javascript'>\n";
+	echo "jQuery('#publish').click(function() {
+		var cats = jQuery('[id^=\"taxonomy-content_type\"]')
+			.find('.selectit')
+			.find('input');
+
+		if(cats.length){
+			category_selected=false;
+			for (counter=0; counter<cats.length; counter++) {
+				if (cats.get(counter).checked==true){
+					category_selected=true;
+					break;
+				}
+			}
+
+			if(category_selected==false) {
+				alert('You have not selected any content type for this Downloadable Resource. Please select one.');
+				setTimeout(\"jQuery('#ajax-loading').css('visibility', 'hidden');\", 100);
+				jQuery('[id^=\"taxonomy-content_type\"]').find('.tabs-panel').css('background', '#F96');
+				setTimeout(\"jQuery('#publish').removeClass('button-primary-disabled');\", 100);
+				return false;
+			}
+		}
+	});";
+   echo "</script>\n";
+}
+add_action('edit_form_advanced', 'validateContentType');

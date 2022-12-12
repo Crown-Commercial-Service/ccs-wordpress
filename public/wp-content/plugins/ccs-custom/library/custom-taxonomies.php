@@ -16,7 +16,7 @@ function ccs_register_my_taxonomies() {
 		'show_in_rest' => true
 	) );
 
-	register_taxonomy( 'products_services', array( 'post', 'event', 'whitepaper', 'webinar' ), array(
+	register_taxonomy( 'products_services', array( 'post', 'event', 'whitepaper', 'webinar', 'digital_brochure', 'downloadable' ), array(
 		'hierarchical' => true,
 		'label'        => 'Products and Services',
 		'capabilities' => [ 'assign_terms' => 'edit_posts' ],
@@ -32,9 +32,16 @@ function ccs_register_my_taxonomies() {
 
 
 
-	register_taxonomy( 'sectors', array( 'post', 'event', 'page', 'whitepaper', 'webinar' ), array(
+	register_taxonomy( 'sectors', array( 'post', 'event', 'page', 'whitepaper', 'webinar', 'digital_brochure', 'downloadable' ), array(
 		'hierarchical' => true,
 		'label'        => 'Sectors',
+		'capabilities' => [ 'assign_terms' => 'edit_posts' ],
+		'show_in_rest' => true
+	) );
+
+	register_taxonomy( 'content_type', array( 'downloadable' ), array(
+		'hierarchical' => true,
+		'label'        => 'Content Type',
 		'capabilities' => [ 'assign_terms' => 'edit_posts' ],
 		'show_in_rest' => true
 	) );
@@ -43,10 +50,11 @@ function ccs_register_my_taxonomies() {
 }
 
 /**
- * Make the framework_type taxonomy required (don't allow users to select
- * "No Framework Type" as a choice)
+ * Make the framework_type and content_type taxonomy are required (don't allow users to select
+ * "No Framework Type" or "No Content Type" as a choice)
  */
 add_filter( "radio_buttons_for_taxonomies_no_term_framework_type", "__return_FALSE" );
+add_filter( "radio_buttons_for_taxonomies_no_term_content_type", "__return_FALSE" );
 
 
 /**

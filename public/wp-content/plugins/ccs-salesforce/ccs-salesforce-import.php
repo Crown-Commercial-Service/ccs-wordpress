@@ -47,6 +47,8 @@ require __DIR__ . '/includes/wp-rest-api/CustomRedirectionApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/GlossaryApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/cscMessageApi.php';
+
 /**
  * Begins execution of the plugin.
  *
@@ -72,6 +74,7 @@ function run_plugin()
     $homepageComponentsApi = new CustomHomepageComponentsApi();
     $redirectionApi = new CustomRedirectionApi();
     $glossaryApi = new GlossaryApi();
+    $cscMessageApi = new cscMessageApi();
 
 
     //Get all frameworks
@@ -193,6 +196,14 @@ function run_plugin()
         register_rest_route('ccs/v1', '/glossary/0', array(
             'methods' => 'GET',
             'callback' => [$glossaryApi, 'getListOfGlossary']
+        ));
+    
+    });
+
+    add_action('rest_api_init', function () use ($cscMessageApi) {
+        register_rest_route('ccs/v1', '/csc-message/0', array(
+            'methods' => 'GET',
+            'callback' => [$cscMessageApi, 'getMessage']
         ));
     
     });

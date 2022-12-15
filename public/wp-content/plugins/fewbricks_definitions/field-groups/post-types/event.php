@@ -27,6 +27,7 @@ $fg1->add_field( new acf_fields\image( 'Event image', 'image', '202002061421a', 
 
 $fg1->add_field( new acf_fields\wysiwyg( 'Description', 'description', '202002061420a', [
     'instructions' => 'If you add an image in this section it will show in the body copy only.',
+    'required' => 1
 ] ) );
 
 $fg1->add_field( new acf_fields\text( 'CTA Label', 'cta_label', '202002061456a', [

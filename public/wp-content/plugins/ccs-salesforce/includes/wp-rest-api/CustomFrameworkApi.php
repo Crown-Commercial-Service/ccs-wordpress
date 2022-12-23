@@ -185,12 +185,7 @@ class CustomFrameworkApi
         $frameworkData['documents'] = $frameworkDocuments;
         $frameworkData['total_suppliers'] = $uniqueSuppliers;
 
-        if ($framework->getType() == 'G-cloud/DOS' or $framework->getType() == 'Dynamic purchasing system') {
-            $frameworkData['crp_compliant'] = null;
-        } else {
-            $frameworkData['crp_compliant'] = $crpCompliant;
-        }
-
+        $frameworkData['crp_compliant'] = $framework->getTerms() != 'Standard' ? null : $crpCompliant;
 
         if ($framework->getType() == 'CAS framework'){
             $frameworkData['cas_updates']              = $this->getAndSortCasUpdates($framework->getWordpressId());

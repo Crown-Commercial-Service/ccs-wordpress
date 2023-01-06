@@ -493,6 +493,10 @@ function post_featured_image_and_category_type_json( $data ) {
 			$data->data['category_type'] = "Webinar";
 			$data->data['categories'] = array(000);
 			break;
+		case "digital_brochure":
+			$data->data['category_type'] = "Digital Brochure";
+			$data->data['categories'] = array(000);
+			break;
 	}
 
 	return $data;
@@ -536,6 +540,10 @@ function perpareWhitepaperAndWebinar( $args, $request ) {
 		$postTypeArray[] = 'webinar';
 	}
 
+	if( $request->get_param( 'digitalBrochure' ) == '1' ) {
+		$postTypeArray[] = 'digital_brochure';
+	}
+
 	$args["post_type"] = $postTypeArray;
 
 	return $args; 
@@ -572,7 +580,7 @@ add_action('pre_get_posts', function ($query) {
 
 function newsEndpoint( $types){
 
-	if ($types == "post" or in_array_any(["whitepaper", "webinar"], (array) $types)){
+	if ($types == "post" or in_array_any(["whitepaper", "webinar", "digital_brochure"], (array) $types)){
 		return true;
 	}
 }

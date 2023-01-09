@@ -493,6 +493,10 @@ function post_featured_image_and_category_type_json( $data ) {
 			$data->data['category_type'] = "Webinar";
 			$data->data['categories'] = array(000);
 			break;
+		case "digital_brochure":
+			$data->data['category_type'] = "Digital Brochure";
+			$data->data['categories'] = array(000);
+			break;
 	}
 
 	return $data;
@@ -536,6 +540,10 @@ function perpareWhitepaperAndWebinar( $args, $request ) {
 		$postTypeArray[] = 'webinar';
 	}
 
+	if( $request->get_param( 'digitalBrochure' ) == '1' ) {
+		$postTypeArray[] = 'digital_brochure';
+	}
+
 	$args["post_type"] = $postTypeArray;
 
 	return $args; 
@@ -572,7 +580,7 @@ add_action('pre_get_posts', function ($query) {
 
 function newsEndpoint( $types){
 
-	if ($types == "post" or in_array_any(["whitepaper", "webinar"], (array) $types)){
+	if ($types == "post" or in_array_any(["whitepaper", "webinar", "digital_brochure"], (array) $types)){
 		return true;
 	}
 }
@@ -700,31 +708,41 @@ function help_text_framework_type() {
 }
 add_action( 'admin_head', 'help_text_framework_type' );
 
-function validateContentType() {
-	echo "<script type='text/javascript'>\n";
-	echo "jQuery('#publish').click(function() {
-		var cats = jQuery('[id^=\"taxonomy-content_type\"]')
-			.find('.selectit')
-			.find('input');
+function validation() {
+	
+	$validations = array(
+		"taxonomy-content_type" => "You have not selected any content type for this Downloadable Resource",
+		"taxonomy-framework_type" => "You have not selected a framework type"
+	);
 
-		if(cats.length){
-			category_selected=false;
-			for (counter=0; counter<cats.length; counter++) {
-				if (cats.get(counter).checked==true){
-					category_selected=true;
-					break;
+	echo "<script type='text/javascript'>\n";
+
+	foreach($validations as $key=>$value) {
+		echo "jQuery('#publish').click(function() {
+			var cats = jQuery('[id^=\"{$key}\"]')
+				.find('.selectit')
+				.find('input');
+	
+			if(cats.length){
+				category_selected=false;
+				for (counter=0; counter<cats.length; counter++) {
+					if (cats.get(counter).checked==true){
+						category_selected=true;
+						break;
+					}
+				}
+	
+				if(category_selected==false) {
+					alert('{$value}. Please select one.');
+					setTimeout(\"jQuery('#ajax-loading').css('visibility', 'hidden');\", 100);
+					jQuery('[id^=\"{$key}\"]').find('.tabs-panel').css('background', '#F96');
+					setTimeout(\"jQuery('#publish').removeClass('button-primary-disabled');\", 100);
+					return false;
 				}
 			}
-
-			if(category_selected==false) {
-				alert('You have not selected any content type for this Downloadable Resource. Please select one.');
-				setTimeout(\"jQuery('#ajax-loading').css('visibility', 'hidden');\", 100);
-				jQuery('[id^=\"taxonomy-content_type\"]').find('.tabs-panel').css('background', '#F96');
-				setTimeout(\"jQuery('#publish').removeClass('button-primary-disabled');\", 100);
-				return false;
-			}
-		}
-	});";
+		});";
+	}
    echo "</script>\n";
 }
-add_action('edit_form_advanced', 'validateContentType');
+
+add_action('edit_form_advanced', 'validation');

@@ -497,6 +497,14 @@ function post_featured_image_and_category_type_json( $data ) {
 			$data->data['category_type'] = "Digital Brochure";
 			$data->data['categories'] = array(000);
 			break;
+		case "downloadable":
+			$contentTerm = get_the_terms( $data->data["id"], 'content_type' )[0];
+
+			$data->data['category_type'] = "Downloadable";
+			$data->data['categories'] = array(000);
+			$data->data['content_type_id'] = $contentTerm->term_id;
+			$data->data['content_type_name'] = $contentTerm->name;
+			break;
 	}
 
 	return $data;
@@ -544,6 +552,10 @@ function perpareWhitepaperAndWebinar( $args, $request ) {
 		$postTypeArray[] = 'digital_brochure';
 	}
 
+	if( !empty($request->get_param( 'content_type' )) ) {
+		$postTypeArray[] = 'downloadable';
+	}
+
 	$args["post_type"] = $postTypeArray;
 
 	return $args; 
@@ -569,7 +581,9 @@ add_action('pre_get_posts', function ($query) {
 	//checking if the request is from API and it is not called from getAllHiddenPosts()
 	if(! is_user_logged_in() && newsEndpoint($query->query["post_type"]) && $query->query["posts_per_page"] != 100){
 
-		// $query = addingWhitepaperAndWebinarToTaxQuery($query);
+		$contentTypeParams = isset($_GET['content_type']) ? array_map('intval', explode(",", htmlspecialchars($_GET["content_type"]))) : null;
+
+		$query = addingDownloadableToTaxQuery($query, $contentTypeParams);
 
 		if ($hideHiddenPosts) {
 			$hiddenPostsID = getAllHiddenPosts();
@@ -580,25 +594,20 @@ add_action('pre_get_posts', function ($query) {
 
 function newsEndpoint( $types){
 
-	if ($types == "post" or in_array_any(["whitepaper", "webinar", "digital_brochure"], (array) $types)){
+	if ($types == "post" or in_array_any(["whitepaper", "webinar", "digital_brochure", "downloadable"], (array) $types)){
 		return true;
 	}
 }
 
-function addingWhitepaperAndWebinarToTaxQuery($query){
+function addingDownloadableToTaxQuery($query, $contentTypeParams){
 
-	if (!empty($query->tax_query->queries)){
+	if (!empty($query->tax_query->queries && $contentTypeParams != null)){
 		$orginal = $query->tax_query->queries;
-		$orginal['relation'] = "AND";
 
 		$taxquery = array(
 			'relation' => 'OR',
 			$orginal,
-			array(
-				'taxonomy' => 'category',
-				'field' => 'term_id',
-				'operator' => 'NOT EXISTS'
-			),
+			perpareContentTypeQuery($orginal),
 		);
 
 		$query->set('tax_query', $taxquery );
@@ -606,6 +615,32 @@ function addingWhitepaperAndWebinarToTaxQuery($query){
 
 	return $query;
 }
+
+// this search for content that met the orginal condidition as well as checking the content that doenst contain content_type (post, whitepaper, webniar and digital brochure)
+function perpareContentTypeQuery($orginal) {
+	$taxquery = array();
+	$taxquery = $orginal;
+
+	foreach ($taxquery as $key=>$eachQuery){
+		if(is_array($eachQuery)){
+			if ( $eachQuery["taxonomy"] == "content_type"){
+				unset($taxquery[$key]);
+			}
+		}
+	};
+
+	$taxquery[] = array(
+		'relation' => 'AND',
+		array(
+			'taxonomy' 	=> 'content_type',
+			'field' 	=> 'term_id',
+			'operator' 	=> 'NOT EXISTS'
+		),
+	);
+
+	return $taxquery;
+}
+
 
 add_filter( 'wpseo_sitemap_exclude_author', function ($users) {
 	return false;

@@ -746,3 +746,11 @@ function validation() {
 }
 
 add_action('edit_form_advanced', 'validation');
+
+add_filter('tiny_mce_before_init', 'customize_tinymce');
+// strips out class attribute when pasting in text to wysywyg
+function customize_tinymce($in)
+{
+	$in['paste_preprocess'] = "function(pl,o){ o.content = o.content.replace(/class=\"(.)+\"/g,'');}";
+	return $in;
+}

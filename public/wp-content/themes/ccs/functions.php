@@ -552,7 +552,7 @@ function perpareWhitepaperAndWebinar( $args, $request ) {
 		$postTypeArray[] = 'digital_brochure';
 	}
 
-	if( !empty($request->get_param( 'content_type' )) ) {
+	if( !empty($request->get_param( 'digitalDownload' )) ) {
 		$postTypeArray[] = 'downloadable';
 	}
 
@@ -581,7 +581,7 @@ add_action('pre_get_posts', function ($query) {
 	//checking if the request is from API and it is not called from getAllHiddenPosts()
 	if(! is_user_logged_in() && newsEndpoint($query->query["post_type"]) && $query->query["posts_per_page"] != 100){
 
-		$contentTypeParams = isset($_GET['content_type']) ? array_map('intval', explode(",", htmlspecialchars($_GET["content_type"]))) : null;
+		$contentTypeParams = isset($_GET['digitalDownload']) ? array_map('intval', explode(",", htmlspecialchars($_GET["digitalDownload"]))) : null;
 
 		$query = addingDownloadableToTaxQuery($query, $contentTypeParams);
 
@@ -601,13 +601,19 @@ function newsEndpoint( $types){
 
 function addingDownloadableToTaxQuery($query, $contentTypeParams){
 
-	if (!empty($query->tax_query->queries && $contentTypeParams != null)){
+	if (!empty($query->tax_query->queries || $contentTypeParams != null)){
 		$orginal = $query->tax_query->queries;
 
 		$taxquery = array(
 			'relation' => 'OR',
 			$orginal,
 			perpareContentTypeQuery($orginal),
+			array(
+				'taxonomy' => 'content_type',
+				'field' => 'term_id',
+				'terms' => $contentTypeParams,
+				'operator' => 'IN',
+			),
 		);
 
 		$query->set('tax_query', $taxquery );
@@ -623,7 +629,7 @@ function perpareContentTypeQuery($orginal) {
 
 	foreach ($taxquery as $key=>$eachQuery){
 		if(is_array($eachQuery)){
-			if ( $eachQuery["taxonomy"] == "content_type"){
+			if ( $eachQuery["taxonomy"] == "digitalDownload"){
 				unset($taxquery[$key]);
 			}
 		}
@@ -640,7 +646,6 @@ function perpareContentTypeQuery($orginal) {
 
 	return $taxquery;
 }
-
 
 add_filter( 'wpseo_sitemap_exclude_author', function ($users) {
 	return false;

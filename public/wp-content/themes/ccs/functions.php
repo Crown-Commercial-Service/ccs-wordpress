@@ -606,14 +606,8 @@ function addingDownloadableToTaxQuery($query, $contentTypeParams){
 
 		$taxquery = array(
 			'relation' => 'OR',
-			$orginal,
 			perpareContentTypeQuery($orginal),
-			array(
-				'taxonomy' => 'content_type',
-				'field' => 'term_id',
-				'terms' => $contentTypeParams,
-				'operator' => 'IN',
-			),
+			perpareDownloadQuery($orginal, $contentTypeParams)
 		);
 
 		$query->set('tax_query', $taxquery );
@@ -624,7 +618,7 @@ function addingDownloadableToTaxQuery($query, $contentTypeParams){
 
 // this search for content that met the orginal condidition as well as checking the content that doenst contain content_type (post, whitepaper, webniar and digital brochure)
 function perpareContentTypeQuery($orginal) {
-	$taxquery = array();
+
 	$taxquery = $orginal;
 
 	foreach ($taxquery as $key=>$eachQuery){
@@ -634,17 +628,45 @@ function perpareContentTypeQuery($orginal) {
 			}
 		}
 	};
-
+	$taxquery['relation'] = 'AND';
 	$taxquery[] = array(
-		'relation' => 'AND',
-		array(
 			'taxonomy' 	=> 'content_type',
 			'field' 	=> 'term_id',
-			'operator' 	=> 'NOT EXISTS'
-		),
-	);
+			'operator' 	=> 'NOT EXISTS');
 
 	return $taxquery;
+}
+
+function perpareDownloadQuery($orginal, $contentTypeParams){
+
+	$taxquery = $orginal;
+
+	foreach ($taxquery as $key=>$eachQuery){
+		if(is_array($eachQuery)){
+			if ( $eachQuery["taxonomy"] == "category"){
+				unset($taxquery[$key]);
+			}
+		}
+	};
+	
+	$searchForDownloadable = array(
+		'taxonomy' 	=> 'content_type',
+		'field' 	=> 'term_id',
+		'terms' 	=> $contentTypeParams,
+		'operator'	=> 'IN',
+	);
+
+	$result = array();
+	$result[] = $searchForDownloadable;
+	$result['relation'] = 'AND';
+
+	if (!empty($taxquery)){
+
+		foreach ($taxquery as $eachQuery){
+			$result[] =  $eachQuery;
+		}
+	}
+	return $result;
 }
 
 add_filter( 'wpseo_sitemap_exclude_author', function ($users) {

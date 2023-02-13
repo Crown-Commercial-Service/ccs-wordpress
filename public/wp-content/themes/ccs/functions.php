@@ -497,6 +497,14 @@ function post_featured_image_and_category_type_json( $data ) {
 			$data->data['category_type'] = "Digital Brochure";
 			$data->data['categories'] = array(000);
 			break;
+		case "downloadable":
+			$contentTerm = get_the_terms( $data->data["id"], 'content_type' )[0];
+
+			$data->data['category_type'] = "Downloadable";
+			$data->data['categories'] = array(000);
+			$data->data['content_type_id'] = $contentTerm->term_id;
+			$data->data['content_type_name'] = $contentTerm->name;
+			break;
 	}
 
 	return $data;
@@ -544,6 +552,10 @@ function perpareWhitepaperAndWebinar( $args, $request ) {
 		$postTypeArray[] = 'digital_brochure';
 	}
 
+	if( !empty($request->get_param( 'digitalDownload' )) ) {
+		$postTypeArray[] = 'downloadable';
+	}
+
 	$args["post_type"] = $postTypeArray;
 
 	return $args; 
@@ -569,7 +581,9 @@ add_action('pre_get_posts', function ($query) {
 	//checking if the request is from API and it is not called from getAllHiddenPosts()
 	if(! is_user_logged_in() && newsEndpoint($query->query["post_type"]) && $query->query["posts_per_page"] != 100){
 
-		// $query = addingWhitepaperAndWebinarToTaxQuery($query);
+		$contentTypeParams = isset($_GET['digitalDownload']) ? array_map('intval', explode(",", htmlspecialchars($_GET["digitalDownload"]))) : null;
+
+		$query = addingDownloadableToTaxQuery($query, $contentTypeParams);
 
 		if ($hideHiddenPosts) {
 			$hiddenPostsID = getAllHiddenPosts();
@@ -580,31 +594,79 @@ add_action('pre_get_posts', function ($query) {
 
 function newsEndpoint( $types){
 
-	if ($types == "post" or in_array_any(["whitepaper", "webinar", "digital_brochure"], (array) $types)){
+	if ($types == "post" or in_array_any(["whitepaper", "webinar", "digital_brochure", "downloadable"], (array) $types)){
 		return true;
 	}
 }
 
-function addingWhitepaperAndWebinarToTaxQuery($query){
+function addingDownloadableToTaxQuery($query, $contentTypeParams){
 
-	if (!empty($query->tax_query->queries)){
+	if (!empty($query->tax_query->queries || $contentTypeParams != null)){
 		$orginal = $query->tax_query->queries;
-		$orginal['relation'] = "AND";
 
 		$taxquery = array(
 			'relation' => 'OR',
-			$orginal,
-			array(
-				'taxonomy' => 'category',
-				'field' => 'term_id',
-				'operator' => 'NOT EXISTS'
-			),
+			perpareContentTypeQuery($orginal),
+			perpareDownloadQuery($orginal, $contentTypeParams)
 		);
 
 		$query->set('tax_query', $taxquery );
 	}
 
 	return $query;
+}
+
+// this search for content that met the orginal condidition as well as checking the content that doenst contain content_type (post, whitepaper, webniar and digital brochure)
+function perpareContentTypeQuery($orginal) {
+
+	$taxquery = $orginal;
+
+	foreach ($taxquery as $key=>$eachQuery){
+		if(is_array($eachQuery)){
+			if ( $eachQuery["taxonomy"] == "digitalDownload"){
+				unset($taxquery[$key]);
+			}
+		}
+	};
+	$taxquery['relation'] = 'AND';
+	$taxquery[] = array(
+			'taxonomy' 	=> 'content_type',
+			'field' 	=> 'term_id',
+			'operator' 	=> 'NOT EXISTS');
+
+	return $taxquery;
+}
+
+function perpareDownloadQuery($orginal, $contentTypeParams){
+
+	$taxquery = $orginal;
+
+	foreach ($taxquery as $key=>$eachQuery){
+		if(is_array($eachQuery)){
+			if ( $eachQuery["taxonomy"] == "category"){
+				unset($taxquery[$key]);
+			}
+		}
+	};
+	
+	$searchForDownloadable = array(
+		'taxonomy' 	=> 'content_type',
+		'field' 	=> 'term_id',
+		'terms' 	=> $contentTypeParams,
+		'operator'	=> 'IN',
+	);
+
+	$result = array();
+	$result[] = $searchForDownloadable;
+	$result['relation'] = 'AND';
+
+	if (!empty($taxquery)){
+
+		foreach ($taxquery as $eachQuery){
+			$result[] =  $eachQuery;
+		}
+	}
+	return $result;
 }
 
 add_filter( 'wpseo_sitemap_exclude_author', function ($users) {
@@ -746,3 +808,11 @@ function validation() {
 }
 
 add_action('edit_form_advanced', 'validation');
+
+add_filter('tiny_mce_before_init', 'customize_tinymce');
+// strips out class attribute when pasting in text to wysywyg
+function customize_tinymce($in)
+{
+	$in['paste_preprocess'] = "function(pl,o){ o.content = o.content.replace(/class=\"(.)+\"/g,'');}";
+	return $in;
+}

@@ -35,6 +35,10 @@ class component_feature_news extends project_brick
             'instructions' => 'Select a type of news to filter the results by. Defaults to all types of news (so if you select nothing, all types of news will be returned).'
         ]));
 
+        $this->add_field(new acf_fields\text('View More Text', 'view_more_text', '202305031558a', [
+            'instructions' => 'Leave it blank to use defult text: Browse all XXX news articles'
+        ]));
+
         $this->add_field(new acf_fields\taxonomy('Products and Services', 'products_and_services', '202002101433a', [
             'taxonomy' => 'products_services',
             'multiple' => 1,

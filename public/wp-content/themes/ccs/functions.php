@@ -816,3 +816,22 @@ function customize_tinymce($in)
 	$in['paste_preprocess'] = "function(pl,o){ o.content = o.content.replace(/class=\"(.)+\"/g,'');}";
 	return $in;
 }
+
+function add_sectors_to_acf( $data, $post, $request ) {
+
+    if ( $post->post_type === 'event' || $post->post_type === 'post' ) {
+        $terms = get_the_terms( $post->ID, 'sectors' );
+
+        $term_names = array();
+        foreach ( $terms as $term ) {
+            $term_names[] = $term->name;
+        }
+
+        $data->data['acf']['sectors'] = $term_names;
+    }
+
+    return $data;
+}
+
+add_filter( 'rest_prepare_event', 'add_sectors_to_acf', 10, 3 );
+add_filter( 'rest_prepare_post', 'add_sectors_to_acf', 10, 3 );

@@ -823,11 +823,13 @@ function add_sectors_to_acf( $data, $post, $request ) {
         $terms = get_the_terms( $post->ID, 'sectors' );
 
         $term_names = array();
-        foreach ( $terms as $term ) {
-            $term_names[] = $term->name;
-        }
+		if($terms){
+			foreach ( $terms as $term ) {
+				$term_names[] = $term->name;
+			}
 
-        $data->data['acf']['sectors'] = $term_names;
+			$data->data['acf']['sectors'] = $term_names;
+		}
     }
 
     return $data;

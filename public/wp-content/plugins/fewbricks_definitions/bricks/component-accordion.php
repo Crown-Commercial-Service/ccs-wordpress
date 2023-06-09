@@ -27,7 +27,7 @@ class component_accordion extends project_brick {
             'maxlength' => 65
         ] ));
 
-        $this->add_field(new acf_fields\true_false('Open all by defult', 'open_all_by_defult', '202306081530a',[
+        $this->add_field(new acf_fields\true_false('Open all by default', 'open_all_by_default', '202306081530a',[
             'instructions' => 'Check if you want the accordion to be open when user landed on the page',
             'default_value' => '0',
         ]));

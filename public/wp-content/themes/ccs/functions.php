@@ -623,9 +623,6 @@ function perpareContentTypeQuery($orginal) {
 
 	foreach ($taxquery as $key=>$eachQuery){
 		if(is_array($eachQuery)){
-
-			$dada= isset($eachQuery["taxonomy"]);
-
 			if ( isset($eachQuery["taxonomy"]) && $eachQuery["taxonomy"] == "digitalDownload"){
 				unset($taxquery[$key]);
 			}

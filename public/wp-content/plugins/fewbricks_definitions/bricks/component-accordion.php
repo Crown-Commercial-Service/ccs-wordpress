@@ -26,6 +26,12 @@ class component_accordion extends project_brick {
             'instructions' => 'A heading to display above all of the accordion items. Ideally keep this heading under 65 characters (including spaces).',
             'maxlength' => 65
         ] ));
+
+        $this->add_field(new acf_fields\true_false('Open all by default', 'open_all_by_default', '202306081530a',[
+            'instructions' => 'Check if you want the accordion to be open when user landed on the page',
+            'default_value' => '0',
+        ]));
+
         $this->add_field( new acf_fields\wysiwyg( 'Introduction', 'introduction', '202001211615b', [
             'instructions' => 'Brief introductory text to dislay above '
         ] ));

@@ -623,7 +623,7 @@ function perpareContentTypeQuery($orginal) {
 
 	foreach ($taxquery as $key=>$eachQuery){
 		if(is_array($eachQuery)){
-			if ( $eachQuery["taxonomy"] == "digitalDownload"){
+			if ( isset($eachQuery["taxonomy"]) && $eachQuery["taxonomy"] == "digitalDownload"){
 				unset($taxquery[$key]);
 			}
 		}
@@ -643,7 +643,7 @@ function perpareDownloadQuery($orginal, $contentTypeParams){
 
 	foreach ($taxquery as $key=>$eachQuery){
 		if(is_array($eachQuery)){
-			if ( $eachQuery["taxonomy"] == "category"){
+			if ( isset($eachQuery["taxonomy"]) && $eachQuery["taxonomy"] == "category"){
 				unset($taxquery[$key]);
 			}
 		}

@@ -477,33 +477,33 @@ function post_featured_image_and_category_type_json( $data ) {
 	$featured_image_id = $data->data['featured_media']; 
 	$featured_image_url = wp_get_attachment_image_src( $featured_image_id, 'news-size-m' );
 	
-	$data->data['featured_image_url'] = $featured_image_url ? $featured_image_url[0] : false;
-	$data->data['alt_text'] = get_post_meta($featured_image_id, '_wp_attachment_image_alt', true);
+	$data->data['acf']['featured_image_url'] = $featured_image_url ? $featured_image_url[0] : false;
+	$data->data['acf']['alt_text'] = get_post_meta($featured_image_id, '_wp_attachment_image_alt', true);
 
 	$postType = $data->data["type"];
 	switch ($postType) {
 		case "post" :
-			$data->data['category_type'] = get_the_category($data->data['id'])[0]->name;
+			$data->data['acf']['category_type'] = get_the_category($data->data['id'])[0]->name;
 			break;
 		case "whitepaper":
-			$data->data['category_type'] = "Whitepaper";
-			$data->data['categories'] = array(000);
+			$data->data['acf']['category_type'] = "Whitepaper";
+			$data->data['acf']['categories'] = array(000);
 			break;
 		case "webinar":
-			$data->data['category_type'] = "Webinar";
-			$data->data['categories'] = array(000);
+			$data->data['acf']['category_type'] = "Webinar";
+			$data->data['acf']['categories'] = array(000);
 			break;
 		case "digital_brochure":
-			$data->data['category_type'] = "Digital Brochure";
-			$data->data['categories'] = array(000);
+			$data->data['acf']['category_type'] = "Digital Brochure";
+			$data->data['acf']['categories'] = array(000);
 			break;
 		case "downloadable":
 			$contentTerm = get_the_terms( $data->data["id"], 'content_type' )[0];
 
-			$data->data['category_type'] = "Downloadable";
-			$data->data['categories'] = array(000);
-			$data->data['content_type_id'] = $contentTerm->term_id;
-			$data->data['content_type_name'] = $contentTerm->name;
+			$data->data['acf']['category_type'] = "Downloadable";
+			$data->data['acf']['categories'] = array(000);
+			$data->data['acf']['content_type_id'] = $contentTerm->term_id;
+			$data->data['acf']['content_type_name'] = $contentTerm->name;
 			break;
 	}
 

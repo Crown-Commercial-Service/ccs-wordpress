@@ -837,3 +837,9 @@ function add_sectors_to_acf( $data, $post, $request ) {
 
 add_filter( 'rest_prepare_event', 'add_sectors_to_acf', 10, 3 );
 add_filter( 'rest_prepare_post', 'add_sectors_to_acf', 10, 3 );
+
+function keep_me_logged_in_for_24_hours( $expirein ) {
+	return 86400; 
+}
+
+add_filter( 'auth_cookie_expiration', 'keep_me_logged_in_for_24_hours' );

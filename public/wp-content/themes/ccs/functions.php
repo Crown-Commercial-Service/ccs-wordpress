@@ -837,3 +837,21 @@ function add_sectors_to_acf( $data, $post, $request ) {
 
 add_filter( 'rest_prepare_event', 'add_sectors_to_acf', 10, 3 );
 add_filter( 'rest_prepare_post', 'add_sectors_to_acf', 10, 3 );
+
+function keep_me_logged_in_for_24_hours( $expirein ) {
+	return 86400; 
+}
+
+add_filter( 'auth_cookie_expiration', 'keep_me_logged_in_for_24_hours' );
+
+
+function sort_by_modified($args, $request)
+{
+	$route = $request->get_route();
+
+	if ($route == '/wp/v2/posts') {
+		$args['orderby'] = 'modified';
+	}
+	return $args;
+}
+add_filter('rest_post_query', 'sort_by_modified', 10, 2);

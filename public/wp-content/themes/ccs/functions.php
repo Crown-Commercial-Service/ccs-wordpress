@@ -843,3 +843,15 @@ function keep_me_logged_in_for_24_hours( $expirein ) {
 }
 
 add_filter( 'auth_cookie_expiration', 'keep_me_logged_in_for_24_hours' );
+
+
+function sort_by_modified($args, $request)
+{
+	$route = $request->get_route();
+
+	if ($route == '/wp/v2/posts') {
+		$args['orderby'] = 'modified';
+	}
+	return $args;
+}
+add_filter('rest_post_query', 'sort_by_modified', 10, 2);

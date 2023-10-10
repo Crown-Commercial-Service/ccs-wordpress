@@ -27,7 +27,7 @@ $dotenv = new Dotenv(true);
 $dotenv->load($rootDir . '.env');
 
 // whether or not to use S3 storage for WordPress media
-define( 'AS3CF_AWS_USE_EC2_IAM_ROLE', getenv('AS3CF_ENABLED') );
+define('S3_UPLOADS_USE_INSTANCE_PROFILE', getenv('AS3CF_ENABLED') );
 
 // ** MySQL settings ** //
 /** The name of the database for WordPress */

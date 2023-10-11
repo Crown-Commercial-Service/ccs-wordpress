@@ -27,6 +27,8 @@ $dotenv = new Dotenv(true);
 $dotenv->load($rootDir . '.env');
 
 // whether or not to use S3 storage for WordPress media
+define('S3_UPLOADS_BUCKET', getenv('S3_UPLOADS_BUCKET'));
+define('S3_UPLOADS_REGION', getenv('S3_UPLOADS_REGION'));
 define('S3_UPLOADS_USE_INSTANCE_PROFILE', getenv('AS3CF_ENABLED') );
 
 // ** MySQL settings ** //

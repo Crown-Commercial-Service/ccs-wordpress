@@ -448,7 +448,8 @@ class CustomFrameworkApi
                 $attachment = acf_get_attachment($mediaId);
                 $frameworkDocuments[] = [
                     'title' => $attachment["title"],
-                    'url' => $attachment["url"]
+                    'url' => $attachment["url"],
+                    'file_size' => $attachment["filesize"]
                 ];
 
             endwhile;
@@ -496,6 +497,7 @@ class CustomFrameworkApi
                         $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'If you use this schedule, you will need to enter details in this document';
                         break;
                 }
+                $documentsArray[$key][$typeOfSchedules . '_file_size'] = $attachment["filesize"];
             }
         }
 

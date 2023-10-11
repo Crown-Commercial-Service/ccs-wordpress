@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0ad3bec5f0f66d5aaf1f6303e553fd38",
+    "content-hash": "5870bcd25f44dd677f93b79f8139118e",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -829,12 +829,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Nayjest/StrCaseConverter.git",
-                "reference": "6a96de30059543cab70f5ce1d54e65aa5991c95d"
+                "reference": "ff4fca579c0a6b63852d052e129bc3657843b051"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Nayjest/StrCaseConverter/zipball/6a96de30059543cab70f5ce1d54e65aa5991c95d",
-                "reference": "6a96de30059543cab70f5ce1d54e65aa5991c95d",
+                "url": "https://api.github.com/repos/Nayjest/StrCaseConverter/zipball/ff4fca579c0a6b63852d052e129bc3657843b051",
+                "reference": "ff4fca579c0a6b63852d052e129bc3657843b051",
                 "shasum": ""
             },
             "require": {
@@ -865,7 +865,7 @@
                 "issues": "https://github.com/Nayjest/StrCaseConverter/issues",
                 "source": "https://github.com/Nayjest/StrCaseConverter/tree/master"
             },
-            "time": "2018-06-30T14:01:29+00:00"
+            "time": "2023-10-11T13:45:49+00:00"
         },
         {
             "name": "nyholm/dsn",
@@ -3154,7 +3154,9 @@
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "php": "^7.4.0"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"
 }

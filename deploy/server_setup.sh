@@ -163,4 +163,9 @@ echo "> Installing import-specific wp_import cron script..."
     sudo touch "$FIRST_RUN_PATH"
 fi
 
+sudo amazon-linux-extras disable php7.3
+sudo amazon-linux-extras enable php7.4
+sudo yum clean metadata
+sudo yum -y install php-cli php-pdo php-fpm php-json php-mysqlnd
+
 echo "Codedeploy server_setup.sh complete."

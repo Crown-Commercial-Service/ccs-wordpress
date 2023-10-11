@@ -30,6 +30,7 @@ $dotenv->load($rootDir . '.env');
 define('S3_UPLOADS_BUCKET', getenv('S3_UPLOADS_BUCKET'));
 define('S3_UPLOADS_REGION', getenv('S3_UPLOADS_REGION'));
 define('S3_UPLOADS_USE_INSTANCE_PROFILE', getenv('AS3CF_ENABLED') );
+define('S3_UPLOADS_BUCKET_URL', getenv('S3_UPLOADS_BUCKET_URL'));
 
 // ** MySQL settings ** //
 /** The name of the database for WordPress */

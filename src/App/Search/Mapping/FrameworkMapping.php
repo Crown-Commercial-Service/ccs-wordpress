@@ -4,7 +4,6 @@ namespace App\Search\Mapping;
 
 class FrameworkMapping extends AbstractMapping
 {
-
     /**
      * The mapping properties
      *

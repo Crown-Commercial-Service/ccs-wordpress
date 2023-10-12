@@ -10,7 +10,6 @@ use Monolog\Handler\StreamHandler;
  */
 class AppLogger extends \Monolog\Logger
 {
-
     /**
      * AppLogger constructor.
      * @param array $handlers

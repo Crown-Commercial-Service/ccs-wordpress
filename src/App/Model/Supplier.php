@@ -80,7 +80,7 @@ class Supplier extends AbstractModel
      * @var bool
      */
     protected $haveGuarantor = false;
-    
+
     /**
      * @return string
      */

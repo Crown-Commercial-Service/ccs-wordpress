@@ -6,7 +6,6 @@ use App\Model\LotSupplier;
 
 class LotSupplierRepository extends AbstractRepository
 {
-
     protected $databaseBindings = [
       'lot_id'          => ':lot_id',
       'supplier_id'     => ':supplier_id',

@@ -6,7 +6,6 @@ use App\Utils\YamlLoader;
 
 trait SalesforceMappingTrait
 {
-
     /**
      * An array of mappings for model properties to salesforce properties
      * Key is model

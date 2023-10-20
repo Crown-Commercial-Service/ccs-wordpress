@@ -6,7 +6,6 @@ use Elastica\Mapping;
 
 abstract class AbstractMapping extends Mapping
 {
-
     /**
      * The mapping properties
      *

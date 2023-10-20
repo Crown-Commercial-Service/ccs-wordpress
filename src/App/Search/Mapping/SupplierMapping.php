@@ -4,7 +4,6 @@ namespace App\Search\Mapping;
 
 class SupplierMapping extends AbstractMapping
 {
-
     /**
      * The mapping properties
      *

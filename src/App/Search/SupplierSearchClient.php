@@ -21,7 +21,6 @@ use Elastica\Search;
  */
 class SupplierSearchClient extends AbstractSearchClient implements SearchClientInterface
 {
-
     /**
      * The name of the index
      */

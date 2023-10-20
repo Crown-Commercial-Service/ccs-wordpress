@@ -10,7 +10,9 @@
         "symfony/lock": "^5.0@dev"
     },
     "autoload": {
-        "psr-4": {"App\\": "src/App/"}
+        "psr-4": {
+            "App\\": "src/App/"
+        }
     },
     "authors": [
         {
@@ -22,6 +24,6 @@
     "require-dev": {
         "roave/security-advisories": "dev-master",
         "squizlabs/php_codesniffer": "3.*",
-        "overtrue/phplint": "3.0.0"
+        "overtrue/phplint": "dev-master"
     }
 }

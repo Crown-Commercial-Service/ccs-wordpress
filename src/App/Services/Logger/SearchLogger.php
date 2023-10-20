@@ -10,7 +10,6 @@ use Monolog\Handler\StreamHandler;
  */
 class SearchLogger extends \Monolog\Logger
 {
-
     /**
      * AppLogger constructor.
      * @param array $handlers

@@ -8,7 +8,6 @@ use PDOException;
 
 class FrameworkRepository extends AbstractRepository
 {
-
     protected $databaseBindings = [
       'rm_number'               => ':rm_number',
       'wordpress_id'            => ':wordpress_id',
@@ -108,7 +107,7 @@ class FrameworkRepository extends AbstractRepository
     public function update($searchField, $searchValue, Framework $framework)
     {
         $originalDataBindings = $this->databaseBindings;
-        
+
         // Remove the field which we're using for the update command
         if (isset($this->databaseBindings[$searchField])) {
             unset($this->databaseBindings[$searchField]);

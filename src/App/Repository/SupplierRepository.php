@@ -6,7 +6,6 @@ use App\Model\Supplier;
 
 class SupplierRepository extends AbstractRepository
 {
-
     protected $databaseBindings = [
       'salesforce_id'       => ':salesforce_id',
       'duns_number'         => ':duns_number',

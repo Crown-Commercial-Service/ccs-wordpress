@@ -7,7 +7,6 @@ use PDOException;
 
 abstract class AbstractRepository implements RepositoryInterface
 {
-
     /**
      * Database bindings array
      *

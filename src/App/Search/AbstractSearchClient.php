@@ -14,7 +14,6 @@ use Psr\Log\LoggerInterface;
 
 class AbstractSearchClient extends \Elastica\Client
 {
-
     /**
      * @var null
      */
@@ -113,7 +112,7 @@ class AbstractSearchClient extends \Elastica\Client
     {
         if (!$this->indexExists) {
             $response = $this->request($this->getQualifiedIndexName(), Request::HEAD);
-            
+
             if ($response->getStatus() > 299) {
                 $this->createIndex();
             }
@@ -184,7 +183,7 @@ class AbstractSearchClient extends \Elastica\Client
      */
     protected function addSimpleSearchFilter(Query\BoolQuery $boolQuery, $filter): Query\BoolQuery
     {
-        
+
         if (is_array($filter['value'])) {
             $newBoolQuery = new Query\BoolQuery();
             foreach ($filter['value'] as $value) {

@@ -10,7 +10,9 @@
         "symfony/lock": "^5.0@dev"
     },
     "autoload": {
-        "psr-4": {"App\\": "src/App/"}
+        "psr-4": {
+            "App\\": "src/App/"
+        }
     },
     "authors": [
         {

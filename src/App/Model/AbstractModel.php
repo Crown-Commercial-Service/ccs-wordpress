@@ -6,7 +6,6 @@ use Nayjest\StrCaseConverter\Str;
 
 abstract class AbstractModel implements ModelInterface
 {
-
     /**
      * Model constructor.
      * @param array|null $data

@@ -16,7 +16,6 @@ use Elastica\Search;
  */
 class FrameworkSearchClient extends AbstractSearchClient implements SearchClientInterface
 {
-
     /**
      * The name of the index
      */

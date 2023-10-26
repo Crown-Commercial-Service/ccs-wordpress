@@ -4,7 +4,6 @@ namespace App\Search;
 
 class FacetDataResolver
 {
-
     /**
      * @param array $facets
      * @return array|null

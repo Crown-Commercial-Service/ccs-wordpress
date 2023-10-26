@@ -19,7 +19,6 @@ use App\Services\OpGenie\OpGenieLogger;
  */
 class SalesforceApi
 {
-
     /**
      * @var \GuzzleHttp\Client
      */

@@ -8,7 +8,6 @@ namespace App\Utils;
  */
 class StringHelpers
 {
-
     /**
      * Convert a string into a URL safe slug
      *

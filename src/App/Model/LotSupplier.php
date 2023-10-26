@@ -7,7 +7,6 @@ use Nayjest\StrCaseConverter\Str;
 
 class LotSupplier extends AbstractModel
 {
-
     /**
      * @var string
      */

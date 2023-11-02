@@ -56,7 +56,9 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     sudo yum install -y https://repo.ius.io/ius-release-el$(rpm -E '%{rhel}').rpm
 
     echo "> > Installing common web packages..."
-    sudo amazon-linux-extras enable php7.3
+    sudo amazon-linux-extras disable php7.3
+    sudo amazon-linux-extras enable php7.4
+    sudo yum clean metadata
     sudo yum -y install \
         php \
         php-mysqlnd.x86_64 \
@@ -69,6 +71,8 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
         php-bcmath.x86_64 \
         php-soap.x86_64 \
         php-json.x86_64
+        
+    php -v
 
     if [ "$APPLICATION_NAME" != "$IMPORT_APP_NAME" ]; then
         echo "> Installing cms-specific web packages..."

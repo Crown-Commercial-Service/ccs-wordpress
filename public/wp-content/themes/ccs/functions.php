@@ -774,7 +774,8 @@ function validation() {
 	
 	$validations = array(
 		"taxonomy-content_type" => "You have not selected any content type for this Downloadable Resource",
-		"taxonomy-framework_type" => "You have not selected a framework type"
+		"taxonomy-framework_type" => "You have not selected a framework type",
+		"taxonomy-event_type" => "You have not selected a event type"
 	);
 
 	echo "<script type='text/javascript'>\n";

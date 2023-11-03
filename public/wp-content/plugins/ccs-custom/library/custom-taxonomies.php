@@ -30,7 +30,12 @@ function ccs_register_my_taxonomies() {
 		'show_in_rest' => true
 	) );
 
-
+	register_taxonomy( 'event_type', array( 'event' ), array(
+		'hierarchical' => true,
+		'label'        => 'Event Type',
+		'capabilities' => [ 'assign_terms' => 'edit_events' ],
+		'show_in_rest' => true
+	) );
 
 	register_taxonomy( 'sectors', array( 'post', 'event', 'page', 'whitepaper', 'webinar', 'digital_brochure', 'downloadable' ), array(
 		'hierarchical' => true,
@@ -55,6 +60,7 @@ function ccs_register_my_taxonomies() {
  */
 add_filter( "radio_buttons_for_taxonomies_no_term_framework_type", "__return_FALSE" );
 add_filter( "radio_buttons_for_taxonomies_no_term_content_type", "__return_FALSE" );
+add_filter( "radio_buttons_for_taxonomies_no_term_event_type", "__return_FALSE" );
 
 
 /**

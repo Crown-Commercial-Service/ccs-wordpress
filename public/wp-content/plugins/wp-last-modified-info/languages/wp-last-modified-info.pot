@@ -1,0 +1,1229 @@
+# Copyright (C) 2023 Sayan Datta
+# This file is distributed under the GPLv3.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Last Modified Info 1.8.8\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-last-modified-info\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2023-06-26T12:31:02+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.5.0\n"
+"X-Domain: wp-last-modified-info\n"
+
+#. Plugin Name of the plugin
+#: inc/Core/Elementor/Loader.php:46
+#: inc/Pages/Dashboard.php:80
+#: inc/Pages/Dashboard.php:81
+msgid "WP Last Modified Info"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://wordpress.org/plugins/wp-last-modified-info/"
+msgstr ""
+
+#. Description of the plugin
+msgid "Ultimate Last Modified Plugin for WordPress with Gutenberg Block Integration. It is possible to use shortcodes to display last modified info anywhere on a WordPress site running 4.7 and beyond."
+msgstr ""
+
+#. Author of the plugin
+msgid "Sayan Datta"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://www.sayandatta.co.in"
+msgstr ""
+
+#: inc/Api/Callbacks/AdminCallbacks.php:46
+#: inc/Base/Enqueue.php:67
+msgid "Save Settings"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:33
+msgid "Enable this Global Switch if you want to show last modified info on your posts."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:43
+msgid "Select where you want to show last modified info on a single posts. If you select Before Content or After Content or Replace Method, you can disable auto insert on particular posts from post edit screen > WP Last Modified Info meta box and apply shortcode on that particular post."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:45
+msgid "Before Content"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:46
+msgid "After Content"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:47
+msgid "Replace Published Date"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:48
+msgid "Manual (use shortcode)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:60
+#: inc/Api/Callbacks/ManagerCallbacks.php:199
+msgid "Select last modified date time format from here."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:62
+#: inc/Api/Callbacks/ManagerCallbacks.php:201
+msgid "Traditional Format"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:63
+#: inc/Api/Callbacks/ManagerCallbacks.php:202
+msgid "Human Readable Format"
+msgstr ""
+
+#. translators: %s: Link
+#: inc/Api/Callbacks/ManagerCallbacks.php:75
+msgid "Set post last modified date time format from here. %s"
+msgstr ""
+
+#. translators: %s: Link
+#: inc/Api/Callbacks/ManagerCallbacks.php:75
+msgid "Learn more"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:87
+msgid "Select the gap between published time and modified time. If modified time is greater than published time + gap, then it shows last modified info on frontend."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:89
+msgid "No Gap"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:90
+msgid "1 day (24 hours)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:91
+msgid "2 days (48 hours)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:92
+msgid "3 days (72 hours)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:93
+msgid "5 days (120 hours)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:94
+msgid "7 days (168 hours)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:95
+msgid "15 days (360 hours)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:96
+msgid "30 days (720 hours)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:108
+#: inc/Api/Callbacks/ManagerCallbacks.php:223
+msgid "Select how you want to display last modified author name on posts."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:110
+#: inc/Api/Callbacks/ManagerCallbacks.php:225
+#: inc/Core/Elementor/Modules/AuthorName.php:29
+msgid "Last Modified Author"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:111
+#: inc/Api/Callbacks/ManagerCallbacks.php:226
+msgid "Custom Author"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:123
+#: inc/Api/Callbacks/ManagerCallbacks.php:237
+msgid "Select the author name which you want to display for all posts."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:136
+msgid "Select the archives where you don't want to show last modified info."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:138
+msgid "Home Page"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:139
+msgid "Front Page"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:140
+#: inc/Core/Elementor/Modules/AuthorUrl.php:65
+msgid "Author Archive"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:141
+msgid "Post Category Archive"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:142
+msgid "Post Tag Archive"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:143
+msgid "Search Page"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:144
+msgid "All Post Archives"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:145
+msgid "All Post Type Archives"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:157
+msgid "Add the CSS selector to replace the post meta. It may not work for all themes. Please check before using it. If you need any help, please open a support ticket with your website URL. If you are using any caching plugin, please clear/remove your cache after any changes made to this field."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:181
+msgid "Select post types on which you want to show last modified info."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:212
+msgid "Set post last modified date time format from here."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:212
+msgid "Learn More"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:264
+msgid "Set the JSON-LD Markup mode if you want to show last modified info to search engines. If you already have a SEO plugin or a Schema Plugin on your site, then you can use this option. In this mode, this plugin will try to convert the post published date output of any SEO or Schema plugin to the post modified date. This is dynamically applied when the content is displayed, and the stored content is not changed. Tested with Yoast SEO, Rank Math, All in One SEO Pack, SEOPress, Schema and many other plugins."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:266
+msgid "Default Mode (CreativeWork)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:267
+msgid "Inline Mode (MicroData)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:268
+msgid "Compatibilty Mode (Advanced)"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:269
+msgid "Disable Schema Markup"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:280
+#: inc/Api/Callbacks/ManagerCallbacks.php:352
+msgid "Select on which post types you want to enable JSON-LD Markup."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:293
+msgid "Enable this if your theme does not support schema markup. This will add WebPage type schema support to the html tag. Please check Schema Markup before activate this option using Google Structured Data Tool. If Google already detects schema markup, you don't need to enable it anymore."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:308
+msgid "Enable this if you want to receive email notification if anyone makes changes to any post of your blog."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:318
+msgid "Enable this if you want to send notification to the post author."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:329
+msgid "Enable this if you want to enable notification when anyone makes changes to any draft post."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:396
+msgid "Enable this if you want to show last modified info on WordPress admin bar."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:406
+msgid "Enable this if you do not want to show last updated info on plugins page."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:416
+msgid "Select the post sorting order on Admin Edit page in Backend."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:418
+#: inc/Api/Callbacks/ManagerCallbacks.php:433
+msgid "Default Order"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:419
+#: inc/Api/Callbacks/ManagerCallbacks.php:434
+msgid "Modified Post First"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:420
+#: inc/Api/Callbacks/ManagerCallbacks.php:435
+msgid "Modified Post Last"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:431
+msgid "Select the post sorting order on Frontend."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:446
+msgid "You can convert original post date to modified date or remove published date completely. \"Hide from Search Engines\" option remove all the dates output from frontend and also from search engines if your theme supports it. If you see any empty or blank icon or option on frontend or post meta area, just hide that element with the Custom CSS option below. Please disable schema if you are using this option."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:448
+msgid "Disable"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:449
+msgid "Convert to Modified Date"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:450
+msgid "Hide from Search Engines"
+msgstr ""
+
+#. translators: %s: Tag
+#: inc/Api/Callbacks/ManagerCallbacks.php:462
+msgid "Do not add %s tag. This tag is not required, as it is already added."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:472
+msgid "Enable this if you want to delete plugin data at the time of uninstallation."
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:485
+msgid "Use these tags"
+msgstr ""
+
+#: inc/Api/Callbacks/ManagerCallbacks.php:486
+msgid "Available Dynamic Tags"
+msgstr ""
+
+#: inc/Base/AdminNotice.php:47
+msgid "Your version of PHP is below the minimum version of PHP required by WP Last Modified Info plugin. Please contact your host and request that your version be upgraded to 5.6 or later."
+msgstr ""
+
+#. translators: %s: 1. Plugin Name, 2. Version, 3. Link
+#: inc/Base/AdminNotice.php:56
+msgid "Thanks for installing %1$s v%2$s plugin. Click <a href=\"%3$s\">here</a> to configure plugin settings."
+msgstr ""
+
+#: inc/Base/AdminNotice.php:74
+msgid "Ok, you deserve it"
+msgstr ""
+
+#: inc/Base/AdminNotice.php:75
+msgid "I already did"
+msgstr ""
+
+#: inc/Base/AdminNotice.php:76
+#: inc/Base/AdminNotice.php:97
+msgid "Nope&#44; maybe later"
+msgstr ""
+
+#: inc/Base/AdminNotice.php:77
+msgid "I don't want to rate"
+msgstr ""
+
+#: inc/Base/AdminNotice.php:95
+msgid "Donate Now"
+msgstr ""
+
+#: inc/Base/AdminNotice.php:96
+msgid "I already donated"
+msgstr ""
+
+#: inc/Base/AdminNotice.php:98
+msgid "I don't want to donate"
+msgstr ""
+
+#: inc/Base/Enqueue.php:60
+#: templates/admin.php:102
+msgid "Copied!"
+msgstr ""
+
+#: inc/Base/Enqueue.php:61
+msgid "Saving..."
+msgstr ""
+
+#: inc/Base/Enqueue.php:62
+msgid "Please wait while we are saving your settings..."
+msgstr ""
+
+#: inc/Base/Enqueue.php:63
+msgid "Done!"
+msgstr ""
+
+#: inc/Base/Enqueue.php:64
+msgid "Error!"
+msgstr ""
+
+#: inc/Base/Enqueue.php:65
+msgid "Warning!"
+msgstr ""
+
+#: inc/Base/Enqueue.php:66
+msgid "Please wait while we are processing your request..."
+msgstr ""
+
+#: inc/Base/Enqueue.php:68
+msgid "Settings Saved Successfully!"
+msgstr ""
+
+#: inc/Base/Enqueue.php:69
+msgid "Invalid Nonce! We could not process your request."
+msgstr ""
+
+#: inc/Base/Enqueue.php:70
+msgid "OK"
+msgstr ""
+
+#: inc/Base/Enqueue.php:71
+msgid "Confirm"
+msgstr ""
+
+#: inc/Base/Enqueue.php:72
+#: inc/Core/Backend/EditScreen.php:129
+msgid "Cancel"
+msgstr ""
+
+#: inc/Base/Enqueue.php:73
+msgid "Please wait..."
+msgstr ""
+
+#: inc/Base/Enqueue.php:74
+msgid "Close"
+msgstr ""
+
+#: inc/Base/Enqueue.php:75
+msgid "Paste Here"
+msgstr ""
+
+#: inc/Base/Enqueue.php:76
+msgid "Import"
+msgstr ""
+
+#: inc/Base/Enqueue.php:77
+msgid "Importing..."
+msgstr ""
+
+#: inc/Base/MiscActions.php:38
+msgid "Settings"
+msgstr ""
+
+#: inc/Base/MiscActions.php:49
+msgid "Support"
+msgstr ""
+
+#: inc/Base/MiscActions.php:50
+msgid "Donate"
+msgstr ""
+
+#: inc/Base/PluginTools.php:90
+msgid "<strong>Settings import failed:</strong> Please upload a valid .json file to import settings in this website."
+msgstr ""
+
+#: inc/Base/PluginTools.php:95
+msgid "<strong>Settings import failed:</strong> Please upload a file to import."
+msgstr ""
+
+#: inc/Base/PluginTools.php:210
+msgid "Success! Plugin Settings has been imported successfully."
+msgstr ""
+
+#. translators: %1$s: Post Type Label, %2$s: Post Modified Date, %3$s: Post Modified Time, %4$s: POst Modified Author
+#: inc/Core/AdminBar.php:67
+msgid "This %1$s was last updated on %2$s at %3$s by %4$s"
+msgstr ""
+
+#. translators: %s: date time info
+#: inc/Core/AdminBar.php:86
+msgid "Updated on %1$s at %2$s"
+msgstr ""
+
+#. translators: %s: time diff
+#: inc/Core/AdminBar.php:90
+msgid "Updated %s ago"
+msgstr ""
+
+#: inc/Core/Backend/AdminColumn.php:72
+msgid "by"
+msgstr ""
+
+#: inc/Core/Backend/AdminColumn.php:76
+msgid "Modified date time update is disabled."
+msgstr ""
+
+#: inc/Core/Backend/AdminColumn.php:96
+msgid "Last Modified"
+msgstr ""
+
+#: inc/Core/Backend/DashboardWidget.php:42
+#: inc/Core/Backend/UserColumn.php:82
+msgid "Last Updated"
+msgstr ""
+
+#: inc/Core/Backend/DashboardWidget.php:73
+msgid "Recently Updated"
+msgstr ""
+
+#: inc/Core/Backend/DashboardWidget.php:143
+msgid "Number of Posts to Display"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:66
+#: inc/Core/Backend/EditScreen.php:68
+msgid "Updated on:"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:67
+msgid "Edit"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:67
+msgid "Edit modified date and time"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:68
+#: inc/Core/Backend/EditScreen.php:89
+#: inc/Core/Backend/EditScreen.php:169
+#: inc/Core/Backend/EditScreen.php:224
+msgid "at"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:69
+msgid "Last modified date and time"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:72
+#: inc/Core/Backend/EditScreen.php:152
+#: inc/Core/Backend/EditScreen.php:206
+msgid "Month"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:84
+#: inc/Core/Backend/EditScreen.php:164
+#: inc/Core/Backend/EditScreen.php:219
+#: inc/Core/Backend/EditScreen.php:220
+msgid "Day"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:87
+#: inc/Core/Backend/EditScreen.php:167
+#: inc/Core/Backend/EditScreen.php:222
+#: inc/Core/Backend/EditScreen.php:223
+msgid "Year"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:90
+#: inc/Core/Backend/EditScreen.php:170
+#: inc/Core/Backend/EditScreen.php:225
+#: inc/Core/Backend/EditScreen.php:226
+msgid "Hour"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:92
+msgid ":"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:93
+#: inc/Core/Backend/EditScreen.php:173
+#: inc/Core/Backend/EditScreen.php:228
+msgid "Minute"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:97
+msgid "Keep this checked, if you do not want to change modified date and time on this post."
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:98
+#: inc/Core/Backend/EditScreen.php:177
+#: inc/Core/Backend/EditScreen.php:234
+msgid "Lock the Modified Date"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:149
+#: inc/Core/Backend/EditScreen.php:203
+msgid "Modified"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:208
+#: inc/Core/Backend/EditScreen.php:233
+msgid "No Change"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:229
+msgid "Min"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:231
+msgid "Update Status"
+msgstr ""
+
+#: inc/Core/Backend/EditScreen.php:235
+msgid "Un-Lock the Modified Date"
+msgstr ""
+
+#: inc/Core/Backend/MetaBox.php:56
+msgid "Modified Info"
+msgstr ""
+
+#: inc/Core/Backend/MetaBox.php:76
+msgid "You can disable auto insertation of last modified info on this post"
+msgstr ""
+
+#: inc/Core/Backend/MetaBox.php:77
+msgid "Hide Modified Info on Frontend"
+msgstr ""
+
+#: inc/Core/Backend/MiscActions.php:75
+msgid "View"
+msgstr ""
+
+#: inc/Core/Backend/MiscActions.php:79
+msgid "updated on"
+msgstr ""
+
+#. translators: %s: updated time
+#: inc/Core/Backend/PluginsData.php:190
+#: inc/Core/Backend/PluginsData.php:193
+msgid "Updated: %s"
+msgstr ""
+
+#. translators: %s: rating
+#: inc/Core/Backend/PluginsData.php:199
+msgid "Ratings: %s"
+msgstr ""
+
+#. translators: %s: no. of reviews
+#: inc/Core/Backend/PluginsData.php:204
+msgid "Reviews: %s"
+msgstr ""
+
+#. translators: %s: vertion number
+#: inc/Core/Backend/PluginsData.php:209
+msgid "Requires at least: v%s"
+msgstr ""
+
+#. translators: %s: tested upto version
+#: inc/Core/Backend/PluginsData.php:215
+#: inc/Core/Backend/PluginsData.php:218
+msgid "Tested upto: %s"
+msgstr ""
+
+#. translators: %s: plugin info
+#: inc/Core/Backend/PluginsData.php:225
+msgid "Status:"
+msgstr ""
+
+#. translators: %s: plugin info
+#: inc/Core/Backend/PluginsData.php:225
+msgid "Available"
+msgstr ""
+
+#: inc/Core/Backend/PostStatusFilters.php:81
+msgid "Update Locked"
+msgstr ""
+
+#: inc/Core/Backend/UserColumn.php:65
+msgid "Never"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/AuthorName.php:44
+msgid "Show Avatar"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/AuthorName.php:52
+msgid "Text After"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/AuthorUrl.php:29
+msgid "Last Modified Author URL"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/AuthorUrl.php:61
+msgid "URL"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/AuthorUrl.php:66
+msgid "Author Website"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/AuthorUrl.php:67
+msgid "Author Email"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedDate.php:29
+msgid "Last Modified Date"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedDate.php:44
+#: inc/Core/Elementor/Modules/ModifiedTime.php:44
+msgid "Schema Markup"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedDate.php:47
+#: inc/Core/Elementor/Modules/ModifiedTime.php:47
+msgid "Yes"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedDate.php:48
+#: inc/Core/Elementor/Modules/ModifiedTime.php:48
+msgid "No"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedDate.php:57
+msgid "Date Format"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedDate.php:60
+#: inc/Core/Elementor/Modules/ModifiedTime.php:60
+msgid "Default"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedDate.php:65
+#: inc/Core/Elementor/Modules/ModifiedTime.php:65
+#: templates/admin.php:202
+msgid "Custom"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedDate.php:74
+#: inc/Core/Elementor/Modules/ModifiedTime.php:74
+msgid "Custom Format"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedDate.php:76
+#: inc/Core/Elementor/Modules/ModifiedTime.php:76
+msgid "Documentation on date and time formatting"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedTime.php:29
+msgid "Last Modified Time"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedTime.php:57
+msgid "Time Format"
+msgstr ""
+
+#: inc/Core/Elementor/Modules/ModifiedTime.php:64
+msgid "Human Readable"
+msgstr ""
+
+#. translators: %s: Human readable date/time.
+#: inc/Core/Elementor/Modules/ModifiedTime.php:90
+msgid "%s ago"
+msgstr ""
+
+#: inc/Core/Notification.php:75
+msgid "Old Title:"
+msgstr ""
+
+#: inc/Core/Notification.php:76
+msgid "New Title:"
+msgstr ""
+
+#: inc/Core/Notification.php:80
+msgid "Old Post Content:"
+msgstr ""
+
+#: inc/Core/Notification.php:81
+msgid "New Post Content:"
+msgstr ""
+
+#: inc/Core/Notification.php:85
+msgid "Old Excerpt:"
+msgstr ""
+
+#: inc/Core/Notification.php:86
+msgid "New Excerpt:"
+msgstr ""
+
+#: inc/Core/Notification.php:90
+msgid "Old Author:"
+msgstr ""
+
+#: inc/Core/Notification.php:91
+msgid "New Author:"
+msgstr ""
+
+#: inc/Core/Notification.php:95
+msgid "Old Link:"
+msgstr ""
+
+#: inc/Core/Notification.php:96
+msgid "New Link:"
+msgstr ""
+
+#: inc/Core/Notification.php:100
+msgid "Old Comment Status:"
+msgstr ""
+
+#: inc/Core/Notification.php:101
+msgid "New Comment Status:"
+msgstr ""
+
+#: inc/Core/Notification.php:105
+msgid "Old Ping Status:"
+msgstr ""
+
+#: inc/Core/Notification.php:106
+msgid "New Ping Status:"
+msgstr ""
+
+#: inc/Helpers/Ajax.php:42
+msgid "Error: Nonce verification failed"
+msgstr ""
+
+#: inc/Helpers/Ajax.php:62
+msgid "Error: Requested actions not found!"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:111
+msgid "Post Options"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:112
+msgid "Template Tags"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:113
+#: templates/admin.php:57
+msgid "Schema Options"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:114
+#: templates/admin.php:65
+msgid "Email Notification"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:115
+#: templates/admin.php:73
+msgid "Miscellaneous Options"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:161
+msgid "Show Info on Frontend"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:162
+msgid "Modified Info Display Method"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:163
+msgid "Modified Info Format for Posts"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:164
+msgid "Modified Info Date Time Format"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:165
+msgid "Published & Modified Time Gap"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:166
+msgid "Show Last Modified Author as"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:167
+msgid "Set Custom Post Author"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:168
+msgid "Disable Output on Archive(s)"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:169
+msgid "Enter the Post Date CSS Selector(s)"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:170
+msgid "HTML Template to Display"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:171
+msgid "Enable for Post Type(s)"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:174
+msgid "Last Modified Info Format for Posts"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:175
+msgid "Last Modified Info Date Time Format"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:176
+msgid "Display Last Modified Author Name"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:177
+msgid "Custom Post Author for All Posts"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:178
+msgid "HTML Template for Template Tags"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:181
+msgid "JSON-LD Schema Markup Mode"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:182
+msgid "Select Post Types for JSON-LD Markup"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:183
+msgid "Enable Enhanced Schema Support"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:186
+msgid "Enable Notification on Post Update?"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:187
+msgid "Send Notification to Post Author?"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:188
+msgid "Send Notification when Draft Changes?"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:189
+msgid "Send Email to these Email Recipient(s)"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:190
+msgid "Select Posts Types for Diff Detection"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:191
+msgid "Enter Email Notification Subject"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:192
+msgid "Enter Email Notification Message Body"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:195
+msgid "Show Modified Info on Admin Bar"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:196
+msgid "Hide Plugins Last Modified Info"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:197
+msgid "Default Admin Post Sorting Order"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:198
+msgid "Default Frontend Post Sorting Order"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:199
+msgid "Post Date Time Change or Removal"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:200
+msgid "Custom CSS Code (if required)"
+msgstr ""
+
+#: inc/Pages/Dashboard.php:201
+msgid "Delete Plugin Data upon Uninstallation"
+msgstr ""
+
+#: templates/admin.php:15
+msgid "Posts"
+msgstr ""
+
+#: templates/admin.php:16
+#: templates/admin.php:49
+msgid "Template Tag"
+msgstr ""
+
+#: templates/admin.php:17
+msgid "Schema"
+msgstr ""
+
+#: templates/admin.php:18
+msgid "Notification"
+msgstr ""
+
+#: templates/admin.php:19
+msgid "Misc."
+msgstr ""
+
+#: templates/admin.php:20
+msgid "Tools"
+msgstr ""
+
+#: templates/admin.php:21
+msgid "Help"
+msgstr ""
+
+#: templates/admin.php:24
+msgid "Please rate 5 stars if you like WP Last Modified Info"
+msgstr ""
+
+#: templates/admin.php:24
+msgid "Rate 5 stars"
+msgstr ""
+
+#: templates/admin.php:25
+msgid "Tweet"
+msgstr ""
+
+#: templates/admin.php:26
+msgid "Share"
+msgstr ""
+
+#: templates/admin.php:41
+msgid "Post Settings"
+msgstr ""
+
+#: templates/admin.php:42
+msgid "Control the Auto Insertion of ast Modified Info here."
+msgstr ""
+
+#: templates/admin.php:50
+msgid "Use the template tag in your theme template files or Gutenberg Block on your posts to display last modified info."
+msgstr ""
+
+#: templates/admin.php:58
+msgid "Configure the JSON-LD Structured Data settings here."
+msgstr ""
+
+#: templates/admin.php:66
+msgid "Configure the settings to get Email Notiifcation after post update."
+msgstr ""
+
+#: templates/admin.php:74
+msgid "Change some uncommon but essential settings here."
+msgstr ""
+
+#: templates/admin.php:82
+msgid "Plugin Tools"
+msgstr ""
+
+#: templates/admin.php:83
+msgid "Perform database related actions here."
+msgstr ""
+
+#: templates/admin.php:88
+msgid "Toogle Disable Update Option"
+msgstr ""
+
+#: templates/admin.php:89
+msgid "This will enable or disable \"Disable Update\" option for all posts, pages and CPTs automatically."
+msgstr ""
+
+#: templates/admin.php:90
+msgid "It will enable post modified info output on all activated post types. Do you want to continue?"
+msgstr ""
+
+#: templates/admin.php:90
+#: templates/admin.php:91
+msgid "Success! Requested Action processed successfully."
+msgstr ""
+
+#: templates/admin.php:90
+#: templates/admin.php:91
+msgid "Processing..."
+msgstr ""
+
+#: templates/admin.php:90
+msgid "Check All"
+msgstr ""
+
+#: templates/admin.php:91
+msgid "It will disable post modified info output on all activated post types. Do you want to continue?"
+msgstr ""
+
+#: templates/admin.php:91
+msgid "Un-Check All"
+msgstr ""
+
+#: templates/admin.php:94
+#: templates/admin.php:100
+msgid "Export Settings"
+msgstr ""
+
+#: templates/admin.php:95
+msgid "Export the plugin settings for this site as a .json file. This allows you to easily import the configuration into another site."
+msgstr ""
+
+#: templates/admin.php:101
+msgid "Copy"
+msgstr ""
+
+#: templates/admin.php:107
+#: templates/admin.php:114
+msgid "Import Settings"
+msgstr ""
+
+#: templates/admin.php:108
+msgid "Import the plugin settings from a .json file. This file can be obtained by exporting the settings on another site using the form above."
+msgstr ""
+
+#: templates/admin.php:115
+msgid "Paste"
+msgstr ""
+
+#: templates/admin.php:120
+msgid "Reset Settings"
+msgstr ""
+
+#: templates/admin.php:121
+msgid "WARNING:"
+msgstr ""
+
+#: templates/admin.php:121
+msgid "Resetting will delete all custom options to the default settings of the plugin in your database."
+msgstr ""
+
+#: templates/admin.php:122
+msgid "It will delete all the data relating to this plugin settings. You have to re-configure this plugin again. Do you want to continue?"
+msgstr ""
+
+#: templates/admin.php:122
+msgid "Success! Plugin Settings reset successfully."
+msgstr ""
+
+#: templates/admin.php:122
+msgid "Deleting..."
+msgstr ""
+
+#: templates/admin.php:122
+msgid "Reset All Settings"
+msgstr ""
+
+#: templates/admin.php:130
+msgid "Do you need help with this plugin? Here are some FAQ for you."
+msgstr ""
+
+#: templates/admin.php:136
+msgid "How this plugin works?"
+msgstr ""
+
+#: templates/admin.php:137
+msgid "This plugin hooks into WordPress content area and shows last modified information of posts and pages."
+msgstr ""
+
+#: templates/admin.php:140
+msgid "Is this plugin compatible with any themes?"
+msgstr ""
+
+#: templates/admin.php:141
+msgid "Yes, this plugin is compatible with any theme. But Replace Post Meta Option may not be compatible with some theme. Please check before using this option."
+msgstr ""
+
+#. translators: %s: code html tag
+#: templates/admin.php:146
+msgid "Do I need to add %s tag?"
+msgstr ""
+
+#: templates/admin.php:147
+msgid "No, this tag is not required, as it is already added. You just need to add only CSS Codes."
+msgstr ""
+
+#: templates/admin.php:150
+msgid "How to set custom date/time format?"
+msgstr ""
+
+#. translators: %s: html tags
+#: templates/admin.php:153
+msgid "Go to %1$sWordPress Date/Time Syntax%2$s page and read instructions about Date/Time Syntax."
+msgstr ""
+
+#: templates/admin.php:156
+msgid "How to use template tag functionality?"
+msgstr ""
+
+#: templates/admin.php:157
+msgid "Models the function naming convention used by WordPress for the_modified_time / get_the_modified_time and similar functions. In this case, you have to edit your theme's template files i.e. single.php, page.php etc. and add/replace default published date function with this:"
+msgstr ""
+
+#: templates/admin.php:158
+msgid "Displays/echos the last modified info:"
+msgstr ""
+
+#: templates/admin.php:161
+msgid "Returns the last modified info:"
+msgstr ""
+
+#: templates/admin.php:165
+msgid "How to use shortcodes?"
+msgstr ""
+
+#. translators: %s: shortcodes
+#: templates/admin.php:168
+msgid "You can insert the last modified info by simply using the shortcode. Shortcode for posts/pages/custom post types is %1$s. To enter the shortcode directly into templates using PHP, use %2$s for any post types. You can use %3$s to display global site modified info on website frontend."
+msgstr ""
+
+#: templates/admin.php:170
+msgid "Is it possible to show last modified info to Search Engines and keep hidden form visitors?"
+msgstr ""
+
+#: templates/admin.php:171
+msgid "Yes, it is possible. Just Enable JSON-LD Markup type from Schema Tab and save settings."
+msgstr ""
+
+#: templates/admin.php:177
+msgid "My Other WordPress Plugins"
+msgstr ""
+
+#: templates/admin.php:178
+msgid "Like this plugin? Check out my other WordPress plugins:"
+msgstr ""
+
+#: templates/admin.php:179
+msgid "Automatically republish you old evergreen content to grab better SEO and share them of Social Media to boost your traffic."
+msgstr ""
+
+#: templates/admin.php:180
+msgid "It alters the way that WordPress core runs cron events using the Action Scheduler Library."
+msgstr ""
+
+#: templates/admin.php:181
+msgid "Ultimate Facebook Comment Solution with instant email notification for any WordPress Website."
+msgstr ""
+
+#: templates/admin.php:182
+msgid "Add any page extension like .html, .php, .aspx, .htm, .asp, .shtml only to WordPress pages very easily."
+msgstr ""
+
+#: templates/admin.php:183
+msgid "Simple Posts Ticker is a small tool that shows your most recent posts in a marquee style."
+msgstr ""
+
+#: templates/admin.php:184
+msgid "This is the Razorpay, a Indian Payment Gateway plugin for WooCommerce based on Razorpay Payment Links."
+msgstr ""
+
+#: templates/admin.php:204
+#: templates/admin.php:206
+msgid "Buy me a coffee!"
+msgstr ""
+
+#. translators: %s: plugin name
+#: templates/admin.php:209
+msgid "Thank you for using %s. If you found the plugin useful buy me a coffee! Your donation will motivate and make me happy for all the efforts. You can donate via PayPal."
+msgstr ""
+
+#. translators: WordPress Version
+#: wp-last-modified-info.php:127
+msgid "You are using the outdated WordPress, please update it to version %s or higher."
+msgstr ""
+
+#. translators: PHP Version
+#: wp-last-modified-info.php:133
+msgid "WP Last Modified Info requires PHP version %s or above. Please update PHP to run this plugin."
+msgstr ""

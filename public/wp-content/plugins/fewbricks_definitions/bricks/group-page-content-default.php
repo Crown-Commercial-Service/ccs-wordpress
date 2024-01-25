@@ -80,6 +80,10 @@ class group_page_content_default extends project_brick
 		$l->add_brick(new component_featured('featured', '202006041022b'));
 		$fc->add_layout($l);
 
+		$l = new layout('', 'tabs', '202401161327a');
+		$l->add_brick(new component_tabs('tabs', '202401161327b'));
+		$fc->add_layout($l);
+
 		$this->add_flexible_content($fc);
 
 	}

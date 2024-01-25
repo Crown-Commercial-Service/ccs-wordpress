@@ -26,8 +26,8 @@ class component_tabs extends project_brick
     {
 
         $this->add_field(new acf_fields\text('Heading', 'heading', '202401161326a', [
-            'instructions' => 'Keep the heading concise and under 200 characters (including spaces).',
-            'maxlength' => 200
+            'instructions' => 'Keep the heading concise and under 100 characters (including spaces).',
+            'maxlength' => 100
         ]));
 
         $this->add_field((new acf_fields\repeater('Tabs', 'tabs', '202401161326b', [
@@ -35,7 +35,10 @@ class component_tabs extends project_brick
                 'layout' => 'row',
                 'max' => 4
             ]))
-                ->add_sub_field(new acf_fields\text('Title', 'title', '202401161326c'))
+                ->add_sub_field(new acf_fields\text('Title', 'title', '202401161326c', [
+                    'instructions' => 'Keep the title concise and under 35 characters (including spaces).',
+                    'maxlength' => 35
+                ]))
                 ->add_sub_field(new acf_fields\wysiwyg('Content', 'content', '202401161326d'))
         );
     }

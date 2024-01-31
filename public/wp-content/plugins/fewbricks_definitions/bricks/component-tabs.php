@@ -37,7 +37,8 @@ class component_tabs extends project_brick
             ]))
                 ->add_sub_field(new acf_fields\text('Title', 'title', '202401161326c', [
                     'instructions' => 'Keep the title concise and under 35 characters (including spaces).',
-                    'maxlength' => 35
+                    'maxlength' => 35,
+                    'required' => 1,
                 ]))
                 ->add_sub_field(new acf_fields\wysiwyg('Content', 'content', '202401161326d'))
         );

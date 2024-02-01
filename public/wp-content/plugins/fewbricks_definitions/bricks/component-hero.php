@@ -23,7 +23,7 @@ class component_hero extends project_brick {
 	public function set_fields() {
 
 		$this->add_field( new acf_fields\image( 'Hero Image', 'image', '202001031023a', [
-			'instructions' => 'Leave blank if no hero required. Minimum size: 1042&times;480. Recommended size: 2084&times;960.',
+			'instructions' => 'Leave blank if no hero required. Recommended size: 1122&times;517.',
 			'min_width' => 1042,
 			'min_height' => 480,
 		] ) );

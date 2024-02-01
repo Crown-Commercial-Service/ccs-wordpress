@@ -14,9 +14,17 @@ class GlossaryApi{
             endwhile;
         endif;
 
-        $meta = [
-            'total_results' => count($results),
-        ];
+        $meta = [];
+
+        if(have_rows('intro_text', 'option')):
+            while(have_rows('intro_text', 'option')): the_row();
+                $meta[] = [
+                    'total_results' => count($results),
+                    'intro_text' => get_sub_field('intro_text')
+
+                ];
+            endwhile;
+        endif;
 
         header('Content-Type: application/json');
 

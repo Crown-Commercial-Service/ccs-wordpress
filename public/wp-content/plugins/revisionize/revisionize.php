@@ -3,13 +3,13 @@
  Plugin Name: Revisionize
  Plugin URI: https://revisionize.pro
  Description: Draft up revisions of live, published content. The live content doesn't change until you publish the revision manually or with the scheduling system.
- Version: 2.3.2
+ Version: 2.3.4
  Author: Jamie Chong
  Author URI: https://revisionize.pro
  Text Domain: revisionize
  */
 
-/*  
+/*
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -39,7 +39,7 @@ add_action('init', __NAMESPACE__.'\\init');
 function init() {
   // Only add filters and actions for admin who can actually edit posts
   if (is_admin() && user_can_revisionize() && is_post_type_enabled()) {
-    add_filter('display_post_states', __NAMESPACE__.'\\post_status_label');
+    add_filter('display_post_states', __NAMESPACE__.'\\post_status_label', 10, 2);
     add_filter('post_row_actions', __NAMESPACE__.'\\admin_actions', 10, 2);
     add_filter('page_row_actions', __NAMESPACE__.'\\admin_actions', 10, 2);
 
@@ -159,7 +159,7 @@ function publish($post, $original) {
       exit;
     }
 
-    if (is_ajax()) {
+    if (is_ajax() && apply_filters('revisionize_allow_ajax_reload', true)) {
       echo "<script type='text/javascript'>location.reload();</script>";
     }
   }
@@ -271,7 +271,7 @@ function copy_post_taxonomies($new_id, $post) {
     // Clear default category (added by wp_insert_post)
     wp_set_object_terms($new_id, NULL, 'category');
 
-    $taxonomies = get_object_taxonomies($post->post_type);
+    $taxonomies = apply_filters('revisionize_allowed_copy_post_taxonomies', get_object_taxonomies($post->post_type));
 
     foreach ($taxonomies as $taxonomy) {
       $post_terms = wp_get_object_terms($post->ID, $taxonomy, array('orderby' => 'term_order'));
@@ -345,9 +345,8 @@ function admin_actions($actions, $post) {
 }
 
 // Filter for display_post_states which is only added if user_can_revisionize
-function post_status_label($states) {
-  global $post;
-  if (get_revision_of($post)) {
+function post_status_label($states, $post) {
+  if (!empty($post) && get_revision_of($post)) {
     $label = is_original_post($post) ? __('Backup Revision', 'revisionize') : __('Revision', 'revisionize');
     $label = apply_filters('revisionize_post_status_label', $label);
     array_unshift($states, $label);

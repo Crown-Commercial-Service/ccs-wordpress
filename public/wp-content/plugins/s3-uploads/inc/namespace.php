@@ -2,11 +2,11 @@
 
 namespace S3_Uploads;
 
+// Ensure the AWS SDK can be loaded.
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
 function init() {
-	// Ensure the AWS SDK can be loaded.
-		require_once dirname( __DIR__ ) . '/vendor/autoload.php';
-
-
+	
 	if ( ! check_requirements() ) {
 		return;
 	}

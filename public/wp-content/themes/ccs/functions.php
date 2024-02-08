@@ -856,3 +856,26 @@ function sort_by_modified($args, $request)
 	return $args;
 }
 add_filter('rest_post_query', 'sort_by_modified', 10, 2);
+
+
+function filter_post_data_media_url($content) {
+	// check if main content
+	if (is_singular() && in_the_loop() && is_main_query()) {
+		if(empty( $content )) {
+			return $content;
+		}
+
+		$baseUrl = getenv('WP_SITEURL');
+
+		// remove wp-content from S3 URL
+		$s3Url = getenv('S3_UPLOADS_BUCKET');
+		$s3Url = preg_replace('/\/wp-content$/', '', $s3Url);
+
+		// search and replace URLs in content
+		$content = preg_replace('/' . preg_quote($baseUrl, '/') . '/', $s3Url, $content);
+
+		return $content;
+	}
+}
+
+add_filter('the_content', 'filter_post_data_media_url', 10, 1);

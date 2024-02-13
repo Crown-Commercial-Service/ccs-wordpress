@@ -975,4 +975,4 @@ function does_url_need_rewriting ($content, $baseUrl) {
 	return false;
 }
 
-add_action('the_post', 'rewrite_all_post_urls');
+// add_action('the_post', 'rewrite_all_post_urls');

@@ -966,7 +966,7 @@ function rewrite_urls ($content, $baseUrl, $s3Url ) {
 
 function does_url_need_rewriting ($content, $baseUrl) {
 
-	$match  = preg_match('/' . preg_quote($baseUrl, '/') . '/', $content);
+	$match  = preg_match('/' . preg_quote($baseUrl . '/wp-content/uploads', '/') . '/', $content);
 
 	if ( $match ) {
 		return true;

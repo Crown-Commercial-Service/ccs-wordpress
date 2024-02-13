@@ -966,7 +966,7 @@ function rewrite_urls ($content, $baseUrl, $s3Url ) {
 
 function does_url_need_rewriting ($content, $baseUrl) {
 
-	$match  = preg_match('/' . preg_quote($baseUrl, '/') . '/', $content);
+	$match  = preg_match('/' . preg_quote($baseUrl . '/wp-content/uploads', '/') . '/', $content);
 
 	if ( $match ) {
 		return true;
@@ -975,4 +975,4 @@ function does_url_need_rewriting ($content, $baseUrl) {
 	return false;
 }
 
-// add_action('the_post', 'rewrite_all_post_urls');
+add_action('the_post', 'rewrite_all_post_urls');

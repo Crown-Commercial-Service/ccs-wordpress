@@ -34,9 +34,6 @@ class component_hero extends project_brick {
 		$this->add_field( new acf_fields\text( 'Heading', 'heading', '202001031023b', [
 			'instructions' => 'Keep headings under 65 characters (including spaces) so that they can be displayed for search engine results.',
 		] ));
-		$this->add_field( new acf_fields\wysiwyg( 'Content', 'content', '202001031023c',[
-			'instructions' => 'Keep the content under 200 characters (including spaces).',
-		] ));
 		$this->add_field( new acf_fields\text( 'Button label', 'cta_label', '202001031023d', [
 			'instructions' => 'Keep the text concise and under 140 characters (including spaces) so that it can be displayed for search engine results as the meta description.',
 		] ));
@@ -56,7 +53,6 @@ class component_hero extends project_brick {
 		$data = [
 			'heading'  => $this->get_field( 'heading' ),
 			'image'  => $this->get_field( 'image' ),
-			'content'  => apply_filters( 'the_content' , $this->get_field( 'content' ) ),
 			'cta_label'  => $this->get_field( 'cta_label' ),
 			'cta_destination'  => $this->get_field( 'cta_destination' )
 		];

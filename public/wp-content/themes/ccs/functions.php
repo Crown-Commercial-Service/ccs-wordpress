@@ -856,6 +856,7 @@ function sort_by_modified($args, $request)
 	return $args;
 }
 add_filter('rest_post_query', 'sort_by_modified', 10, 2);
+
 /**
  * Get pending review widget back. S3 uploads currently affecting this so this is a temporary fix until we can get a new revisonize replacement
  */
@@ -896,3 +897,82 @@ function do_dashboard_widget()
 
 	echo '</ul>';
 }
+
+function rewrite_all_post_urls($post)
+{
+	
+	$baseUrl = getenv('WP_SITEURL');
+
+	// remove wp-content from S3 URL
+	$s3Url = getenv('S3_UPLOADS_BUCKET');
+	$s3Url = preg_replace('/\/wp-content$/', '', $s3Url);
+
+	$post_content = get_the_content();
+
+	// check if news post
+	if (get_post_type() === 'post') {
+
+		if ( does_url_need_rewriting($post_content, $baseUrl) ) {
+			$updated_post = array(
+				'ID'           => $post->ID,
+				'post_content' => rewrite_urls($post_content, $baseUrl, $s3Url),
+			);
+
+			wp_update_post($updated_post);
+
+		} else {
+
+			return;
+		}
+		
+	} else {
+
+		// Get all custom fields for the post
+		$custom_fields = get_post_custom($post->ID);
+
+		// Loop through each custom field and update its value
+		foreach ($custom_fields as $meta_key => $value) {
+			// disregard s3 cache as this will cause issues with page
+			if (substr($meta_key, 0, 1) === '_' || $meta_key === 'amazonS3_cache') {
+				continue; // Skips key that starts with underscore or is s3 cache as value will be irrelevant this will make the loop quicker
+			}
+
+			if (does_url_need_rewriting($value[0], $baseUrl)) {
+				update_post_meta($post->ID, $meta_key, rewrite_urls($value[0], $baseUrl, $s3Url));
+			}
+
+			if ( !empty($post_content) && does_url_need_rewriting($post_content, $baseUrl) ) {
+				$updated_post = array(
+					'ID'           => $post->ID,
+					'post_content' => rewrite_urls($post_content, $baseUrl, $s3Url),
+				);
+
+				wp_update_post($updated_post);
+			}
+			
+		}
+
+	}
+
+	
+}
+
+function rewrite_urls ($content, $baseUrl, $s3Url ) {
+	// search and replace URLs in content
+	$content = preg_replace('/' . preg_quote($baseUrl, '/') . '/', $s3Url, $content);
+
+	return $content;
+}
+
+function does_url_need_rewriting ($content, $baseUrl) {
+
+	$match  = preg_match('/' . preg_quote($baseUrl, '/') . '/', $content);
+
+	if ( $match ) {
+		return true;
+	}
+
+	return false;
+}
+
+add_action('the_post', 'rewrite_all_post_urls');

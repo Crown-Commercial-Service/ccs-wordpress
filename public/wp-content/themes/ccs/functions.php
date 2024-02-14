@@ -900,6 +900,9 @@ function do_dashboard_widget()
 
 function rewrite_all_post_urls($post)
 {
+	if (is_admin()) {
+		return;
+	}
 	
 	$baseUrl = getenv('WP_SITEURL');
 
@@ -908,6 +911,8 @@ function rewrite_all_post_urls($post)
 	$s3Url = preg_replace('/\/wp-content$/', '', $s3Url);
 
 	$post_content = get_the_content();
+	// perserve the modified date to prevent news post order being updated
+	$current_post_modified = get_post_field('post_modified', $post->ID);
 
 	// check if news post
 	if (get_post_type() === 'post') {
@@ -916,6 +921,7 @@ function rewrite_all_post_urls($post)
 			$updated_post = array(
 				'ID'           => $post->ID,
 				'post_content' => rewrite_urls($post_content, $baseUrl, $s3Url),
+				'post_modified' => $current_post_modified, 
 			);
 
 			wp_update_post($updated_post);
@@ -945,6 +951,7 @@ function rewrite_all_post_urls($post)
 				$updated_post = array(
 					'ID'           => $post->ID,
 					'post_content' => rewrite_urls($post_content, $baseUrl, $s3Url),
+					'post_modified' => $current_post_modified, 
 				);
 
 				wp_update_post($updated_post);

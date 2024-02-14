@@ -898,6 +898,13 @@ function do_dashboard_widget()
 	echo '</ul>';
 }
 
+function stop_modified_date_update($new, $old)
+{
+	$new['post_modified'] = $old['post_modified'];
+	$new['post_modified_gmt'] = $old['post_modified_gmt'];
+	return $new;
+}
+
 function rewrite_all_post_urls($post)
 {
 	if (is_admin()) {
@@ -916,15 +923,19 @@ function rewrite_all_post_urls($post)
 
 	// check if news post
 	if (get_post_type() === 'post') {
-
 		if ( does_url_need_rewriting($post_content, $baseUrl) ) {
+
+			remove_action('post_updated', 'wp_save_post_revision');
+
 			$updated_post = array(
 				'ID'           => $post->ID,
 				'post_content' => rewrite_urls($post_content, $baseUrl, $s3Url),
-				'post_modified' => $current_post_modified, 
 			);
 
-			wp_update_post($updated_post);
+			if (wp_update_post($updated_post)) {
+				add_action('post_updated', 'wp_save_post_revision');
+				update_post_modified_date_in_db($post->ID, $current_post_modified);
+			};	
 
 		} else {
 
@@ -951,7 +962,6 @@ function rewrite_all_post_urls($post)
 				$updated_post = array(
 					'ID'           => $post->ID,
 					'post_content' => rewrite_urls($post_content, $baseUrl, $s3Url),
-					'post_modified' => $current_post_modified, 
 				);
 
 				wp_update_post($updated_post);
@@ -980,6 +990,26 @@ function does_url_need_rewriting ($content, $baseUrl) {
 	}
 
 	return false;
+}
+
+function update_post_modified_date_in_db($postID, $time)
+{
+	global $wpdb;
+
+	$time = strtotime($time);
+
+	$mysql_time_format = "Y-m-d H:i:s";
+
+	$post_modified = gmdate($mysql_time_format, $time);
+
+	$post_modified_gmt = gmdate($mysql_time_format, ($time + get_option('gmt_offset') * HOUR_IN_SECONDS));
+
+	$sql = $wpdb->prepare("
+	UPDATE $wpdb->posts 
+	SET post_modified = '{$post_modified}', post_modified_gmt = '{$post_modified_gmt}'  
+	WHERE ID = {$postID}");
+
+	$wpdb->query($sql);
 }
 
 add_action('the_post', 'rewrite_all_post_urls');

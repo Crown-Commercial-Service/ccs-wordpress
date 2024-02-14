@@ -898,13 +898,6 @@ function do_dashboard_widget()
 	echo '</ul>';
 }
 
-function stop_modified_date_update($new, $old)
-{
-	$new['post_modified'] = $old['post_modified'];
-	$new['post_modified_gmt'] = $old['post_modified_gmt'];
-	return $new;
-}
-
 function rewrite_all_post_urls($post)
 {
 	if (is_admin()) {

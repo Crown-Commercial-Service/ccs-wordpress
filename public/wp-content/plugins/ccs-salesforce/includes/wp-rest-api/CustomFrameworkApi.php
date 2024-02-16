@@ -284,6 +284,7 @@ class CustomFrameworkApi
                         'supplier_name' => $supplier->getName(),
                         'supplier_id' => $supplier->getId(),
                         'supplier_crp_url' => $supplier->getCrpUrl(),
+                        'supplier_crp_status' => $supplier->getCrpStatus(),
                         'live_frameworks' => $liveFrameworks
                     ];
 

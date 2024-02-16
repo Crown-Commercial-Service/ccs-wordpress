@@ -423,6 +423,7 @@ class Supplier extends AbstractModel
             'postcode'            => $this->getPostcode(),
             'website'             => $this->getWebsite(),
             'crp_url'             => $this->getCrpUrl(),
+            'crp_status'          => $this->getCrpStatus(),
             'trading_name'        => $this->getTradingName(),
 
         ];

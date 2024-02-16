@@ -95,6 +95,7 @@ class CustomLotApi
                         'supplier_postcode' => $supplier->getPostcode(),
                         'supplier_website' => $supplier->getWebsite(),
                         'supplier_crp_url' => $supplier->getCrpUrl(),
+                        'supplier_crp_status' => $supplier->getCrpStatus(),
                         'supplier_contact_name' => $supplier->getContactName(),
                         'supplier_contact_email' => $supplier->getContactEmail(),
                         'supplier_have_guarantor' => $supplier->getHaveGuarantor(),

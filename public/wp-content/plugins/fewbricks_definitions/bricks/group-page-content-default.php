@@ -84,6 +84,10 @@ class group_page_content_default extends project_brick
 		$l->add_brick(new component_tabs('tabs', '202401161327b'));
 		$fc->add_layout($l);
 
+		$l = new layout('', 'apollos', '202402211347a');
+		$l->add_brick(new component_apollos('apollos', '202402211347b'));
+		$fc->add_layout($l);
+
 		$this->add_flexible_content($fc);
 
 	}

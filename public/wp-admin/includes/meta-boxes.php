@@ -269,7 +269,7 @@ function post_submit_meta_box( $post, $args = array() ) {
 					<?php printf( $stamp, '<b>' . $date . '</b>' ); ?>
 				</span>
 				<a href="#edit_timestamp" class="edit-timestamp hide-if-no-js" role="button">
-					<span aria-hidden="true"><?php _e( 'Edit' ); ?></span>
+					<span aria-hidden="true"><?php _e( '' ); ?></span>
 					<span class="screen-reader-text"><?php _e( 'Edit date and time' ); ?></span>
 				</a>
 				<fieldset id="timestampdiv" class="hide-if-js">

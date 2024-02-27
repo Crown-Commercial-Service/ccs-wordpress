@@ -36,12 +36,19 @@ class component_subcategory extends project_brick {
             ]
         ) );
 
-
         $this->add_field( new acf_fields\text('Link Text', 'link_text', '202002031711a', [
             'instructions' => 'Add text for the link. If you do not enter any text it will show \'Learn more\'.'
             ]
         ) );
 
+		$this->add_field( new acf_fields\text('Agreement filter URL', 'agreement_filter_url', '202402271152a', [
+		    'instructions' => 'External links: use the whole URL including https://. For example https://www.pensionwise.gov.uk/en. Internal links: use the part of the link after gov.uk. For example If you want to link to www.crowncommercial.gov.uk/agreements/RM1063 you would enter /agreements/RM1063'
+            ]
+        ) );
+
+        $this->add_field( new acf_fields\text('Agreement URL text', 'agreement_url_text', '202402271152b', [
+            ]
+        ) );
 	}
 
 	/**

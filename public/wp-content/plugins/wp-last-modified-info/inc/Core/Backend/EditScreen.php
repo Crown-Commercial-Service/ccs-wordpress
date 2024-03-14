@@ -95,7 +95,7 @@ class EditScreen
 					</label>
 				</div>
 				<label for="wplmi_disable" class="wplmi-disable-update" style="display:block;margin: 5px 0;" title="<?php esc_attr_e( 'Keep this checked, if you do not want to change modified date and time on this post.', 'wp-last-modified-info' ); ?>">
-					<input type="checkbox" id="wplmi_disable" name="disableupdate" <?php if ( $stop_update == 'yes' ) { echo 'checked'; } ?>><span><?php esc_html_e( 'Lock the Modified Date', 'wp-last-modified-info' ); ?></span>
+					<input type="checkbox" id="wplmi_disable" name="disableupdate" <?php if ( $stop_update == 'yes' ) { echo 'checked'; } ?>><span><?php esc_html_e( 'Don’t republish', 'wp-last-modified-info' ); ?></span>
 				</label>
 				<?php
 

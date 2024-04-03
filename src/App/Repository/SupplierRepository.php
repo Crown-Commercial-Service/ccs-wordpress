@@ -46,7 +46,7 @@ class SupplierRepository extends AbstractRepository
     {
         $originalDataBindings = $this->databaseBindings;
 
-        if ($object->getCrpStatus() != 'Accepted') {
+        if ($object->getCrpStatus() == 'In Progress') {
             $object->setCrpUrl(null);
         }
 

@@ -897,3 +897,19 @@ function do_dashboard_widget()
 
 	echo '</ul>';
 }
+
+// fix for files saved as google docs as bug in php 7 doesn't allow these file types on wordpress
+function filetype_fix_wp_check_filetype_and_ext($wp_check_filetype_and_ext, $file, $filename, $mimes, $real_mime)
+{
+
+	if ('application/vnd.openxmlformats-officedocument.wordprocessingml.documentapplication/vnd.openxmlformats-officedocument.wordprocessingml.document' === $real_mime) {
+		$wp_filetype = wp_check_filetype($filename, $mimes);
+		if ('application/vnd.openxmlformats-officedocument.wordprocessingml.document' === $wp_filetype['type']) {
+			$wp_check_filetype_and_ext['ext']  = $wp_filetype['ext'];
+			$wp_check_filetype_and_ext['type'] = $wp_filetype['type'];
+		}
+	}
+
+	return $wp_check_filetype_and_ext;
+}
+add_filter('wp_check_filetype_and_ext', 'filetype_fix_wp_check_filetype_and_ext', 10, 5);

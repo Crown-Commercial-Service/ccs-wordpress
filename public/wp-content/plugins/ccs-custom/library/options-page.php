@@ -228,3 +228,14 @@ $option_page = acf_add_options_page(array(
     'update_button'		=> __('Save', 'acf'),
     'updated_message'	=> __("CSC message updated", 'acf')
 ));
+
+$option_page = acf_add_options_page(array(
+    'page_title'    => __('Message Banner'),
+    'menu_title'    => __('Message Banner Homepage'),
+    'menu_slug'     => 'Message_Banner',
+    'capability'    => 'edit_users',
+    'icon_url' => 'dashicons-tag',
+    'redirect'      => false,
+    'update_button'        => __('Save', 'acf'),
+    'updated_message'    => __("Message Banner Updated", 'acf')
+));

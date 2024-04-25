@@ -49,6 +49,8 @@ require __DIR__ . '/includes/wp-rest-api/GlossaryApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/cscMessageApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/MessageBannerApi.php';
+
 /**
  * Begins execution of the plugin.
  *
@@ -75,6 +77,7 @@ function run_plugin()
     $redirectionApi = new CustomRedirectionApi();
     $glossaryApi = new GlossaryApi();
     $cscMessageApi = new cscMessageApi();
+    $messageBannerApi = new MessageBannerApi();
 
 
     //Get all frameworks
@@ -206,6 +209,13 @@ function run_plugin()
             'callback' => [$cscMessageApi, 'getMessage']
         ));
     
+    });
+
+    add_action('rest_api_init', function () use ($messageBannerApi) {
+        register_rest_route('ccs/v1', '/message-banner/0', array(
+            'methods' => 'GET',
+            'callback' => [$messageBannerApi, 'getMessageBanner']
+        ));
     });
 }
 

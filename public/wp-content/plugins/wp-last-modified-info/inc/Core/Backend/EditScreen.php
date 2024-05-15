@@ -65,7 +65,7 @@ class EditScreen
 		<div class="misc-pub-section curtime misc-pub-last-updated">
 			<span id="wplmi-timestamp"> <?php esc_html_e( 'Updated on:', 'wp-last-modified-info' ) ?> <strong><?php echo get_the_modified_time( 'M j, Y \a\t H:i' ); ?></strong></span>
 			<a href="#edit_timestampmodified" class="edit-timestampmodified hide-if-no-js" role="button"><span aria-hidden="true"><?php esc_html_e( 'Edit', 'wp-last-modified-info' ); ?></span> <span class="screen-reader-text"><?php esc_html_e( 'Edit modified date and time', 'wp-last-modified-info' ); ?></span></a>
-			<label for="wplmi_disable" class="wplmi-disable-update" style="display:block;padding: 10px 0;font-weight: bold;" title="<?php esc_attr_e( 'Check this, if you want to update the modified date and time on this post.', 'wp-last-modified-info' ); ?>">
+			<label for="wplmi_disable" class="wplmi-disable-update" style="display:block;padding: 10px 0;font-weight: bold;" title="<?php esc_attr_e( 'Check this to republish on the website.', 'wp-last-modified-info' ); ?>">
 				<input type="checkbox" id="wplmi_disable" name="disableupdate" <?php if ( $stop_update == 'yes' ) { echo 'checked'; } ?>><span><?php esc_html_e( 'Republish', 'wp-last-modified-info' ); ?></span>
 			</label>
 			<fieldset id="timestampmodifieddiv" class="hide-if-js" data-prefix="<?php esc_attr_e( 'Updated on:', 'wp-last-modified-info' ); ?>" data-separator="<?php esc_attr_e( 'at', 'wp-last-modified-info' ); ?>" style="padding-top: 5px;line-height: 1.76923076;">

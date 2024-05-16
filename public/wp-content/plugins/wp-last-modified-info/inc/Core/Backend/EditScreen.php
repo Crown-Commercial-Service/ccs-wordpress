@@ -65,6 +65,9 @@ class EditScreen
 		<div class="misc-pub-section curtime misc-pub-last-updated">
 			<span id="wplmi-timestamp"> <?php esc_html_e( 'Updated on:', 'wp-last-modified-info' ) ?> <strong><?php echo get_the_modified_time( 'M j, Y \a\t H:i' ); ?></strong></span>
 			<a href="#edit_timestampmodified" class="edit-timestampmodified hide-if-no-js" role="button"><span aria-hidden="true"><?php esc_html_e( 'Edit', 'wp-last-modified-info' ); ?></span> <span class="screen-reader-text"><?php esc_html_e( 'Edit modified date and time', 'wp-last-modified-info' ); ?></span></a>
+			<label for="wplmi_disable" class="wplmi-disable-update" style="display:block;padding: 10px 0;font-weight: bold;" title="<?php esc_attr_e( 'Check this to republish on the website.', 'wp-last-modified-info' ); ?>">
+				<input type="checkbox" id="wplmi_disable" name="disableupdate" <?php if ( $stop_update == 'yes' ) { echo 'checked'; } ?>><span><?php esc_html_e( 'Republish', 'wp-last-modified-info' ); ?></span>
+			</label>
 			<fieldset id="timestampmodifieddiv" class="hide-if-js" data-prefix="<?php esc_attr_e( 'Updated on:', 'wp-last-modified-info' ); ?>" data-separator="<?php esc_attr_e( 'at', 'wp-last-modified-info' ); ?>" style="padding-top: 5px;line-height: 1.76923076;">
 				<legend class="screen-reader-text"><?php esc_html_e( 'Last modified date and time', 'wp-last-modified-info' ); ?></legend>
 				<div class="timestamp-wrap">
@@ -94,9 +97,6 @@ class EditScreen
 						<input type="text" id="mnm" class="time-modified mnm-edit" name="mnm" value="<?php echo $mn; ?>" size="2" maxlength="2" autocomplete="off" />
 					</label>
 				</div>
-				<label for="wplmi_disable" class="wplmi-disable-update" style="display:block;margin: 5px 0;" title="<?php esc_attr_e( 'Keep this checked, if you do not want to change modified date and time on this post.', 'wp-last-modified-info' ); ?>">
-					<input type="checkbox" id="wplmi_disable" name="disableupdate" <?php if ( $stop_update == 'yes' ) { echo 'checked'; } ?>><span><?php esc_html_e( 'Don’t republish', 'wp-last-modified-info' ); ?></span>
-				</label>
 				<?php
 
 				$currentlocal = current_time( 'timestamp', 0 );
@@ -174,7 +174,7 @@ class EditScreen
 						<input type="text" id="mnm" class="time-modified tm-mnm" name="mnm" value="" size="2" maxlength="2" autocomplete="off" />
 					</label>&nbsp;&nbsp;<label for="wplmi_disable">
 						<input type="checkbox" id="wplmi_disable" name="disableupdate" />
-						<span class="checkbox-title"><?php esc_html_e( 'Lock the Modified Date', 'wp-last-modified-info' ); ?></span>
+						<span class="checkbox-title"><?php esc_html_e( 'Republish', 'wp-last-modified-info' ); ?></span>
 					</label>
 				</div>
 				<input type="hidden" id="ssm" name="ssm" value="">
@@ -231,8 +231,8 @@ class EditScreen
 						<span class="select-title"><?php esc_html_e( 'Update Status', 'wp-last-modified-info' ); ?></span>
 						<select id="wplmi-disable-update" class="disable-update" name="disable_update">
 		    			    <option value="none">— <?php esc_html_e( 'No Change', 'wp-last-modified-info' ); ?> —</option>
-						    <option value="yes"><?php esc_html_e( 'Lock the Modified Date', 'wp-last-modified-info' ); ?></option>
-							<option value="no"><?php esc_html_e( 'Un-Lock the Modified Date', 'wp-last-modified-info' ); ?></option>
+						    <option value="yes"><?php esc_html_e( 'Republish', 'wp-last-modified-info' ); ?></option>
+							<option value="no"><?php esc_html_e( 'Dont republish', 'wp-last-modified-info' ); ?></option>
 						</select>
 		    		</label>
 		    	</div>
@@ -329,11 +329,11 @@ class EditScreen
 			}
 			
 			if ( 'yes' === $disabled ) {
-				$data['post_modified']     = $postarr['post_modified'];
-				$data['post_modified_gmt'] = $postarr['post_modified_gmt'];
-			} else {
 				$data['post_modified']     = current_time( 'mysql' );
 				$data['post_modified_gmt'] = current_time( 'mysql', 1 );
+			} else {
+				$data['post_modified']     = $postarr['post_modified'];
+				$data['post_modified_gmt'] = $postarr['post_modified_gmt'];
 			}
 
 			// Check the duplicate request.
@@ -369,11 +369,11 @@ class EditScreen
 
 			// Check if disable is set to 'yes'
 			if ( 'yes' === $disabled ) {
-				$data['post_modified']     = $modified;
-				$data['post_modified_gmt'] = get_gmt_from_date( $modified );
-			} else {
 				$data['post_modified']     = current_time( 'mysql' );
 				$data['post_modified_gmt'] = current_time( 'mysql', 1 );
+			} else {
+				$data['post_modified']     = $modified;
+				$data['post_modified_gmt'] = get_gmt_from_date( $modified );
 			}
 
 			// check is current state is changed

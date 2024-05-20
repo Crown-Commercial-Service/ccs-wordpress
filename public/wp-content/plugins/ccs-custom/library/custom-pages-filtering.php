@@ -16,7 +16,8 @@ function ccs_custom_page_filtering_menus() {
     add_submenu_page('edit.php?post_type=page', 'Marketing content', 'Marketing content', 'edit_pages', 'edit.php?post_type=page&marketing_pages=1', '', 1);
 }
 
-add_action('admin_menu', 'ccs_custom_page_filtering_menus', 5);
+// disabling this action so the menu doesnt show
+// add_action('admin_menu', 'ccs_custom_page_filtering_menus', 5);
 
 
 /**
@@ -57,6 +58,7 @@ function ccs_custom_page_filter($query) {
      * Exclude Marketing Pages
      */
     if( !empty(get_query_var('content_pages')) ) {
+        set_query_var( "content_pages", false );
         $excludeIds = [17779];
         $excludePages = get_pages(['child_of' => 17779]);
         foreach ($excludePages as $page) {
@@ -70,6 +72,7 @@ function ccs_custom_page_filter($query) {
      * Only show marketing pages
      */
     if( !empty(get_query_var('marketing_pages')) ) {
+        set_query_var( "marketing_pages", false );
         $includeIds = [17779];
         $includePages = get_pages(['child_of' => 17779]);
         foreach ($includePages as $page) {

@@ -54,36 +54,27 @@ function ccs_custom_page_filter($query) {
         return;
     }
 
-    /**
-     * Exclude Marketing Pages
-     */
-    if( !empty(get_query_var('content_pages')) ) {
-        set_query_var( "content_pages", false );
-        $excludeIds = [17779];
-        $excludePages = get_pages(['child_of' => 17779]);
-        foreach ($excludePages as $page) {
-            $excludeIds[] = $page->ID;
-        }
+    filterPages ($query, "content_pages", false);
+    filterPages ($query, "marketing_pages", true);
 
-        $query->set( 'post__not_in', $excludeIds );
-    }
-
-    /**
-     * Only show marketing pages
-     */
-    if( !empty(get_query_var('marketing_pages')) ) {
-        set_query_var( "marketing_pages", false );
-        $includeIds = [17779];
-        $includePages = get_pages(['child_of' => 17779]);
-        foreach ($includePages as $page) {
-            $includeIds[] = $page->ID;
-        }
-
-        $query->set( 'post__in', $includeIds );
-    }
 }
 add_action( 'pre_get_posts', 'ccs_custom_page_filter' );
 
+function filterPages ($query, $pageType, $include) {
+    if( !empty(get_query_var($pageType)) ) {
+        set_query_var( $pageType, false );
+        
+        $resultPages = [17779];
+        $childPages = get_pages(['child_of' => 17779]);
+
+        foreach ($childPages as $page) {
+            $resultPages[] = $page->ID;
+        }
+        
+        $option = $include == true ? "post__in" : "post__not_in";
+        $query->set( $option, $resultPages );
+    }
+}
 
 /**
  * Fixes, what might be, a bug in WordPress, where is you define a sub-page

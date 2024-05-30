@@ -42,7 +42,7 @@ class EditScreen
 	public function submitbox_edit( $post ) {
 		global $wp_locale;
 	
-		if ( in_array( $post->post_status, [ 'auto-draft', 'future' ] ) ) {
+		if ( in_array( $post->post_status, [ 'auto-draft', 'future' ] ) || ! in_array( $post->post_type, [ 'post', 'whitepaper', 'webinar', 'downloadable' ] ) ) {
 			return;
 		}
 	
@@ -65,6 +65,11 @@ class EditScreen
 		<div class="misc-pub-section curtime misc-pub-last-updated">
 			<span id="wplmi-timestamp"> <?php esc_html_e( 'Updated on:', 'wp-last-modified-info' ) ?> <strong><?php echo get_the_modified_time( 'M j, Y \a\t H:i' ); ?></strong></span>
 			<a href="#edit_timestampmodified" class="edit-timestampmodified hide-if-no-js" role="button"><span aria-hidden="true"><?php esc_html_e( 'Edit', 'wp-last-modified-info' ); ?></span> <span class="screen-reader-text"><?php esc_html_e( 'Edit modified date and time', 'wp-last-modified-info' ); ?></span></a>
+			
+			<label for="wplmi_disable" class="wplmi-disable-update" style="display:block;margin: 5px 0;padding-top: 10px;" title="<?php esc_attr_e( 'Check this to republish on the website', 'wp-last-modified-info' ); ?>">
+				<input type="checkbox" id="wplmi_disable" name="disableupdate" <?php if ( $stop_update == 'yes' ) { echo 'checked'; } ?>><span><?php esc_html_e( 'Republish', 'wp-last-modified-info' ); ?></span>
+			</label>
+
 			<fieldset id="timestampmodifieddiv" class="hide-if-js" data-prefix="<?php esc_attr_e( 'Updated on:', 'wp-last-modified-info' ); ?>" data-separator="<?php esc_attr_e( 'at', 'wp-last-modified-info' ); ?>" style="padding-top: 5px;line-height: 1.76923076;">
 				<legend class="screen-reader-text"><?php esc_html_e( 'Last modified date and time', 'wp-last-modified-info' ); ?></legend>
 				<div class="timestamp-wrap">
@@ -94,9 +99,7 @@ class EditScreen
 						<input type="text" id="mnm" class="time-modified mnm-edit" name="mnm" value="<?php echo $mn; ?>" size="2" maxlength="2" autocomplete="off" />
 					</label>
 				</div>
-				<label for="wplmi_disable" class="wplmi-disable-update" style="display:block;margin: 5px 0;" title="<?php esc_attr_e( 'Keep this checked, if you do not want to change modified date and time on this post.', 'wp-last-modified-info' ); ?>">
-					<input type="checkbox" id="wplmi_disable" name="disableupdate" <?php if ( $stop_update == 'yes' ) { echo 'checked'; } ?>><span><?php esc_html_e( 'Lock the Modified Date', 'wp-last-modified-info' ); ?></span>
-				</label>
+				
 				<?php
 
 				$currentlocal = current_time( 'timestamp', 0 );
@@ -141,7 +144,7 @@ class EditScreen
 	public function quick_edit( $column_name, $post_type ) {
 		global $wp_locale;
 
-		if ( 'lastmodified' !== $column_name ) {
+		if ( 'lastmodified' !== $column_name || ! in_array( $post_type, [ 'post', 'whitepaper', 'webinar', 'downloadable' ] )) {
 			return;
 		} ?>
 
@@ -174,7 +177,7 @@ class EditScreen
 						<input type="text" id="mnm" class="time-modified tm-mnm" name="mnm" value="" size="2" maxlength="2" autocomplete="off" />
 					</label>&nbsp;&nbsp;<label for="wplmi_disable">
 						<input type="checkbox" id="wplmi_disable" name="disableupdate" />
-						<span class="checkbox-title"><?php esc_html_e( 'Lock the Modified Date', 'wp-last-modified-info' ); ?></span>
+						<span class="checkbox-title"><?php esc_html_e( 'Republish', 'wp-last-modified-info' ); ?></span>
 					</label>
 				</div>
 				<input type="hidden" id="ssm" name="ssm" value="">
@@ -194,7 +197,7 @@ class EditScreen
 	public function bulk_edit( $column_name, $post_type ) {
 		global $wp_locale;
 
-		if ( 'lastmodified' !== $column_name ) {
+		if ( 'lastmodified' !== $column_name || ! in_array( $post_type, [ 'post', 'whitepaper', 'webinar', 'downloadable' ] )) {
 			return;
 		} ?>
 
@@ -295,7 +298,7 @@ class EditScreen
 	 * @return object  $data
 	 */
 	public function update_data( $data, $postarr ) {
-		if ( ! isset( $postarr['ID'] ) || in_array( $postarr['post_status'], [ 'auto-draft', 'future' ] ) ) {
+		if ( ! isset( $postarr['ID'] ) || in_array( $postarr['post_status'], [ 'auto-draft', 'future' ] ) || ! in_array( $postarr["post_type"], [ 'post', 'whitepaper', 'webinar', 'downloadable' ] ) ) {
 			return $data;
 		}
 
@@ -314,7 +317,6 @@ class EditScreen
 		    return $data;
 		}
 
-		// Get disable state.
 		$disabled = $this->get_meta( $postarr['ID'], '_lmt_disableupdate' );
 			
 		/**
@@ -322,7 +324,7 @@ class EditScreen
 		 */
 		if ( ! isset( $postarr['wplmi_modified'], $postarr['wplmi_change'], $postarr['wplmi_disable'] ) ) {
 			/**
-			 * Handle Block editor save
+			 * Saving the revision
 			 */
 			if ( ! empty( $postarr['wplmi_lockmodifiedupdate'] ) ) {
 				$disabled = $postarr['wplmi_lockmodifiedupdate'];
@@ -335,48 +337,25 @@ class EditScreen
 				$data['post_modified']     = current_time( 'mysql' );
 				$data['post_modified_gmt'] = current_time( 'mysql', 1 );
 			}
-
-			// Check the duplicate request.
-			$temp_date = $this->get_meta( $postarr['ID'], 'wplmi_temp_date' );
-			if ( ! empty( $postarr['wplmi_modified_rest'] ) ) {
-				$published_timestamp = get_post_time( 'U', false, $postarr['ID'] );
-				$modified_timestamp = strtotime( $postarr['wplmi_modified_rest'] );
-				$modified_date      = date( 'Y-m-d H:i:s', $modified_timestamp );
-
-				if ( $modified_timestamp >= $published_timestamp ) {
-					$data['post_modified']     = $modified_date;
-					$data['post_modified_gmt'] = get_gmt_from_date( $modified_date );
-
-					$this->update_meta( $postarr['ID'], 'wplmi_temp_date', $modified_date );
-				}
-			} 
-			elseif ( ! empty( $temp_date ) ) {
-				$data['post_modified']     = $temp_date;
-				$data['post_modified_gmt'] = get_gmt_from_date( $temp_date );
-
-				$this->delete_meta( $postarr['ID'], 'wplmi_temp_date' );
-			}
 		} else {
 			/**
-			 * Handle Classic editor save
+			 * Saving the post itself
 			 */
 			$modified = ! empty( $postarr['wplmi_modified'] ) ? sanitize_text_field( $postarr['wplmi_modified'] ) : $postarr['post_modified'];
 			$change = ! empty( $postarr['wplmi_change'] ) ? sanitize_text_field( $postarr['wplmi_change'] ) : 'no';
 			$disabled = ! empty( $postarr['wplmi_disable'] ) ? sanitize_text_field( $postarr['wplmi_disable'] ) : $disabled;
 
-			// Update meta
-			$this->update_meta( $postarr['ID'], '_lmt_disableupdate', $disabled );
+			// we are not storing the checkbox value 
+			// $this->update_meta( $postarr['ID'], '_lmt_disableupdate', $disabled );
 
-			// Check if disable is set to 'yes'
 			if ( 'yes' === $disabled ) {
-				$data['post_modified']     = $modified;
-				$data['post_modified_gmt'] = get_gmt_from_date( $modified );
-			} else {
 				$data['post_modified']     = current_time( 'mysql' );
 				$data['post_modified_gmt'] = current_time( 'mysql', 1 );
+			} else {
+				$data['post_modified']     = $modified;
+				$data['post_modified_gmt'] = get_gmt_from_date( $modified );
 			}
 
-			// check is current state is changed
 			if ( 'yes' === $change ) {
 				$mm = sanitize_text_field( $postarr['mmm'] );
 				$jj = sanitize_text_field( $postarr['jjm'] );

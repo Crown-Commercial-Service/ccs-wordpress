@@ -833,6 +833,11 @@ function add_sectors_to_acf( $data, $post, $request ) {
 		}
     }
 
+	if ( $post->post_type === 'event' ){
+		$terms = get_the_terms( $post->ID, 'event_type' );
+		$data->data['acf']['event_type'] = $terms[0]->name;
+	}
+
     return $data;
 }
 

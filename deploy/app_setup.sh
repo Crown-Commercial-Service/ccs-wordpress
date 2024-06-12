@@ -58,7 +58,9 @@ echo "> Setting web deployment permissions..."
 (sudo chown -R ec2-user:ec2-user /var/www &&
     sudo chown -R "$WEB_USERNAME":"$WEB_GROUPNAME" "$WEB_CURRENT/public/wp-content/uploads" &&
     sudo chown -R ec2-user:"$WEB_GROUPNAME" "$WEB_CURRENT/var/log" &&
-    sudo chmod -R og+w "$WEB_CURRENT/var/log"
+    sudo chmod -R og+w "$WEB_CURRENT/var/log" &&
+    sudo chmod 640 "$WEB_CURRENT/.env" &&
+    sudo chgrp apache "$WEB_CURRENT/.env"
 ) || rollback
 
 echo "> Running cleanup..."

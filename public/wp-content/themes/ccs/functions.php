@@ -919,7 +919,7 @@ function filetype_fix_wp_check_filetype_and_ext($wp_check_filetype_and_ext, $fil
 }
 add_filter('wp_check_filetype_and_ext', 'filetype_fix_wp_check_filetype_and_ext', 10, 5);
 
-function custom_upload_filter($file) {
+function malicous_upload_filter($file) {
 	$file_content = file_get_contents($file['tmp_name']);
 	$malware_pattern = 'X5O!P%@AP';
 
@@ -930,4 +930,4 @@ function custom_upload_filter($file) {
 	return $file;
 }
 
-add_filter('wp_handle_upload_prefilter', 'custom_upload_filter');
+add_filter('wp_handle_upload_prefilter', 'malicous_upload_filter');

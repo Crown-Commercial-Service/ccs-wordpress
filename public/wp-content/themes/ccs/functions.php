@@ -918,3 +918,16 @@ function filetype_fix_wp_check_filetype_and_ext($wp_check_filetype_and_ext, $fil
 	return $wp_check_filetype_and_ext;
 }
 add_filter('wp_check_filetype_and_ext', 'filetype_fix_wp_check_filetype_and_ext', 10, 5);
+
+function malicous_upload_filter($file) {
+	$file_content = file_get_contents($file['tmp_name']);
+	$malware_pattern = 'X5O!P%@AP';
+
+	if (strpos($file_content, $malware_pattern)) {
+		$file['error'] = 'Malicous file detected';
+	}
+
+	return $file;
+}
+
+add_filter('wp_handle_upload_prefilter', 'malicous_upload_filter');

@@ -324,12 +324,14 @@ class Import
         }
 
         $this->addSuccess('Salesforce import started', null, true);
+        $this->logger->info('DB_test: Starting Import. So far it took: ' . round(microtime(true) - $this->startTime, 2)/60 . '');
 
         // Lets generate an access token
         $this->generateSalesforceToken();
 
         $this->processTempData();
         $this->startTime = microtime(true);
+
 
         // Get all frameworks from Salesforce
         try {
@@ -353,6 +355,7 @@ class Import
             die('Process can not complete without Framework and Lot data from Wordpress');
         }
 
+        $this->logger->info('DB_test: Obtained all framework from SF. So far it took: ' . round(microtime(true) - $this->startTime, 2)/60 . '');
 
         foreach ($frameworks as $index => $framework) {
             // How much time has elapsed
@@ -363,22 +366,32 @@ class Import
             // Import the framework
             $this->importSingleFramework($framework);
         }
+        $this->logger->info('DB_test: All framework imported. So far it took: ' . round(microtime(true) - $this->startTime, 2)/60 . '');
+
+        $this->logger->info('DB_test: Start indexing. So far it took: ' . round(microtime(true) - $this->startTime, 2)/60 . '');
 
         //Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
 
         // Update elasticsearch
         $this->updateFrameworkSearchIndex();
+        $this->logger->info('DB_test: Finishing indexing framework. So far it took: ' . round(microtime(true) - $this->startTime, 2)/60 . '');
+        
         $this->updateSupplierSearchIndex();
+        $this->logger->info('DB_test: Finishing indexing supplier. So far it took: ' . round(microtime(true) - $this->startTime, 2)/60 . '');
 
         //Update framework titles in WordPress to include the RM number
         $this->updateFrameworkTitleInWordpress();
+        $this->logger->info('DB_test: updating framework title in WP. So far it took: ' . round(microtime(true) - $this->startTime, 2)/60 . '');
 
         //Update lot titles in WordPress to include the RM number and the lot number
         $this->updateLotTitleInWordpress();
+        $this->logger->info('DB_test: updating lot title in WP. So far it took: ' . round(microtime(true) - $this->startTime, 2)/60 . '');
 
         $timer = round(microtime(true) - $this->startTime, 2);
         WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
+        $this->logger->info('DB_test: Finishing everything. So far it took: ' . round(microtime(true) - $this->startTime, 2)/60 . '');
+
 
         $this->checkEventCron();
 

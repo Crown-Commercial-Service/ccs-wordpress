@@ -510,6 +510,18 @@ function post_featured_image_and_category_type_json( $data ) {
 	return $data;
   }
 
+  add_filter( 'rest_prepare_event', 'post_featured_image_event_json', 10, 3 );
+
+  function post_featured_image_event_json( $data ) {
+	  $featured_image_id = $data->data["acf"]["image"];
+	  $featured_image_url = wp_get_attachment_image_src( $featured_image_id, 'news-size-m' );
+	  
+	  $data->data['acf']['featured_image_url'] = $featured_image_url ? $featured_image_url[0] : false;
+	  $data->data['acf']['alt_text'] = get_post_meta($featured_image_id, '_wp_attachment_image_alt', true);
+  
+	  return $data;
+	}
+
 function getAllHiddenPosts()
 {
 

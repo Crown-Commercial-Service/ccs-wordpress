@@ -33,6 +33,9 @@ class CustomUpcomingDealsApi
     public function get_upcoming_deals()
     {
         $upcomingDealsInfo = [];
+
+        $upcomingDealsInfo['file'] = get_field('pipeline_report', 'option');
+
         if (have_rows('upcoming_deals', 'option')):
             while (have_rows('upcoming_deals', 'option')): the_row();
                 $upcomingDealsInfo['title'] = get_sub_field('title');

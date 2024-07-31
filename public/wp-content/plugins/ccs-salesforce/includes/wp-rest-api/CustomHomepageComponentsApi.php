@@ -65,52 +65,13 @@ class CustomHomepageComponentsApi
             
         endif;
 
-        $catalogueTitle = [];
-        if (have_rows('hc_catalogue_title', 'option')):
-            while (have_rows('hc_catalogue_title', 'option')): the_row();
-                $catalogueTitle['title'] = get_sub_field('title');
-            endwhile;
-            
-        endif;
-
-        $catalogue1 = [];
-        if (have_rows('hc_catalogue1', 'option')):
-            while (have_rows('hc_catalogue1', 'option')): the_row();
-                $catalogue1['title'] = get_sub_field('title');
-                $catalogue1['link_url'] = get_sub_field('link');
-                $catalogue1['description'] = get_sub_field('description');
-            endwhile;
-            
-        endif;
-
-        $catalogue2 = [];
-        if (have_rows('hc_catalogue2', 'option')):
-            while (have_rows('hc_catalogue2', 'option')): the_row();
-                $catalogue2['title'] = get_sub_field('title');
-                $catalogue2['link_url'] = get_sub_field('link');
-                $catalogue2['description'] = get_sub_field('description');
-            endwhile;
-            
-        endif;
-
-        $catalogue3 = [];
-        if (have_rows('hc_catalogue3', 'option')):
-            while (have_rows('hc_catalogue3', 'option')): the_row();
-                $catalogue3['title'] = get_sub_field('title');
-                $catalogue3['link_url'] = get_sub_field('link');
-                $catalogue3['description'] = get_sub_field('description');
-            endwhile;
-            
-        endif;
-
-        $video= [];
-        if (have_rows('hc_video', 'option')):
-            while (have_rows('hc_video', 'option')): the_row();
-                $video['title'] = get_sub_field('title');
-                $video['video_link'] = get_sub_field('video_link');
-                $video['video_caption'] = get_sub_field('video_caption');
-                $video['link_text'] = get_sub_field('link_text');
-                $video['link_url'] = get_sub_field('link');
+        $campaign = [];
+        if (have_rows('campaign', 'option')):
+            while (have_rows('campaign', 'option')): the_row();
+                $campaign['title'] = get_sub_field('title');
+                $campaign['description'] = get_sub_field('description');
+                $campaign['button_text'] = get_sub_field('button_text');
+                $campaign['button_link'] = get_sub_field('button_link');
             endwhile;
             
         endif;
@@ -119,11 +80,7 @@ class CustomHomepageComponentsApi
           'how_to_buy'  => $howToBuy,
           'agreements'  => $agreements,
           'upcoming_deals'  => $upcomingDeals,
-          'catalogue_title' => $catalogueTitle,
-          'catalogue1'  => $catalogue1,
-          'catalogue2'  => $catalogue2,
-          'catalogue3'  => $catalogue3,
-          'video' => $video, 
+          'campaign' => $campaign, 
         ];
     }
 

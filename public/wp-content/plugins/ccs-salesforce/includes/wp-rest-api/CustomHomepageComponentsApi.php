@@ -76,11 +76,24 @@ class CustomHomepageComponentsApi
             
         endif;
 
+        $video = [];
+        if (have_rows('hc_video', 'option')) :
+            while (have_rows('hc_video', 'option')) : the_row();
+                $video['title'] = get_sub_field('title');
+                $video['video_link'] = get_sub_field('video_link');
+                $video['video_caption'] = get_sub_field('video_caption');
+                $video['link_text'] = get_sub_field('link_text');
+                $video['link_url'] = get_sub_field('link');
+            endwhile;
+
+        endif;
+
         return [
           'how_to_buy'  => $howToBuy,
           'agreements'  => $agreements,
           'upcoming_deals'  => $upcomingDeals,
-          'campaign' => $campaign, 
+          'campaign' => $campaign,
+          'video' => $video,
         ];
     }
 

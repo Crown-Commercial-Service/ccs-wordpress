@@ -136,6 +136,12 @@ class Framework extends AbstractModel
      */
     protected $upcomingDealDetails;
 
+    /**
+     * @var string
+     */
+    protected $upcomingDealSummary;
+
+
 
     /**
      * @return string
@@ -777,6 +783,24 @@ class Framework extends AbstractModel
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getUpcomingDealSummary(): ?string
+    {
+        return $this->upcomingDealSummary;
+    }
+
+    /**
+     * @param string $upcomingDealSummary
+     * @return Framework
+     */
+    public function setUpcomingDealSummary(?string $upcomingDealSummary): Framework
+    {
+        $this->upcomingDealSummary = $upcomingDealSummary;
+        return $this;
+    }
+
 
     /**
      * Returns a simple text array representing the object
@@ -815,6 +839,7 @@ class Framework extends AbstractModel
           'published_status'        => $this->getPublishedStatus(),
           'keywords'                => $this->getKeywords(),
           'upcoming_deal_details'   => $this->getUpcomingDealDetails(),
+          'upcoming_deal_summary'   => $this->getUpcomingDealSummary(),
         ];
     }
 }

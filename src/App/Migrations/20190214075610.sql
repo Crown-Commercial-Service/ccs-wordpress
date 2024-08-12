@@ -25,6 +25,7 @@ CREATE TABLE `ccs_frameworks` (
   `published_status` varchar(100) NOT NULL DEFAULT 'draft',
   `keywords` varchar(1000) DEFAULT NULL,
   `upcoming_deal_details` text,
+  `upcoming_deal_summary` text,
   PRIMARY KEY (`id`),
   KEY `rm_number` (`rm_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

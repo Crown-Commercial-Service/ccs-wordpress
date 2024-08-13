@@ -149,6 +149,10 @@ function save_framework_acf_data ($post_id) {
         $framework->setUpcomingDealDetails(get_field('framework_upcoming_deal_details'));
     }
 
+    if (get_field('framework_upcoming_deal_summary') !== null) {
+        $framework->setUpcomingDealSummary(get_field('framework_upcoming_deal_summary'));
+    }
+
     if(get_field('framework_availability') !== null)
     {
         $framework->setAvailability(get_field('framework_availability'));

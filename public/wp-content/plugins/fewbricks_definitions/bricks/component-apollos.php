@@ -28,7 +28,7 @@ class component_apollos extends project_brick
         $this->add_field((new acf_fields\repeater('Report Cards', 'apollos', '202402211354e', [
                 'button_label' => 'Add Report Card',
                 'layout' => 'row',
-                'max' => 4
+                'max' => 6
             ]))
 
              ->add_sub_field(new acf_fields\text('Heading', 'heading', '202402211326a', [

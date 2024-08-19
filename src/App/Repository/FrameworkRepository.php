@@ -34,6 +34,7 @@ class FrameworkRepository extends AbstractRepository
       'published_status'        => ':published_status',
       'keywords'                => ':keywords',
       'upcoming_deal_details'   => ':upcoming_deal_details',
+      'upcoming_deal_summary'   => ':upcoming_deal_summary',
       'availability'            => ':availability',
       'cannot_use'              => ':cannot_use',
     ];
@@ -62,6 +63,7 @@ class FrameworkRepository extends AbstractRepository
       'published_status',
       'keywords',
       'upcoming_deal_details',
+      'upcoming_deal_summary',
       'availability',
       'cannot_use',
     ];
@@ -295,6 +297,11 @@ class FrameworkRepository extends AbstractRepository
         if (isset($databaseBindings['upcoming_deal_details'])) {
             $upcomingDealDetails = $framework->getUpcomingDealDetails();
             $query->bindParam(':upcoming_deal_details', $upcomingDealDetails, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['upcoming_deal_summary'])) {
+            $upcomingDealSummary = $framework->getUpcomingDealSummary();
+            $query->bindParam(':upcoming_deal_summary', $upcomingDealSummary, \PDO::PARAM_STR);
         }
 
         if (isset($databaseBindings['availability'])) {

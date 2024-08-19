@@ -136,3 +136,11 @@ $fg4->add_field( new acf_fields\wysiwyg( 'Upcoming Deal Details', 'framework_upc
 ] ) );
 
 $fg4->register();
+
+$fg5 = (new fewacf\field_group('Upcoming Agreement Summary', '202403081626a', $notCasLocation, 30));
+
+$fg5->add_field(new acf_fields\wysiwyg('Upcoming Agreement Summary', 'framework_upcoming_deal_summary', '202403081627a', [
+    'instructions' => 'Summary for the upcoming agreements page - a maximum of 180 characters.'
+]));
+
+$fg5->register();

@@ -943,3 +943,9 @@ function malicous_upload_filter($file) {
 }
 
 add_filter('wp_handle_upload_prefilter', 'malicous_upload_filter');
+
+function custom_login_error_message() {
+	return 'If you are a valid user, please check your email for the confirmation link, then visit the login page.';
+}
+
+add_filter('login_errors', 'custom_login_error_message');

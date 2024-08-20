@@ -943,3 +943,9 @@ function malicous_upload_filter($file) {
 }
 
 add_filter('wp_handle_upload_prefilter', 'malicous_upload_filter');
+
+function custom_login_error_message() {
+	return "You’ve requested to reset the password for {$_REQUEST["user_login"]}. If an account exists for that email address then you’ll receive a link to reset your password.";
+}
+
+add_filter('login_errors', 'custom_login_error_message');

@@ -3,35 +3,32 @@ if ( ! defined('ABSPATH')) exit; // exit if accessed directly
 
 class Util {
 
-    function __construct() {
-
-        $this->authorsLabelMap = array(
-            "author_name" => "Author Name",
-            "last_login" => "Last Accessed Wordpress",
-            "post_modified" => "Last Update Date",
-            "title" => "Last Updated Framework"
-        );
-        
-        $this->frameworksLabelMap = array(
-            "post_modified" => "Last Modified",
-            "post_author" => "Modified By",
-            "last_published" => "Last Update Date",
-            "title" => "Framework Title",
-            "rm_number" => "RM Number",
-            "lot_title" => "Lot Title",
-            "lot_id" => "Lot ID",
-            "doc_name" => "Linked Document",
-            "doc_type" => "Document Type"
-        );
-        
-        $this->documentsLabelMap = array(
-            "document_name" => "Document Title",
-            "post_mime_type" => "File Type",
-            "post_date" => "Date Uploaded",
-            "title" => "Associated Framework",
-            "author" => "Author"
-        );
-    }
+    protected $authorsLabelMap = array(
+        "author_name" => "Author Name",
+        "last_login" => "Last Accessed Wordpress",
+        "post_modified" => "Last Update Date",
+        "title" => "Last Updated Framework"
+    );
+    
+    protected $frameworksLabelMap = array(
+        "post_modified" => "Last Modified",
+        "post_author" => "Modified By",
+        "last_published" => "Last Update Date",
+        "title" => "Framework Title",
+        "rm_number" => "RM Number",
+        "lot_title" => "Lot Title",
+        "lot_id" => "Lot ID",
+        "doc_name" => "Linked Document",
+        "doc_type" => "Document Type"
+    );
+    
+    protected $documentsLabelMap = array(
+        "document_name" => "Document Title",
+        "post_mime_type" => "File Type",
+        "post_date" => "Date Uploaded",
+        "title" => "Associated Framework",
+        "author" => "Author"
+    );
   
     function downloadAuthorsReport() {
 
@@ -46,8 +43,7 @@ class Util {
         header("Content-Disposition: attachment; filename=authors-report.csv");
         ob_clean();
         $file_pointer = fopen('php://output', 'w');
-        fputcsv($file_pointer, $csvLabels);
-        //fputcsv($file_pointer, $selectedOptions);
+        fputcsv($file_pointer, $csvLabels);
 
         for($i = 0; $i < count($authors); $i++) {
             $line = $authors[$i];
@@ -56,10 +52,9 @@ class Util {
             for ($j = 0; $j < count($selectedOptions); $j++) {
                 $current_key = $selectedOptions[$j];
                 if(array_key_exists($current_key, $line)) {
-                    array_push(
-                    $firstLineValues, $line[$current_key]);
+                    array_push($firstLineValues, $line[$current_key]);
                 }
-                else if(array_key_exists($current_key, $last_updated_framework)){
+                else if(array_key_exists($current_key, $last_updated_framework)){
                     array_push(
                         $firstLineValues, $last_updated_framework[$current_key]
                     );
@@ -177,8 +172,6 @@ class Util {
                 array_values($labelMap),
                 array_keys($labelMap)
             );
-            // $csvLabels          = array_values($labelMap);
-            // $selectedOptions    = array_keys($labelMap);
         }else{
             return array(
                 array_values(array_intersect_key($labelMap, array_flip($selectedOptions))),

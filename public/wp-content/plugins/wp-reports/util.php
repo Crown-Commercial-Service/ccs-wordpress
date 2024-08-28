@@ -5,9 +5,6 @@ class Util {
 
     function __construct() {
 
-        $this->authorsAPI = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/authors';
-        $this->frameworksAPI = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/frameworks';
-        $this->documentsAPI = 'https://' . getenv('WP_SITEURL') . '/wp-json/wp-reports-plugin/v2/documents/type=frameworks';
         $this->authorsLabelMap = array(
             "author_name" => "Author Name",
             "last_login" => "Last Accessed Wordpress",
@@ -35,29 +32,21 @@ class Util {
             "author" => "Author"
         );
     }
-
-
-    // DOWNLOAD AUTHORS
-
   
     function downloadAuthorsReport() {
 
-        $json = file_get_contents($this->authorsAPI);
-        $authors = json_decode($json, TRUE);
+        $authors = authorsQuery();
         
-        $selectedOptions = array_keys($_POST);
-        
-        if (($key = array_search('action', $selectedOptions)) !== false) {
-            unset($selectedOptions[$key]);
-        }
+        $labelAndFilter = $this->getLabelAndFilteringOption('authors');
 
-        $csvLables = $this->mapToLabels($selectedOptions, "authors");
+        $csvLabels          = $labelAndFilter[0];
+        $selectedOptions    = $labelAndFilter[1];
         
         header("Content-type: application/csv");
         header("Content-Disposition: attachment; filename=authors-report.csv");
         ob_clean();
         $file_pointer = fopen('php://output', 'w');
-        fputcsv($file_pointer, $csvLables);
+        fputcsv($file_pointer, $csvLabels);
         //fputcsv($file_pointer, $selectedOptions);
 
         for($i = 0; $i < count($authors); $i++) {
@@ -83,27 +72,21 @@ class Util {
 
     }
 
-
-    // DOWNLOAD FRAMEWORKS
-
     function downloadFrameworksReport() {
 
-        $json = file_get_contents($this->frameworksAPI);
-        $frameworks = json_decode($json, TRUE);
+        $frameworks = frameworksQuery();
 
-        $selectedOptions = array_keys($_POST);
-        if (($key = array_search('action', $selectedOptions)) !== false) {
-            unset($selectedOptions[$key]);
-        }
+        $labelAndFilter = $this->getLabelAndFilteringOption('frameworks');
 
-        $csvLables = $this->mapToLabels($selectedOptions, "frameworks");
-        
+        $csvLabels          = $labelAndFilter[0];
+        $selectedOptions    = $labelAndFilter[1];
+
         header("Content-type: application/csv");
         header("Content-Disposition: attachment; filename=frameworks-report.csv");
         ob_clean();
         $file_pointer = fopen('php://output', 'w');
 
-        fputcsv($file_pointer, $csvLables);
+        fputcsv($file_pointer, $csvLabels);
 
         for($i = 0; $i < count($frameworks); $i++) {
             $line = $frameworks[$i];
@@ -135,25 +118,20 @@ class Util {
         
     }
 
-    // DOWNLOAD DOCUMENTS
-
     function downloadDocumentsReport() {
 
-        $json = file_get_contents($this->documentsAPI);
-        $documents = json_decode($json, TRUE);
+        $documents = documentsQuery('frameworks');
 
-        $selectedOptions = array_keys($_POST);
-        if (($key = array_search('action', $selectedOptions)) !== false) {
-            unset($selectedOptions[$key]);
-        }
-        
-        $csvLabels = $this->mapToLabels($selectedOptions, "documents");
+        $labelAndFilter = $this->getLabelAndFilteringOption('documents');
+
+        $csvLabels          = $labelAndFilter[0];
+        $selectedOptions    = $labelAndFilter[1];
 
         header("Content-type: application/csv");
         header("Content-Disposition: attachment; filename=documents-report.csv");
         ob_clean();
         $file_pointer = fopen('php://output', 'w');
-        fputcsv($file_pointer, $csvLabels);
+        fputcsv($file_pointer, $csvLabels);        
 
         for($i = 0; $i < count($documents); $i++) {
             $line = $documents[$i];
@@ -175,21 +153,37 @@ class Util {
 
     }
 
-    function mapToLabels($selectedOptions, $formType) {
-        // echo "Selected options:";
-        // var_dump($selectedOptions);
-        switch($formType) {
+    function getLabelAndFilteringOption($type) {
+
+        $selectedOptions = array_keys($_POST);
+        if (($key = array_search('action', $selectedOptions)) !== false) {
+            unset($selectedOptions[$key]);
+        }
+        
+        switch($type) {
             case "authors": 
-                return array_values(array_intersect_key($this->authorsLabelMap, array_flip($selectedOptions)));
+                $labelMap = $this->authorsLabelMap;
                 break;
             case "frameworks":
-                return array_values(array_intersect_key($this->frameworksLabelMap, array_flip($selectedOptions)));
+                $labelMap = $this->frameworksLabelMap;
                 break;
             case "documents":
-                return array_values(array_intersect_key($this->documentsLabelMap, array_flip($selectedOptions)));
+                $labelMap = $this->documentsLabelMap;
                 break;
-            default:
-                return $selectedOptions;
+            }
+        
+        if(empty($selectedOptions)){
+            return array(
+                array_values($labelMap),
+                array_keys($labelMap)
+            );
+            // $csvLabels          = array_values($labelMap);
+            // $selectedOptions    = array_keys($labelMap);
+        }else{
+            return array(
+                array_values(array_intersect_key($labelMap, array_flip($selectedOptions))),
+                $selectedOptions
+            );
         }
     }
 }

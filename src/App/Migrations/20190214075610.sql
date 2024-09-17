@@ -9,6 +9,7 @@ CREATE TABLE `ccs_frameworks` (
   `pillar` varchar(255) DEFAULT NULL,
   `category` varchar(255) DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
+  `regulation` text,
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `tenders_open_date` date DEFAULT NULL,

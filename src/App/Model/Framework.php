@@ -847,7 +847,7 @@ class Framework extends AbstractModel
           'pillar'                  => $this->getPillar(),
           'category'                => $this->getCategory(),
           'status'                  => $this->getStatus(),
-          'regulationType'          => $this->getRegulationType(),
+          'regulation_type'         => $this->getRegulationType(),
           'start_date'              => !empty($this->getStartDate()) ? $this->getStartDate()->format('Y-m-d') : null,
           'end_date'                => !empty($this->getEndDate()) ? $this->getEndDate()->format('Y-m-d') : null,
           'tenders_open_date'       => !empty($this->getTendersOpenDate()) ? $this->getTendersOpenDate()->format('Y-m-d') : null,

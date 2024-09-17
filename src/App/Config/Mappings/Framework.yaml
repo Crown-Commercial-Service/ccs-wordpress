@@ -7,6 +7,7 @@ properties:
   pillar: Pillar__c
   category: CCS_Category__c
   status: Status__c
+  regulationType: Agreement_Type__c
   startDate: Start_Date__c
   endDate: Effective_End_Date__c
   tendersOpenDate: OJEU_Date_Target__c

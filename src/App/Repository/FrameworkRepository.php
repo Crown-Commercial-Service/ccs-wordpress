@@ -18,6 +18,7 @@ class FrameworkRepository extends AbstractRepository
       'pillar'                  => ':pillar',
       'category'                => ':category',
       'status'                  => ':status',
+      'regulation_type'          => ':regulation_type',
       'start_date'              => ':start_date',
       'end_date'                => ':end_date',
       'tenders_open_date'       => ':tenders_open_date',
@@ -199,6 +200,11 @@ class FrameworkRepository extends AbstractRepository
         if (isset($databaseBindings['status'])) {
             $status = $framework->getStatus();
             $query->bindParam(':status', $status, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['regulation_type'])) {
+            $regulationType = $framework->getRegulationType();
+            $query->bindParam(':regulation_type', $regulationType, \PDO::PARAM_STR);
         }
 
         if (isset($databaseBindings['start_date'])) {

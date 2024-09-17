@@ -80,7 +80,10 @@ class Framework extends AbstractModel
      * @var string
      */
     protected $status;
-
+    /**
+     * @var string
+     */
+    protected $regulationType;
     /**
      * @var \DateTime
      */
@@ -480,6 +483,23 @@ class Framework extends AbstractModel
         $this->status = $status;
         return $this;
     }
+    /**
+     * @return string
+     */
+    public function getRegulationType(): ?string
+    {
+        return $this->regulationType;
+    }
+
+    /**
+     * @param string $regulationType
+     * @return Framework
+     */
+    public function setRegulationType(?string $regulationType): Framework
+    {
+        $this->regulationType = $regulationType;
+        return $this;
+    }
 
     /**
      * @return \DateTime
@@ -827,6 +847,7 @@ class Framework extends AbstractModel
           'pillar'                  => $this->getPillar(),
           'category'                => $this->getCategory(),
           'status'                  => $this->getStatus(),
+          'regulationType'          => $this->getRegulationType(),
           'start_date'              => !empty($this->getStartDate()) ? $this->getStartDate()->format('Y-m-d') : null,
           'end_date'                => !empty($this->getEndDate()) ? $this->getEndDate()->format('Y-m-d') : null,
           'tenders_open_date'       => !empty($this->getTendersOpenDate()) ? $this->getTendersOpenDate()->format('Y-m-d') : null,

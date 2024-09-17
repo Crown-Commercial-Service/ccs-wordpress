@@ -79,6 +79,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
           'benefits'            => $framework->getBenefits(),
           'how_to_buy'          => $framework->getHowToBuy(),
           'keywords'            => $framework->getKeywords(),
+          'regulation'          => $framework->getRegulation(),
         ];
 
         $lotData = [];

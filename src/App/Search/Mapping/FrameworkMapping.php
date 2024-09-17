@@ -40,6 +40,7 @@ class FrameworkMapping extends AbstractMapping
       'category'         => ['type' => 'keyword'],
       'status'           => ['type' => 'keyword'],
       'published_status' => ['type' => 'keyword'],
+      'regulation'       => ['type' => 'keyword'],
       'lots'             => [
         'type'       => 'nested',
         'properties' => [

@@ -29,7 +29,6 @@ class SyncText
             'framework_upcoming_deal_summary'   => 'upcoming_deal_summary',
             'framework_availability'            => 'availability',
             'framework_cannot_use'              => 'cannot_use',
-            'framework_regulation'              => 'regulation',
         ],
         'lots' => [
             'lot_description'                   => 'description',

@@ -67,7 +67,6 @@ class FrameworkRepository extends AbstractRepository
       'upcoming_deal_summary',
       'availability',
       'cannot_use',
-      'regulation',
     ];
 
     public function createModel($data = null)

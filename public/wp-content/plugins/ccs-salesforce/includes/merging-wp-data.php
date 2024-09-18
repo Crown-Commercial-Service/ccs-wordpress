@@ -163,10 +163,6 @@ function save_framework_acf_data ($post_id) {
         $framework->setCannotUse(get_field('framework_cannot_use'));
     }
 
-    if (get_field('framework_regulation') !== null) {
-        $framework->setRegulation(get_field('framework_regulation'));
-    }
-
 
     //Save the Wordpress data back into the custom database
     $frameworkRepository->update('wordpress_id', $framework->getWordpressId(), $framework);

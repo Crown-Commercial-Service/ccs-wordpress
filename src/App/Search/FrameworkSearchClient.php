@@ -75,6 +75,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
           'pillar'              => $framework->getPillar(),
           'category'            => $framework->getCategory(),
           'status'              => $framework->getStatus(),
+          'regulation_type'     => $framework->getRegulationType(),
           'published_status'    => $framework->getPublishedStatus(),
           'benefits'            => $framework->getBenefits(),
           'how_to_buy'          => $framework->getHowToBuy(),

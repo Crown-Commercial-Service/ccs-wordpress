@@ -38,6 +38,7 @@ class FrameworkRepository extends AbstractRepository
       'upcoming_deal_summary'   => ':upcoming_deal_summary',
       'availability'            => ':availability',
       'cannot_use'              => ':cannot_use',
+      'regulation'              => ':regulation',
     ];
 
      /**
@@ -318,6 +319,11 @@ class FrameworkRepository extends AbstractRepository
         if (isset($databaseBindings['cannot_use'])) {
             $cannotUse = $framework->getCannotUse();
             $query->bindParam(':cannot_use', $cannotUse, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['regulation'])) {
+            $regulation = $framework->getRegulation();
+            $query->bindParam(':regulation', $regulation, \PDO::PARAM_STR);
         }
 
         return $query;

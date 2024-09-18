@@ -144,6 +144,11 @@ class Framework extends AbstractModel
      */
     protected $upcomingDealSummary;
 
+    /**
+     * @var string
+     */
+    protected $regulation;
+
 
 
     /**
@@ -821,6 +826,24 @@ class Framework extends AbstractModel
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getRegulation(): ?string
+    {
+        return $this->regulation;
+    }
+
+    /**
+     * @param string $regulation
+     * @return Framework
+     */
+    public function setRegulation(?string $regulation): Framework
+    {
+        $this->regulation = $regulation;
+        return $this;
+    }
+
 
     /**
      * Returns a simple text array representing the object
@@ -861,6 +884,7 @@ class Framework extends AbstractModel
           'keywords'                => $this->getKeywords(),
           'upcoming_deal_details'   => $this->getUpcomingDealDetails(),
           'upcoming_deal_summary'   => $this->getUpcomingDealSummary(),
+          'regulation'              => $this->getRegulation(),
         ];
     }
 }

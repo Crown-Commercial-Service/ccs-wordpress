@@ -80,6 +80,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
           'how_to_buy'          => $framework->getHowToBuy(),
           'keywords'            => $framework->getKeywords(),
           'regulation'          => $framework->getRegulation(),
+          'regulation_type'     => $framework->getRegulationType(),
         ];
 
         $lotData = [];
@@ -158,6 +159,20 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
 
             $rmNumberQuery = new Query\Wildcard('rm_number.raw', $keyword . '*', 2);
             $keywordBool->addShould($rmNumberQuery);
+
+            // Regulation search
+            $multiMatchQueryForRegulation = new Query\MultiMatch();
+            $multiMatchQueryForRegulation->setQuery($keyword);
+            $multiMatchQueryForRegulation->setFields(['regulation^2']);
+            $multiMatchQueryForRegulation->setFuzziness(1);
+            $keywordBool->addShould($multiMatchQueryForRegulation);
+
+            // Regulation type
+            $multiMatchQueryForRegulationType = new Query\MultiMatch();
+            $multiMatchQueryForRegulationType->setQuery($keyword);
+            $multiMatchQueryForRegulationType->setFields(['regulation_type^2']);
+            $multiMatchQueryForRegulationType->setFuzziness(1);
+            $keywordBool->addShould($multiMatchQueryForRegulationType);
 
             $number = preg_replace("/[^0-9]/", "", $keyword);
             if (!empty($number)) {

@@ -107,6 +107,30 @@ if (isset($_GET['pillar'])) {
     ];
 }
 
+if (isset($_GET['regulation'])) {
+    if (!is_array(($_GET['regulation']))) {
+        $regulation = filter_var($_GET['regulation'], FILTER_SANITIZE_STRING);
+    }
+
+    $filters['regulation'] = [
+      'field'     => 'regulation',
+      'condition' => 'OR',
+      'value'     => $regulation
+    ];
+}
+
+if (isset($_GET['regulation_type'])) {
+    if (!is_array(($_GET['regulation_type']))) {
+        $regulation_type = filter_var($_GET['regulation_type'], FILTER_SANITIZE_STRING);
+    }
+
+    $filters['regulation_type'] = [
+      'field'     => 'regulation_type',
+      'condition' => 'OR',
+      'value'     => $regulation_type
+    ];
+}
+
 
 $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters, $sortField);
 $frameworks = $resultSet->getResults();

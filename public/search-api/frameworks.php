@@ -11,6 +11,22 @@ require_once($rootDir . 'vendor/autoload.php');
 $dotenv = new Dotenv(true);
 $dotenv->load($rootDir . '.env');
 
+function filtering($filterName){
+    if (!is_array(($_GET[$filterName]))) {
+        $filter = filter_var($_GET[$filterName], FILTER_SANITIZE_STRING);
+    } else {
+        foreach ($_GET[$filterName] as $each) {
+            $filter[] = $each;
+        }
+    }
+
+    return $filters[$filterName] = [
+        'field'     => $filterName,
+        'condition' => 'OR',
+        'value'     => $filter
+    ];
+}
+
 $searchClient = new FrameworkSearchClient();
 
 $liveStatus = ['Live'];
@@ -108,37 +124,12 @@ if (isset($_GET['pillar'])) {
 }
 
 if (isset($_GET['regulation'])) {
-    if (!is_array(($_GET['regulation']))) {
-        $regulation = filter_var($_GET['regulation'], FILTER_SANITIZE_STRING);
-    } else {
-        foreach ($_GET['regulation'] as $eachRegulation) {
-            $regulation[] = $eachRegulation;
-        }
-    }
-
-    $filters['regulation'] = [
-      'field'     => 'regulation',
-      'condition' => 'OR',
-      'value'     => $regulation
-    ];
+    $filters['regulation'] = filtering("regulation");
 }
 
 if (isset($_GET['regulation_type'])) {
-    if (!is_array(($_GET['regulation_type']))) {
-        $regulation_type = filter_var($_GET['regulation_type'], FILTER_SANITIZE_STRING);
-    } else {
-        foreach ($_GET['regulation_type'] as $eachRegulationType) {
-            $regulation_type[] = $eachRegulationType;
-        }
-    }
-
-    $filters['regulation_type'] = [
-      'field'     => 'regulation_type',
-      'condition' => 'OR',
-      'value'     => $regulation_type
-    ];
+    $filters['regulation_type'] = filtering("regulation_type");
 }
-
 
 $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters, $sortField);
 $frameworks = $resultSet->getResults();

@@ -11,6 +11,22 @@ require_once($rootDir . 'vendor/autoload.php');
 $dotenv = new Dotenv(true);
 $dotenv->load($rootDir . '.env');
 
+function filtering($filterName){
+    if (!is_array(($_GET[$filterName]))) {
+        $filter = filter_var($_GET[$filterName], FILTER_SANITIZE_STRING);
+    } else {
+        foreach ($_GET[$filterName] as $each) {
+            $filter[] = $each;
+        }
+    }
+
+    return $filters[$filterName] = [
+        'field'     => $filterName,
+        'condition' => 'OR',
+        'value'     => $filter
+    ];
+}
+
 $searchClient = new FrameworkSearchClient();
 
 $liveStatus = ['Live'];
@@ -107,6 +123,13 @@ if (isset($_GET['pillar'])) {
     ];
 }
 
+if (isset($_GET['regulation'])) {
+    $filters['regulation'] = filtering("regulation");
+}
+
+if (isset($_GET['regulation_type'])) {
+    $filters['regulation_type'] = filtering("regulation_type");
+}
 
 $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters, $sortField);
 $frameworks = $resultSet->getResults();

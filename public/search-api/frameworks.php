@@ -110,6 +110,10 @@ if (isset($_GET['pillar'])) {
 if (isset($_GET['regulation'])) {
     if (!is_array(($_GET['regulation']))) {
         $regulation = filter_var($_GET['regulation'], FILTER_SANITIZE_STRING);
+    } else {
+        foreach ($_GET['regulation'] as $eachRegulation) {
+            $regulation[] = $eachRegulation;
+        }
     }
 
     $filters['regulation'] = [
@@ -122,6 +126,10 @@ if (isset($_GET['regulation'])) {
 if (isset($_GET['regulation_type'])) {
     if (!is_array(($_GET['regulation_type']))) {
         $regulation_type = filter_var($_GET['regulation_type'], FILTER_SANITIZE_STRING);
+    } else {
+        foreach ($_GET['regulation_type'] as $eachRegulationType) {
+            $regulation_type[] = $eachRegulationType;
+        }
     }
 
     $filters['regulation_type'] = [

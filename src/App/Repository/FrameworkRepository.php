@@ -18,6 +18,7 @@ class FrameworkRepository extends AbstractRepository
       'pillar'                  => ':pillar',
       'category'                => ':category',
       'status'                  => ':status',
+      'regulation_type'          => ':regulation_type',
       'start_date'              => ':start_date',
       'end_date'                => ':end_date',
       'tenders_open_date'       => ':tenders_open_date',
@@ -37,6 +38,7 @@ class FrameworkRepository extends AbstractRepository
       'upcoming_deal_summary'   => ':upcoming_deal_summary',
       'availability'            => ':availability',
       'cannot_use'              => ':cannot_use',
+      'regulation'              => ':regulation',
     ];
 
      /**
@@ -201,6 +203,11 @@ class FrameworkRepository extends AbstractRepository
             $query->bindParam(':status', $status, \PDO::PARAM_STR);
         }
 
+        if (isset($databaseBindings['regulation_type'])) {
+            $regulationType = $framework->getRegulationType();
+            $query->bindParam(':regulation_type', $regulationType, \PDO::PARAM_STR);
+        }
+
         if (isset($databaseBindings['start_date'])) {
             $startDate = $framework->getStartDate();
             if ($startDate instanceof \DateTime) {
@@ -312,6 +319,11 @@ class FrameworkRepository extends AbstractRepository
         if (isset($databaseBindings['cannot_use'])) {
             $cannotUse = $framework->getCannotUse();
             $query->bindParam(':cannot_use', $cannotUse, \PDO::PARAM_STR);
+        }
+
+        if (isset($databaseBindings['regulation'])) {
+            $regulation = $framework->getRegulation();
+            $query->bindParam(':regulation', $regulation, \PDO::PARAM_STR);
         }
 
         return $query;

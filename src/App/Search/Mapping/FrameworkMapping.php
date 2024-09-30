@@ -29,6 +29,7 @@ class FrameworkMapping extends AbstractMapping
       'title'         => [
         'type'     => 'text',
         'analyzer' => 'english_analyzer',
+        "ignore_unmapped" => true,
         'fields'   => [
           'raw' => ['type' => 'keyword']
         ]
@@ -39,6 +40,8 @@ class FrameworkMapping extends AbstractMapping
       'pillar'           => ['type' => 'keyword'],
       'category'         => ['type' => 'keyword'],
       'status'           => ['type' => 'keyword'],
+      'regulation'       => ['type' => 'keyword'],
+      'regulation_type' => ['type' => 'keyword'],
       'published_status' => ['type' => 'keyword'],
       'lots'             => [
         'type'       => 'nested',

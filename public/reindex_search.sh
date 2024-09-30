@@ -111,6 +111,9 @@ curl -X PUT "${ELASTIC_ENDPOINT}/framework_${ELASTIC_SUFFIX}_temp?pretty" -H 'Co
       "status": {
         "type": "keyword"
       },
+      "regulation_type":  {
+        "type": "keyword"
+      },
       "summary": {
         "type": "text",
         "analyzer": "english_analyzer"
@@ -227,6 +230,9 @@ curl -X PUT "${ELASTIC_ENDPOINT}/framework_${ELASTIC_SUFFIX}?pretty" -H 'Content
         "type": "date"
       },
       "status": {
+        "type": "keyword"
+      },
+      "regulation_type":  {
         "type": "keyword"
       },
       "summary": {

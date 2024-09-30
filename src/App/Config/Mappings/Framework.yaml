@@ -7,6 +7,7 @@ properties:
   pillar: Pillar__c
   category: CCS_Category__c
   status: Status__c
+  regulationType: Agreement_Type__c
   startDate: Start_Date__c
   endDate: Effective_End_Date__c
   tendersOpenDate: OJEU_Date_Target__c
@@ -15,3 +16,4 @@ properties:
   expectedAwardDate: Award_Date_Target__c
   publishOnWebsite: Don_t_publish_as_Framework_on_website__c
   createDraftPage: Create_draft_web_page__c
+  regulation: Regulation_Used__c

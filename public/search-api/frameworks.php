@@ -58,24 +58,6 @@ if (isset($_GET['sort'])) {
     $sortField = filter_var($_GET['sort'], FILTER_SANITIZE_STRING);
 }
 
-if (isset($_GET['category'])) {
-    $category = filter_var($_GET['category'], FILTER_SANITIZE_STRING);
-
-    $filters['category'] = [
-      'field'     => 'category',
-      'condition' => 'AND',
-      'value'     => $category
-    ];
-
-    if ($category == "Office and Travel"){
-        $filters['category'] = [
-            'field'     => 'category',
-            'condition' => 'OR',
-            'value'     => ["Office and Travel", "Travel"]
-        ];
-    }
-}
-
 if (isset($_GET['status'])) {
     if (!is_array(($_GET['status']))) {
         $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
@@ -107,20 +89,12 @@ if (!empty($statuses)){
       ];
 }
 
-if (isset($_GET['pillar'])) {
-    if (!is_array(($_GET['pillar']))) {
-        $categories = filter_var($_GET['pillar'], FILTER_SANITIZE_STRING);
-    } else {
-        foreach ($_GET['pillar'] as $category) {
-            $categories[] = filter_var($category, FILTER_SANITIZE_STRING);
-        }
-    }
+if (isset($_GET['category'])) {
+    $filters['category'] = filtering("category");
+}
 
-    $filters['pillar'] = [
-      'field'     => 'pillar',
-      'condition' => 'OR',
-      'value'     => $categories
-    ];
+if (isset($_GET['pillar'])) {
+    $filters['pillar'] = filtering("pillar");
 }
 
 if (isset($_GET['regulation'])) {

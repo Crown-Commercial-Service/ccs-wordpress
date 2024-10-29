@@ -949,3 +949,36 @@ function custom_login_error_message() {
 }
 
 add_filter('login_errors', 'custom_login_error_message');
+function enqueue_jquery_modal_for_new_posts()
+{
+	$current_screen =  get_current_screen();
+
+	if (is_admin() && get_post_type() == 'post' && $current_screen->action == 'add' ) {
+		echo '
+		<div id="wp-prompt-new" style="display:none;">
+			<p>
+				When creating your content, remember to follow each step of our 
+				<a href="https://docs.google.com/document/d/1qpLMsNxWT4w2NjUASR71taQ38hdZSZdSpw2d3LgwbQI/edit">Standard Operating Procedure</a> for publishing web content.
+			</p>
+		</div>
+
+		<div id="wp-prompt-img" style="display:none;">
+			<p>
+				You must <a href="https://docs.google.com/spreadsheets/d/1BlJz28pN22P4MQX7uR-uvvpVT63lt5B5G0BvdIf7VjE/edit?usp=sharing">size and save your image correctly</a>. Further information can be found in our web
+				<a href="https://docs.google.com/document/d/1qpLMsNxWT4w2NjUASR71taQ38hdZSZdSpw2d3LgwbQI/edit">Standard Operating Procedure</a>.
+			</p>
+		</div>
+
+		<div id="wp-prompt-publish" style="display:none;">
+			<p>
+				Before publishing, check that you have inputted a <a href="https://docs.google.com/document/d/1qpLMsNxWT4w2NjUASR71taQ38hdZSZdSpw2d3LgwbQI/edit#heading=h.x7873ks7afz8">Yoast title tag and meta description</a> and have defined <a href="https://docs.google.com/spreadsheets/d/1u8aW3Cnz9pu-FclhcldJtbLzYJCT-nX96-bHrfIw1cQ/edit#gid=0">success criteria for the content in this document</a>.
+			</p>
+		</div>
+		';
+		wp_enqueue_script('twentynineteen-modal-alert', get_theme_file_uri('/js/modal-alert.js'), array('jquery', 'jquery-ui-dialog'), '1.1', true);
+	}
+}
+
+add_action('admin_enqueue_scripts', 'enqueue_jquery_modal_for_new_posts');
+
+

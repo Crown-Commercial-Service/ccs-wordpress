@@ -16,7 +16,7 @@ function s24_add_description_to_featured_image_metabox($content, $post_id, $thum
 {
 	$post = get_post($post_id);
 
-	if ( $post->post_type == 'webinar' || $post->post_type == 'whitepaper' || $post->post_type == 'digital_brochure'|| $post->post_type == 'downloadable') {
+	if ( $post->post_type == 'webinar' || $post->post_type == 'whitepaper' || $post->post_type == 'downloadable') {
 		$content .= '<small><em>Minimum size: 640&times;427. Recommended size: 1280&times;854.</em></small>';
 		return $content;
 	}

@@ -324,7 +324,6 @@ require get_template_directory() . '/inc/customizer.php';
 
 add_post_type_support( 'whitepaper', 'excerpt' );
 
-add_post_type_support( 'digital_brochure', 'excerpt' );
 
 add_post_type_support('downloadable', 'excerpt');
 
@@ -493,10 +492,6 @@ function post_featured_image_and_category_type_json( $data ) {
 			$data->data['acf']['category_type'] = "Webinar";
 			$data->data['acf']['categories'] = array(000);
 			break;
-		case "digital_brochure":
-			$data->data['acf']['category_type'] = "Digital Brochure";
-			$data->data['acf']['categories'] = array(000);
-			break;
 		case "downloadable":
 			$contentTerm = get_the_terms( $data->data["id"], 'content_type' )[0];
 
@@ -560,10 +555,6 @@ function perpareWhitepaperAndWebinar( $args, $request ) {
 		$postTypeArray[] = 'webinar';
 	}
 
-	if( $request->get_param( 'digitalBrochure' ) == '1' ) {
-		$postTypeArray[] = 'digital_brochure';
-	}
-
 	if( !empty($request->get_param( 'digitalDownload' )) ) {
 		$postTypeArray[] = 'downloadable';
 	}
@@ -606,7 +597,7 @@ add_action('pre_get_posts', function ($query) {
 
 function newsEndpoint( $types){
 
-	if ($types == "post" or in_array_any(["whitepaper", "webinar", "digital_brochure", "downloadable"], (array) $types)){
+	if ($types == "post" or in_array_any(["whitepaper", "webinar", "downloadable"], (array) $types)){
 		return true;
 	}
 }
@@ -628,7 +619,7 @@ function addingDownloadableToTaxQuery($query, $contentTypeParams){
 	return $query;
 }
 
-// this search for content that met the orginal condidition as well as checking the content that doenst contain content_type (post, whitepaper, webniar and digital brochure)
+// this search for content that met the orginal condidition as well as checking the content that doenst contain content_type (post, whitepaper and webniar)
 function perpareContentTypeQuery($orginal) {
 
 	$taxquery = $orginal;

@@ -207,47 +207,6 @@ function ccs_register_my_cpts() {
 
     register_post_type( "webinar", $args) ;
 
-
-    // Digital Brochure(s) content type
-    $labels = array(
-        "name" => __('Digital Brochures', ''),
-        "singular_name" => __('Digital Brochure', ''),
-        "menu_name" => __('Digital Brochures', ''),
-        "name_admin_bar" => __('Digital Brochures', ''),
-        'add_new'            => __('Add New', 'Digital Brochure', ''),
-        'add_new_item'       => __('Add New Digital Brochure', ''),
-        'new_item'           => __('New Digital Brochure', ''),
-        'edit_item'          => __('Edit Digital Brochure', ''),
-        'view_item'          => __('View Digital Brochure', ''),
-        'all_items'          => __('All Digital Brochures', ''),
-        'search_items'       => __('Search Digital Brochures', ''),
-        'parent_item_colon'  => __('Parent Digital Brochure:', ''),
-        'not_found'          => __('No Digital Brochures found.', ''),
-        'not_found_in_trash' => __('No Digital Brochures found in Trash.', '')
-    );
-
-    $args = array(
-        "labels" => $labels,
-        "description" => "",
-        "public" => true,
-        "publicly_queryable" => true,
-        "show_ui" => true,
-        "show_in_rest" => true,
-        "rest_base" => "",
-        "has_archive" => true,
-        "show_in_menu" => true,
-        "exclude_from_search" => false,
-        "capability_type" => "whitepaper",
-        "map_meta_cap" => true,
-        "hierarchical" => false,
-        "rewrite" => array("slug" => "digital-brochure"),
-        "query_var" => true,
-        "menu_icon" => "dashicons-media-document",
-        "supports" => array("title", "revisions", "thumbnail"),
-    );
-
-    register_post_type("digital_brochure", $args);
-
     // Downloadable Resource(s) content type
     $labels = array(
         "name" => __('Downloadable Resources', ''),

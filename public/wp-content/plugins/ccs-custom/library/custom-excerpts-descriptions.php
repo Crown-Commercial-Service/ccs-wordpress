@@ -12,7 +12,7 @@ function update_excerpt_metas( $translation, $original ) {
 		return $translation;
 	}
 
-	if ( $post->post_type == 'whitepaper' || $post->post_type == 'webinar' || $post->post_type == 'digital_brochure'|| $post->post_type == 'downloadable' ) {
+	if ( $post->post_type == 'whitepaper' || $post->post_type == 'webinar' || $post->post_type == 'downloadable' ) {
 
 		if ( 'Excerpt' == $original ) {
 			//Change here to what you want Excerpt box to be called

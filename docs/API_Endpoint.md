@@ -88,11 +88,8 @@ The following objects belongs to the page and cannot be view from the frontend o
 * Webinars
     * To access a list of webinar: `[cms-url]wp-json/wp/v2/webinar`
     * To access a specific webinar: `[cms-url]wp-json/wp/v2/webinar/[webinar_id]`
-* Digital Brochures
-    * To access a list of digital brochure: `[cms-url]wp-json/wp/v2/digital_brochure`
-    * To access a specific digital brochure: `[cms-url]wp-json/wp/v2/digital_brochure/[digital_brochure_id]`
 
-    Downloadable Resources
+* Downloadable Resources
     * To access a list of downloadable resources: `[cms-url]wp-json/wp/v2/downloadable`
     * To access a specific downloadable resource: `[cms-url]wp-json/wp/v2/downloadable/[downloadable_resources_id]`
 

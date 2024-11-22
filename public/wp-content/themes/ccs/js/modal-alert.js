@@ -5,6 +5,8 @@
                  modal: true
             });
 
+            $(".ui-dialog").css('z-index', '999999');
+
             $("#set-post-thumbnail").on("click", function () {
                 $("#wp-prompt-img").dialog();
 

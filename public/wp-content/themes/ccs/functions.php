@@ -324,7 +324,6 @@ require get_template_directory() . '/inc/customizer.php';
 
 add_post_type_support( 'whitepaper', 'excerpt' );
 
-add_post_type_support( 'digital_brochure', 'excerpt' );
 
 add_post_type_support('downloadable', 'excerpt');
 
@@ -493,10 +492,6 @@ function post_featured_image_and_category_type_json( $data ) {
 			$data->data['acf']['category_type'] = "Webinar";
 			$data->data['acf']['categories'] = array(000);
 			break;
-		case "digital_brochure":
-			$data->data['acf']['category_type'] = "Digital Brochure";
-			$data->data['acf']['categories'] = array(000);
-			break;
 		case "downloadable":
 			$contentTerm = get_the_terms( $data->data["id"], 'content_type' )[0];
 
@@ -560,10 +555,6 @@ function perpareWhitepaperAndWebinar( $args, $request ) {
 		$postTypeArray[] = 'webinar';
 	}
 
-	if( $request->get_param( 'digitalBrochure' ) == '1' ) {
-		$postTypeArray[] = 'digital_brochure';
-	}
-
 	if( !empty($request->get_param( 'digitalDownload' )) ) {
 		$postTypeArray[] = 'downloadable';
 	}
@@ -606,7 +597,7 @@ add_action('pre_get_posts', function ($query) {
 
 function newsEndpoint( $types){
 
-	if ($types == "post" or in_array_any(["whitepaper", "webinar", "digital_brochure", "downloadable"], (array) $types)){
+	if ($types == "post" or in_array_any(["whitepaper", "webinar", "downloadable"], (array) $types)){
 		return true;
 	}
 }
@@ -628,7 +619,7 @@ function addingDownloadableToTaxQuery($query, $contentTypeParams){
 	return $query;
 }
 
-// this search for content that met the orginal condidition as well as checking the content that doenst contain content_type (post, whitepaper, webniar and digital brochure)
+// this search for content that met the orginal condidition as well as checking the content that doenst contain content_type (post, whitepaper and webniar)
 function perpareContentTypeQuery($orginal) {
 
 	$taxquery = $orginal;
@@ -949,3 +940,35 @@ function custom_login_error_message() {
 }
 
 add_filter('login_errors', 'custom_login_error_message');
+function enqueue_jquery_modal_for_new_posts()
+{
+	$current_screen =  get_current_screen();
+
+	if (is_admin() && get_post_type() == 'post' && $current_screen->action == 'add' ) {
+		echo '
+		<div id="wp-prompt-new" style="display:none;">
+			<p>
+				When creating your content, remember to follow each step of our 
+				<a href="https://docs.google.com/document/d/1qpLMsNxWT4w2NjUASR71taQ38hdZSZdSpw2d3LgwbQI/edit" target="_blank">Standard Operating Procedure</a> for publishing web content.
+			</p>
+		</div>
+
+		<div id="wp-prompt-img" style="display:none;">
+			<p>
+				You must <a href="https://docs.google.com/document/d/1qpLMsNxWT4w2NjUASR71taQ38hdZSZdSpw2d3LgwbQI/edit" target="_blank">size and save your image correctly</a>.
+			</p>
+		</div>
+
+		<div id="wp-prompt-publish" style="display:none;">
+			<p>
+				Before publishing, check that you have inputted a <a href="https://docs.google.com/document/d/1qpLMsNxWT4w2NjUASR71taQ38hdZSZdSpw2d3LgwbQI/edit#heading=h.x7873ks7afz8" target="_blank">Yoast title tag and meta description</a> and have defined <a href="https://docs.google.com/spreadsheets/d/1u8aW3Cnz9pu-FclhcldJtbLzYJCT-nX96-bHrfIw1cQ/edit#gid=0" target="_blank">success criteria for the content in this document</a>.
+			</p>
+		</div>
+		';
+		wp_enqueue_script('twentynineteen-modal-alert', get_theme_file_uri('/js/modal-alert.js'), array('jquery', 'jquery-ui-dialog'), '1.1', true);
+	}
+}
+
+add_action('admin_enqueue_scripts', 'enqueue_jquery_modal_for_new_posts');
+
+

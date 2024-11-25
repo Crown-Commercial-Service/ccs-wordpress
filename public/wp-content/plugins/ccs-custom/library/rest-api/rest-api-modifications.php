@@ -49,5 +49,4 @@ require('rest-api-whitepapers.php');
 require('rest-api-webinars.php');
 require('rest-api-featured-news.php');
 require('rest-api-featured-events.php');
-require('rest-api-digital-brochures.php');
 require('rest-api-downloadable.php');

@@ -25,6 +25,7 @@ class FrameworkMapping extends AbstractMapping
       'benefits'      => ['type' => 'text', 'analyzer' => 'english_analyzer'],
       'how_to_buy'    => ['type' => 'text', 'analyzer' => 'english_analyzer'],
       'summary'       => ['type' => 'text', 'analyzer' => 'english_analyzer'],
+      'upcoming_deal_summary' => ['type' => 'text', 'analyzer' => 'english_analyzer'],
       'keywords'      => ['type' => 'text', 'analyzer' => 'english_analyzer'],
       'title'         => [
         'type'     => 'text',
@@ -36,6 +37,10 @@ class FrameworkMapping extends AbstractMapping
       ],
       'start_date'       => ['type' => 'date'],
       'end_date'         => ['type' => 'date'],
+      'tenders_open_date'  => ['type' => 'date'],
+      'tenders_close_date'  => ['type' => 'date'],
+      'expected_live_date'  => ['type' => 'date'],
+      'expected_award_date'  => ['type' => 'date'],
       'terms'            => ['type' => 'keyword'],
       'pillar'           => ['type' => 'keyword'],
       'category'         => ['type' => 'keyword'],

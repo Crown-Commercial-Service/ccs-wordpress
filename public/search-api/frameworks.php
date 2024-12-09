@@ -105,6 +105,10 @@ if (isset($_GET['regulation_type'])) {
     $filters['regulation_type'] = filtering("regulation_type");
 }
 
+if (isset($_GET['terms'])) {
+    $filters['terms'] = filtering("terms");
+}
+
 $resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters, $sortField);
 $frameworks = $resultSet->getResults();
 $buckets = $resultSet->getAggregations();

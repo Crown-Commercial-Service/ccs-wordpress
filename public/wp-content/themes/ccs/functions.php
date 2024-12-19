@@ -944,7 +944,7 @@ function enqueue_jquery_modal_for_new_posts()
 {
 	$current_screen =  get_current_screen();
 
-	if (is_admin() && get_post_type() == 'post' && $current_screen->action == 'add' ) {
+	if (is_admin() && get_post_type() == 'post' && ($current_screen->action == 'add' || $_GET['action'] == 'edit') && get_post_status(get_the_ID()) != 'publish') {
 		echo '
 		<div id="wp-prompt-new" style="display:none;">
 			<p>

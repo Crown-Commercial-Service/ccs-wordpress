@@ -194,13 +194,14 @@ class LotSupplier extends AbstractModel
         $this->guarantor_id = $guarantor_id;
         return $this;
     }
-    
-    public function getDateUpdated() {
+
+    public function getDateUpdated()
+    {
         return $this->dateUpdated;
     }
 
-    public function setDateUpdated($dateUpdated) {
+    public function setDateUpdated($dateUpdated)
+    {
         $this->dateUpdated = $dateUpdated;
     }
-
 }

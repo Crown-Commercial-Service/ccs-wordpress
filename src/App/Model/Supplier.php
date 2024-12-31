@@ -408,12 +408,14 @@ class Supplier extends AbstractModel
         return $this;
     }
 
-        
-    public function getLastModifiedDate() {
+
+    public function getLastModifiedDate()
+    {
         return $this->lastModifiedDate;
     }
 
-    public function setLastModifiedDate($lastModifiedDate) {
+    public function setLastModifiedDate($lastModifiedDate)
+    {
         $this->lastModifiedDate = $lastModifiedDate;
     }
 

@@ -39,6 +39,9 @@ class LotSupplier extends AbstractModel
      * @var string
      */
     protected $guarantor_id;
+
+    protected $dateUpdated;
+
     /**
      * @return string
      */
@@ -191,4 +194,13 @@ class LotSupplier extends AbstractModel
         $this->guarantor_id = $guarantor_id;
         return $this;
     }
+    
+    public function getDateUpdated() {
+        return $this->dateUpdated;
+    }
+
+    public function setDateUpdated($dateUpdated) {
+        $this->dateUpdated = $dateUpdated;
+    }
+
 }

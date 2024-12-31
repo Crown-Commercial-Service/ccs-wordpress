@@ -14,6 +14,7 @@ class LotSupplierRepository extends AbstractRepository
       'website_contact' => ':website_contact',
       'trading_name'    => ':trading_name',
       'guarantor_id'    => ':guarantor_id',
+      'date_updated'    => ':date_updated',
     ];
 
     /**
@@ -128,6 +129,11 @@ class LotSupplierRepository extends AbstractRepository
             $query->bindParam(':guarantor_id', $guarantor_id, \PDO::PARAM_STR);
         }
 
+        if (isset($databaseBindings['date_updated'])) {
+            $dateUpdated = $lotSupplier->getDateUpdated();
+            $query->bindParam(':date_updated', $dateUpdated, \PDO::PARAM_STR);
+        }
+
         return $query;
     }
 
@@ -158,5 +164,14 @@ class LotSupplierRepository extends AbstractRepository
         }
 
         return $this->translateSingleResultToModel($result);
+    }
+
+    public function deleteByLotIdAndSupplierId(string $lotId, string $supplierid)
+    {
+        $sql = "DELETE FROM ccs_lot_supplier WHERE lot_id = '" . $lotId . "' AND supplier_id = '" . $supplierid . "';";
+
+
+        $query = $this->connection->prepare($sql);
+        $query->execute();
     }
 }

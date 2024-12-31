@@ -1231,7 +1231,7 @@ class Import
      * @param $salesforceId
      * Deleting lot from ccs_wordpress.ccs_lots
      */
-    protected function deleteLot($salesforceId, $lotNumber)
+    protected function deleteLot($salesforceId)
     {
         $sql = " DELETE FROM ccs_lots WHERE salesforce_id = '" . $salesforceId . "';";
 

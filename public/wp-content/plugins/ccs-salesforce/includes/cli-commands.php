@@ -10,6 +10,8 @@
  */
 
 namespace CCS\SFI;
+use \Datetime;
+use \DateTimeZone;
 
 // Composer
 require __DIR__ . '/../../../../../vendor/autoload.php';
@@ -132,6 +134,20 @@ class Import
     protected $supplierSearchClient;
 
     /**
+     * @var \DateTime
+     */
+    protected $dateTime;
+
+    /**
+     * @var array
+     */
+    private $processCountLotSupplier = [
+        'create' => 0,
+        'update' => 0,
+        'delete' => 0
+    ];
+
+    /**
      * Import constructor.
      *
      * Lock system only allows one instance of this class to run at any one time
@@ -152,6 +168,7 @@ class Import
         $this->dbConnection = new DatabaseConnection();
         $this->supplierSearchClient = new SupplierSearchClient();
         $this->frameworkSearchClient = new FrameworkSearchClient();
+        $this->dateTime = new DateTime("now", new DateTimeZone('Europe/London')); 
     }
 
     /**
@@ -278,6 +295,8 @@ class Import
         // Import this Framework
         $framework = $this->importSingleFramework($framework);
 
+       $this->printSummary();
+
         $this->updateFrameworkSearchIndexWithSingleFramework($framework);
 
         // Mark whether a supplier has any live frameworks
@@ -332,7 +351,6 @@ class Import
         $this->processTempData();
         $this->startTime = microtime(true);
 
-
         // Get all frameworks from Salesforce
         try {
             $frameworks = $this->salesforceApi->getAllFrameworks();
@@ -366,6 +384,9 @@ class Import
             // Import the framework
             $this->importSingleFramework($framework);
         }
+
+        $this->printSummary();
+
         $this->logger->info('DB_test: All framework imported. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
 
         $this->logger->info('DB_test: Start indexing. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
@@ -457,7 +478,9 @@ class Import
             return;
         }
 
-        $this->addSuccess(count($lots) . ' Framework lots found for Framework with SF ID: ' . $framework->getSalesforceId());
+        $this->addSuccess(count($lots) . ' lots found for Framework with SF ID: ' . $framework->getSalesforceId());
+
+        $this->checkAndDeleteLots($lots, $framework->getSalesforceId());
 
         foreach ($lots as $lot) {
             $lotWordPressId = $this->getLotWordpressIdBySalesforceId($lot->getSalesforceId());
@@ -465,7 +488,7 @@ class Import
 
             $lotSalesforceId = $lot->getSalesforceId();
 
-            $this->addSuccess('Attempting to import Lot with SF ID: ' . $lotSalesforceId);
+            $this->addSuccess('Attempting to import Lot with SF ID: ' . $lotSalesforceId, null, false, true);
 
             if (!$this->lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $lotSalesforceId, $lot)) {
                 $this->addError('Lot ' . $lotSalesforceId . ' not imported.', 'lots');
@@ -487,18 +510,12 @@ class Import
                 $this->addError('Lot ' . $framework->getSalesforceId() . ' not saved to Wordpress. Error: ' . $e->getMessage(), 'lots');
             }
 
-
-            // Remove all the current relationships to this lot, and create fresh ones.
-            $this->addSuccess('Deleting lot suppliers for Lot ID: ' . $lot->getSalesforceId());
-            $this->lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
-
-
             //Hide the suppliers on this lot on website
             if ($lot->isHideSuppliers()) {
                 $this->addSuccess('Hiding suppliers for this Lot.');
+                $this->lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
                 continue;
             }
-
 
             $this->addSuccess('Retrieving Lot Suppliers.');
             try {
@@ -509,19 +526,40 @@ class Import
                 continue;
             }
 
-            // Re-add new lot supplier connections.
+            $this->checkAndDeleteSuppliers($suppliers, $lotSalesforceId);
+
             foreach ($suppliers as $supplier) {
                 if (!$this->supplierRepository->createOrUpdateExcludingLiveFrameworkField('salesforce_id', $supplier->getSalesforceId(), $supplier)) {
                         $this->addError('Supplier ' . $supplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
                         continue;
                     }
 
-                $this->addSuccess('Supplier ' . $supplier->getSalesforceId() . ' imported.', 'suppliers');
 
-                $lotSupplier = new LotSupplier([
-                  'lot_id'      => $lot->getSalesforceId(),
-                  'supplier_id' => $supplier->getSalesforceId()
-                ]);
+                $currentSupplier = $this->lotSupplierRepository->findByLotIdAndSupplierId($lotSalesforceId, $supplier->getSalesforceId());
+
+                if($currentSupplier){
+                    $dateTime = new DateTime($supplier->getLastModifiedDate());
+                    $lastUpdatedOnSalesfroce = $dateTime->format('y-m-d H:i:s'); 
+
+                    if( $lastUpdatedOnSalesfroce > $currentSupplier->getDateUpdated()){
+                        continue;
+                    }else{
+                        // lastUpdated on Salesforce is greater than lastUpdated from database (we need update)
+                        $lotSupplier = $currentSupplier;
+                        $lotSupplier->setDateUpdated($this->dateTime->format('y-m-d H:i:s')); 
+                        $this->processCountLotSupplier['update'] = $this->processCountLotSupplier['update']+1;
+                    }
+
+                }else{
+                    // creating new lot supplier
+                    $lotSupplier = new LotSupplier([
+                        'lot_id'      => $lot->getSalesforceId(),
+                        'supplier_id' => $supplier->getSalesforceId(),
+                        'date_updated' => $this->dateTime->format('y-m-d H:i:s')
+                      ]);
+
+                      $this->processCountLotSupplier['create'] = $this->processCountLotSupplier['create']+1;
+                }
 
                 if ($tradingName = $this->salesforceApi->getTradingName($framework->getSalesforceId(),
                   $supplier->getSalesforceId())) {
@@ -557,7 +595,11 @@ class Import
 
                 
                 try {
-                    $this->lotSupplierRepository->create($lotSupplier);
+                    if ($currentSupplier){ //determine whether if its a new supplier or not
+                        $this->lotSupplierRepository->update('id', $lotSupplier->getId(), $lotSupplier);
+                    }else{
+                        $this->lotSupplierRepository->create($lotSupplier);
+                    }
                 } catch (\Exception $e) {
                     $this->addError('Error saving Lot Supplier for Lot ' . $lotSupplier->getLotId() . ' and Supplier ' . $lotSupplier->getSupplierId() . ' Error: ' . $e->getMessage(), 'suppliers');
                 }
@@ -566,22 +608,7 @@ class Import
 
         }
 
-        $localLot = $this->getLotSalesforceIdByFrameworkId($framework->getSalesforceId());
-
-        $salesforceLotsSalesforceId = $this->extractSalesforceIdFromLots($lots);
-
-        foreach ($localLot as $key => $value){
-            if (!in_array($key, $salesforceLotsSalesforceId)){
-
-                $lotWordPressId = $this->getLotWordpressIdBySalesforceId($key);
-
-                $this->deleteLot($key, $value);
-                $this->deleteWordpressLot($lotWordPressId);
-            }
-        }
-
         return $framework;
-
     }
 
     /**
@@ -661,9 +688,12 @@ class Import
      * @param $message the error message to report
      * @param $type frameworks, lots, suppliers
      * @param bool $log
+     * @param bool $break
      */
-    protected function addSuccess($message, $type = null, $log = false)
+    protected function addSuccess($message, $type = null, $log = false, $break = null)
     {
+        $break ? WP_CLI::line(): null;
+
         WP_CLI::success($message . ' Estimated time remaining: ' . $this->timeRemaining . ' minutes.');
 
         if ($log) {
@@ -1093,18 +1123,30 @@ class Import
      */
     protected function getLotSalesforceIdByFrameworkId(?string $frameworkId)
     {
-        $sql = "SELECT salesforce_id, lot_number FROM ccs_lots WHERE framework_id = '" . $frameworkId . "';";
+        $sql = "SELECT salesforce_id FROM ccs_lots WHERE framework_id = '" . $frameworkId . "';";
 
         $query = $this->dbConnection->connection->prepare($sql);
         $query->execute();
 
-        $sqlData = $query->fetchAll(\PDO::FETCH_KEY_PAIR);
+        $sqlData = $query->fetchAll(\PDO::PARAM_STR);
 
-        if (count($sqlData) == 0 ){
-            $sqlData = NULL;
-        }
+        return count($sqlData) == 0 ? null :  array_column($sqlData, 'salesforce_id');
+    }
 
-        return $sqlData;
+    /**
+     * @param null|string $lotId
+     * @return null
+     */
+    protected function getLotSuppliersSalesforceIdByLotId(?string $lotId)
+    {
+        $sql = "SELECT supplier_id FROM ccs_lot_supplier WHERE lot_id = '" . $lotId . "';";
+
+        $query = $this->dbConnection->connection->prepare($sql);
+        $query->execute();
+
+        $sqlData = $query->fetchAll(\PDO::PARAM_STR);
+
+        return count($sqlData) == 0 ? null :  array_column($sqlData, 'supplier_id');
     }
 
     /**
@@ -1117,6 +1159,21 @@ class Import
 
         foreach ($lots as $lot) {
             $salesforceIds[] = $lot->getSalesforceId();
+        }
+
+        return $salesforceIds;
+    }
+
+        /**
+     * @param $lotSuppliers
+     * @return array
+     */
+    protected function extractSalesforceIdFromLotSuppliers($lotSuppliers)
+    {
+        $salesforceIds = [];
+
+        foreach ($lotSuppliers as $lotSupplier) {
+            $salesforceIds[] = $lotSupplier->getSalesforceId();
         }
 
         return $salesforceIds;
@@ -1172,12 +1229,11 @@ class Import
 
     /**
      * @param $salesforceId
-     * @param $lotNumber
      * Deleting lot from ccs_wordpress.ccs_lots
      */
     protected function deleteLot($salesforceId, $lotNumber)
     {
-        $sql = " DELETE FROM ccs_lots WHERE salesforce_id = '" . $salesforceId . "' AND lot_number = '" . $lotNumber . "';";
+        $sql = " DELETE FROM ccs_lots WHERE salesforce_id = '" . $salesforceId . "';";
 
         $query = $this->dbConnection->connection->prepare($sql);
         $query->execute();
@@ -1272,6 +1328,46 @@ EOD;
                 'tags' => [strtoupper(getenv('CCS_FRONTEND_APP_ENV'))]
                 ]);
         }
+    }
+
+    private function checkAndDeleteLots($lots, $frameworkID){
+
+        $salesforceLotsId = $this->extractSalesforceIdFromLots($lots);
+        $localLotId = $this->getLotSalesforceIdByFrameworkId($frameworkID);
+
+        $lotsToDelete = array_diff( (array) $localLotId, $salesforceLotsId);
+
+        foreach ($lotsToDelete as $lotToDelete){
+            $lotWordPressId = $this->getLotWordpressIdBySalesforceId($lotToDelete);
+
+            $this->deleteLot($lotToDelete);
+            $this->deleteWordpressLot($lotToDelete);
+            $this->addSuccess('Lot' . $lotToDelete . ' deleted.');
+        }
+    }
+
+    private function checkAndDeleteSuppliers($suppliers, $lotId){
+
+        $localLotSuppliersId = $this->getLotSuppliersSalesforceIdByLotId($lotId);
+        $lotSuppliersIdFromSF = $this->extractSalesforceIdFromLotSuppliers($suppliers);
+
+        $suppliersToDelete = array_diff( (array) $localLotSuppliersId, $lotSuppliersIdFromSF);
+
+
+        foreach ($suppliersToDelete as $supplierToDelete){
+            $this->lotSupplierRepository->deleteByLotIdAndSupplierId($lotId, $supplierToDelete);
+            $this->processCountLotSupplier['delete'] = $this->processCountLotSupplier['delete']+1;
+            $this->addSuccess('Lot supplier ' . $supplierToDelete . ' deleted.');
+        }
+    }
+
+    private function printSummary(){
+        echo "=====Summary=====\n";
+        echo $this->processCountLotSupplier['create'] . " lot supplier/s created with this import \n";
+        echo $this->processCountLotSupplier['update'] . " lot supplier/s updated with this import \n";
+        echo $this->processCountLotSupplier['delete'] . " lot supplier/s deleted with this import \n";
+        echo "=================\n";
+
     }
 }
 

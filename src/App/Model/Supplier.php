@@ -81,6 +81,10 @@ class Supplier extends AbstractModel
      */
     protected $haveGuarantor = false;
 
+
+    protected $lastModifiedDate;
+
+
     /**
      * @return string
      */
@@ -402,6 +406,17 @@ class Supplier extends AbstractModel
         $this->alternativeTradingNames = $alternativeTradingNames;
 
         return $this;
+    }
+
+
+    public function getLastModifiedDate()
+    {
+        return $this->lastModifiedDate;
+    }
+
+    public function setLastModifiedDate($lastModifiedDate)
+    {
+        $this->lastModifiedDate = $lastModifiedDate;
     }
 
     /**

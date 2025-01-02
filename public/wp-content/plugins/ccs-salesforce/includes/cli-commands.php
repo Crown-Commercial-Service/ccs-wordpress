@@ -25,6 +25,7 @@ use App\Search\AbstractSearchClient;
 use \WP_CLI;
 
 use App\Model\LotSupplier;
+use App\Model\Supplier;
 use App\Repository\FrameworkRepository;
 use App\Repository\LotRepository;
 use App\Repository\LotSupplierRepository;
@@ -538,16 +539,15 @@ class Import
                 $currentSupplier = $this->lotSupplierRepository->findByLotIdAndSupplierId($lotSalesforceId, $supplier->getSalesforceId());
 
                 if($currentSupplier){
-                    $dateTime = new DateTime($supplier->getLastModifiedDate());
-                    $lastUpdatedOnSalesfroce = $dateTime->format('y-m-d H:i:s'); 
-
-                    if( $lastUpdatedOnSalesfroce > $currentSupplier->getDateUpdated()){
-                        continue;
-                    }else{
-                        // lastUpdated on Salesforce is greater than lastUpdated from database (we need update)
+                    $lastUpdatedOnSalesforce    = $supplier->getLastModifiedDate(); 
+                    $lastUpdatedOnDatabase      = $currentSupplier->getDateUpdated();
+                   
+                    if(new DateTime($lastUpdatedOnSalesforce) > new DateTime($lastUpdatedOnDatabase)){
                         $lotSupplier = $currentSupplier;
                         $lotSupplier->setDateUpdated($this->dateTime->format('y-m-d H:i:s')); 
                         $this->processCountLotSupplier['update'] = $this->processCountLotSupplier['update']+1;
+                    }else{
+                        continue;
                     }
 
                 }else{

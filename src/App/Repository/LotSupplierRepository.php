@@ -3,9 +3,17 @@
 namespace App\Repository;
 
 use App\Model\LotSupplier;
+use App\Exception\DbException;
+use PDOException;
 
 class LotSupplierRepository extends AbstractRepository
 {
+    private $importCount = [
+        'created'   => 0,
+        'updated'   => 0,
+        'deleted'   => 0
+    ];
+
     protected $databaseBindings = [
       'lot_id'          => ':lot_id',
       'supplier_id'     => ':supplier_id',
@@ -45,7 +53,15 @@ class LotSupplierRepository extends AbstractRepository
 
         $query = $this->bindValues($this->databaseBindings, $query, $lotSupplier);
 
-        return $query->execute();
+        $result = $query->execute();
+        if ($result === false) {
+            // @see https://www.php.net/manual/en/pdo.errorinfo.php
+            $info = $query->errorInfo();
+            throw new DbException(sprintf('Create lot supplier record failed. Error %s: %s', $info[0], $info[2]));
+        }
+
+        $this->importCount['created']++;
+        return $result;
     }
 
     /**
@@ -56,6 +72,8 @@ class LotSupplierRepository extends AbstractRepository
      */
     public function update($searchField, $searchValue, LotSupplier $lotSupplier)
     {
+        $originalDataBindings = $this->databaseBindings;
+
         // Remove the field which we're using for the update command
         if (isset($this->databaseBindings[$searchField])) {
             unset($this->databaseBindings[$searchField]);
@@ -80,7 +98,19 @@ class LotSupplierRepository extends AbstractRepository
 
         $query = $this->bindValues($this->databaseBindings, $query, $lotSupplier);
 
-        return $query->execute();
+         $result = $query->execute();
+        if ($result === false) {
+            $info = $query->errorInfo();
+            throw new DbException(sprintf('Update framework record failed. Error %s: %s', $info[0], $info[2]));
+        }
+
+        if ($query->rowCount() != 0) {
+            $this->importCount['updated']++;
+        }
+
+        $this->databaseBindings = $originalDataBindings;
+
+        return $result;
     }
 
 
@@ -170,8 +200,19 @@ class LotSupplierRepository extends AbstractRepository
     {
         $sql = "DELETE FROM ccs_lot_supplier WHERE lot_id = '" . $lotId . "' AND supplier_id = '" . $supplierid . "';";
 
+        try {
+            $query = $this->connection->prepare($sql);
+            $query->execute();
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
+        $this->importCount['deleted']++;
+    }
 
-        $query = $this->connection->prepare($sql);
-        $query->execute();
+    public function printImportCount()
+    {
+        echo $this->importCount['created'] . " lot supplier/s created with this import \n";
+        echo $this->importCount['updated'] . " lot supplier/s updated with this import \n";
+        echo $this->importCount['deleted'] . " lot supplier/s deleted with this import \n";
     }
 }

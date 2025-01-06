@@ -140,15 +140,6 @@ class Import
     protected $dateTime;
 
     /**
-     * @var array
-     */
-    private $processCountLotSupplier = [
-        'create' => 0,
-        'update' => 0,
-        'delete' => 0
-    ];
-
-    /**
      * Import constructor.
      *
      * Lock system only allows one instance of this class to run at any one time
@@ -297,6 +288,10 @@ class Import
         $framework = $this->importSingleFramework($framework);
 
        $this->printSummary();
+       
+       WP_CLI::success(sprintf('Import took %s seconds to run', round(microtime(true) - $this->startTime, 2)));
+        
+       $this->startTime = 0;
 
         $this->updateFrameworkSearchIndexWithSingleFramework($framework);
 
@@ -344,7 +339,6 @@ class Import
         }
 
         $this->addSuccess('Salesforce import started', null, true);
-        $this->logger->info('DB_test: Starting Import. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
 
         // Lets generate an access token
         $this->generateSalesforceToken();
@@ -374,7 +368,6 @@ class Import
             die('Process can not complete without Framework and Lot data from Wordpress');
         }
 
-        $this->logger->info('DB_test: Obtained all framework from SF. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
 
         foreach ($frameworks as $index => $framework) {
             // How much time has elapsed
@@ -387,32 +380,27 @@ class Import
         }
 
         $this->printSummary();
+        
+        WP_CLI::success(sprintf('Import took %s seconds to run', round(microtime(true) - $this->startTime, 2)));
 
-        $this->logger->info('DB_test: All framework imported. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
-
-        $this->logger->info('DB_test: Start indexing. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
+        $this->startTime = 0;
 
         //Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();
 
         // Update elasticsearch
         $this->updateFrameworkSearchIndex();
-        $this->logger->info('DB_test: Finishing indexing framework. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
         
         $this->updateSupplierSearchIndex();
-        $this->logger->info('DB_test: Finishing indexing supplier. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
 
         //Update framework titles in WordPress to include the RM number
         $this->updateFrameworkTitleInWordpress();
-        $this->logger->info('DB_test: updating framework title in WP. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
 
         //Update lot titles in WordPress to include the RM number and the lot number
         $this->updateLotTitleInWordpress();
-        $this->logger->info('DB_test: updating lot title in WP. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
 
         $timer = round(microtime(true) - $this->startTime, 2);
-        WP_CLI::success(sprintf('Import took %s seconds to run', $timer));
-        $this->logger->info('DB_test: Finishing everything. So far it took: ' . round(microtime(true) - $this->startTime, 2). '');
+        WP_CLI::success(sprintf('Index elastic search took %s seconds to run', $timer));
 
 
         $this->checkEventCron();
@@ -459,8 +447,7 @@ class Import
             $this->addError('Framework ' . $framework->getSalesforceId() . ' not imported. Error: ' . $e->getMessage(), 'frameworks');
         }
 
-        $this->addSuccess('Framework imported. ' . 'SF ID: ' . $framework->getSalesforceId(),
-          'frameworks');
+        $this->addSuccess('Framework imported. ' . 'SF ID: ' . $framework->getSalesforceId(), 'frameworks');
 
         // Create framework title in WordPress
         try {
@@ -545,7 +532,6 @@ class Import
                     if(new DateTime($lastUpdatedOnSalesforce) > new DateTime($lastUpdatedOnDatabase)){
                         $lotSupplier = $currentSupplier;
                         $lotSupplier->setDateUpdated($this->dateTime->format('y-m-d H:i:s')); 
-                        $this->processCountLotSupplier['update'] = $this->processCountLotSupplier['update']+1;
                     }else{
                         continue;
                     }
@@ -557,8 +543,6 @@ class Import
                         'supplier_id' => $supplier->getSalesforceId(),
                         'date_updated' => $this->dateTime->format('y-m-d H:i:s')
                       ]);
-
-                      $this->processCountLotSupplier['create'] = $this->processCountLotSupplier['create']+1;
                 }
 
                 if ($tradingName = $this->salesforceApi->getTradingName($framework->getSalesforceId(),
@@ -781,8 +765,7 @@ class Import
         $framework->setWordpressId($wordpressId);
 
         // Save the Framework back into the custom database.
-        $this->frameworkRepository = new FrameworkRepository();
-        $this->frameworkRepository->update('salesforce_id', $framework->getSalesforceId(), $framework);
+        $this->frameworkRepository->update('salesforce_id', $framework->getSalesforceId(), $framework, true);
     }
 
     /**
@@ -805,8 +788,7 @@ class Import
         $lot->setWordpressId($wordpressId);
 
         // Save the Lot back into the custom database.
-        $this->lotRepository = new LotRepository();
-        $this->lotRepository->update('salesforce_id', $lot->getSalesforceId(), $lot);
+        $this->lotRepository->update('salesforce_id', $lot->getSalesforceId(), $lot, true);
     }
 
     /**
@@ -975,21 +957,17 @@ class Import
      *
      */
     private function checkSupplierHaveGuarantor($supplierSalesforceId) {
-        
-        $frameworkRepository = new FrameworkRepository();
-        $lotSupplierRepository = new LotSupplierRepository();
-        $lotRepository = new LotRepository();
       
-        $frameworks = $frameworkRepository->findSupplierLiveFrameworks($supplierSalesforceId);
+        $frameworks = $this->frameworkRepository->findSupplierLiveFrameworks($supplierSalesforceId);
         $have_guarantor = false;
       
         if($frameworks !== false) {
 
             foreach($frameworks as $framework) {
-                $lots = $lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');                
+                $lots = $this->lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');                
                 
                 foreach($lots as $lot) {
-                    $lotSupplier = $lotSupplierRepository->findByLotIdAndSupplierId($lot->getSalesforceId(), $supplierSalesforceId);
+                    $lotSupplier = $this->lotSupplierRepository->findByLotIdAndSupplierId($lot->getSalesforceId(), $supplierSalesforceId);
         
                     if($lotSupplier && $lotSupplier->getGuarantorId() != null){
                         $have_guarantor = true;
@@ -1226,19 +1204,6 @@ class Import
         }
     }
 
-
-    /**
-     * @param $salesforceId
-     * Deleting lot from ccs_wordpress.ccs_lots
-     */
-    protected function deleteLot($salesforceId)
-    {
-        $sql = " DELETE FROM ccs_lots WHERE salesforce_id = '" . $salesforceId . "';";
-
-        $query = $this->dbConnection->connection->prepare($sql);
-        $query->execute();
-    }
-
      /**
      * @param $wordpressID
      * Deleting lot from ccs_wordpress.ccs_15423_posts
@@ -1340,8 +1305,8 @@ EOD;
         foreach ($lotsToDelete as $lotToDelete){
             $lotWordPressId = $this->getLotWordpressIdBySalesforceId($lotToDelete);
 
-            $this->deleteLot($lotToDelete);
-            $this->deleteWordpressLot($lotToDelete);
+            $this->lotRepository->delete($lotToDelete);
+            $this->deleteWordpressLot($lotWordPressId);
             $this->addSuccess('Lot' . $lotToDelete . ' deleted.');
         }
     }
@@ -1356,16 +1321,15 @@ EOD;
 
         foreach ($suppliersToDelete as $supplierToDelete){
             $this->lotSupplierRepository->deleteByLotIdAndSupplierId($lotId, $supplierToDelete);
-            $this->processCountLotSupplier['delete'] = $this->processCountLotSupplier['delete']+1;
             $this->addSuccess('Lot supplier ' . $supplierToDelete . ' deleted.');
         }
     }
 
     private function printSummary(){
         echo "=====Summary=====\n";
-        echo $this->processCountLotSupplier['create'] . " lot supplier/s created with this import \n";
-        echo $this->processCountLotSupplier['update'] . " lot supplier/s updated with this import \n";
-        echo $this->processCountLotSupplier['delete'] . " lot supplier/s deleted with this import \n";
+        $this->frameworkRepository->printImportCount();
+        $this->lotRepository->printImportCount();
+        $this->lotSupplierRepository->printImportCount();
         echo "=================\n";
 
     }

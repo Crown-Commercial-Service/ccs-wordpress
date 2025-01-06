@@ -3,9 +3,17 @@
 namespace App\Repository;
 
 use App\Model\Lot;
+use App\Exception\DbException;
+use PDOException;
 
 class LotRepository extends AbstractRepository
 {
+    private $importCount = [
+        'created'   => 0,
+        'updated'   => 0,
+        'deleted'   => 0
+    ];
+
     protected $databaseBindings = [
       'framework_id'   => ':framework_id',
       'wordpress_id'   => ':wordpress_id',
@@ -61,7 +69,15 @@ class LotRepository extends AbstractRepository
 
         $query = $this->bindValues($this->databaseBindings, $query, $lot);
 
-        return $query->execute();
+        $result = $query->execute();
+        if ($result === false) {
+            // @see https://www.php.net/manual/en/pdo.errorinfo.php
+            $info = $query->errorInfo();
+            throw new DbException(sprintf('Create lot record failed. Error %s: %s', $info[0], $info[2]));
+        }
+
+        $this->importCount['created']++;
+        return $result;
     }
 
     /**
@@ -70,7 +86,7 @@ class LotRepository extends AbstractRepository
      * @param \App\Model\Lot $lot
      * @return mixed
      */
-    public function update($searchField, $searchValue, Lot $lot)
+    public function update($searchField, $searchValue, Lot $lot, $calledByCreateInWordpress = false)
     {
         $originaldatabaseBindings = $this->databaseBindings;
 
@@ -98,9 +114,41 @@ class LotRepository extends AbstractRepository
 
         $query = $this->bindValues($this->databaseBindings, $query, $lot);
 
+        $result = $query->execute();
+        if ($result === false) {
+            $info = $query->errorInfo();
+            throw new DbException(sprintf('Update lot record failed. Error %s: %s', $info[0], $info[2]));
+        }
+
+        if ($query->rowCount() != 0 && !$calledByCreateInWordpress) {
+            $this->importCount['updated']++;
+        }
+
         $this->databaseBindings = $originaldatabaseBindings;
 
-        return $query->execute();
+        return $result;
+    }
+
+    /**
+     * @param $salesforceId
+     */
+    public function delete($salesforceId)
+    {
+        $sql = 'DELETE FROM ' . $this->tableName . ' WHERE salesforce_id = :salesforceId' . ';';
+
+        try {
+            $query = $this->connection->prepare($sql);
+            $query->bindParam(':salesforceId', $salesforceId, \PDO::PARAM_STR);
+            $result = $query->execute();
+        } catch (PDOException $e) {
+            trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
+        }
+        if ($result === false) {
+            // @see https://www.php.net/manual/en/pdo.errorinfo.php
+            $info = $query->errorInfo();
+            throw new DbException(sprintf('Delete lot record failed. Error %s: %s', $info[0], $info[2]));
+        }
+        $this->importCount['deleted']++;
     }
 
 
@@ -270,5 +318,13 @@ EOD;
 
         $modelCollection = $this->translateResultsToModels($results);
         return $modelCollection;
+    }
+
+    public function printImportCount()
+    {
+        echo $this->importCount['created'] . " lot/s created with this import \n";
+        echo $this->importCount['updated'] . " lot/s updated with this import \n";
+        echo $this->importCount['deleted'] . " lot/s deleted with this import \n";
+        echo "\n";
     }
 }

@@ -8,6 +8,11 @@ use PDOException;
 
 class FrameworkRepository extends AbstractRepository
 {
+    private $importCount = [
+        'created'   => 0,
+        'updated'   => 0
+    ];
+
     protected $databaseBindings = [
       'rm_number'               => ':rm_number',
       'wordpress_id'            => ':wordpress_id',
@@ -99,6 +104,7 @@ class FrameworkRepository extends AbstractRepository
             throw new DbException(sprintf('Create framework record failed. Error %s: %s', $info[0], $info[2]));
         }
 
+        $this->importCount['created']++;
         return $result;
     }
 
@@ -108,7 +114,7 @@ class FrameworkRepository extends AbstractRepository
      * @param \App\Model\Framework $framework
      * @return mixed
      */
-    public function update($searchField, $searchValue, Framework $framework)
+    public function update($searchField, $searchValue, Framework $framework, $calledByCreatedInWordpress = false)
     {
         $originalDataBindings = $this->databaseBindings;
 
@@ -140,6 +146,10 @@ class FrameworkRepository extends AbstractRepository
         if ($result === false) {
             $info = $query->errorInfo();
             throw new DbException(sprintf('Update framework record failed. Error %s: %s', $info[0], $info[2]));
+        }
+
+        if ($query->rowCount() != 0 && !$calledByCreatedInWordpress) {
+            $this->importCount['updated']++;
         }
 
         $this->databaseBindings = $originalDataBindings;
@@ -544,5 +554,12 @@ ORDER by f.title ASC) SearchTableAlias';
 
         $modelCollection = $this->translateResultsToModels($results);
         return $modelCollection;
+    }
+
+    public function printImportCount()
+    {
+        echo $this->importCount['created'] . " framework/s created with this import \n";
+        echo $this->importCount['updated'] . " framework/s updated with this import \n";
+        echo "\n";
     }
 }

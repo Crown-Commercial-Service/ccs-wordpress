@@ -399,8 +399,7 @@ class Import
         //Update lot titles in WordPress to include the RM number and the lot number
         $this->updateLotTitleInWordpress();
 
-        $timer = round(microtime(true) - $this->startTime, 2);
-        WP_CLI::success(sprintf('Index elastic search took %s seconds to run', $timer));
+        WP_CLI::success(sprintf('Index elastic search took %s seconds to run', round(microtime(true) - $this->startTime, 2)));
 
 
         $this->checkEventCron();

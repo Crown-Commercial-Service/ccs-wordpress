@@ -383,7 +383,7 @@ class Import
         
         WP_CLI::success(sprintf('Import took %s seconds to run', round(microtime(true) - $this->startTime, 2)));
 
-        $this->startTime = 0;
+        $this->startTime = microtime(true);
 
         //Mark whether a supplier has any live frameworks
         $this->checkSupplierLiveFrameworks();

@@ -1302,6 +1302,7 @@ EOD;
         $lotsToDelete = array_diff( (array) $localLotId, $salesforceLotsId);
 
         foreach ($lotsToDelete as $lotToDelete){
+            $this->logger->info('Deleted lot with SF ID: ' . $lotToDelete);
             $lotWordPressId = $this->getLotWordpressIdBySalesforceId($lotToDelete);
 
             $this->lotRepository->delete($lotToDelete);

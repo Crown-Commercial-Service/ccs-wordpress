@@ -121,9 +121,10 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
      * @param int $limit
      * @param array $filters
      * @param string $sortField
+     * @param array $rmNumbers
      * @return \Elastica\ResultSet
      */
-    public function queryByKeyword(string $keyword, int $page, int $limit, array $filters = [], string $sortField = ''): ResultSet
+    public function queryByKeyword(string $keyword, int $page, int $limit, array $filters = [], string $sortField = '', array $rmNumbers = []): ResultSet
     {
         $search = new Search($this);
 
@@ -134,6 +135,12 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
 
         $publishedStatusQuery = new Query\Match('published_status', 'publish');
         $boolQuery->addMust($publishedStatusQuery);
+
+        // upcoming agreements
+        if (!empty($rmNumbers)) {
+            $termsQuery = new Query\Terms('rm_number_numerical', $rmNumbers);
+            $boolQuery->addMust($termsQuery);
+        }
 
         if (!empty($keyword)) {
             $keywordBool = new Query\BoolQuery();

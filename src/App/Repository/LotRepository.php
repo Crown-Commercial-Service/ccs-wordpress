@@ -143,12 +143,15 @@ class LotRepository extends AbstractRepository
         } catch (PDOException $e) {
             trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $e->getMessage(), E_USER_ERROR);
         }
+
         if ($result === false) {
-            // @see https://www.php.net/manual/en/pdo.errorinfo.php
             $info = $query->errorInfo();
             throw new DbException(sprintf('Delete lot record failed. Error %s: %s', $info[0], $info[2]));
         }
-        $this->importCount['deleted']++;
+
+        if ($query->rowCount() != 0) {
+            $this->importCount['deleted']++;
+        }
     }
 
 

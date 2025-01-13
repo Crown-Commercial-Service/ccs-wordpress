@@ -57,7 +57,6 @@ Collect.prototype.getData = function() {
 	if ( helper.acf_version >= 5 ) {
 		return require( "./collect-v5.js" )();
 	}
-	return require( "./collect-v4.js" );
 };
 
 Collect.prototype.filterBlacklistType = function( field_data ) {

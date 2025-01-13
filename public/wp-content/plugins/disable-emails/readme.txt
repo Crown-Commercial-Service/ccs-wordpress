@@ -5,10 +5,10 @@ Plugin URI: https://shop.webaware.com.au/downloads/disable-emails/
 Author URI: https://shop.webaware.com.au/
 Donate link: https://shop.webaware.com.au/donations/?donation_for=Disable+Emails
 Tags: disable emails, block emails
-Requires at least: 4.9
-Tested up to: 5.3
+Requires at least: 5.5
+Tested up to: 6.7
 Requires PHP: 5.6
-Stable tag: 1.5.0
+Stable tag: 1.8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,21 +25,26 @@ WordPress websites can send emails for a variety of reasons -- e.g user registra
 * bulk-loading data into websites which might trigger emails
 * adding new sites into multisite installations
 
+> NB: if you need to run this plugin on WordPress 5.4 or earlier, and must install manually from a .zip file, please install version 1.6.3 which you can [download from the Advanced page for the plugin](https://wordpress.org/plugins/disable-emails/advanced/). Since version 1.7.0, WordPress 5.5 or later is required.
+
 ### Translations
 
 Many thanks to the generous efforts of our translators:
 
-* Chinese (zh-CN) -- [Cai_Miao](https://profiles.wordpress.org/cai_miao) and [the Chinese translation team](https://translate.wordpress.org/locale/zh-cn/default/wp-plugins/disable-emails)
+* Chinese (zh-CN) -- [Cai_Miao](https://profiles.wordpress.org/cai_miao) and [the Chinese translation team](https://translate.wordpress.org/locale/zh-cn/default/wp-plugins/disable-emails/)
+* Chinese (zh-TW) -- [the Chinese (Taiwan) translation team](https://translate.wordpress.org/locale/zh-tw/default/wp-plugins/disable-emails/)
 * Czech (cs-CZ) -- [Rudolf Klusal](http://www.klusik.cz/)
-* Dutch (nl_NL) -- [the Dutch translation team](https://translate.wordpress.org/locale/nl/default/wp-plugins/disable-emails)
-* English (en_CA) -- [the English (Canadian) translation team](https://translate.wordpress.org/locale/en-ca/default/wp-plugins/disable-emails)
-* Korean (ko_KR) -- [the Korean translation team](https://translate.wordpress.org/locale/ko/default/wp-plugins/disable-emails)
-* Japanese (ja) -- [Cai_Miao](https://profiles.wordpress.org/cai_miao) and [the Japanese translation team](https://translate.wordpress.org/locale/ja/default/wp-plugins/disable-emails)
+* Dutch (nl_NL) -- [the Dutch translation team](https://translate.wordpress.org/locale/nl/default/wp-plugins/disable-emails/)
+* English (en_CA) -- [the English (Canadian) translation team](https://translate.wordpress.org/locale/en-ca/default/wp-plugins/disable-emails/)
+* English (en_GB) -- [the English (UK) translation team](https://translate.wordpress.org/locale/en-gb/default/wp-plugins/disable-emails/)
+* French (fr_FR) -- [the French translation team](https://translate.wordpress.org/locale/fr/default/wp-plugins/disable-emails/)
+* Korean (ko_KR) -- [the Korean translation team](https://translate.wordpress.org/locale/ko/default/wp-plugins/disable-emails/)
+* Japanese (ja) -- [Cai_Miao](https://profiles.wordpress.org/cai_miao) and [the Japanese translation team](https://translate.wordpress.org/locale/ja/default/wp-plugins/disable-emails/)
 * German (de-DE) -- [Peter Harlacher](http://helvetian.io/)
 * Norwegian: Bokmål (nb-NO) -- [neonnero](http://www.neonnero.com/)
 * Norwegian: Nynorsk (nn-NO) -- [neonnero](http://www.neonnero.com/)
-* Russian (ru_RU) -- [the Russian translation team](https://translate.wordpress.org/locale/ru/default/wp-plugins/disable-emails)
-* Swedish (sv_SE) -- [the Swedish translation team](https://translate.wordpress.org/locale/sv/default/wp-plugins/disable-emails)
+* Russian (ru_RU) -- [the Russian translation team](https://translate.wordpress.org/locale/ru/default/wp-plugins/disable-emails/)
+* Swedish (sv_SE) -- [the Swedish translation team](https://translate.wordpress.org/locale/sv/default/wp-plugins/disable-emails/)
 
 If you'd like to help out by translating this plugin, please [sign up for an account and dig in](https://translate.wordpress.org/projects/wp-plugins/disable-emails).
 
@@ -80,18 +85,16 @@ NB: if you activate the must-use plugin on a multisite, it will stop emails on a
 
 ## Upgrade Notice
 
-### 1.5.0
+### 1.8.2
 
-fixes PHP notice "Trying to get property 'ErrorInfo' of non-object"; supports running as a must-use plugin (mu-plugin); requires PHP 5.6+
+fixed deprecation warnings in PHP 8.1+
 
 ## Changelog
 
 The full changelog can be found [on GitHub](https://github.com/webaware/disable-emails/blob/master/changelog.md). Recent entries:
 
-### 1.5.0
+### 1.8.2
 
-Released 2019-11-11
+Released 2023-11-22
 
-* fixed: PHP notice -- Trying to get property 'ErrorInfo' of non-object
-* changed: requires minimum PHP 5.6; recommend PHP 7.3+
-* added: support for running the plugin as a must-use plugin (mu-plugin)
+* fixed: deprecation warnings in PHP 8.1+

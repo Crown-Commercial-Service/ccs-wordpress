@@ -1,14 +1,17 @@
 <?php
 
-namespace Yoast\AcfAnalysis\Tests\Assets;
+namespace Yoast\WP\ACF\Tests;
 
-use Brain\Monkey;
 use Brain\Monkey\Functions;
+use Yoast\WPTestUtils\BrainMonkey\TestCase;
+use Yoast_ACF_Analysis_Assets;
 
 /**
- * Class Assets_Test
+ * Class Assets_Test.
+ *
+ * @covers Yoast_ACF_Analysis_Assets
  */
-class Assets_Test extends \PHPUnit_Framework_TestCase {
+class Assets_Test extends TestCase {
 
 	/**
 	 * Whether or not to preserve the global state.
@@ -25,44 +28,24 @@ class Assets_Test extends \PHPUnit_Framework_TestCase {
 	protected $runTestInSeparateProcess = true;
 
 	/**
-	 * Sets up test fixtures.
-	 *
-	 * @return void
-	 */
-	protected function setUp() {
-		parent::setUp();
-		Monkey\setUp();
-	}
-
-	/**
-	 * Tears down test fixtures previously setup.
-	 *
-	 * @return void
-	 */
-	protected function tearDown() {
-		Monkey\tearDown();
-		parent::tearDown();
-	}
-
-	/**
 	 * Test the init hook and determines whether the proper assets are loaded.
 	 *
 	 * @return void
 	 */
 	public function testInitHook() {
-		define( 'AC_SEO_ACF_ANALYSIS_PLUGIN_FILE', '/directory/file' );
+		\define( 'AC_SEO_ACF_ANALYSIS_PLUGIN_FILE', '/directory/file' );
 		Functions\expect( 'get_plugin_data' )
 			->once()
-			->with( AC_SEO_ACF_ANALYSIS_PLUGIN_FILE )
+			->with( \AC_SEO_ACF_ANALYSIS_PLUGIN_FILE )
 			->andReturn(
-				array(
+				[
 					'Version' => '2.0.0',
-				)
+				]
 			);
 
-		$testee = new \Yoast_ACF_Analysis_Assets();
+		$testee = new Yoast_ACF_Analysis_Assets();
 		$testee->init();
 
-		$this->assertTrue( has_filter( 'admin_enqueue_scripts', array( $testee, 'enqueue_scripts' ) ) );
+		$this->assertSame( 11, \has_action( 'admin_enqueue_scripts', [ $testee, 'enqueue_scripts' ] ) );
 	}
 }

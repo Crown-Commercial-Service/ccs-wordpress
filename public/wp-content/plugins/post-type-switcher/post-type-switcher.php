@@ -2,7 +2,7 @@
 /**
  * Post Type Switcher
  *
- * Allow switching of a post type while editing a post (in post publish section)
+ * A simple way to change a post's type in WordPress
  *
  * @package Plugins/Admin/Post/TypeSwitcher
  */
@@ -10,7 +10,7 @@
 /**
  * Plugin Name:       Post Type Switcher
  * Description:       A simple way to change a post's type in WordPress
- * Plugin URI:        https://wordpress.org/plugins/post-type-switcher
+ * Plugin URI:        https://wordpress.org/plugins/post-type-switcher/
  * Author:            Triple J Software, Inc.
  * Author URI:        https://jjj.software
  * License:           GNU General Public License v2 or later
@@ -19,8 +19,8 @@
  * Domain Path:       /assets/lang/
  * Requires at least: 5.0
  * Requires PHP:      7.0
- * Tested up to:      6.4
- * Version:           3.2.2
+ * Tested up to:      6.5
+ * Version:           3.3.1
  */
 
 // Exit if accessed directly
@@ -38,9 +38,9 @@ final class Post_Type_Switcher {
 	 *
 	 * @since 3.0.1
 	 *
-	 * @var int
+	 * @var string
 	 */
-	private $asset_version = 202105290001;
+	private $asset_version = '202302290001';
 
 	/**
 	 * Hook in the basic early actions
@@ -96,6 +96,9 @@ final class Post_Type_Switcher {
 			}
 		}
 
+		// Default to "post_type" column being hidden
+		add_filter( 'default_hidden_columns', array( $this, 'default_hidden_columns' ) );
+
 		// Add UI to "Publish" metabox
 		add_action( 'admin_head',                  array( $this, 'admin_head'          ) );
 		add_action( 'post_submitbox_misc_actions', array( $this, 'metabox'             ) );
@@ -110,6 +113,9 @@ final class Post_Type_Switcher {
 		add_action( 'wp_ajax_post_type_switcher', array( $this, 'handle_ajax' ) );
 		add_filter( 'wp_insert_attachment_data',  array( $this, 'override_type' ), 10, 2 );
 		add_filter( 'wp_insert_post_data',        array( $this, 'override_type' ), 10, 2 );
+
+		// Compatibility
+		add_action( 'post_type_after_switch',	  array( $this, 'wpml_sync_type' ), 10, 3 );
 
 		// Pass object into an action
 		do_action( 'post_type_switcher', $this );
@@ -128,7 +134,7 @@ final class Post_Type_Switcher {
 		$cpt_object = get_post_type_object( $post_type );
 
 		// Bail if object does not exist or produces an error
-		if ( empty( $cpt_object ) || is_wp_error( $cpt_object ) ) {
+		if ( ! $cpt_object instanceof \WP_Post_Type ) {
 			return;
 		}
 
@@ -178,9 +184,44 @@ final class Post_Type_Switcher {
 	 * @since 1.2.0
 	 *
 	 * @param array $columns Array of registered columns
+	 *
+	 * @return array
 	 */
 	public function add_column( $columns = array() ) {
-		return array_merge( $columns, array( 'post_type' => esc_html__( 'Type', 'post-type-switcher' ) ) );
+
+		// Ensure columns is an array
+		if ( empty( $columns ) || ! is_array( $columns ) ) {
+			$columns = array();
+		}
+
+		// Define new column
+		$new_column = array( 'post_type' => esc_html__( 'Type', 'post-type-switcher' ) );
+
+		// Merge new column with existing columns
+		return array_merge( $columns, $new_column );
+	}
+
+	/**
+	 * Adds "post_type" column to array of hidden columns by default
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $hidden Array of hidden columns
+	 *
+	 * @return array
+	 */
+	public function default_hidden_columns( $hidden = array() ) {
+
+		// Ensure hidden is an array
+		if ( empty( $hidden ) || ! is_array( $hidden ) ) {
+			$hidden = array();
+		}
+
+		// Add "post_type" to hidden columns
+		$hidden[] = 'post_type';
+
+		// Return hidden columns
+		return $hidden;
 	}
 
 	/**
@@ -380,7 +421,7 @@ final class Post_Type_Switcher {
 
 				// Only select if not bulk
 				if ( false === $bulk ) :
-					$selected = selected( $post_type, $_post_type );
+					$selected = selected( $post_type, $_post_type, false );
 				endif;
 
 				// Output option
@@ -424,8 +465,20 @@ final class Post_Type_Switcher {
 			return wp_die( esc_html__( 'Sorry, you cannot do this.', 'post-type-switcher' ) );
 		}
 
+		// Retrieve the original post type for later use
+		$original_post_type = get_post_type( $post_id );
+
 		// Update the post type
 		set_post_type( $post_id, $post_type );
+
+		/**
+		 * Allow actions after post type switch
+		 * 
+		 * @param $updated_post_type string The new post type
+		 * @param $post_type The old post type
+		 * @param $post_id The post ID
+		 */
+		do_action( 'post_type_after_switch', $post_type, $original_post_type, $post_id );
 
 		// Redirect
 		wp_safe_redirect( get_edit_post_link( $post_id, 'raw' ) );
@@ -451,7 +504,7 @@ final class Post_Type_Switcher {
 	 * @param  array  $data
 	 * @param  array  $postarr
 	 *
-	 * @return Maybe modified $data
+	 * @return array Maybe modified $data
 	 */
 	public function override_type( $data = array(), $postarr = array() ) {
 
@@ -520,8 +573,59 @@ final class Post_Type_Switcher {
 		// Update post type
 		$data['post_type'] = $post_type;
 
+		/**
+		 * Allow actions after post type switch
+		 * 
+		 * @param $updated_post_type string The new post type
+		 * @param $post_type The old post type
+		 * @param $post_id The post ID
+		 */
+		do_action( 'post_type_after_switch', $post_type, $postarr['post_type'], $postarr['ID'] );
+
 		// Return modified post data
 		return $data;
+	}
+
+	/**
+	 * Switch post translations via WPML
+	 * 
+	 * @param $post_type string The new post type
+	 * @param $original_post_type The old post type
+	 * @param $post_id The post ID
+	 * 
+	 * @return void
+	 */
+	public function wpml_sync_type( $post_type, $original_post_type, $post_id ) {
+		global $wpdb, $sitepress;
+
+		if ( is_a( $sitepress, '\SitePress' ) ) {
+			// Retrieve the translation grouping ID
+			// Used to select and update sibling translations
+			$trid = $wpdb->get_var( $wpdb->prepare( "
+				SELECT 	trid
+				FROM 	{$wpdb->prefix}icl_translations
+				WHERE 	element_id = %d
+			", $post_id ) );
+
+			// Update translation grouping element types
+			$wpdb->update( 
+				$wpdb->prefix . 'icl_translations', 
+				array( 'element_type' => 'post_' . sanitize_key( $post_type ) ),
+				array( 'trid'		  => $trid )
+			);
+
+			// Retrieve other posts that are sibling translations
+			$translation_items = $wpdb->get_col( $wpdb->prepare( "
+				SELECT 	element_id
+				FROM 	{$wpdb->prefix}icl_translations
+				WHERE 	trid = %d
+			", $trid ) );
+
+			// Update post type of sibling translations
+			foreach ( $translation_items as $_post_id ) {
+				set_post_type( $_post_id, sanitize_key( $post_type ) );
+			}
+		}
 	}
 
 	/**
@@ -529,7 +633,7 @@ final class Post_Type_Switcher {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return If on post-new.php
+	 * @return void If on post-new.php
 	 */
 	public function admin_head() {
 	?>
@@ -577,7 +681,7 @@ final class Post_Type_Switcher {
 			#post-body .post-type-switcher::before {
 				content: '\f109';
 				font: 400 20px/1 dashicons;
-				speak: none;
+				speak: never;
 				display: inline-block;
 				padding: 0 2px 0 0;
 				top: 0;
@@ -591,6 +695,50 @@ final class Post_Type_Switcher {
 			}
 			.wp-list-table .column-post_type {
 				width: 10%;
+			}
+			.edit-post-post-type {
+				align-items: flex-start;
+				justify-content: flex-start;
+				width: 100%;
+			}
+			.edit-post-post-type span {
+				display: inline-block;
+				flex-shrink: 0;
+				padding: 6px 0;
+				width: 45%;
+			}
+			.components-button.edit-post-post-type__toggle {
+				height: auto;
+				text-align: left;
+				white-space: normal;
+				word-break: break-word;
+			}
+			.editor-post-type__dialog-fieldset {
+				margin: 8px;
+				min-width: 248px;
+			}
+			.editor-post-type__dialog-fieldset .editor-post-type__dialog-legend {
+				line-height: 1.2;
+				margin-top: 0px;
+				margin-bottom: 16px;
+				color: rgb(30, 30, 30);
+				font-size: calc(13px);
+				font-weight: 600;
+				display: block;
+			}
+			.editor-post-type__dialog-fieldset .editor-post-type__choice {
+				margin: 8px;
+				display: block;
+			}
+			.editor-post-type__dialog-fieldset .editor-post-type__choice:last-child {
+				margin-bottom: 0;
+			}
+			.editor-post-type__dialog-fieldset .editor-post-type__dialog-radio[type=radio] {
+				display: inline-block;
+			}
+			.editor-post-type__dialog-fieldset .editor-post-type__dialog-label {
+				margin: -3px 0 0 8px;
+				display: inline-block;
 			}
 		</style>
 

@@ -1,19 +1,24 @@
 <?php
 
-namespace Yoast\AcfAnalysis\Tests\Configuration;
+namespace Yoast\WP\ACF\Tests\Configuration;
+
+use Yoast\PHPUnitPolyfills\TestCases\TestCase;
+use Yoast_ACF_Analysis_String_Store;
 
 /**
- * Class String_Store_Test
+ * Class String_Store_Test.
+ *
+ * @covers \Yoast_ACF_Analysis_String_Store
  */
-class String_Store_Test extends \PHPUnit_Framework_TestCase {
+class String_Store_Test extends TestCase {
 
 	/**
 	 * Gets the blacklist string store.
 	 *
-	 * @return \Yoast_ACF_Analysis_String_Store The blacklist string store.
+	 * @return Yoast_ACF_Analysis_String_Store The blacklist string store.
 	 */
 	protected function getStore() {
-		return new \Yoast_ACF_Analysis_String_Store();
+		return new Yoast_ACF_Analysis_String_Store();
 	}
 
 	/**
@@ -22,8 +27,11 @@ class String_Store_Test extends \PHPUnit_Framework_TestCase {
 	 * @return void
 	 */
 	public function testEmpty() {
-		$store = $this->getStore();
-		$this->assertEmpty( $store->to_array() );
+		$store  = $this->getStore();
+		$result = $store->to_array();
+
+		$this->assertIsArray( $result );
+		$this->assertEmpty( $result );
 	}
 
 	/**
@@ -101,7 +109,11 @@ class String_Store_Test extends \PHPUnit_Framework_TestCase {
 		$store = $this->getStore();
 
 		$this->assertFalse( $store->add( 999 ) );
-		$this->assertEmpty( $store->to_array() );
+
+		$result = $store->to_array();
+
+		$this->assertIsArray( $result );
+		$this->assertEmpty( $result );
 	}
 
 	/**
@@ -127,7 +139,10 @@ class String_Store_Test extends \PHPUnit_Framework_TestCase {
 
 		$store->remove( $type_b );
 
-		$this->assertEmpty( $store->to_array() );
+		$result = $store->to_array();
+
+		$this->assertIsArray( $result );
+		$this->assertEmpty( $result );
 	}
 
 	/**

@@ -4,9 +4,9 @@
  *
  * @package    Members
  * @subpackage Admin
- * @author     Justin Tadlock <justintadlock@gmail.com>
- * @copyright  Copyright (c) 2009 - 2018, Justin Tadlock
- * @link       https://themehybrid.com/plugins/members
+ * @author     The MemberPress Team 
+ * @copyright  Copyright (c) 2009 - 2018, The MemberPress Team
+ * @link       https://members-plugin.com/
  * @license    http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
@@ -54,7 +54,7 @@ final class Addon {
 	 * @access protected
 	 * @var    string
 	 */
-	public $url = 'https://themehybrid.com/plugins/members';
+	public $url = 'https://members-plugin.com/';
 
 	/**
 	 * Add-on ZIP file URL.
@@ -130,6 +130,8 @@ final class Addon {
 	 */
 	public $install_count = 0;
 
+	public $is_memberpress = false;
+
 	/**
 	 * Magic method to use in case someone tries to output the object as a string.
 	 * We'll just return the name.
@@ -161,13 +163,17 @@ final class Addon {
 
 		foreach ( array_keys( get_object_vars( $this ) ) as $key ) {
 
-			if ( isset( $args[ $key ] ) )
+			if ( isset( $args[ $key ] ) ) {
 				$this->$key = $args[ $key ];
+			}
 		}
 
 		$this->name = sanitize_key( $name );
 
-		if ( ! $this->icon_url )
+		$this->is_memberpress = isset( $args['is_memberpress'] ) && true === $args['is_memberpress'];
+
+		if ( ! $this->icon_url ) {
 			$this->icon_url = members_plugin()->uri . 'img/icon-addon.png';
+		}
 	}
 }

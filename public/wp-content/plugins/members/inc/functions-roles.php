@@ -4,9 +4,9 @@
  *
  * @package    Members
  * @subpackage Includes
- * @author     Justin Tadlock <justintadlock@gmail.com>
- * @copyright  Copyright (c) 2009 - 2018, Justin Tadlock
- * @link       https://themehybrid.com/plugins/members
+ * @author     The MemberPress Team 
+ * @copyright  Copyright (c) 2009 - 2018, The MemberPress Team
+ * @link       https://members-plugin.com/
  * @license    http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
@@ -390,7 +390,7 @@ function members_is_wordpress_role( $role ) {
  */
 function members_get_new_role_url() {
 
-	return add_query_arg( 'page', 'role-new', admin_url( 'users.php' ) );
+	return add_query_arg( 'page', 'members', admin_url( 'admin.php' ) );
 }
 
 /**
@@ -415,7 +415,7 @@ function members_get_clone_role_url( $role ) {
  */
 function members_get_edit_roles_url() {
 
-	return add_query_arg( 'page', 'roles', admin_url( 'users.php' ) );
+	return add_query_arg( 'page', 'roles', admin_url( 'admin.php?page=roles' ) );
 }
 
 /**

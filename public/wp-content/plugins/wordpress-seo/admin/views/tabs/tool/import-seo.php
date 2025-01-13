@@ -76,7 +76,13 @@ function wpseo_import_external_select( $name, $plugins ) {
 		wpseo_import_external_select( 'import_external_plugin', $import_check->needs_import );
 		?>
 		<?php
-		do_action( 'wpseo_import_other_plugins' );
+
+		/**
+		 * WARNING: This hook is intended for internal use only.
+		 * Don't use it in your code as it will be removed shortly.
+		 */
+		do_action( 'wpseo_import_other_plugins_internal' );
+
 		?>
 		<input type="submit" class="button button-primary" name="import_external"
 			value="<?php esc_attr_e( 'Import', 'wordpress-seo' ); ?>"/>
@@ -91,12 +97,14 @@ function wpseo_import_external_select( $name, $plugins ) {
 </div>
 
 <div class="tab-block">
-	<h3><?php esc_html_e( 'Step 4: Do the configuration workout', 'wordpress-seo' ); ?></h3>
+	<h3><?php esc_html_e( 'Step 4: Go through the first time configuration', 'wordpress-seo' ); ?></h3>
 	<p>
 		<?php
+		$ftc_page = 'admin.php?page=wpseo_dashboard#/first-time-configuration';
 		printf(
-			esc_html__( 'You should complete the configuration workout, from the SEO &rarr; Workouts page, to make sure the most important settings for your site are correct and your SEO data has been optimized.', 'wordpress-seo' ),
-			'<a href="' . esc_url( admin_url( 'admin.php?page=wpseo_dashboard' ) ) . '">',
+			/* translators: 1: Link start tag to the First time configuration tab in the General page, 2: Link closing tag. */
+			esc_html__( 'You should finish the %1$sfirst time configuration%2$s to make sure your SEO data has been optimized and you’ve set the essential Yoast SEO settings for your site.', 'wordpress-seo' ),
+			'<a href="' . esc_url( admin_url( $ftc_page ) ) . '">',
 			'</a>'
 		);
 		?>

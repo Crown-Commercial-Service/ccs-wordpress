@@ -3,7 +3,8 @@ jQuery( document ).ready( function() {
 	/* ====== Delete Role Link (on Roles and Edit Role screens) ====== */
 
 	// When the delete role link is clicked, give a "AYS?" popup to confirm.
-	jQuery( '.members-delete-role-link' ).click(
+	jQuery( '.members-delete-role-link' ).on(
+		'click',
 		function() {
 			return window.confirm( members_i18n.ays_delete_role );
 		}
@@ -155,7 +156,8 @@ jQuery( document ).ready( function() {
 	jQuery( '.members-which-tab' ).text( jQuery( '.members-tab-nav :first-child a' ).text() );
 
 	// When a tab nav item is clicked.
-	jQuery( '.members-tab-nav li a' ).click(
+	jQuery( '.members-tab-nav li a' ).on(
+		'click',
 		function( j ) {
 
 			// Prevent the default browser action when a link is clicked.
@@ -264,6 +266,52 @@ jQuery( document ).ready( function() {
 		}
 	); // .on( 'change' )
 
+    	// When a change is triggered for the grant/deny check all checkbox.
+    	jQuery( document ).on( 'change',
+	      	'.members-roles-select input.check-all-grant, .members-roles-select input.check-all-deny',
+      		function() {
+		        var $this = jQuery( this );
+		        var isChecked = $this.is(':checked');
+		        var isGrantCheckbox = $this.hasClass('check-all-grant');
+		        var membersRoleSelect = $this.closest( '.members-roles-select' );
+		        var allGrantCheckboxes = membersRoleSelect.find( 'tbody input[data-grant-cap]' );
+		        var allDenyCheckboxes = membersRoleSelect.find( 'tbody input[data-deny-cap]' );
+		        var denyCheckboxes = membersRoleSelect.find( 'input.check-all-deny' );
+		        var grantCheckboxes = membersRoleSelect.find( 'input.check-all-grant' );
+
+		        if (isGrantCheckbox) {
+		            	_.each( allGrantCheckboxes, function( checkbox ) {
+		                	checkbox.checked = isChecked;
+		                	members_check_uncheck( checkbox );
+		            	});
+			} else {
+			    	_.each( allDenyCheckboxes, function( checkbox ) {
+					checkbox.checked = isChecked;
+					members_check_uncheck( checkbox );
+			    	});
+			}
+
+		        if (isChecked) {
+		            	if (isGrantCheckbox) {
+		                	grantCheckboxes.prop('checked', true);
+		                	denyCheckboxes.prop('checked', false);
+		            	} else {
+		                	denyCheckboxes.prop('checked', true);
+		                	grantCheckboxes.prop('checked', false);
+		            	}
+		    	} else {
+                        	if (isGrantCheckbox) {
+                            		grantCheckboxes.prop('checked', false);
+                        	} else {
+                            		denyCheckboxes.prop('checked', false);
+                        	}
+		        }
+
+		        // Count the granted and denied caps that are checked.
+		        members_count_caps();
+    		}
+     	);
+
 	// When a cap button is clicked. Note that we're using `.on()` here because we're dealing
 	// with dynamically-generated HTML.
 	//
@@ -299,7 +347,7 @@ jQuery( document ).ready( function() {
 	); // on()
 
 	// Remove focus from button when hovering another button.
-	jQuery( document ).on( 'hover', '.editable-role .members-cap-checklist button',
+	jQuery( document ).on( 'mouseenter', '.editable-role .members-cap-checklist button',
 		function() {
 			jQuery( '.members-cap-checklist button:focus' ).not( this ).blur();
 		}
@@ -351,7 +399,8 @@ jQuery( document ).ready( function() {
 	); // .keypress()
 
 	// When the new cap button is clicked.
-	jQuery( '#members-add-new-cap' ).click(
+	jQuery( '#members-add-new-cap' ).on(
+		'click',
 		function() {
 
 			// Get the new cap value.

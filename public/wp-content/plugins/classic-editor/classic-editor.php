@@ -5,7 +5,7 @@
  * Plugin Name: Classic Editor
  * Plugin URI:  https://wordpress.org/plugins/classic-editor/
  * Description: Enables the WordPress classic editor and the old-style Edit Post screen with TinyMCE, Meta Boxes, etc. Supports the older plugins that extend this screen.
- * Version:     1.6
+ * Version:     1.6.7
  * Author:      WordPress Contributors
  * Author URI:  https://github.com/WordPress/classic-editor/
  * License:     GPLv2 or later
@@ -57,12 +57,24 @@ class Classic_Editor {
 			if ( $settings['allow-users'] ) {
 				// User settings.
 				add_action( 'personal_options_update', array( __CLASS__, 'save_user_settings' ) );
+				add_action( 'edit_user_profile_update', array( __CLASS__, 'save_user_settings' ) );
 				add_action( 'profile_personal_options', array( __CLASS__, 'user_settings' ) );
+				add_action( 'edit_user_profile', array( __CLASS__, 'user_settings') );
 			}
 		}
 
 		// Always remove the "Try Gutenberg" dashboard widget. See https://core.trac.wordpress.org/ticket/44635.
 		remove_action( 'try_gutenberg_panel', 'wp_try_gutenberg_panel' );
+
+		// Fix for Safari 18 negative horizontal margin on floats.
+		add_action( 'admin_print_styles', array( __CLASS__, 'safari_18_temp_fix' ) );
+
+		// Fix for the Categories postbox on the classic Edit Post screen for WP 6.7.1.
+		global $wp_version;
+
+		if ( '6.7.1' === $wp_version && is_admin() ) {
+			add_filter( 'script_loader_src', array( __CLASS__, 'replace_post_js_2' ), 11, 2 );
+		}
 
 		if ( ! $block_editor && ! $gutenberg  ) {
 			return;
@@ -87,7 +99,12 @@ class Classic_Editor {
 			add_action( 'admin_head-edit.php', array( __CLASS__, 'add_edit_php_inline_style' ) );
 
 			add_action( 'edit_form_top', array( __CLASS__, 'remember_classic_editor' ) );
-			add_filter( 'block_editor_settings', array( __CLASS__, 'remember_block_editor' ), 10, 2 );
+
+			if ( version_compare( $GLOBALS['wp_version'], '5.8', '>=' ) ) {
+				add_filter( 'block_editor_settings_all', array( __CLASS__, 'remember_block_editor' ), 10, 2 );
+			} else {
+				add_filter( 'block_editor_settings', array( __CLASS__, 'remember_block_editor' ), 10, 2 );
+			}
 
 			// Post state (edit.php)
 			add_filter( 'display_post_states', array( __CLASS__, 'add_post_state' ), 10, 2 );
@@ -110,7 +127,7 @@ class Classic_Editor {
 					self::remove_gutenberg_hooks();
 				}
 			} else {
-				// `$settings['editor'] === 'block'`, nothing to do :)
+				// $settings['editor'] === 'block', nothing to do :)
 				return;
 			}
 		}
@@ -178,6 +195,7 @@ class Classic_Editor {
 		remove_action( 'admin_enqueue_scripts', 'gutenberg_check_if_classic_needs_warning_about_blocks' );
 		remove_filter( 'register_post_type_args', 'gutenberg_filter_post_type_labels' );
 
+		// phpcs:disable Squiz.PHP.CommentedOutCode.Found
 		// Keep
 		// remove_filter( 'wp_kses_allowed_html', 'gutenberg_kses_allowedtags', 10, 2 ); // not needed in 5.0
 		// remove_filter( 'bulk_actions-edit-wp_block', 'gutenberg_block_bulk_actions' );
@@ -188,10 +206,11 @@ class Classic_Editor {
 		// Continue to manage wpautop for posts that were edited in Gutenberg.
 		// remove_filter( 'wp_editor_settings', 'gutenberg_disable_editor_settings_wpautop' );
 		// remove_filter( 'the_content', 'gutenberg_wpautop', 8 );
+		// phpcs:enable Squiz.PHP.CommentedOutCode.Found
 
 	}
 
-	private static function get_settings( $refresh = 'no' ) {
+	private static function get_settings( $refresh = 'no', $user_id = 0 ) {
 		/**
 		 * Can be used to override the plugin's settings. Always hides the settings UI when used (as users cannot change the settings).
 		 *
@@ -200,7 +219,7 @@ class Classic_Editor {
 		 *   'editor' => 'classic', // Accepted values: 'classic', 'block'.
 		 *   'allow-users' => false,
 		 *
-		 * @param boolean To override the settings return an array with the above keys.
+		 * @param boolean To override the settings return an array with the above keys. Default false.
 		 */
 		$settings = apply_filters( 'classic_editor_plugin_settings', false );
 
@@ -256,14 +275,15 @@ class Classic_Editor {
 			if ( $option === 'block' || $option === 'no-replace' ) {
 				$editor = 'block';
 			} else {
-				// empty( $option ) || $option === 'classic' || $option === 'replace'.
+				// empty( $option ) || $option === 'classic' || $option === 'replace'
 				$editor = 'classic';
 			}
 		}
 
 		// Override the defaults with the user options.
 		if ( ( ! isset( $GLOBALS['pagenow'] ) || $GLOBALS['pagenow'] !== 'options-writing.php' ) && $allow_users ) {
-			$user_options = get_user_option( 'classic-editor-settings' );
+
+			$user_options = get_user_option( 'classic-editor-settings', $user_id );
 
 			if ( $user_options === 'block' || $user_options === 'classic' ) {
 				$editor = $user_options;
@@ -287,7 +307,7 @@ class Classic_Editor {
 		if ( $post_id ) {
 			$settings = self::get_settings();
 
-			if ( $settings['allow-users'] && ! isset( $_GET['classic-editor__forget'] ) ) {
+			if ( $settings['allow-users'] && ! isset( $_GET['classic-editor__forget'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$which = get_post_meta( $post_id, 'classic-editor-remember', true );
 
 				if ( $which ) {
@@ -303,7 +323,7 @@ class Classic_Editor {
 			}
 		}
 
-		if ( isset( $_GET['classic-editor'] ) ) {
+		if ( isset( $_GET['classic-editor'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return true;
 		}
 
@@ -314,6 +334,7 @@ class Classic_Editor {
 	 * Get the edited post ID (early) when loading the Edit Post screen.
 	 */
 	private static function get_edited_post_id() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if (
 			! empty( $_GET['post'] ) &&
 			! empty( $_GET['action'] ) &&
@@ -323,6 +344,7 @@ class Classic_Editor {
 		) {
 			return (int) $_GET['post']; // post_ID
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		return 0;
 	}
@@ -361,7 +383,7 @@ class Classic_Editor {
 		if (
 			isset( $_POST['classic-editor-user-settings'] ) &&
 			isset( $_POST['classic-editor-replace'] ) &&
-			wp_verify_nonce( $_POST['classic-editor-user-settings'], 'allow-user-settings' )
+			wp_verify_nonce( $_POST['classic-editor-user-settings'], 'allow-user-settings' ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		) {
 			$user_id = (int) $user_id;
 
@@ -369,7 +391,7 @@ class Classic_Editor {
 				return;
 			}
 
-			$editor = self::validate_option_editor( $_POST['classic-editor-replace'] );
+			$editor = self::validate_option_editor( $_POST['classic-editor-replace'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			update_user_option( $user_id, 'classic-editor-settings', $editor );
 		}
 	}
@@ -393,8 +415,8 @@ class Classic_Editor {
 		return 'disallow';
 	}
 
-	public static function settings_1() {
-		$settings = self::get_settings( 'refresh' );
+	public static function settings_1( $user_id = 0 ) {
+		$settings = self::get_settings( 'refresh', $user_id );
 
 		?>
 		<div class="classic-editor-options">
@@ -437,17 +459,18 @@ class Classic_Editor {
 	/**
 	 * Shown on the Profile page when allowed by admin.
 	 */
-	public static function user_settings() {
+	public static function user_settings( $user = null ) {
 		global $user_can_edit;
 		$settings = self::get_settings( 'update' );
 
-		if (
-			! defined( 'IS_PROFILE_PAGE' ) ||
-			! IS_PROFILE_PAGE ||
-			! $user_can_edit ||
-			! $settings['allow-users']
-		) {
+		if ( ! $user_can_edit || ! $settings['allow-users'] ) {
 			return;
+		}
+
+		if ( $user instanceof WP_User ) {
+			$user_id = (int) $user->ID;
+		} else {
+			$user_id = 0;
 		}
 
 		?>
@@ -456,7 +479,7 @@ class Classic_Editor {
 				<th scope="row"><?php _e( 'Default Editor', 'classic-editor' ); ?></th>
 				<td>
 				<?php wp_nonce_field( 'allow-user-settings', 'classic-editor-user-settings' ); ?>
-				<?php self::settings_1(); ?>
+				<?php self::settings_1( $user_id ); ?>
 				</td>
 			</tr>
 		</table>
@@ -477,7 +500,7 @@ class Classic_Editor {
 				<td>
 					<p>
 						<input type="radio" name="classic-editor-replace" id="classic-editor-classic" value="classic"<?php if ( $editor !== 'block' ) echo ' checked'; ?> />
-						<label for="classic-editor-classic"><?php _ex( 'Classic editor', 'Editor Name', 'classic-editor' ); ?></label>
+						<label for="classic-editor-classic"><?php _ex( 'Classic Editor', 'Editor Name', 'classic-editor' ); ?></label>
 					</p>
 					<p>
 						<input type="radio" name="classic-editor-replace" id="classic-editor-block" value="block"<?php if ( $editor === 'block' ) echo ' checked'; ?> />
@@ -501,7 +524,7 @@ class Classic_Editor {
 		if (
 			isset( $_POST['classic-editor-network-settings'] ) &&
 			current_user_can( 'manage_network_options' ) &&
-			wp_verify_nonce( $_POST['classic-editor-network-settings'], 'allow-site-admin-settings' )
+			wp_verify_nonce( $_POST['classic-editor-network-settings'], 'allow-site-admin-settings' ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		) {
 			if ( isset( $_POST['classic-editor-replace'] ) && $_POST['classic-editor-replace'] === 'block' ) {
 				update_network_option( null, 'classic-editor-replace', 'block' );
@@ -540,7 +563,15 @@ class Classic_Editor {
 	/**
 	 * Remember when the block editor was used to edit a post.
 	 */
-	public static function remember_block_editor( $editor_settings, $post ) {
+	public static function remember_block_editor( $editor_settings, $context ) {
+		if ( is_a( $context, 'WP_Post' ) ) {
+			$post = $context;
+		} elseif ( ! empty( $context->post ) ) {
+			$post = $context->post;
+		} else {
+			return $editor_settings;
+		}
+
 		$post_type = get_post_type( $post );
 
 		if ( $post_type && self::can_edit_post_type( $post_type ) ) {
@@ -578,6 +609,7 @@ class Classic_Editor {
 
 		// Open the default editor when no $post and for "Add New" links,
 		// or the alternate editor when the user is switching editors.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( empty( $post->ID ) || $post->post_status === 'auto-draft' ) {
 			if (
 				( $settings['editor'] === 'classic' && ! isset( $_GET['classic-editor__forget'] ) ) ||  // Add New
@@ -588,6 +620,7 @@ class Classic_Editor {
 		} elseif ( self::is_classic( $post->ID ) ) {
 			$use_block_editor = false;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		// Enforce the editor if set by plugins.
 		if ( $use_block_editor && ! $editors['block_editor'] ) {
@@ -604,8 +637,8 @@ class Classic_Editor {
 	 */
 	public static function redirect_location( $location ) {
 		if (
-			isset( $_REQUEST['classic-editor'] ) ||
-			( isset( $_POST['_wp_http_referer'] ) && strpos( $_POST['_wp_http_referer'], '&classic-editor' ) !== false )
+			isset( $_REQUEST['classic-editor'] ) || // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			( isset( $_POST['_wp_http_referer'] ) && strpos( $_POST['_wp_http_referer'], '&classic-editor' ) !== false ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing
 		) {
 			$location = add_query_arg( 'classic-editor', '', $location );
 		}
@@ -619,7 +652,7 @@ class Classic_Editor {
 	public static function get_edit_post_link( $url ) {
 		$settings = self::get_settings();
 
-		if ( isset( $_REQUEST['classic-editor'] ) || $settings['editor'] === 'classic' ) {
+		if ( isset( $_REQUEST['classic-editor'] ) || $settings['editor'] === 'classic' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$url = add_query_arg( 'classic-editor', '', $url );
 		}
 
@@ -660,6 +693,11 @@ class Classic_Editor {
 	}
 
 	public static function enqueue_block_editor_scripts() {
+		// get_enabled_editors_for_post() needs a WP_Post or post_ID.
+		if ( empty( $GLOBALS['post'] ) ) {
+			return;
+		}
+
 		$editors = self::get_enabled_editors_for_post( $GLOBALS['post'] );
 
 		if ( ! $editors['classic_editor'] ) {
@@ -945,6 +983,48 @@ class Classic_Editor {
 
 		delete_option( 'classic-editor-replace' );
 		delete_option( 'classic-editor-allow-users' );
+	}
+
+	/**
+	 * Temporary fix for Safari 18 negative horizontal margin on floats.
+	 * See: https://core.trac.wordpress.org/ticket/62082 and
+	 * https://bugs.webkit.org/show_bug.cgi?id=280063.
+	 * TODO: Remove when Safari is fixed.
+	 */
+	public static function safari_18_temp_fix() {
+		global $current_screen;
+
+		if ( isset( $current_screen->base ) && 'post' === $current_screen->base ) {
+			$clear = is_rtl() ? 'right' : 'left';
+
+			?>
+			<style id="classic-editor-safari-18-temp-fix">
+			_::-webkit-full-page-media, _:future, :root #post-body #postbox-container-2 {
+				clear: <?php echo $clear; ?>;
+			}
+			</style>
+			<?php
+		}
+	}
+
+	// Back-compat with 1.6.6.
+	public static function replace_post_js( $scripts ) {
+		_deprecated_function( __METHOD__, '1.6.7' );
+	}
+
+	/**
+	 * Fix for the Categories postbox on the classic Edit Post screen for WP 6.7.1.
+	 * See: https://core.trac.wordpress.org/ticket/62504 and 
+	 * https://github.com/WordPress/classic-editor/issues/222.
+	 */
+	public static function replace_post_js_2( $src, $handle ) {
+		if ( 'post' === $handle && is_string( $src ) && false === strpos( $src, 'ver=62504-20241121' ) ) {
+			$suffix = wp_scripts_get_suffix();
+			$src    = plugins_url( 'scripts/', __FILE__ ) . "post{$suffix}.js";
+			$src    = add_query_arg( 'ver', '62504-20241121', $src );
+		}
+
+		return $src;
 	}
 }
 

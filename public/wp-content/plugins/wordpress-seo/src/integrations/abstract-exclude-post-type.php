@@ -4,13 +4,13 @@ namespace Yoast\WP\SEO\Integrations;
 
 /**
  * Abstract class for excluding certain post types from being indexed.
- *
- * @phpcs:disable Yoast.NamingConventions.ObjectNameDepth.MaxExceeded
  */
 abstract class Abstract_Exclude_Post_Type implements Integration_Interface {
 
 	/**
 	 * Initializes the integration.
+	 *
+	 * @return void
 	 */
 	public function register_hooks() {
 		\add_filter( 'wpseo_indexable_excluded_post_types', [ $this, 'exclude_post_types' ] );

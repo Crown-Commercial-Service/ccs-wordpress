@@ -1,10 +1,10 @@
 === Disable REST API ===
 Contributors: dmchale, tangrufus
 Tags: admin, api, json, REST, rest-api, disable
-Requires at least: 4.4
+Requires at least: 4.9
 Requires PHP: 5.6
-Tested up to: 5.6
-Stable tag: 1.6
+Tested up to: 6.3
+Stable tag: 1.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,18 @@ This plugin is ONLY meant to disable endpoints accessible via the core REST API 
 3. The Settings page lets you selectively whitelist endpoints registered with the REST API, on a per-user-role basis.
 
 == Changelog ==
+
+= 1.8 =
+* Tested up to WP v6.3
+* Added `dra_error_message` filter so devs can customize the access error message
+* Fixed bug that caused fatal errors if activating plugin on installations running the LearnPress plugin
+* Changed minimum requirements to PHP 5.6 (up from 5.3) and WordPress 4.9 (up from 4.4). Adding docblock comments to support minimums.
+
+= 1.7 =
+* Tested up to WP v5.8
+* Replace use of filemtime() with plugin version number for static file enqueues. Props @tangrufus for bringing this up!
+* Fixed logic bug for role-based default_allow rules. Props @msp1974 for the report!
+* Few small code-style updates
 
 = 1.6 =
 * Tested up to WP v5.6
@@ -92,6 +104,9 @@ This plugin is ONLY meant to disable endpoints accessible via the core REST API 
 * Initial Release
 
 == Upgrade Notice ==
+
+= 1.8 =
+* Improved UI/UX of admin settings page to better manage routes
 
 = 1.6 =
 * By popular request... now with User Role support!

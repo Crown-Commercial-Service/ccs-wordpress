@@ -1,48 +1,35 @@
 <?php
 
-namespace Yoast\AcfAnalysis\Tests;
+namespace Yoast\WP\ACF\Tests;
 
-use Brain\Monkey;
+use AC_Yoast_SEO_ACF_Content_Analysis;
+use Yoast\WPTestUtils\BrainMonkey\TestCase;
+use Yoast_ACF_Analysis_Configuration;
+use Yoast_ACF_Analysis_Facade;
 
 /**
- * Class Main_Test
+ * Class Main_Test.
  */
-class Main_Test extends \PHPUnit_Framework_TestCase {
-
-	/**
-	 * Sets up test fixtures.
-	 *
-	 * @return void
-	 */
-	protected function setUp() {
-		parent::setUp();
-		Monkey\setUp();
-	}
-
-	/**
-	 * Tears down test fixtures previously setup.
-	 *
-	 * @return void
-	 */
-	protected function tearDown() {
-		Monkey\tearDown();
-		parent::tearDown();
-	}
+class Main_Test extends TestCase {
 
 	/**
 	 * Tests invalid configurations.
 	 *
+	 * @covers Yoast_ACF_Analysis_Configuration
+	 *
 	 * @return void
 	 */
 	public function testInvalidConfig() {
-		$registry = \Yoast_ACF_Analysis_Facade::get_registry();
+		$registry = Yoast_ACF_Analysis_Facade::get_registry();
 
 		$registry->add( 'config', 'Invalid Config' );
 
-		$testee = new \AC_Yoast_SEO_ACF_Content_Analysis();
+		$testee = new AC_Yoast_SEO_ACF_Content_Analysis();
 		$testee->boot();
 
-		$this->assertNotSame( 'Invalid Config', $registry->get( 'config' ) );
-		$this->assertInstanceOf( \Yoast_ACF_Analysis_Configuration::class, $registry->get( 'config' ) );
+		$result = $registry->get( 'config' );
+
+		$this->assertNotSame( 'Invalid Config', $result );
+		$this->assertInstanceOf( Yoast_ACF_Analysis_Configuration::class, $result );
 	}
 }

@@ -3,7 +3,7 @@
  * @package PublishPress
  * @author  PublishPress
  *
- * Copyright (c) 2018 PublishPress
+ * Copyright (c) 2022 PublishPress
  *
  * ------------------------------------------------------------------------------
  * Based on Edit Flow
@@ -48,14 +48,14 @@ class PP_Dashboard_Notepad_Widget
             self::notepad_post_type,
             [
                 'label' => __('Dashboard Note', 'publishpress'),
-                'public'              => false,
-                'publicly_queryable'  => false,
-                'has_archive'         => false,
-                'rewrite'             => false,
-                'show_ui'             => false,
-                'query_var'           => false,
-                'hierarchical'        => false,
-                'can_export'          => true,
+                'public' => false,
+                'publicly_queryable' => false,
+                'has_archive' => false,
+                'rewrite' => false,
+                'show_ui' => false,
+                'query_var' => false,
+                'hierarchical' => false,
+                'can_export' => true,
                 'exclude_from_search' => true,
             ]
         );
@@ -81,18 +81,29 @@ class PP_Dashboard_Notepad_Widget
 
         check_admin_referer('dashboard-notepad');
 
-        if ( ! current_user_can($this->edit_cap)) {
-            wp_die(PublishPress()->dashboard->messages['invalid-permissions']);
+        if (! isset($_REQUEST['notepad-id'])) {
+            return;
         }
 
-        $current_id      = (int)$_REQUEST['notepad-id'];
+        if (! current_user_can($this->edit_cap)) {
+            wp_die(esc_html(PublishPress()->dashboard->messages['invalid-permissions']));
+        }
+
+        if (isset($_REQUEST['note'])) {
+            $note_content = wp_filter_nohtml_kses($_REQUEST['note']);
+        } else {
+            $note_content = '';
+        }
+
+        $current_id = (int)$_REQUEST['notepad-id'];
         $current_notepad = get_post($current_id);
-        $new_note        = [
-            'post_content' => wp_filter_nohtml_kses($_REQUEST['note']),
-            'post_type'    => self::notepad_post_type,
-            'post_status'  => 'draft',
-            'post_author'  => get_current_user_id(),
+        $new_note = [
+            'post_content' => $note_content,
+            'post_type' => self::notepad_post_type,
+            'post_status' => 'draft',
+            'post_author' => get_current_user_id(),
         ];
+
         if ($current_notepad
             && self::notepad_post_type == $current_notepad->post_type
             && ! isset($_REQUEST['create-note'])) {
@@ -114,23 +125,32 @@ class PP_Dashboard_Notepad_Widget
      */
     public function notepad_widget()
     {
-        $args         = [
+        $args = [
             'posts_per_page' => 1,
-            'post_status'    => 'draft',
-            'post_type'      => self::notepad_post_type,
+            'post_status' => 'draft',
+            'post_type' => self::notepad_post_type,
         ];
-        $posts        = get_posts($args);
-        $current_note = ( ! empty($posts[0]->post_content)) ? $posts[0]->post_content : '';
-        $current_id   = ( ! empty($posts[0]->ID)) ? $posts[0]->ID : 0;
-        $current_post = ( ! empty($posts[0])) ? $posts[0] : false;
+        $posts = get_posts($args);
+        $current_note = (! empty($posts[0]->post_content)) ? $posts[0]->post_content : '';
+        $current_id = (! empty($posts[0]->ID)) ? $posts[0]->ID : 0;
+        $current_post = (! empty($posts[0])) ? $posts[0] : false;
 
         if ($current_post) {
-            $last_updated = '<span id="dashboard-notepad-last-updated">' . sprintf(__('%1$s last updated on %2$s',
-                    'publishpress'), get_user_by('id', $current_post->post_author)->display_name,
-                    get_the_time(get_option('date_format') . ' ' . get_option('time_format'),
-                        $current_post)) . '</span>';
+            $last_updated_escaped = '<span id="dashboard-notepad-last-updated">' . sprintf(
+                    esc_html__(
+                        '%1$s last updated on %2$s',
+                        'publishpress'
+                    ),
+                    esc_html(get_user_by('id', $current_post->post_author)->display_name),
+                    esc_html(
+                        get_the_time(
+                            get_option('date_format') . ' ' . get_option('time_format'),
+                            $current_post
+                        )
+                    )
+                ) . '</span>';
         } else {
-            $last_updated = '';
+            $last_updated_escaped = '';
         }
 
         if (current_user_can($this->edit_cap)) {
@@ -141,9 +161,11 @@ class PP_Dashboard_Notepad_Widget
             echo esc_textarea(trim($current_note));
             echo '</textarea>';
             echo '<p class="submit">';
-            echo $last_updated;
+            // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo $last_updated_escaped;
+            // phpcs:enable
             echo '<span id="dashboard-notepad-submit-buttons">';
-            submit_button(__('Update Note', 'publishpress'), 'primary', 'update-note', false);
+            submit_button(esc_html__('Update Note', 'publishpress'), 'primary', 'update-note', false);
             echo '</span>';
             echo '<div style="clear:both;"></div>';
             wp_nonce_field('dashboard-notepad');
@@ -153,7 +175,9 @@ class PP_Dashboard_Notepad_Widget
             echo '<textarea style="width:100%" rows="10" name="note" disabled="disabled">';
             echo esc_textarea(trim($current_note));
             echo '</textarea>';
-            echo $last_updated;
+            // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo $last_updated_escaped;
+            // phpcs:enable
             echo '</form>';
         }
     }

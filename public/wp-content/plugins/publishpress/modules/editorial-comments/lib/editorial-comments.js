@@ -1,13 +1,118 @@
-jQuery(document).ready(function () {
+jQuery(function ($) {
     editorialCommentReply.init();
 
     // Check if certain hash flag set and take action
-    if (location.hash == '#editorialcomments/add') {
+    if (location.hash === '#editorialcomments/add') {
         editorialCommentReply.open();
     } else if (location.hash.search(/#editorialcomments\/reply/) > -1) {
         var reply_id = location.hash.substring(location.hash.lastIndexOf('/') + 1);
         editorialCommentReply.open(reply_id);
     }
+
+    $(window).on('hashchange', function () {
+        if (location.hash.search(/#comment-/) > -1) {
+            var offset = $(':target').offset();
+            var scrollto = offset.top - 120; // minus fixed header height
+            $('html, body').animate({scrollTop: scrollto}, 0);
+        }
+    });
+    
+    $('.editorial-comment-filter-posts').pp_select2({
+      placeholder: publishpressEditorialCommentsParams.allPosts,
+      allowClear: true,
+      ajax: {
+          url: ajaxurl,
+          dataType: 'json',
+          delay: 250,
+          data: function (params) {
+              var query = {
+                  search: params.term,
+                  page: params.page || 1,
+                  action: 'publishpress_editorial_search_post',
+                  nonce: publishpressEditorialCommentsParams.nonce
+              };
+
+              return query;
+          }
+      }
+    });
+    
+    $('.editorial-comment-filter-users').pp_select2({
+      placeholder: publishpressEditorialCommentsParams.allUsers,
+      allowClear: true,
+      ajax: {
+          url: ajaxurl,
+          dataType: 'json',
+          delay: 250,
+          data: function (params) {
+              var query = {
+                  search: params.term,
+                  page: params.page || 1,
+                  action: 'publishpress_editorial_search_user',
+                  nonce: publishpressEditorialCommentsParams.nonce
+              };
+
+              return query;
+          }
+      }
+    });
+
+    /**
+     * Editorial Comment image upload button click
+     */
+     $('body').on( 'click', '.editorial-comment-file-upload', function(event){
+      event.preventDefault();
+      
+      const button = $(this)
+      const imageId = button.next().next().val();
+      
+      const custom_uploader = wp.media({
+        multiple: false
+      }).on('select', function () {
+        const attachment = custom_uploader.state().get('selection').first().toJSON();
+        const file_html   = '<div class="editorial-uploaded-file" data-file_id="' + attachment.id + '" data-file_id="' + attachment.id + '"> &dash; <span class="file">' + attachment.filename
+        + '</span><span class="editorial-comment-file-remove">' + publishpressEditorialCommentsParams.removeText + '</span></div>';
+        $('.editorial-attachments').append(file_html);
+        processEditorialCommentFiles();
+      });
+      
+      custom_uploader.on('open', function () {
+        if (imageId) {
+          const selection = custom_uploader.state().get('selection');
+          attachment = wp.media.attachment(imageId);
+          attachment.fetch();
+          selection.add(attachment ? [attachment] : []);
+        }
+      });
+
+      custom_uploader.open();
+    });
+
+    /**
+     * Editorial Comment image remove button click
+     */
+    $('body').on('click', '.editorial-comment-file-remove', function(event){
+      event.preventDefault();
+      const button = $(this);
+      button.closest('.editorial-uploaded-file').remove();
+      processEditorialCommentFiles();
+    });
+    $('body').on('click', '.editorial-comment-edit-file-remove', function(event){
+      event.preventDefault();
+      const button = $(this);
+      button.closest('.editorial-single-file').remove();
+    });
+  
+    function processEditorialCommentFiles() {
+      var uploaded_files    = '';
+      $('.editorial-uploaded-file').each(function () {
+        var current_file_html = $(this);
+        var current_file_id   = current_file_html.attr('data-file_id');
+        uploaded_files += current_file_id + ' ';
+      });
+      $('#pp-comment_files').val(uploaded_files);
+    }
+    
 });
 
 /**
@@ -19,10 +124,10 @@ editorialCommentReply = {
         var row = jQuery('#pp-replyrow');
 
         // Bind click events to cancel and submit buttons
-        jQuery('a.pp-replycancel', row).click(function () {
+        jQuery('a.pp-replycancel', row).on('click', function () {
             return editorialCommentReply.revert();
         });
-        jQuery('a.pp-replysave', row).click(function () {
+        jQuery('a.pp-replysave', row).on('click', function () {
             return editorialCommentReply.send();
         });
     },
@@ -55,6 +160,8 @@ editorialCommentReply = {
      * @id = comment id
      */
     open: function (id) {
+        editorialCommentEdit.close();
+
         var parent;
 
         // Close any open reply boxes
@@ -87,14 +194,13 @@ editorialCommentReply = {
      */
     send: function (reply) {
         var post = {};
-        var containter_id = '#pp-replyrow';
 
         jQuery('#pp-replysubmit .error').html('').hide();
 
         // Validation: check to see if comment entered
         post.content = jQuery.trim(jQuery('#pp-replycontent').val());
         if (!post.content) {
-            jQuery('#pp-replyrow .error').text('Please enter a comment').show();
+            jQuery('#pp-replyrow .error').text(wp.i18n.__('Please enter a comment', 'publishpress')).show();
             return;
         }
 
@@ -105,6 +211,7 @@ editorialCommentReply = {
         post.parent = (jQuery('#pp-comment_parent').val() == '') ? 0 : jQuery('#pp-comment_parent').val();
         post._nonce = jQuery('#pp_comment_nonce').val();
         post.post_id = jQuery('#pp-post_id').val();
+        post.comment_files = jQuery('#pp-comment_files').val();
 
         // Send the request
         jQuery.ajax({
@@ -112,7 +219,9 @@ editorialCommentReply = {
             url: (ajaxurl) ? ajaxurl : wpListL10n.url,
             data: post,
             success: function (x) {
-                editorialCommentReply.show(x);
+              jQuery('#pp-comment_files').val('');
+              jQuery('.editorial-attachments').html('');
+              editorialCommentReply.show(x);
             },
             error: function (r) {
                 editorialCommentReply.error(r);
@@ -123,6 +232,8 @@ editorialCommentReply = {
     },
 
     show: function (xml) {
+        editorialCommentEdit.close();
+
         var response, comment, supplemental, id, bg;
 
         // Didn't pass validation, so let's throw an error
@@ -185,6 +296,176 @@ editorialCommentReply = {
             er = r.responseText.replace(/<.[^<>]*?>/g, '');
 
             jQuery('#pp-replysubmit .error').html(er).show();
+        }
+    }
+};
+
+editorialCommentEdit = {
+    $: jQuery,
+
+    init: function () {
+    },
+
+    close: function () {
+        var $editRow = this.$('#pp-editrow');
+
+        var id = $editRow.data('id');
+        this.$('#comment-' + id + ' .comment-content').show();
+
+        this.$('.editorial-comment-edit-file-remove').hide();
+
+        $editRow.remove();
+    },
+
+    open: function (id) {
+        editorialCommentReply.revert();
+
+        // Close any open reply boxes
+        this.close();
+
+        // Check if reply or new comment
+        if (!id) {
+            return false;
+        }
+
+        this.$('.editorial-comment-edit-file-remove').hide();
+        this.$('#comment-' + id + ' .post-comment-wrap .editorial-comment-edit-file-remove').show();
+        
+        var $rowActions = this.$('#comment-' + id + ' .post-comment-wrap .row-actions');
+        var $content = this.$('#comment-' + id + ' .comment-content');
+
+        var $editBox = this.$('<div id="pp-editrow" data-id="' + id + '"><div id="pp-editcontainer"></div></div>');
+        $rowActions.before($editBox);
+
+        var $textArea = this.$('<textarea id="pp-editcontent" name="editcontent" cols="40" rows="5" spellcheck="false">');
+        var $editContainer = this.$('#pp-editcontainer');
+        $editContainer.append($textArea);
+        $textArea.val($content.text());
+        $content.hide();
+
+        var $editSubmit = this.$('<div id="pp-editsubmit">');
+        $editContainer.append($editSubmit);
+
+        var $buttonSave = this.$('<a class="button pp-editsave button-primary alignright" href="#pp-editrow">' + wp.i18n.__('Save', 'publishpress') + '</a>');
+        var $buttonCancel = this.$('<a class="button pp-editcancel alignright" href="#pp-editrow">' + wp.i18n.__('Cancel', 'publishpress') + '</a>');
+        $editSubmit.append($buttonSave);
+        $editSubmit.append($buttonCancel);
+
+        $buttonCancel.on('click', this.close.bind(this));
+        $buttonSave.on('click', this.send.bind(this));
+
+        return false;
+    },
+
+    send: function (reply) {
+        var post = {};
+        var self = this;
+
+        this.$('.pp-error').remove();
+
+        var $li = this.$(this.$('#pp-editcontent').parents('li')[0]);
+
+        // Validation: check to see if comment entered
+        post.content = this.$.trim(this.$('#pp-editcontent').val());
+        if (!post.content) {
+            var $errorLine = this.$('<div class="pp-error">').text(wp.i18n.__('Please enter a comment', 'publishpress'));
+            this.$('#pp-editcontainer').append($errorLine);
+            return;
+        }
+
+        this.$('#pp-comment_loading').remove();
+        var $loading = this.$('<img alt="' + wp.i18n.__('Sending content...', 'publishpress') + '" src="' + publishpressEditorialCommentsParams.loadingImgSrc + '" class="alignright" id="pp-comment_loading"/>');
+        this.$('#pp-editcontainer').append($loading);
+        
+        var uploaded_files    = '';
+        $li.find('.editorial-single-file').each(function () {
+          var current_file_html = jQuery(this);
+          var current_file_id   = current_file_html.attr('data-file_id');
+          uploaded_files += current_file_id + ' ';
+        });
+      
+        // Prepare data
+        post.action = 'publishpress_ajax_edit_comment';
+        post._nonce = this.$('#pp_comment_nonce').val();
+        post.comment_id = $li.data('id');
+        post.post_id = $li.data('post-id');
+        post.comment_files = uploaded_files;
+        
+        // Send the request
+        this.$.ajax({
+            type: 'POST',
+            url: (ajaxurl) ? ajaxurl : wpListL10n.url,
+            data: post,
+            success: function (x) {
+                jQuery('#pp-comment_files').val('');
+                jQuery('.editorial-attachments').html('');
+                self.$('#comment-' + post.comment_id + ' .comment-content').html(x.content);
+                self.close();
+            },
+            error: function (r) {
+                let $errorLine = self.$('<div class="pp-error">').html(r.responseText);
+                self.$('#pp-editcontainer').append($errorLine);
+                self.$('#pp-comment_loading').remove();
+            }
+        });
+
+
+        return false;
+    },
+};
+
+editorialCommentDelete = {
+    $: jQuery,
+
+    init: function () {
+    },
+
+    close: function () {
+        let $editRow = this.$('#pp-editrow');
+        $editRow.remove();
+    },
+
+    open: function (id) {
+        const hasChildComments = this.$(`#pp-comments [data-parent="${id}"]`).length > 0;
+
+        this.close();
+
+        if (hasChildComments) {
+            alert(wp.i18n.__('This comment can\'t be deleted because it has one or more replies. Before deleting it make sure to delete all the replies first.', 'publishpress'));
+            return;
+        }
+
+        if (confirm(wp.i18n.__('Are you sure you want to delete this comment?', 'publishpress'))) {
+            var self = this;
+
+            var $rowActions = this.$('#comment-' + id + ' .post-comment-wrap .row-actions');
+            var $editBox = this.$('<div id="pp-editrow" data-id="' + id + '"><div id="pp-editcontainer"></div></div>');
+            $rowActions.before($editBox);
+
+            // Prepare data
+            let data = {};
+
+            data.action = 'publishpress_ajax_delete_comment';
+            data._nonce = this.$('#pp_comment_nonce').val();
+            data.comment_id = id;
+
+            // Send the request
+            this.$.ajax({
+                type: 'POST',
+                url: (ajaxurl) ? ajaxurl : wpListL10n.url,
+                data: data,
+                success: function (x) {
+                    self.$('#comment-' + id).remove();
+
+                    editorialCommentEdit.close();
+                    editorialCommentReply.revert();
+                },
+                error: function (r) {
+                    let $errorLine = self.$('<div class="pp-error">').html(r.responseText);
+                    self.$('#pp-editcontainer').append($errorLine);
+                    self.$('#pp-comment_loading').remove();
+                }
+            });
         }
     }
 };

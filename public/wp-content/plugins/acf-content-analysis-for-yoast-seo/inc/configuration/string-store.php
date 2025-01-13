@@ -17,7 +17,7 @@ class Yoast_ACF_Analysis_String_Store {
 	 *
 	 * @var array
 	 */
-	protected $items = array();
+	protected $items = [];
 
 	/**
 	 * Adds an item to the store.
@@ -55,7 +55,7 @@ class Yoast_ACF_Analysis_String_Store {
 			return false;
 		}
 
-		$items       = array_diff( $this->items, array( $item ) );
+		$items       = array_diff( $this->items, [ $item ] );
 		$this->items = array_values( $items );
 		sort( $this->items );
 

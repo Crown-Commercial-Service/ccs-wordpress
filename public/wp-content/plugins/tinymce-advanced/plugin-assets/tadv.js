@@ -1,8 +1,6 @@
 /**
- * This file is part of the TinyMCE Advanced WordPress plugin and is released under the same license.
- * For more information please see tinymce-advanced.php.
- *
- * Copyright (c) 2007-2019 Andrew Ozz. All rights reserved.
+ * Scripts for the settings screen in wp-admin.
+ * @package advanced-editor-tools
  */
 
 jQuery( document ).ready( function( $ ) {
@@ -116,7 +114,10 @@ jQuery( document ).ready( function( $ ) {
 				$(this).parent().removeClass( 'highlighted' );
 			},
 			receive: function( event, ui ) {
-				if ( $( event.target ).is( '#toolbar_block_side' ) && ui.item.is( 'li.core-image' ) ) {
+				if (
+					$( event.target ).is( '#toolbar_block_side' ) &&
+					( ui.item.is( 'li.core-image' ) || ui.item.is( 'li.core-text-color' ) )
+				) {
 					block.sortable( 'cancel' );
 				}
 			},

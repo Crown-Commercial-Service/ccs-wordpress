@@ -4,7 +4,7 @@ var config = require( "./config/config.js" );
 
 var ReplaceVar = YoastReplaceVarPlugin.ReplaceVar;
 
-var supportedTypes = [ "email", "text", "textarea", "url", "wysiwyg" ];
+var supportedTypes = [ "email", "text", "textarea", "url", "wysiwyg", "block_preview" ];
 
 var replaceVars = {};
 

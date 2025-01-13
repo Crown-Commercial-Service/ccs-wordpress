@@ -5,9 +5,6 @@
  * @package WPSEO\Main
  */
 
-use Yoast\WP\SEO\Helpers\Options_Helper;
-use Yoast\WP\SEO\Integrations\Admin\Ryte_Integration;
-
 if ( ! function_exists( 'add_filter' ) ) {
 	header( 'Status: 403 Forbidden' );
 	header( 'HTTP/1.1 403 Forbidden' );
@@ -18,7 +15,7 @@ if ( ! function_exists( 'add_filter' ) ) {
  * {@internal Nobody should be able to overrule the real version number as this can cause
  *            serious issues with the options, so no if ( ! defined() ).}}
  */
-define( 'WPSEO_VERSION', '18.7' );
+define( 'WPSEO_VERSION', '24.2' );
 
 
 if ( ! defined( 'WPSEO_PATH' ) ) {
@@ -37,9 +34,9 @@ define( 'YOAST_VENDOR_NS_PREFIX', 'YoastSEO_Vendor' );
 define( 'YOAST_VENDOR_DEFINE_PREFIX', 'YOASTSEO_VENDOR__' );
 define( 'YOAST_VENDOR_PREFIX_DIRECTORY', 'vendor_prefixed' );
 
-define( 'YOAST_SEO_PHP_REQUIRED', '5.6' );
-define( 'YOAST_SEO_WP_TESTED', '5.9.3' );
-define( 'YOAST_SEO_WP_REQUIRED', '5.6' );
+define( 'YOAST_SEO_PHP_REQUIRED', '7.2.5' );
+define( 'YOAST_SEO_WP_TESTED', '6.7.1' );
+define( 'YOAST_SEO_WP_REQUIRED', '6.5' );
 
 if ( ! defined( 'WPSEO_NAMESPACES' ) ) {
 	define( 'WPSEO_NAMESPACES', true );
@@ -83,6 +80,17 @@ elseif ( ! class_exists( 'WPSEO_Options' ) ) { // Still checking since might be 
 	return;
 }
 
+/**
+ * Include the file from the `symfony/deprecation-contracts` dependency instead of autoloading it via composer.
+ *
+ * We need to do that because autoloading via composer prevents the vendor-prefixing of the dependency itself.
+ * Note that we don't expect the function to be ever called since the OAuth2 library should not provide invalid input.
+ */
+$deprecation_contracts_file = WPSEO_PATH . 'vendor_prefixed/symfony/deprecation-contracts/functions.php';
+if ( is_readable( $deprecation_contracts_file ) ) {
+	include $deprecation_contracts_file;
+}
+
 if ( function_exists( 'spl_autoload_register' ) ) {
 	spl_autoload_register( 'wpseo_auto_load' );
 }
@@ -108,7 +116,7 @@ if ( YOAST_ENVIRONMENT === 'development' && isset( $yoast_autoloader ) ) {
 		 *
 		 * @return void
 		 */
-		static function() use ( $yoast_autoloader ) {
+		static function () use ( $yoast_autoloader ) {
 			$yoast_autoloader->unregister();
 			$yoast_autoloader->register( true );
 		},
@@ -129,6 +137,8 @@ if ( ! defined( 'WPSEO_CSSJS_SUFFIX' ) ) {
  * Run single site / network-wide activation of the plugin.
  *
  * @param bool $networkwide Whether the plugin is being activated network-wide.
+ *
+ * @return void
  */
 function wpseo_activate( $networkwide = false ) {
 	if ( ! is_multisite() || ! $networkwide ) {
@@ -147,6 +157,8 @@ function wpseo_activate( $networkwide = false ) {
  * Run single site / network-wide de-activation of the plugin.
  *
  * @param bool $networkwide Whether the plugin is being de-activated network-wide.
+ *
+ * @return void
  */
 function wpseo_deactivate( $networkwide = false ) {
 	if ( ! is_multisite() || ! $networkwide ) {
@@ -162,6 +174,8 @@ function wpseo_deactivate( $networkwide = false ) {
  * Run network-wide (de-)activation of the plugin.
  *
  * @param bool $activate True for plugin activation, false for de-activation.
+ *
+ * @return void
  */
 function wpseo_network_activate_deactivate( $activate = true ) {
 	global $wpdb;
@@ -186,6 +200,8 @@ function wpseo_network_activate_deactivate( $activate = true ) {
 
 /**
  * Runs on activation of the plugin.
+ *
+ * @return void
  */
 function _wpseo_activate() {
 	require_once WPSEO_PATH . 'inc/wpseo-functions.php';
@@ -204,21 +220,11 @@ function _wpseo_activate() {
 	}
 	WPSEO_Options::ensure_options_exist();
 
-	if ( is_multisite() && ms_is_switched() ) {
-		delete_option( 'rewrite_rules' );
+	if ( ! is_multisite() || ! ms_is_switched() ) {
+		// Constructor has side effects so this registers all hooks.
+		$GLOBALS['wpseo_rewrite'] = new WPSEO_Rewrite();
 	}
-	else {
-		if ( WPSEO_Options::get( 'stripcategorybase' ) === true ) {
-			// Constructor has side effects so this registers all hooks.
-			$GLOBALS['wpseo_rewrite'] = new WPSEO_Rewrite();
-		}
-		add_action( 'shutdown', 'flush_rewrite_rules' );
-	}
-
-	// Reset tracking to be disabled by default.
-	if ( ! YoastSEO()->helpers->product->is_premium() ) {
-		WPSEO_Options::set( 'tracking', false );
-	}
+	add_action( 'shutdown', [ 'WPSEO_Utils', 'clear_rewrites' ] );
 
 	WPSEO_Options::set( 'indexing_reason', 'first_install' );
 	WPSEO_Options::set( 'first_time_install', true );
@@ -226,9 +232,13 @@ function _wpseo_activate() {
 		WPSEO_Options::set( 'should_redirect_after_install_free', true );
 	}
 	else {
-		WPSEO_Options::set( 'activation_redirect_timestamp_free', \time() );
+		WPSEO_Options::set( 'activation_redirect_timestamp_free', time() );
 	}
 
+	// Reset tracking to be disabled by default.
+	if ( ! YoastSEO()->helpers->product->is_premium() && WPSEO_Options::get( 'toggled_tracking' ) !== true ) {
+		WPSEO_Options::set( 'tracking', false );
+	}
 	do_action( 'wpseo_register_roles' );
 	WPSEO_Role_Manager_Factory::get()->add();
 
@@ -238,25 +248,18 @@ function _wpseo_activate() {
 	// Clear cache so the changes are obvious.
 	WPSEO_Utils::clear_cache();
 
-	// Schedule cronjob when it doesn't exists on activation.
-	$wpseo_ryte = YoastSEO()->classes->get( Ryte_Integration::class );
-	$wpseo_ryte->activate_hooks();
-
 	do_action( 'wpseo_activate' );
 }
 
 /**
  * On deactivation, flush the rewrite rules so XML sitemaps stop working.
+ *
+ * @return void
  */
 function _wpseo_deactivate() {
 	require_once WPSEO_PATH . 'inc/wpseo-functions.php';
 
-	if ( is_multisite() && ms_is_switched() ) {
-		delete_option( 'rewrite_rules' );
-	}
-	else {
-		add_action( 'shutdown', 'flush_rewrite_rules' );
-	}
+	add_action( 'shutdown', [ 'WPSEO_Utils', 'clear_rewrites' ] );
 
 	// Register capabilities, to make sure they are cleaned up.
 	do_action( 'wpseo_register_roles' );
@@ -282,6 +285,8 @@ function _wpseo_deactivate() {
  *            {@link https://core.trac.wordpress.org/ticket/24205} }}
  *
  * @param int|WP_Site $blog_id Blog ID.
+ *
+ * @return void
  */
 function wpseo_on_activate_blog( $blog_id ) {
 	if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
@@ -303,6 +308,8 @@ function wpseo_on_activate_blog( $blog_id ) {
 
 /**
  * Load translations.
+ *
+ * @return void
  */
 function wpseo_load_textdomain() {
 	$wpseo_path = str_replace( '\\', '/', WPSEO_PATH );
@@ -321,6 +328,8 @@ add_action( 'plugins_loaded', 'wpseo_load_textdomain' );
 
 /**
  * On plugins_loaded: load the minimum amount of essential files for this plugin.
+ *
+ * @return void
  */
 function wpseo_init() {
 	require_once WPSEO_PATH . 'inc/wpseo-functions.php';
@@ -330,7 +339,7 @@ function wpseo_init() {
 	WPSEO_Options::get_instance();
 	WPSEO_Meta::init();
 
-	if ( version_compare( WPSEO_Options::get( 'version', 1 ), WPSEO_VERSION, '<' ) ) {
+	if ( version_compare( WPSEO_Options::get( 'version', 1, [ 'wpseo' ] ), WPSEO_VERSION, '<' ) ) {
 		if ( function_exists( 'opcache_reset' ) ) {
 			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Prevent notices when opcache.restrict_api is set.
 			@opcache_reset();
@@ -340,20 +349,15 @@ function wpseo_init() {
 		// Get a cleaned up version of the $options.
 	}
 
-	if ( WPSEO_Options::get( 'stripcategorybase' ) === true ) {
-		$GLOBALS['wpseo_rewrite'] = new WPSEO_Rewrite();
-	}
+	$GLOBALS['wpseo_rewrite'] = new WPSEO_Rewrite();
 
-	if ( WPSEO_Options::get( 'enable_xml_sitemap' ) === true ) {
+	if ( WPSEO_Options::get( 'enable_xml_sitemap', null, [ 'wpseo' ] ) === true ) {
 		$GLOBALS['wpseo_sitemaps'] = new WPSEO_Sitemaps();
 	}
 
 	if ( ! wp_doing_ajax() ) {
 		require_once WPSEO_PATH . 'inc/wpseo-non-ajax-functions.php';
 	}
-
-	// Init it here because the filter must be present on the frontend as well or it won't work in the customizer.
-	new WPSEO_Customizer();
 
 	$integrations   = [];
 	$integrations[] = new WPSEO_Slug_Change_Watcher();
@@ -365,6 +369,8 @@ function wpseo_init() {
 
 /**
  * Loads the rest api endpoints.
+ *
+ * @return void
  */
 function wpseo_init_rest_api() {
 	// We can't do anything when requirements are not met.
@@ -386,72 +392,23 @@ function wpseo_init_rest_api() {
 
 /**
  * Used to load the required files on the plugins_loaded hook, instead of immediately.
+ *
+ * @return void
  */
 function wpseo_admin_init() {
 	new WPSEO_Admin_Init();
 }
 
-/**
- * Initialize the WP-CLI integration.
- *
- * The WP-CLI integration needs PHP 5.3 support, which should be automatically
- * enforced by the check for the WP_CLI constant. As WP-CLI itself only runs
- * on PHP 5.3+, the constant should only be set when requirements are met.
- */
-function wpseo_cli_init() {
-	if ( YoastSEO()->helpers->product->is_premium() ) {
-		WP_CLI::add_command(
-			'yoast redirect list',
-			'WPSEO_CLI_Redirect_List_Command',
-			[ 'before_invoke' => 'WPSEO_CLI_Premium_Requirement::enforce' ]
-		);
-
-		WP_CLI::add_command(
-			'yoast redirect create',
-			'WPSEO_CLI_Redirect_Create_Command',
-			[ 'before_invoke' => 'WPSEO_CLI_Premium_Requirement::enforce' ]
-		);
-
-		WP_CLI::add_command(
-			'yoast redirect update',
-			'WPSEO_CLI_Redirect_Update_Command',
-			[ 'before_invoke' => 'WPSEO_CLI_Premium_Requirement::enforce' ]
-		);
-
-		WP_CLI::add_command(
-			'yoast redirect delete',
-			'WPSEO_CLI_Redirect_Delete_Command',
-			[ 'before_invoke' => 'WPSEO_CLI_Premium_Requirement::enforce' ]
-		);
-
-		WP_CLI::add_command(
-			'yoast redirect has',
-			'WPSEO_CLI_Redirect_Has_Command',
-			[ 'before_invoke' => 'WPSEO_CLI_Premium_Requirement::enforce' ]
-		);
-
-		WP_CLI::add_command(
-			'yoast redirect follow',
-			'WPSEO_CLI_Redirect_Follow_Command',
-			[ 'before_invoke' => 'WPSEO_CLI_Premium_Requirement::enforce' ]
-		);
-	}
-}
-
 /* ***************************** BOOTSTRAP / HOOK INTO WP *************************** */
 $spl_autoload_exists = function_exists( 'spl_autoload_register' );
-$filter_exists       = function_exists( 'filter_input' );
 
 if ( ! $spl_autoload_exists ) {
 	add_action( 'admin_init', 'yoast_wpseo_missing_spl', 1 );
 }
 
-if ( ! $filter_exists ) {
-	add_action( 'admin_init', 'yoast_wpseo_missing_filter', 1 );
-}
-
-if ( ! wp_installing() && ( $spl_autoload_exists && $filter_exists ) ) {
+if ( ! wp_installing() && ( $spl_autoload_exists ) ) {
 	add_action( 'plugins_loaded', 'wpseo_init', 14 );
+	add_action( 'setup_theme', [ 'Yoast_Dynamic_Rewrites', 'instance' ], 1 );
 	add_action( 'rest_api_init', 'wpseo_init_rest_api' );
 
 	if ( is_admin() ) {
@@ -467,8 +424,12 @@ if ( ! wp_installing() && ( $spl_autoload_exists && $filter_exists ) ) {
 			// Plugin conflict ajax hooks.
 			new Yoast_Plugin_Conflict_Ajax();
 
-			if ( filter_input( INPUT_POST, 'action' ) === 'inline-save' ) {
-				add_action( 'plugins_loaded', 'wpseo_admin_init', 15 );
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Reason: We are not processing form information but only loading the admin init class.
+			if ( isset( $_POST['action'] ) && is_string( $_POST['action'] ) ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Reason: We are not processing form information but only loading the admin init class, We are strictly comparing only.
+				if ( wp_unslash( $_POST['action'] ) === 'inline-save' ) {
+					add_action( 'plugins_loaded', 'wpseo_admin_init', 15 );
+				}
 			}
 		}
 		else {
@@ -477,10 +438,6 @@ if ( ! wp_installing() && ( $spl_autoload_exists && $filter_exists ) ) {
 	}
 
 	add_action( 'plugins_loaded', 'load_yoast_notifications' );
-
-	if ( defined( 'WP_CLI' ) && WP_CLI ) {
-		add_action( 'plugins_loaded', 'wpseo_cli_init', 20 );
-	}
 
 	add_action( 'init', [ 'WPSEO_Replace_Vars', 'setup_statics_once' ] );
 
@@ -497,15 +454,7 @@ if ( ! wp_installing() && ( $spl_autoload_exists && $filter_exists ) ) {
 register_activation_hook( WPSEO_FILE, 'wpseo_activate' );
 register_deactivation_hook( WPSEO_FILE, 'wpseo_deactivate' );
 
-// Wpmu_new_blog has been deprecated in 5.1 and replaced by wp_insert_site.
-global $wp_version;
-if ( version_compare( $wp_version, '5.1', '<' ) ) {
-	add_action( 'wpmu_new_blog', 'wpseo_on_activate_blog' );
-}
-else {
-	add_action( 'wp_initialize_site', 'wpseo_on_activate_blog', 99 );
-}
-
+add_action( 'wp_initialize_site', 'wpseo_on_activate_blog', 99 );
 add_action( 'activate_blog', 'wpseo_on_activate_blog' );
 
 // Registers SEO capabilities.
@@ -518,6 +467,8 @@ $wpseo_register_capabilities->register_hooks();
 
 /**
  * Wraps for notifications center class.
+ *
+ * @return void
  */
 function load_yoast_notifications() {
 	// Init Yoast_Notification_Center class.
@@ -542,6 +493,8 @@ function yoast_wpseo_missing_spl() {
 
 /**
  * Returns the notice in case of missing spl extension.
+ *
+ * @return void
  */
 function yoast_wpseo_missing_spl_notice() {
 	$message = esc_html__( 'The Standard PHP Library (SPL) extension seem to be unavailable. Please ask your web host to enable it.', 'wordpress-seo' );
@@ -563,6 +516,8 @@ function yoast_wpseo_missing_autoload() {
 
 /**
  * Returns the notice in case of missing Composer autoload.
+ *
+ * @return void
  */
 function yoast_wpseo_missing_autoload_notice() {
 	/* translators: %1$s expands to Yoast SEO, %2$s / %3$s: links to the installation manual in the Readme for the Yoast SEO code repository on GitHub */
@@ -575,37 +530,49 @@ function yoast_wpseo_missing_autoload_notice() {
  * Throw an error if the filter extension is disabled (prevent white screens) and self-deactivate plugin.
  *
  * @since 2.0
+ * @deprecated 23.3
+ * @codeCoverageIgnore
  *
  * @return void
  */
 function yoast_wpseo_missing_filter() {
-	if ( is_admin() ) {
-		add_action( 'admin_notices', 'yoast_wpseo_missing_filter_notice' );
-
-		yoast_wpseo_self_deactivate();
-	}
+	_deprecated_function( __FUNCTION__, 'Yoast SEO 23.3' );
 }
 
 /**
  * Returns the notice in case of missing filter extension.
+ *
+ * @deprecated 23.3
+ * @codeCoverageIgnore
+ *
+ * @return void
  */
 function yoast_wpseo_missing_filter_notice() {
-	$message = esc_html__( 'The filter extension seem to be unavailable. Please ask your web host to enable it.', 'wordpress-seo' );
-	yoast_wpseo_activation_failed_notice( $message );
+	_deprecated_function( __FUNCTION__, 'Yoast SEO 23.3' );
 }
 
 /**
  * Echo's the Activation failed notice with any given message.
  *
  * @param string $message Message string.
+ *
+ * @return void
  */
 function yoast_wpseo_activation_failed_notice( $message ) {
+	$title = sprintf(
+		/* translators: %s: Yoast SEO. */
+		esc_html__( '%s activation failed', 'wordpress-seo' ),
+		'Yoast SEO'
+	);
+
 	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- This function is only called in 3 places that are safe.
-	echo '<div class="error"><p>' . esc_html__( 'Activation failed:', 'wordpress-seo' ) . ' ' . strip_tags( $message, '<a>' ) . '</p></div>';
+	echo '<div class="error yoast-migrated-notice"><h4 class="yoast-notice-migrated-header">' . $title . '</h4><div class="notice-yoast-content"><p>' . strip_tags( $message, '<a>' ) . '</p></div></div>';
 }
 
 /**
  * The method will deactivate the plugin, but only once, done by the static $is_deactivated.
+ *
+ * @return void
  */
 function yoast_wpseo_self_deactivate() {
 	static $is_deactivated;
@@ -617,28 +584,6 @@ function yoast_wpseo_self_deactivate() {
 			unset( $_GET['activate'] );
 		}
 	}
-}
-
-/* ********************* DEPRECATED METHODS ********************* */
-
-/**
- * Instantiate the different social classes on the frontend.
- *
- * @deprecated 14.0
- * @codeCoverageIgnore
- */
-function wpseo_frontend_head_init() {
-	_deprecated_function( __METHOD__, 'WPSEO 14.0' );
-}
-
-/**
- * Used to load the required files on the plugins_loaded hook, instead of immediately.
- *
- * @deprecated 14.0
- * @codeCoverageIgnore
- */
-function wpseo_frontend_init() {
-	_deprecated_function( __METHOD__, 'WPSEO 14.0' );
 }
 
 /**

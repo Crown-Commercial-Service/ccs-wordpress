@@ -20,7 +20,7 @@ class Workouts_Route implements Route_Interface {
 	 *
 	 * @var string
 	 */
-	const WORKOUTS_ROUTE = '/workouts';
+	public const WORKOUTS_ROUTE = '/workouts';
 
 	/**
 	 * The Options helper.
@@ -46,7 +46,7 @@ class Workouts_Route implements Route_Interface {
 	 * @return void
 	 */
 	public function register_routes() {
-		$edit_others_posts = static function() {
+		$edit_others_posts = static function () {
 			return \current_user_can( 'edit_others_posts' );
 		};
 
@@ -78,7 +78,7 @@ class Workouts_Route implements Route_Interface {
 		/**
 		 * Filter: 'Yoast\WP\SEO\workouts_options' - Allows adding workouts options by the add-ons.
 		 *
-		 * @api array $workouts_option The content of the `workouts_data` option in Free.
+		 * @param array $workouts_option The content of the `workouts_data` option in Free.
 		 */
 		$workouts_option = \apply_filters( 'Yoast\WP\SEO\workouts_options', $workouts_option );
 
@@ -97,23 +97,14 @@ class Workouts_Route implements Route_Interface {
 	public function set_workouts( $request ) {
 		$workouts_data = $request->get_json_params();
 
-		$free_workouts_data                  = [];
-		$free_workouts_data['configuration'] = $workouts_data['configuration'];
-
-		$result = $this->options_helper->set( 'workouts_data', $free_workouts_data );
-
-		if ( \count( $free_workouts_data['configuration']['finishedSteps'] ) === 5 ) {
-			$this->options_helper->set( 'first_time_install', false );
-		}
-
 		/**
 		 * Filter: 'Yoast\WP\SEO\workouts_route_save' - Allows the add-ons to save the options data in their own options.
 		 *
-		 * @api mixed|null $result The result of the previous saving operation.
+		 * @param mixed|null $result The result of the previous saving operation.
 		 *
 		 * @param array $workouts_data The full set of workouts option data to save.
 		 */
-		$result = \apply_filters( 'Yoast\WP\SEO\workouts_route_save', $result, $workouts_data );
+		$result = \apply_filters( 'Yoast\WP\SEO\workouts_route_save', null, $workouts_data );
 
 		return new WP_REST_Response(
 			[ 'json' => $result ]
@@ -126,16 +117,12 @@ class Workouts_Route implements Route_Interface {
 	 * @return array
 	 */
 	private function get_workouts_routes_args() {
-		$args_array = [
-			'configuration' => [
-				'required' => true,
-			],
-		];
+		$args_array = [];
 
 		/**
 		 * Filter: 'Yoast\WP\SEO\workouts_route_args' - Allows the add-ons add their own arguments to the route registration.
 		 *
-		 * @api array $args_array The array of arguments for the route registration.
+		 * @param array $args_array The array of arguments for the route registration.
 		 */
 		return \apply_filters( 'Yoast\WP\SEO\workouts_route_args', $args_array );
 	}

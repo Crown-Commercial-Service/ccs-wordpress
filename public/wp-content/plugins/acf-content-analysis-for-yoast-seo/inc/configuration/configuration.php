@@ -43,7 +43,7 @@ class Yoast_ACF_Analysis_Configuration {
 	 *
 	 * @var array
 	 */
-	protected $scraper_config = array();
+	protected $scraper_config = [];
 
 	/**
 	 * Yoast_ACF_Analysis_Configuration constructor.
@@ -74,7 +74,7 @@ class Yoast_ACF_Analysis_Configuration {
 		}
 
 		// Fall back on filter use.
-		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- ACF hook.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals -- ACF hook.
 		return apply_filters( 'acf/get_info', 'version' );
 	}
 
@@ -88,16 +88,31 @@ class Yoast_ACF_Analysis_Configuration {
 		/**
 		 * Filters the fields to ignore based on field type.
 		 *
+		 * @since      2.0.0
+		 * @deprecated 2.4.0. Use the {@see 'Yoast\WP\ACF\blacklist_type'} filter instead.
+		 *
+		 * @param Yoast_ACF_Analysis_String_Store $blacklist_type Store instance of ignored field types
+		 */
+		$blacklist_type = apply_filters_deprecated(
+			'yoast-acf-analysis/blacklist_type',
+			[ $this->blacklist_type ],
+			'YoastSEO ACF 2.4.0',
+			'Yoast\WP\ACF\blacklist_type'
+		);
+
+		/**
+		 * Filters the fields to ignore based on field type.
+		 *
 		 * You can add or remove field types to be analysed.
 		 * Be aware that when adding types this will only have an effect if there is a scraper for the type.
 		 *
-		 * @since 2.0.0
+		 * @since 2.4.0
 		 *
 		 * @param Yoast_ACF_Analysis_String_Store $blacklist_type Store instance of ignored field types
 		 */
 		$blacklist_type = apply_filters(
-			Yoast_ACF_Analysis_Facade::get_filter_name( 'blacklist_type' ),
-			$this->blacklist_type
+			'Yoast\WP\ACF\blacklist_type',
+			$blacklist_type
 		);
 
 		if ( $blacklist_type instanceof Yoast_ACF_Analysis_String_Store ) {
@@ -117,16 +132,16 @@ class Yoast_ACF_Analysis_Configuration {
 		/**
 		 * Filters the fields to ignore based on field name.
 		 *
-		 * You can add or remove fields to be analysed based on the field name.
-		 *
-		 * @since 1.0.0
-		 * @deprecated 2.0.0 Use the {@see 'yoast-acf-analysis/blacklist_name'} filter instead.
+		 * @since      1.0.0
+		 * @deprecated 2.0.0 Use the {@see 'Yoast\WP\ACF\blacklist_name'} filter instead.
 		 *
 		 * @param array $legacy_names Array with field names
 		 */
-		$legacy_names = apply_filters(
+		$legacy_names = apply_filters_deprecated(
 			'ysacf_exclude_fields',
-			array()
+			[ [] ],
+			'YoastSEO ACF 2.0.0',
+			'Yoast\WP\ACF\blacklist_name'
 		);
 
 		if ( is_array( $legacy_names ) && ! empty( $legacy_names ) ) {
@@ -138,15 +153,30 @@ class Yoast_ACF_Analysis_Configuration {
 		/**
 		 * Filters the fields to ignore based on field name.
 		 *
+		 * @since      2.0.0
+		 * @deprecated 2.4.0 Use the {@see 'Yoast\WP\ACF\blacklist_name'} filter instead.
+		 *
+		 * @param Yoast_ACF_Analysis_String_Store $blacklist_name Store instance of ignored field names
+		 */
+		$blacklist_name = apply_filters_deprecated(
+			'yoast-acf-analysis/blacklist_name',
+			[ $this->blacklist_name ],
+			'YoastSEO ACF 2.4.0',
+			'Yoast\WP\ACF\blacklist_name'
+		);
+
+		/**
+		 * Filters the fields to ignore based on field name.
+		 *
 		 * You can add or remove fields to be analysed based on the field name.
 		 *
-		 * @since 2.0.0
+		 * @since 2.4.0
 		 *
 		 * @param Yoast_ACF_Analysis_String_Store $blacklist_name Store instance of ignored field names
 		 */
 		$blacklist_name = apply_filters(
-			Yoast_ACF_Analysis_Facade::get_filter_name( 'blacklist_name' ),
-			$this->blacklist_name
+			'Yoast\WP\ACF\blacklist_name',
+			$blacklist_name
 		);
 
 		if ( $blacklist_name instanceof Yoast_ACF_Analysis_String_Store ) {
@@ -174,23 +204,38 @@ class Yoast_ACF_Analysis_Configuration {
 		/**
 		 * Filters the scraper configuration.
 		 *
-		 * This nested array holds configuration specific to certain scrapers (for specific field types)
-		 * Before using this filter see if there isn't a more specific one like {@see yoast-acf-analysis/headlines}.
+		 * @since      2.0.0
+		 * @deprecated 2.4.0 Use the {@see 'Yoast\WP\ACF\scraper_config'} filter instead.
 		 *
-		 * @since 2.0.0
+		 * @param array $scraper_config Nested array of scraper configuration
+		 */
+		$scraper_config = apply_filters_deprecated(
+			'yoast-acf-analysis/scraper_config',
+			[ $this->scraper_config ],
+			'YoastSEO ACF 2.4.0',
+			'Yoast\WP\ACF\scraper_config'
+		);
+
+		/**
+		 * Filters the scraper configuration.
+		 *
+		 * This nested array holds configuration specific to certain scrapers (for specific field types)
+		 * Before using this filter see if there isn't a more specific one like {@see 'Yoast\WP\ACF\headlines'}.
+		 *
+		 * @since 2.4.0
 		 *
 		 * @param array $scraper_config Nested array of scraper configuration
 		 */
 		$scraper_config = apply_filters(
-			Yoast_ACF_Analysis_Facade::get_filter_name( 'scraper_config' ),
-			$this->scraper_config
+			'Yoast\WP\ACF\scraper_config',
+			$scraper_config
 		);
 
 		if ( is_array( $scraper_config ) ) {
 			return $scraper_config;
 		}
 
-		return array();
+		return [];
 	}
 
 	/**
@@ -202,15 +247,30 @@ class Yoast_ACF_Analysis_Configuration {
 		/**
 		 * Refresh rate for changes to ACF fields
 		 *
+		 * @since      2.0.0
+		 * @deprecated 2.4.0 Use the {@see 'Yoast\WP\ACF\refresh_rate'} filter instead.
+		 *
+		 * @param int $refresh_rate Refresh rates in milliseconds
+		 */
+		$refresh_rate = apply_filters_deprecated(
+			'yoast-acf-analysis/refresh_rate',
+			[ $this->refresh_rate ],
+			'YoastSEO ACF 2.4.0',
+			'Yoast\WP\ACF\refresh_rate'
+		);
+
+		/**
+		 * Refresh rate for changes to ACF fields
+		 *
 		 * This plugin limits the rate at which changes to ACF fields are reported to Yoast SEO.
 		 * By default it will only report changes to Yoast SEO after no changes have happened for 1000 milliseconds.
 		 * This filter allows to change this to any value above 200 milliseconds.
 		 *
-		 * @since 2.0.0
+		 * @since 2.4.0
 		 *
 		 * @param int $refresh_rate Refresh rates in milliseconds
 		 */
-		$refresh_rate = apply_filters( Yoast_ACF_Analysis_Facade::get_filter_name( 'refresh_rate' ), $this->refresh_rate );
+		$refresh_rate = apply_filters( 'Yoast\WP\ACF\refresh_rate', $refresh_rate );
 		$refresh_rate = intval( $refresh_rate, 10 );
 
 		// Make sure the refresh rate is not too low, this will introduce problems in the browser of the user.
@@ -226,20 +286,35 @@ class Yoast_ACF_Analysis_Configuration {
 		/**
 		 * Filters the CSS selectors that are used to find the fields when using ACF4.
 		 *
+		 * @since      2.0.0
+		 * @deprecated 2.4.0 Use the {@see 'Yoast\WP\ACF\field_selectors'} filter instead.
+		 *
+		 * @param Yoast_ACF_Analysis_String_Store $field_selectors Field selector store instance
+		 */
+		$field_selectors = apply_filters_deprecated(
+			'yoast-acf-analysis/field_selectors',
+			[ $this->field_selectors ],
+			'YoastSEO ACF 2.4.0',
+			'Yoast\WP\ACF\field_selectors'
+		);
+
+		/**
+		 * Filters the CSS selectors that are used to find the fields when using ACF4.
+		 *
 		 * This is an advanced filter that should rarely if ever be used, especially because it only affects ACF4.
 		 * If you want to exclude certain fields by type or name there are the more specific filters
-		 * {@see 'yoast-acf-analysis/blacklist_type'} and {@see 'yoast-acf-analysis/blacklist_name'} for these.
+		 * {@see 'Yoast\WP\ACF\blacklist_type'} and {@see 'Yoast\WP\ACF\blacklist_name'} for these.
 		 *
 		 * @see get_blacklist_type()
 		 * @see get_blacklist_name()
 		 *
-		 * @since 2.0.0
+		 * @since 2.4.0
 		 *
 		 * @param Yoast_ACF_Analysis_String_Store $field_selectors Field selector store instance
 		 */
 		$field_selectors = apply_filters(
-			Yoast_ACF_Analysis_Facade::get_filter_name( 'field_selectors' ),
-			$this->field_selectors
+			'Yoast\WP\ACF\field_selectors',
+			$field_selectors
 		);
 
 		if ( $field_selectors instanceof Yoast_ACF_Analysis_String_Store ) {
@@ -258,6 +333,24 @@ class Yoast_ACF_Analysis_Configuration {
 		/**
 		 * Filters the order of the ACF fields relative to the post_content.
 		 *
+		 * @since      2.2.0
+		 * @deprecated 2.4.0 Use the {@see 'Yoast\WP\ACF\field_order'} filter instead.
+		 *
+		 * @param array $order_config {
+		 *      @type string $field_name     Name of the ACF field
+		 *      @type int    $order          Integer
+		 * }
+		 */
+		$field_order = apply_filters_deprecated(
+			'yoast-acf-analysis/field_order',
+			[ [] ],
+			'YoastSEO ACF 2.4.0',
+			'Yoast\WP\ACF\field_order'
+		);
+
+		/**
+		 * Filters the order of the ACF fields relative to the post_content.
+		 *
 		 * The array has the ACF field key as the array key and the value should be an integer
 		 * where negative values result in the field value being placed before the default post_content.
 		 *
@@ -267,14 +360,14 @@ class Yoast_ACF_Analysis_Configuration {
 		 *          'field_591eb45f2be86' => -1
 		 *     );
 		 *
-		 * @since 2.2.0
+		 * @since 2.4.0
 		 *
 		 * @param array $order_config {
 		 *      @type string $field_name     Name of the ACF field
 		 *      @type int    $order          Integer
 		 * }
 		 */
-		return apply_filters( Yoast_ACF_Analysis_Facade::get_filter_name( 'field_order' ), array() );
+		return apply_filters( 'Yoast\WP\ACF\field_order', $field_order );
 	}
 
 	/**
@@ -283,7 +376,7 @@ class Yoast_ACF_Analysis_Configuration {
 	 * @return array
 	 */
 	public function to_array() {
-		return array(
+		return [
 			'pluginName'     => Yoast_ACF_Analysis_Facade::get_plugin_name(),
 			'acfVersion'     => $this->get_acf_version(),
 			'scraper'        => $this->get_scraper_config(),
@@ -293,6 +386,6 @@ class Yoast_ACF_Analysis_Configuration {
 			'fieldSelectors' => $this->get_field_selectors()->to_array(),
 			'fieldOrder'     => $this->get_field_order(),
 			'debug'          => $this->is_debug(),
-		);
+		];
 	}
 }

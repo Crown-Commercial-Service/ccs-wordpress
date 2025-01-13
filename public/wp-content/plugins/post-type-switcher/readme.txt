@@ -1,15 +1,16 @@
 === Post Type Switcher ===
 Author:            Triple J Software, Inc.
 Author URI:        https://jjj.software
-Plugin URI:        https://wordpress.org/plugins/post-type-switcher
+Donate link:       https://wordpressfoundation.org/donate/
+Plugin URI:        https://wordpress.org/plugins/post-type-switcher/
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 License:           GPLv2 or later
 Contributors:      johnjamesjacoby, beatpanda, norcross
 Tags:              post, page, type, types, post type
 Requires PHP:      7.0
 Requires at least: 5.0
-Tested up to:      6.2
-Stable tag:        3.2.2
+Tested up to:      6.5
+Stable tag:        3.3.1
 
 A simple way to change a post's type in WordPress
 
@@ -85,8 +86,8 @@ If you're still worried, ask for help in the WordPress.org support forums.
 
 == Changelog ==
 
-= 3.2.2 =
-* General maintenance
+= 3.3.0 =
+* Hide the "Type" column by default
 
 = 3.2.1 =
 * Update author

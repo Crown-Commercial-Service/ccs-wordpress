@@ -1,110 +1,135 @@
 jQuery(function ($) {
-  $('.filter-posts').pp_select2({
-    placeholder: ppNotifLog.text.allPosts,
-    allowClear: true,
-    containerCssClass: 'filter-posts',
-    ajax: {
-      url: ajaxurl,
-      dataType: 'json',
-      delay: 250,
-      data: function (params) {
-        var query = {
-          search: params.term,
-          page: params.page || 1,
-          action: 'publishpress_search_post',
-          nonce: ppNotifLog.nonce
-        };
+    var __ = wp.i18n.__;
 
-        return query;
-      }
-    }
-  });
+    $('.filter-posts').pp_select2({
+        placeholder: ppNotifLog.text.allPosts,
+        allowClear: true,
+        ajax: {
+            url: ajaxurl,
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    action: 'publishpress_search_post',
+                    nonce: ppNotifLog.nonce
+                };
 
-  $('.filter-workflows').pp_select2({
-    placeholder: ppNotifLog.text.allWorkflows,
-    allowClear: true,
-    containerCssClass: 'filter-workflows',
-    ajax: {
-      url: ajaxurl,
-      dataType: 'json',
-      delay: 250,
-      data: function (params) {
-        var query = {
-          search: params.term,
-          page: params.page || 1,
-          action: 'publishpress_search_workflow',
-          nonce: ppNotifLog.nonce
-        };
+                return query;
+            }
+        }
+    });
 
-        return query;
-      }
-    }
-  });
+    $('.filter-workflows').pp_select2({
+        placeholder: ppNotifLog.text.allWorkflows,
+        allowClear: true,
+        ajax: {
+            url: ajaxurl,
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    action: 'publishpress_search_workflow',
+                    nonce: ppNotifLog.nonce
+                };
 
-  $('.filter-actions').pp_select2({
-    placeholder: ppNotifLog.text.allActions,
-    allowClear: true,
-    containerCssClass: 'filter-actions'
-  });
+                return query;
+            }
+        }
+    });
 
-  $('.filter-channels').pp_select2({
-    placeholder: ppNotifLog.text.allChannels,
-    allowClear: true,
-    containerCssClass: 'filter-channels'
-  });
+    $('.filter-actions').pp_select2({
+        placeholder: ppNotifLog.text.allActions,
+        allowClear: true
+    });
 
-  $('.filter-statuses').pp_select2({
-    placeholder: ppNotifLog.text.allStatuses,
-    allowClear: true,
-    containerCssClass: 'filter-statuses'
-  });
+    $('.filter-channels').pp_select2({
+        placeholder: ppNotifLog.text.allChannels,
+        allowClear: true
+    });
 
-  $('.view-log').click(function (event) {
-    event.preventDefault();
-    var $dialog = $('<div class="notif-log-modal">Test!</div>');
-    var notificationId = $(event.target).data('id');
+    $('.filter-statuses').pp_select2({
+        placeholder: ppNotifLog.text.allStatuses,
+        allowClear: true
+    });
 
-    $('body').append($dialog);
+    $('.view-log').on('click', function (event) {
+        event.preventDefault();
+        var $dialog = $('<div class="notif-log-modal">Test!</div>');
+        var notificationId = $(event.target).data('id');
+        var receiver = $(event.target).data('receiver');
+        var receiverText = $(event.target).data('receiver-text');
+        var channel = $(event.target).data('channel');
 
-    $dialog.text(ppNotifLog.text.loading);
 
-    $dialog.dialog({
-      title: ppNotifLog.text.dialogTitle + ': ' + notificationId,
-      dialogClass: 'wp-dialog',
-      autoOpen: false,
-      draggable: true,
-      width: 'auto',
-      modal: true,
-      resizable: false,
-      closeOnEscape: true,
-      position: {
-        my: 'center',
-        at: 'center',
-        of: window
-      },
-      open: function () {
-        // close dialog by clicking the overlay behind it
-        $('.ui-widget-overlay').bind('click', function () {
-          $dialog.dialog('close');
+        $('body').append($dialog);
+
+        $dialog.text(ppNotifLog.text.loading);
+
+        $dialog.dialog({
+            title: ppNotifLog.text.dialogTitle + ': ' + notificationId + ' ' + __('for', 'publishpress') + ' ' + receiverText + ' ' + __('by', 'publishpress') + ' ' + channel,
+            dialogClass: 'wp-dialog',
+            autoOpen: false,
+            draggable: true,
+            width: '70%',
+            modal: true,
+            resizable: false,
+            closeOnEscape: true,
+            position: {
+                my: 'center',
+                at: 'center',
+                of: window
+            },
+            open: function () {
+                // close dialog by clicking the overlay behind it
+                $('.ui-widget-overlay').bind('click', function () {
+                    $dialog.dialog('close');
+                });
+            },
+            create: function () {
+                // style fix for WordPress admin
+                $('.ui-dialog-titlebar-close').addClass('ui-button');
+            }
         });
-      },
-      create: function () {
-        // style fix for WordPress admin
-        $('.ui-dialog-titlebar-close').addClass('ui-button');
-      }
+
+        $dialog.dialog('open');
+
+        $dialog.load(ajaxurl, {
+            nonce: ppNotifLog.nonce,
+            action: 'publishpress_view_notification',
+            id: notificationId,
+            receiver: receiver,
+            channel: channel
+        }, function () {
+            $dialog.dialog("option", "position", {my: "center", at: "center", of: window});
+        });
     });
 
-    $dialog.dialog('open');
+    $('.filter-date-begin').datepicker();
+    $('.filter-date-end').datepicker();
 
-    $dialog.load(ajaxurl, {
-      nonce: ppNotifLog.nonce,
-      action: 'publishpress_view_notification',
-      id: notificationId
-    }, function() {
-      $dialog.dialog("option", "position", {my: "center", at: "center", of: window});
+    $('.admin_page_pp-notif-log .slide-closed-text').on('click', function () {
+        $(this).next().slideDown();
+        $(this).remove();
     });
-  });
 
-  $('.filter-date-begin').datepicker();
-  $('.filter-date-end').datepicker();
+    if ($('body').hasClass('admin_page_pp-notif-log')) {
+        $("#toplevel_page_pp-calendar")
+            .removeClass("wp-not-current-submenu")
+            .addClass(
+                "wp-has-current-submenu wp-menu-open toplevel_page_pp-calendar"
+        );
+        $('#toplevel_page_pp-calendar > a')
+            .removeClass("wp-not-current-submenu")
+            .addClass(
+                "wp-has-current-submenu wp-menu-open open-if-no-js menu-top-first"
+        );
+        $('#toplevel_page_pp-calendar li a[href="edit.php?post_type=psppnotif_workflow"]')
+            .closest('li')
+            .addClass('current'
+        );
+    }
 });

@@ -29,7 +29,7 @@ WPMailSMTP.Admin.About = WPMailSMTP.Admin.About || ( function( document, window,
 		init: function() {
 
 			// Do that when DOM is ready.
-			$( document ).ready( app.ready );
+			$( app.ready );
 		},
 
 		/**
@@ -97,6 +97,15 @@ WPMailSMTP.Admin.About = WPMailSMTP.Admin.About || ( function( document, window,
 					statusText = wp_mail_smtp_about.plugin_active;
 					buttonText = wp_mail_smtp_about.plugin_activated;
 
+				} else if ( $btn.hasClass( 'status-open' ) ) {
+
+					// Open site in new window.
+					window.open( $btn.attr( 'href' ), '_blank' ).focus();
+					$btn.removeClass( 'loading disabled' );
+					$btn.text( wp_mail_smtp_about.plugin_visit );
+
+					return;
+
 				} else {
 					return;
 				}
@@ -141,8 +150,7 @@ WPMailSMTP.Admin.About = WPMailSMTP.Admin.About || ( function( document, window,
 						if (
 							res.hasOwnProperty( 'data' ) &&
 							res.data.hasOwnProperty( 0 ) &&
-							res.data[ 0 ].hasOwnProperty( 'code' ) &&
-							res.data[ 0 ].code === 'download_failed'
+							res.data[ 0 ].hasOwnProperty( 'code' )
 						) {
 
 							// Specific server-returned error.

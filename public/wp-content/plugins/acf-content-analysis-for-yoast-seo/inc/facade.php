@@ -27,7 +27,7 @@ class Yoast_ACF_Analysis_Facade {
 	public static function get_registry() {
 		static $registry = null;
 
-		if ( null === $registry ) {
+		if ( $registry === null ) {
 			$registry = new Yoast_ACF_Analysis_Registry();
 		}
 
@@ -36,6 +36,9 @@ class Yoast_ACF_Analysis_Facade {
 
 	/**
 	 * Wraps the notification with an unique identifier.
+	 *
+	 * @deprecated 2.4.0 Use hard-coded filter names instead.
+	 * @codeCoverageIgnore
 	 *
 	 * @param string $filter_name Filter to wrap.
 	 *

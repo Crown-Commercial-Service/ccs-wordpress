@@ -4,9 +4,9 @@
  *
  * @package    Members
  * @subpackage Admin
- * @author     Justin Tadlock <justintadlock@gmail.com>
- * @copyright  Copyright (c) 2009 - 2018, Justin Tadlock
- * @link       https://themehybrid.com/plugins/members
+ * @author     The MemberPress Team 
+ * @copyright  Copyright (c) 2009 - 2018, The MemberPress Team
+ * @link       https://members-plugin.com/
  * @license    http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
@@ -57,8 +57,9 @@ final class Manage_Roles {
 	public function __construct() {
 
 		// If the role manager is active.
-		if ( members_role_manager_enabled() )
-			add_action( 'admin_menu', array( $this, 'add_admin_page' ) );
+		if ( members_role_manager_enabled() ) {
+			add_action( 'admin_menu', array( $this, 'add_admin_page' ), 15 );
+		}
 	}
 
 	/**
@@ -72,7 +73,8 @@ final class Manage_Roles {
 
 		// The "Roles" page should be shown for anyone that has the 'list_roles', 'edit_roles', or
 		// 'delete_roles' caps, so we're checking against all three.
-		$edit_roles_cap = 'list_roles';
+		$edit_roles_cap = apply_filters( 'members_show_roles_page_cap ', 'list_roles' );
+
 
 		// If the current user can 'edit_roles'.
 		if ( current_user_can( 'edit_roles' ) )
@@ -89,7 +91,7 @@ final class Manage_Roles {
 			$title = esc_html__( 'Edit Role', 'members' );
 
 		// Create the Manage Roles page.
-		$this->page = add_submenu_page( 'users.php', $title, esc_html__( 'Roles', 'members' ), $edit_roles_cap, 'roles', array( $this, 'page' ) );
+		$this->page = add_submenu_page( 'members', $title, esc_html__( 'Roles', 'members' ), $edit_roles_cap, 'roles', array( $this, 'page' ) );
 
 		// Let's roll if we have a page.
 		if ( $this->page ) {

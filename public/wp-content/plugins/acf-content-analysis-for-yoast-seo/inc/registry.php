@@ -15,7 +15,7 @@ class Yoast_ACF_Analysis_Registry {
 	 *
 	 * @var array
 	 */
-	private $storage = array();
+	private $storage = [];
 
 	/**
 	 * Adds an item to the registry.

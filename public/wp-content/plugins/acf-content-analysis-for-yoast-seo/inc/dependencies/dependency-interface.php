@@ -18,7 +18,7 @@ interface Yoast_ACF_Analysis_Dependency {
 	public function is_met();
 
 	/**
-	 * Registers the notifications to communicate the depedency is not met.
+	 * Registers the notifications to communicate the dependency is not met.
 	 *
 	 * @return void
 	 */

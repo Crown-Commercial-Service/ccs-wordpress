@@ -2,26 +2,29 @@
 
 namespace webaware\disable_emails;
 
-use \PHPMailer;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception as phpmailerException;
 
 if (!defined('ABSPATH')) {
 	exit;
 }
 
 /**
-* mock of PHPMailer, to support hookers that need to access PHPMailer properties
-* uses a private instance of PHPMailer, but doesn't permit sending emails through it
-*/
+ * mock of PHPMailer, to support hookers that need to access PHPMailer properties
+ * uses a private instance of PHPMailer, but doesn't permit sending emails through it
+ */
 class PHPMailerMock {
 
 	private $phpmailer;
+	private $allowed_calls;
 
 	/**
-	* initialise mock object, creating private PHPMailer instance to handle allowed calls and properties
-	*/
+	 * initialise mock object, creating private PHPMailer instance to handle allowed calls and properties
+	 */
 	public function __construct() {
 
-		require_once ABSPATH . WPINC . '/class-phpmailer.php';
+		require_once ABSPATH . WPINC . '/PHPMailer/PHPMailer.php';
+		require_once ABSPATH . WPINC . '/PHPMailer/Exception.php';
 		$this->phpmailer = new PHPMailer( true );
 
 		// build map of allowed function calls
@@ -50,7 +53,6 @@ class PHPMailerMock {
 			'hasMultiBytes',
 			'base64EncodeWrapMB',
 			'encodeQP',
-			'encodeQPphp',
 			'encodeQ',
 			'addStringAttachment',
 			'addEmbeddedImage',
@@ -89,21 +91,27 @@ class PHPMailerMock {
 	}
 
 	/**
-	* simulate WordPress call to PHPMailer
-	* @param string|array $to Array or comma-separated list of email addresses to send message.
-	* @param string $subject Email subject
-	* @param string $message Message contents
-	* @param string|array $headers Optional. Additional headers.
-	* @param string|array $attachments Optional. Files to attach.
-	* @return bool
-	*/
+	 * simulate WordPress call to PHPMailer
+	 * @param string|array $to Array or comma-separated list of email addresses to send message.
+	 * @param string $subject Email subject
+	 * @param string $message Message contents
+	 * @param string|array $headers Optional. Additional headers.
+	 * @param string|array $attachments Optional. Files to attach.
+	 * @return bool
+	 */
 	public function wpmail($to, $subject, $message, $headers, $attachments) {
 		$settings = get_plugin_settings();
 
 		// get the site domain and get rid of www.
-		$sitename = strtolower( $_SERVER['SERVER_NAME'] );
-		if ( substr( $sitename, 0, 4 ) == 'www.' ) {
-			$sitename = substr( $sitename, 4 );
+		if (isset($_SERVER['SERVER_NAME'])) {
+			$sitename = strtolower( $_SERVER['SERVER_NAME'] );
+			if ( substr( $sitename, 0, 4 ) === 'www.' ) {
+				$sitename = substr( $sitename, 4 );
+			}
+		}
+		else {
+			// likely running from WP-CLI with no hostname set, so fake it
+			$sitename = 'server-name.invalid';
 		}
 
 		// set default From name and address
@@ -113,6 +121,14 @@ class PHPMailerMock {
 		// let hookers change the function arguments if settings allow
 		if ($settings['wp_mail']) {
 			extract( apply_filters( 'wp_mail', compact( 'to', 'subject', 'message', 'headers', 'attachments' ) ), EXTR_IF_EXISTS );
+		}
+
+		// allow hookers to see recipient addresses on mock PHPMailer object
+		try {
+			$this->_addTo($to);
+		}
+		catch (phpmailerException $e) {
+			// NOP
 		}
 
 		// set mail's subject and body
@@ -138,27 +154,32 @@ class PHPMailerMock {
 				$name    = trim( $name    );
 				$content = trim( $content );
 
-				switch ( strtolower( $name ) ) {
-					// Mainly for legacy -- process a From: header if it's there
-					case 'from':
-						$this->_setFrom( $content );
-						break;
+				try {
+					switch ( strtolower( $name ) ) {
+						// Mainly for legacy -- process a From: header if it's there
+						case 'from':
+							$this->_setFrom( $content );
+							break;
 
-					case 'cc':
-						$this->_addCC( explode( ',', $content ) );
-						break;
+						case 'cc':
+							$this->_addCC( explode( ',', $content ) );
+							break;
 
-					case 'bcc':
-						$this->_addBCC( explode( ',', $content ) );
-						break;
+						case 'bcc':
+							$this->_addBCC( explode( ',', $content ) );
+							break;
 
-					case 'content-type':
-						$this->_setContentType( $content );
-						break;
+						case 'content-type':
+							$this->_setContentType( $content );
+							break;
 
-					default:
-						$this->phpmailer->AddCustomHeader( "$name: $content" );
-						break;
+						default:
+							$this->phpmailer->AddCustomHeader( "$name: $content" );
+							break;
+					}
+				}
+				catch (phpmailerException $e) {
+					continue;
 				}
 			}
 		}
@@ -174,7 +195,6 @@ class PHPMailerMock {
 				}
 			}
 		}
-
 
 		if ($settings['wp_mail_from']) {
 			$this->phpmailer->From = apply_filters( 'wp_mail_from', $this->phpmailer->From );
@@ -196,36 +216,37 @@ class PHPMailerMock {
 	}
 
 	/**
-	* set a different From address and potentially, name
-	* @param string $from
-	*/
+	 * set a different From address and potentially, name
+	 * @param string $from
+	 */
 	protected function _setFrom($from) {
-		// check for address in format "Some Name <address@example.com>"
-		if ( preg_match( '/(.*)<(.+)>/', $from, $matches ) ) {
-			$this->phpmailer->FromName = trim($matches[1]);
-			$this->phpmailer->From = $matches[2];
-		}
-		else {
-			$this->phpmailer->From = trim($from);
+		$recipient = new EmailAddress($from);
+		$this->phpmailer->FromName = trim($recipient->name);
+		$this->phpmailer->From = $recipient->address;
+	}
+
+	/**
+	 * add To address(es)
+	 * @param string|array $to
+	 */
+	protected function _addTo($to) {
+		$recipients = is_array($to) ? $to : explode(',', $to);
+
+		foreach ($recipients as $address) {
+			$recipient = new EmailAddress($address);
+			$this->phpmailer->addAddress($recipient->address, $recipient->name);
 		}
 	}
 
 	/**
-	* add CC address(es)
-	* @param array $addresses
-	*/
+	 * add CC address(es)
+	 * @param array $addresses
+	 */
 	protected function _addCC($addresses) {
-		foreach ( $addresses as $address ) {
+		foreach ($addresses as $address) {
 			try {
-				// check for address in format "Some Name <address@example.com>"
-				if ( preg_match( '/(.*)<(.+)>/', $address, $matches ) ) {
-					$name = trim($matches[1]);
-					$address = trim($matches[2]);
-					$this->phpmailer->addCC( $address, $name );
-				}
-				else {
-					$this->phpmailer->addCC( $address );
-				}
+				$recipient = new EmailAddress($address);
+				$this->phpmailer->addCC($recipient->address, $recipient->name);
 			}
 			catch ( phpmailerException $e ) {
 				continue;
@@ -234,21 +255,14 @@ class PHPMailerMock {
 	}
 
 	/**
-	* add BCC addresses
-	* @param array $addresses
-	*/
+	 * add BCC addresses
+	 * @param array $addresses
+	 */
 	protected function _addBCC($addresses) {
-		foreach ( $addresses as $address ) {
+		foreach ($addresses as $address) {
 			try {
-				// check for address in format "Some Name <address@example.com>"
-				if ( preg_match( '/(.*)<(.+)>/', $address, $matches ) ) {
-					$name = trim($matches[1]);
-					$address = trim($matches[2]);
-					$this->phpmailer->addBCC( $address, $name );
-				}
-				else {
-					$this->phpmailer->addBCC( $address );
-				}
+				$recipient = new EmailAddress($address);
+				$this->phpmailer->addBCC($recipient->address, $recipient->name);
 			}
 			catch ( phpmailerException $e ) {
 				continue;
@@ -257,9 +271,9 @@ class PHPMailerMock {
 	}
 
 	/**
-	* set content type
-	* @param string $content_type
-	*/
+	 * set content type
+	 * @param string $content_type
+	 */
 	protected function _setContentType($content_type) {
 		if ( strpos( $content_type, ';' ) !== false ) {
 			list( $type, $charset ) = explode( ';', $content_type );
@@ -276,26 +290,26 @@ class PHPMailerMock {
 	}
 
 	/**
-	* passthrough for setting PHPMailer properties
-	* @param string $name
-	* @param mixed $value
-	*/
+	 * passthrough for setting PHPMailer properties
+	 * @param string $name
+	 * @param mixed $value
+	 */
 	public function __set($name, $value) {
 		$this->phpmailer->$name = $value;
 	}
 
 	/**
-	* passthrough for getting PHPMailer properties
-	* @param string $name
-	* @return mixed
-	*/
+	 * passthrough for getting PHPMailer properties
+	 * @param string $name
+	 * @return mixed
+	 */
 	public function __get($name) {
 		return $this->phpmailer->$name;
 	}
 
 	/**
-	* catchall for methods we just want to ignore
-	*/
+	 * catchall for methods we just want to ignore
+	 */
 	public function __call($name, $args) {
 		if (isset($this->allowed_calls[$name])) {
 
@@ -328,8 +342,8 @@ class PHPMailerMock {
 	}
 
 	/**
-	* catchall for methods we just want to ignore
-	*/
+	 * catchall for methods we just want to ignore
+	 */
 	public static function __callStatic($name, $args) {
 		return false;
 	}

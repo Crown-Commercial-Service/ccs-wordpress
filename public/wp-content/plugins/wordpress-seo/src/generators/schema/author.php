@@ -2,8 +2,6 @@
 
 namespace Yoast\WP\SEO\Generators\Schema;
 
-use Yoast\WP\SEO\Config\Schema_IDs;
-
 /**
  * Returns schema Author data.
  */
@@ -51,7 +49,7 @@ class Author extends Person {
 		// If this is an author page, the Person object is the main object, so we set it as such here.
 		if ( $this->context->indexable->object_type === 'user' ) {
 			$data['mainEntityOfPage'] = [
-				'@id' => $this->context->canonical . Schema_IDs::WEBPAGE_HASH,
+				'@id' => $this->context->main_schema_id,
 			];
 		}
 
@@ -84,7 +82,7 @@ class Author extends Person {
 		/**
 		 * Filter: 'wpseo_schema_person_user_id' - Allows filtering of user ID used for person output.
 		 *
-		 * @api int|bool $user_id The user ID currently determined.
+		 * @param int|bool $user_id The user ID currently determined.
 		 */
 		$user_id = \apply_filters( 'wpseo_schema_person_user_id', $user_id );
 

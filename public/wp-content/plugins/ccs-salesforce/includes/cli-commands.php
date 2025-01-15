@@ -345,6 +345,7 @@ class Import
 
         $this->processTempData();
         $this->startTime = microtime(true);
+        $initialTime = microtime(true);
 
         // Get all frameworks from Salesforce
         try {
@@ -409,7 +410,8 @@ class Import
           'errorCount'  => $this->errorCount
         ];
 
-        $this->logger->info('Import complete. Import took ' . $timer/60 . ' minutes to complete.', $response);
+        $durationInMinutes =  round(microtime(true) - $initialTime, 2)/60;
+        $this->logger->info('Import complete. Import took ' . $durationInMinutes . ' minutes to complete.', $response);
 
         // Release lock
         $lock->release();

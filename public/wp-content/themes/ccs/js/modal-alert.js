@@ -20,6 +20,8 @@
                     $("#wp-prompt-publish").dialog({
                         modal: true
                     });
+
+                $(".ui-dialog").css('z-index', '999999');
                 
             });
             

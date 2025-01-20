@@ -3,6 +3,7 @@
 use App\Search\AbstractSearchClient;
 use App\Search\FrameworkSearchClient;
 use App\Search\SupplierSearchClient;
+use App\Repository\FrameworkRepository;
 use Symfony\Component\Dotenv\Dotenv;
 
 $rootDir = __DIR__ . '/../../';
@@ -36,6 +37,7 @@ $upcomingStatus = ['Future (Pipeline)', 'Planned (Pipeline)', 'Underway (Pipelin
 // Set empty vars
 $dataToReturn = [];
 $statuses = [];
+$rmNumbers = [];
 $sortField = '';
 $filters = [];
 $keyword = '';
@@ -74,6 +76,7 @@ if (isset($_GET['status'])) {
                 $statuses = array_merge($statuses, $liveStatus);
             }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'UPCOMING') {
                 $statuses = array_merge($statuses, $upcomingStatus);
+                $rmNumbers = extractRmNumbersFromUpcoming(get_upcoming_deals());
             }
         }
     }
@@ -109,7 +112,79 @@ if (isset($_GET['terms'])) {
     $filters['terms'] = filtering("terms");
 }
 
-$resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters, $sortField);
+function get_upcoming_deals()
+{
+    $frameworkRepository = new FrameworkRepository();
+    $frameworks = $frameworkRepository->findUpcomingDeals();
+
+    $futureFrameworks = [];
+    $plannedFrameworks = [];
+    $underwayFrameworks = [];
+    $awardedFrameworks = [];
+    $dynamicFrameworks = [];
+
+
+    foreach ($frameworks as $framework) {
+        if (!empty($framework->getStatus())) {
+
+            if ($framework->getStatus() === 'Future (Pipeline)') {
+                $futureFrameworks[] = $framework->toArray();
+            }
+
+            if ($framework->getStatus() === 'Planned (Pipeline)') {
+                $plannedFrameworks[] = $framework->toArray();
+            }
+
+            if ($framework->getStatus() === 'Underway (Pipeline)') {
+                $underwayFrameworks[] = $framework->toArray();
+            }
+
+            if ($framework->getStatus() === 'Awarded (Pipeline)' || ($framework->getStatus() === 'Live' &&
+                $framework->getTerms() !== 'DPS')) {
+
+                $frameworkExpectedLiveDate = $framework->getExpectedLiveDate();
+
+                if ($frameworkExpectedLiveDate == NULL) {
+                    continue;
+                } elseif ($framework->getExpectedLiveDate()->format('Y-m-d') > date("Y-m-d")) {
+                    $awardedFrameworks[] = $framework->toArray();
+                }
+            }
+
+            if ($framework->getStatus() === 'Live' && $framework->getTerms() === 'DPS') {
+                $dynamicFrameworks[] = $framework->toArray();
+            }
+        }
+    }
+
+    $upcomingAgreements =
+    array_merge(
+        $futureFrameworks,
+        $plannedFrameworks,
+        $underwayFrameworks,
+        $awardedFrameworks,
+        $dynamicFrameworks
+    );
+
+    return $upcomingAgreements;
+}
+
+function extractRmNumbersFromUpcoming ($upcomingAgreements) {
+    $rm_numbers = [];
+    // filter by rm number to only include upcoming agreements
+
+    foreach ($upcomingAgreements as $agreement) {
+        foreach ($agreement as $filter => $val) {
+            if ($filter == "rm_number") {
+                $rm_numbers[] = preg_replace("/[^0-9]/", "", $val);
+            }
+        }
+    }
+
+    return $rm_numbers;
+}
+
+$resultSet = $searchClient->queryByKeyword($keyword, $page, $limit, $filters, $sortField, $rmNumbers);
 $frameworks = $resultSet->getResults();
 $buckets = $resultSet->getAggregations();
 

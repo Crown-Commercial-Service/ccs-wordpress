@@ -1,11 +1,19 @@
 <?php
 
-namespace Yoast\AcfAnalysis\Tests\Configuration;
+namespace Yoast\WP\ACF\Tests;
+
+use Yoast\PHPUnitPolyfills\TestCases\TestCase;
+use Yoast_ACF_Analysis_Configuration;
+use Yoast_ACF_Analysis_Facade;
+use Yoast_ACF_Analysis_Registry;
+use Yoast_ACF_Analysis_String_Store;
 
 /**
- * Class Registry_Test
+ * Class Registry_Test.
+ *
+ * @covers Yoast_ACF_Analysis_Registry
  */
-class Registry_Test extends \PHPUnit_Framework_TestCase {
+class Registry_Test extends TestCase {
 
 	/**
 	 * Tests that the singleton instance is properly set and that every call to the registry, is the same instance.
@@ -16,17 +24,17 @@ class Registry_Test extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testSingleton() {
 
-		$first  = \Yoast_ACF_Analysis_Facade::get_registry();
-		$second = \Yoast_ACF_Analysis_Facade::get_registry();
+		$first  = Yoast_ACF_Analysis_Facade::get_registry();
+		$second = Yoast_ACF_Analysis_Facade::get_registry();
 
 		$this->assertSame( $first, $second );
 
 		$first->add(
 			'id',
-			new \Yoast_ACF_Analysis_Configuration(
-				new \Yoast_ACF_Analysis_String_Store(),
-				new \Yoast_ACF_Analysis_String_Store(),
-				new \Yoast_ACF_Analysis_String_Store()
+			new Yoast_ACF_Analysis_Configuration(
+				new Yoast_ACF_Analysis_String_Store(),
+				new Yoast_ACF_Analysis_String_Store(),
+				new Yoast_ACF_Analysis_String_Store()
 			)
 		);
 
@@ -34,7 +42,7 @@ class Registry_Test extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * Tests that adding a non-existing item to the registy, succeeds and that the item can be found based on its ID.
+	 * Tests that adding a non-existing item to the registry, succeeds and that the item can be found based on its ID.
 	 *
 	 * @return void
 	 */
@@ -43,7 +51,7 @@ class Registry_Test extends \PHPUnit_Framework_TestCase {
 		$id      = 'add';
 		$content = 'something';
 
-		$registry = new \Yoast_ACF_Analysis_Registry();
+		$registry = new Yoast_ACF_Analysis_Registry();
 
 		$this->assertNull( $registry->get( $id ) );
 

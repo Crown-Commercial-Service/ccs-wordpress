@@ -13,25 +13,23 @@ use Yoast\WP\SEO\Services\Importing\Aioseo\Aioseo_Robots_Transformer_Service;
 
 /**
  * Importing action for AIOSEO general settings.
- *
- * @phpcs:disable Yoast.NamingConventions.ObjectNameDepth.MaxExceeded
  */
 class Aioseo_General_Settings_Importing_Action extends Abstract_Aioseo_Settings_Importing_Action {
 
 	/**
 	 * The plugin of the action.
 	 */
-	const PLUGIN = 'aioseo';
+	public const PLUGIN = 'aioseo';
 
 	/**
 	 * The type of the action.
 	 */
-	const TYPE = 'general_settings';
+	public const TYPE = 'general_settings';
 
 	/**
 	 * The option_name of the AIOSEO option that contains the settings.
 	 */
-	const SOURCE_OPTION_NAME = 'aioseo_options';
+	public const SOURCE_OPTION_NAME = 'aioseo_options';
 
 	/**
 	 * The map of aioseo_options to yoast settings.

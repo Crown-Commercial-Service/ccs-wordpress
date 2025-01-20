@@ -4,7 +4,6 @@ namespace Yoast\WP\SEO\Integrations\Admin;
 
 use WPSEO_Admin_Asset_Manager;
 use Yoast\WP\SEO\Conditionals\Admin_Conditional;
-use Yoast\WP\SEO\Conditionals\Installation_Success_Conditional;
 use Yoast\WP\SEO\Helpers\Options_Helper;
 use Yoast\WP\SEO\Helpers\Product_Helper;
 use Yoast\WP\SEO\Integrations\Integration_Interface;
@@ -32,7 +31,7 @@ class Installation_Success_Integration implements Integration_Interface {
 	 * {@inheritDoc}
 	 */
 	public static function get_conditionals() {
-		return [ Admin_Conditional::class, Installation_Success_Conditional::class ];
+		return [ Admin_Conditional::class ];
 	}
 
 	/**
@@ -41,7 +40,10 @@ class Installation_Success_Integration implements Integration_Interface {
 	 * @param Options_Helper $options_helper The options helper.
 	 * @param Product_Helper $product_helper The product helper.
 	 */
-	public function __construct( Options_Helper $options_helper, Product_Helper $product_helper ) {
+	public function __construct(
+		Options_Helper $options_helper,
+		Product_Helper $product_helper
+	) {
 		$this->options_helper = $options_helper;
 		$this->product_helper = $product_helper;
 	}
@@ -61,6 +63,10 @@ class Installation_Success_Integration implements Integration_Interface {
 	 * @return void
 	 */
 	public function maybe_redirect() {
+		if ( \defined( 'DOING_AJAX' ) && \DOING_AJAX ) {
+			return;
+		}
+
 		if ( ! $this->options_helper->get( 'should_redirect_after_install_free', false ) ) {
 			return;
 		}
@@ -97,9 +103,9 @@ class Installation_Success_Integration implements Integration_Interface {
 	 */
 	public function add_submenu_page( $submenu_pages ) {
 		\add_submenu_page(
-			null,
+			'',
 			\__( 'Installation Successful', 'wordpress-seo' ),
-			null,
+			'',
 			'manage_options',
 			'wpseo_installation_successful_free',
 			[ $this, 'render_page' ]
@@ -110,6 +116,8 @@ class Installation_Success_Integration implements Integration_Interface {
 
 	/**
 	 * Enqueue assets on the Installation success page.
+	 *
+	 * @return void
 	 */
 	public function enqueue_assets() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Date is not processed or saved.
@@ -119,23 +127,26 @@ class Installation_Success_Integration implements Integration_Interface {
 
 		$asset_manager = new WPSEO_Admin_Asset_Manager();
 		$asset_manager->enqueue_script( 'installation-success' );
-		$asset_manager->enqueue_style( 'installation-success' );
+		$asset_manager->enqueue_style( 'tailwind' );
 		$asset_manager->enqueue_style( 'monorepo' );
+
+		$ftc_url = \esc_url( \admin_url( 'admin.php?page=wpseo_dashboard#/first-time-configuration' ) );
 
 		$asset_manager->localize_script(
 			'installation-success',
 			'wpseoInstallationSuccess',
 			[
 				'pluginUrl'                 => \esc_url( \plugins_url( '', \WPSEO_FILE ) ),
-				'configurationWorkoutUrl'   => \esc_url( \admin_url( 'admin.php?page=wpseo_workouts#configuration' ) ),
-				'canDoConfigurationWorkout' => \current_user_can( 'wpseo_manage_options' ),
-				'canEditWordPressOptions'   => \current_user_can( 'manage_options' ),
+				'firstTimeConfigurationUrl' => $ftc_url,
+				'dashboardUrl'              => \esc_url( \admin_url( 'admin.php?page=wpseo_dashboard' ) ),
 			]
 		);
 	}
 
 	/**
 	 * Renders the installation success page.
+	 *
+	 * @return void
 	 */
 	public function render_page() {
 		echo '<div id="wpseo-installation-successful-free" class="yoast"></div>';
@@ -143,6 +154,8 @@ class Installation_Success_Integration implements Integration_Interface {
 
 	/**
 	 * Wrap the `exit` function to make unit testing easier.
+	 *
+	 * @return void
 	 */
 	public function terminate_execution() {
 		exit;

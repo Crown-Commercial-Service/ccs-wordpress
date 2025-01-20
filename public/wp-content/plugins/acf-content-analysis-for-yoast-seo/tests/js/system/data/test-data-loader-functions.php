@@ -15,7 +15,7 @@ if ( function_exists( 'add_action' ) ) {
  */
 function yoast_acf_analysis_test_data_loader() {
 
-	if ( ! defined( 'AC_YOAST_ACF_ANALYSIS_ENVIRONMENT' ) || 'development' !== AC_YOAST_ACF_ANALYSIS_ENVIRONMENT ) {
+	if ( ! defined( 'AC_YOAST_ACF_ANALYSIS_ENVIRONMENT' ) || AC_YOAST_ACF_ANALYSIS_ENVIRONMENT !== 'development' ) {
 		return;
 	}
 

@@ -4,9 +4,9 @@
  *
  * @package    Members
  * @subpackage Admin
- * @author     Justin Tadlock <justintadlock@gmail.com>
- * @copyright  Copyright (c) 2009 - 2018, Justin Tadlock
- * @link       https://themehybrid.com/plugins/members
+ * @author     The MemberPress Team 
+ * @copyright  Copyright (c) 2009 - 2018, The MemberPress Team
+ * @link       https://members-plugin.com/
  * @license    http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
@@ -48,17 +48,6 @@ function members_register_default_settings_views( $manager ) {
 			)
 		)
 	);
-
-	// Register add-ons view.
-	$manager->register_view(
-		new \Members\Admin\View_Donate(
-			'donate',
-			array(
-				'label'    => esc_html__( 'Help Fund Version 3.0', 'members' ),
-				'priority' => 100
-			)
-		)
-	);
 }
 
 /**
@@ -69,10 +58,21 @@ function members_register_default_settings_views( $manager ) {
  * @return bool
  */
 function members_is_settings_page() {
-
 	$screen = get_current_screen();
+	$prefix = 'members';
+	return is_object( $screen ) && ( $prefix . '_page_members-settings' === $screen->id || 'admin_page_members-settings' === $screen->id );
+}
 
-	return is_object( $screen ) && 'settings_page_members-settings' === $screen->id;
+/**
+ * Conditional function to check if an add-on is active.
+ *
+ * @since  2.3.0
+ * @access public
+ * @param  string  $addon 	Add-on name/key (e.g. members-block-permissions)
+ * @return bool
+ */
+function members_is_addon_active( $addon ) {
+	return in_array( $addon, get_option( 'members_active_addons', array() ) );
 }
 
 /**
@@ -84,7 +84,7 @@ function members_is_settings_page() {
  */
 function members_get_settings_page_url() {
 
-	return add_query_arg( array( 'page' => 'members-settings' ), admin_url( 'options-general.php' ) );
+	return add_query_arg( array( 'page' => 'members-settings' ), admin_url( 'admin.php' ) );
 }
 
 /**

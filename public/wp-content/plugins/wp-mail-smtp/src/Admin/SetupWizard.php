@@ -2,11 +2,16 @@
 
 namespace WPMailSMTP\Admin;
 
+use Plugin_Upgrader;
 use WPMailSMTP\Admin\Pages\TestTab;
 use WPMailSMTP\Connect;
+use WPMailSMTP\Helpers\Helpers;
 use WPMailSMTP\Helpers\PluginImportDataRetriever;
 use WPMailSMTP\Options;
+use WPMailSMTP\UsageTracking\UsageTracking;
 use WPMailSMTP\WP;
+use WPMailSMTP\Reports\Emails\Summary as SummaryReportEmail;
+use WPMailSMTP\Tasks\Reports\SummaryEmailTask as SummaryReportEmailTask;
 
 /**
  * Class for the plugin's Setup Wizard.
@@ -14,6 +19,13 @@ use WPMailSMTP\WP;
  * @since 2.6.0
  */
 class SetupWizard {
+
+	/**
+	 * The WP Option key for storing setup wizard stats.
+	 *
+	 * @since 3.1.0
+	 */
+	const STATS_OPTION_KEY = 'wp_mail_smtp_setup_wizard_stats';
 
 	/**
 	 * Run all the hooks needed for the Setup Wizard.
@@ -28,6 +40,7 @@ class SetupWizard {
 		add_filter( 'removable_query_args', [ $this, 'maybe_disable_automatic_query_args_removal' ] );
 
 		// API AJAX callbacks.
+		add_action( 'wp_ajax_wp_mail_smtp_vue_wizard_steps_started', [ $this, 'wizard_steps_started' ] );
 		add_action( 'wp_ajax_wp_mail_smtp_vue_get_settings', [ $this, 'get_settings' ] );
 		add_action( 'wp_ajax_wp_mail_smtp_vue_update_settings', [ $this, 'update_settings' ] );
 		add_action( 'wp_ajax_wp_mail_smtp_vue_import_settings', [ $this, 'import_settings' ] );
@@ -66,10 +79,10 @@ class SetupWizard {
 		// Check if current user is allowed to save settings.
 		if (
 			! (
-				isset( $_GET['page'] ) && // phpcs:ignore
-				Area::SLUG . '-setup-wizard' === $_GET['page'] && // phpcs:ignore
+				isset( $_GET['page'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				Area::SLUG . '-setup-wizard' === $_GET['page'] && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$this->should_setup_wizard_load() &&
-				current_user_can( 'manage_options' )
+				current_user_can( wp_mail_smtp()->get_capability_manage_options() )
 			)
 		) {
 			return;
@@ -85,6 +98,10 @@ class SetupWizard {
 		// Remove an action in the Gutenberg plugin ( not core Gutenberg ) which throws an error.
 		remove_action( 'admin_print_styles', 'gutenberg_block_editor_admin_print_styles' );
 
+		// Remove hooks for deprecated functions in WordPress 6.4.0.
+		remove_action( 'admin_print_styles', 'print_emoji_styles' );
+		remove_action( 'admin_head', 'wp_admin_bar_header' );
+
 		$this->load_setup_wizard();
 	}
 
@@ -93,7 +110,7 @@ class SetupWizard {
 	 *
 	 * @since 2.6.0
 	 */
-	public function maybe_redirect_after_activation() {
+	public function maybe_redirect_after_activation() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		if ( wp_doing_ajax() || wp_doing_cron() ) {
 			return;
@@ -111,8 +128,8 @@ class SetupWizard {
 			return;
 		}
 
-		// Only do this for single site installs.
-		if ( isset( $_GET['activate-multi'] ) || is_network_admin() ) { // WPCS: CSRF ok.
+		// Only do this for single site installs if Network Wide setting is not enabled.
+		if ( isset( $_GET['activate-multi'] ) || is_network_admin() || WP::use_global_plugin_settings() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
@@ -143,7 +160,7 @@ class SetupWizard {
 			return;
 		}
 
-		add_dashboard_page( '', '', 'manage_options', Area::SLUG . '-setup-wizard', '' );
+		add_submenu_page( '', '', '', wp_mail_smtp()->get_capability_manage_options(), Area::SLUG . '-setup-wizard', '' );
 	}
 
 	/**
@@ -153,11 +170,29 @@ class SetupWizard {
 	 */
 	private function load_setup_wizard() {
 
+		/**
+		 * Before setup wizard load.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param \WPMailSMTP\Admin\SetupWizard  $setup_wizard SetupWizard instance.
+		 */
+		do_action( 'wp_mail_smtp_admin_setup_wizard_load_setup_wizard_before', $this );
+
 		$this->enqueue_scripts();
 
 		$this->setup_wizard_header();
 		$this->setup_wizard_content();
 		$this->setup_wizard_footer();
+
+		/**
+		 * After setup wizard load.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param \WPMailSMTP\Admin\SetupWizard  $setup_wizard SetupWizard instance.
+		 */
+		do_action( 'wp_mail_smtp_admin_setup_wizard_load_setup_wizard_after', $this );
 
 		exit;
 	}
@@ -186,15 +221,19 @@ class SetupWizard {
 				'is_multisite'       => is_multisite(),
 				'translations'       => WP::get_jed_locale_data( 'wp-mail-smtp' ),
 				'exit_url'           => wp_mail_smtp()->get_admin()->get_admin_page_url(),
-				'email_test_tab_url' => add_query_arg( 'tab', 'test', wp_mail_smtp()->get_admin()->get_admin_page_url() ),
+				'email_test_tab_url' => add_query_arg( 'tab', 'test', wp_mail_smtp()->get_admin()->get_admin_page_url( Area::SLUG . '-tools' ) ),
 				'is_pro'             => wp_mail_smtp()->is_pro(),
+				'is_ssl'             => is_ssl(),
 				'license_exists'     => apply_filters( 'wp_mail_smtp_admin_setup_wizard_license_exists', false ),
 				'plugin_version'     => WPMS_PLUGIN_VER,
 				'other_smtp_plugins' => $this->detect_other_smtp_plugins(),
 				'mailer_options'     => $this->prepare_mailer_options(),
+				'defined_constants'  => $this->prepare_defined_constants(),
 				'upgrade_link'       => wp_mail_smtp()->get_upgrade_link( 'setup-wizard' ),
 				'versions'           => $this->prepare_versions_data(),
 				'public_url'         => wp_mail_smtp()->assets_url . '/vue/',
+				'current_user_email' => wp_get_current_user()->user_email,
+				'completed_time'     => self::get_stats()['completed_time'],
 				'education'          => [
 					'upgrade_text'   => esc_html__( 'We\'re sorry, the %mailer% mailer is not available on your plan. Please upgrade to the PRO plan to unlock all these awesome features.', 'wp-mail-smtp' ),
 					'upgrade_button' => esc_html__( 'Upgrade to Pro', 'wp-mail-smtp' ),
@@ -212,9 +251,12 @@ class SetupWizard {
 						),
 						'$50'
 					),
-					'upgrade_doc'    => '<a href="https://wpmailsmtp.com/docs/how-to-upgrade-wp-mail-smtp-to-pro-version/?utm_source=WordPress&amp;utm_medium=link&amp;utm_campaign=liteplugin" target="_blank" rel="noopener noreferrer" class="already-purchased">
-												' . esc_html__( 'Already purchased?', 'wp-mail-smtp' ) . '
-											</a>',
+					'upgrade_doc'       => sprintf(
+						'<a href="%1$s" target="_blank" rel="noopener noreferrer" class="already-purchased">%2$s</a>',
+						// phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+						esc_url( wp_mail_smtp()->get_utm_url( 'https://wpmailsmtp.com/docs/how-to-upgrade-wp-mail-smtp-to-pro-version/', [ 'medium' => 'setup-wizard', 'content' => 'Wizard Pro Mailer Popup - Already purchased' ] ) ),
+						esc_html__( 'Already purchased?', 'wp-mail-smtp' )
+					)
 				],
 			]
 		);
@@ -278,9 +320,13 @@ class SetupWizard {
 
 		$inline_logo_image = 'data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDIgNjAiPjxkZWZzPjxzdHlsZT4uY2xzLTExLC5jbHMtMTJ7ZmlsbC1ydWxlOmV2ZW5vZGR9LmNscy00e2ZpbGw6bm9uZX0uY2xzLTExe2ZpbGw6Izg2YTE5Nn0uY2xzLTEye2ZpbGw6I2ZmZn08L3N0eWxlPjwvZGVmcz48cGF0aCBkPSJNNjkuMDYgMTEuMTFMNjQuNyAyMy40OWgtLjA2bC0xLjg5LTYuNTUtMi02LjE0aC0zLjEzdi40NGw2IDE3Ljg5aDEuNjZsNC4zOS0xMS42N2guMDZsNC4zOSAxMS42N2gxLjU2bDYuMDYtMTcuODl2LS40NGgtMy4ybC0xLjkyIDYuMTQtMS44MiA2LjUyaC0uMDZsLTQuMzItMTIuMzV6TTg3LjY4IDI5aC0zVjEwLjhoNy41NGE2LjE3IDYuMTcgMCAwMTYuNDIgNi40MiA2LjE0IDYuMTQgMCAwMS02LjQyIDYuMzJoLTQuNXptLS4wNS04LjExaDQuNTVhMy41NCAzLjU0IDAgMDAzLjUxLTMuNzUgMy40OSAzLjQ5IDAgMDAtMy41MS0zLjcxaC00LjU1em0yOS0uNzNsLTcuNDEtOS40MWgtMS4xMVYyOWgzVjE3LjYxbDUuMjggNi43NGguNDFsNS4yNS02Ljc0VjI5aDMuMDVWMTAuNzVIMTI0em0yNC4xMS0yLjc4djcuODhjMCAxLjE0IDAgMS44NyAxLjM1IDEuNzR2MS45MmMtMS44LjM0LTMuNjQuMTMtMy42NC0ydi0uNTJhNC41NyA0LjU3IDAgMDEtNC4zMiAyLjczYy0zLjgyIDAtNS42Ny0zLjA3LTUuNjctNi42LjA4LTQuMTYgMy4wNS02LjQ1IDcuMTMtNi4zN2ExMi42MiAxMi42MiAwIDAxNS4xNiAxLjIyek0xMzggMjIuNzFWMTlhNi40OSA2LjQ5IDAgMDAtMi42My0uNTJjLTIuMzkgMC00IDEuMzctNC4wOCA0LjA4IDAgMi4yOSAxLjEyIDQuMDggMy40MyA0LjA4IDIuMTMuMDIgMy4yMi0xLjY0IDMuMjgtMy45M3ptNi41Ny0xMC4xMmExLjY1IDEuNjUgMCAwMDEuNzUgMS42OSAxLjYxIDEuNjEgMCAwMDEuNjgtMS42OSAxLjcxIDEuNzEgMCAwMC0zLjQxIDB6bTMuMTIgNGgtMi44M1YyOWgyLjgzek0xNTEuMyAxMHYxNC41M2MwIDQuMTggMS43NyA1LjE3IDUuNjIgNC41NWwtLjExLTIuMTljLTIuMTUuMzQtMi43LS4zMS0yLjctMi4zOVYxMHptMTMuNDcgMTMuODZjLjA4IDMuODIgMy44IDUuNTkgNy4zNiA1LjUxIDMuNCAwIDcuMTctMS41MSA3LjE3LTUuNTEgMC00LjE5LTMuMzgtNC45Mi03LjA3LTUuMzMtMi4xLS4yOS00LjE2LS41NS00LjE2LTIuNnMyLjE2LTIuNzMgMy44Mi0yLjczIDMuODUuNjIgNCAyLjU3aDIuODZjLS4wOC0zLjcyLTMuMzUtNS4yOC02LjgxLTUuMjhzLTYuODQgMS43Ny02Ljg0IDUuNTEgMy4zIDQuNzEgNi42MyA1YzIuMTEuMiA0LjU4LjQ0IDQuNTggMi44M3MtMi4yOSAyLjgzLTQuMjEgMi44My00LjIyLS43NS00LjM1LTIuOHptMjYuNDQtMy42N2wtNy40MS05LjQxaC0xLjEyVjI5aDNWMTcuNjFsNS4zMiA2Ljc0aC40Mmw1LjI1LTYuNzRWMjloM1YxMC43NWgtMS4wN3ptMTYuNTQtNi42OFYyOWgzVjEzLjQ4SDIxNlYxMC44aC0xMy41M3YyLjY4em0xNCAxNS41MmgtM1YxMC44aDcuNTRhNi4xNyA2LjE3IDAgMDE2LjQyIDYuNDIgNi4xNCA2LjE0IDAgMDEtNi40MiA2LjMyaC00LjV6bTAtOC4xMWg0LjU1YTMuNTQgMy41NCAwIDAwMy41MS0zLjc1IDMuNDkgMy40OSAwIDAwLTMuNTEtMy43MWgtNC41NXoiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZmlsbD0iIzIzMjgyYyIvPjxwYXRoIGQ9Ik05NC4xOCAzOC4wOWEuNDYuNDYgMCAwMS4wOS4xOSAxLjE1IDEuMTUgMCAwMTAgLjJ2LjE4YTEuMzMgMS4zMyAwIDAxLS4wOC4yNCAxLjA5IDEuMDkgMCAwMS0uMjEuMzcuNTguNTggMCAwMS0uNDYgMCAuMy4zIDAgMDAtLjE3IDAgMS41OSAxLjU5IDAgMDAtLjM0LS4wNmgtLjM1YTEuNyAxLjcgMCAwMC0uNTUuMDggMS4xMiAxLjEyIDAgMDAtLjQ3LjI5IDEuNzIgMS43MiAwIDAwLS4zNC42IDMuMzQgMy4zNCAwIDAwLS4xNiAxdjEuMTNoMi4xcTAgLjM5LS4wNi42M2EyLjEgMi4xIDAgMDEtLjEuNC42MS42MSAwIDAxLS4xNS4yMiAxLjI2IDEuMjYgMCAwMS0uMjMuMTNoLS4yM2E1LjM1IDUuMzUgMCAwMS0uNjEgMGgtLjc1djcuMTFhMS4xMiAxLjEyIDAgMDEwIC4yNC4yNS4yNSAwIDAxLS4yLjIxIDYuMDggNi4wOCAwIDAxLS42Ni4wN2gtLjUzYTMuMTUgMy4xNSAwIDAxLS42MS0uMDYgMS40IDEuNCAwIDAxMC0uMjNWNDMuN2EyLjE5IDIuMTkgMCAwMS0xLjE3LS4zMWMwLS4xOSAwLS4zNS4wOC0uNDZhLjY5LjY5IDAgMDEuMS0uMjcuNjEuNjEgMCAwMS4xNy0uMTUuODYuODYgMCAwMS4yNS0uMWwuMjItLjA2LjM1LS4wN3YtLjczYTYuMjYgNi4yNiAwIDAxLjA2LS42NSAzLjc5IDMuNzkgMCAwMS40My0xLjYxIDMuMTYgMy4xNiAwIDAxLjg1LTEgMy4yNCAzLjI0IDAgMDExLjA5LS40OSA0LjQgNC40IDAgMDExLjEtLjE1IDMuMiAzLjIgMCAwMTEgLjEzIDEuMzYgMS4zNiAwIDAxLjUzLjI3em05LjgyIDUuNjhhMi4wOCAyLjA4IDAgMDAtLjcxLjEyIDEuNjUgMS42NSAwIDAwLS41OS4zOHY2YTIuNTQgMi41NCAwIDAxMCAuNDEuOTEuOTEgMCAwMS0uMTYuMzcgMS4wNSAxLjA1IDAgMDEtLjI0LjE1IDEuMyAxLjMgMCAwMS0uMzMuMDZoLTEuMjd2LTdhMy44OCAzLjg4IDAgMDAtLjA3LS44MSA0LjczIDQuNzMgMCAwMC0uMTgtLjYzIDEuNjYgMS42NiAwIDAxLjMxLS4yMyAzLjY2IDMuNjYgMCAwMS41Mi0uMjUuNTYuNTYgMCAwMS4xNSAwaC4xMmEuODkuODkgMCAwMS40NS4wOS43Ni43NiAwIDAxLjI0LjMgMy41NyAzLjU3IDAgMDEuNTYtLjMzYy4yLS4wOS4zOS0uMTcuNTctLjIzYTMgMyAwIDAxLjU1LS4xNCAxLjUxIDEuNTEgMCAwMS41NiAwYy41OC4wNi45LjI0IDEgLjUzYTIuODkgMi44OSAwIDAxLS4wNy41NyAxLjQ2IDEuNDYgMCAwMS0uMjcuNjRoLS44N2EuNTYuNTYgMCAwMC0uMTUgMHptNy45MSA3LjU2aC0xLjY3di01Ljg5YTMuMiAzLjIgMCAwMC0uMjQtMS40Ny45LjkgMCAwMC0uODYtLjQzIDEuNjcgMS42NyAwIDAwLS44LjIgMi40MSAyLjQxIDAgMDAtLjYzLjQ5djYuMTRhMi4zNyAyLjM3IDAgMDEwIC40MS42NC42NCAwIDAxLS40My40NyAxLjk0IDEuOTQgMCAwMS0uMzIuMDcgMy4yOCAzLjI4IDAgMDEtLjQ5IDBoLS43NnYtNy4wMWEzLjk0IDMuOTQgMCAwMC0uMDctLjgxIDQuODIgNC44MiAwIDAwLS4xNi0uNjMgMi4yMyAyLjIzIDAgMDEuODMtLjQ4LjU2LjU2IDAgMDEuMTUgMGguMDlhLjguOCAwIDAxLjQ1LjEzLjg2Ljg2IDAgMDEuMjYuMjggNC4zOSA0LjM5IDAgMDExLjE0LS41OCAzLjg0IDMuODQgMCAwMTEuMjQtLjE5aC4zOWEyLjcgMi43IDAgMDExIC4yNyAyLjI2IDIuMjYgMCAwMS42OC41MyAyLjU4IDIuNTggMCAwMS42MS0uMzZjLjIzLS4xLjQ0LS4xOS42My0uMjVhMy42NSAzLjY1IDAgMDExLjIxLS4xOWguNGEyLjkxIDIuOTEgMCAwMTEuMTIuMyAxLjkgMS45IDAgMDEuNjkuNjkgMyAzIDAgMDEuMzQgMSA3Ljc0IDcuNzQgMCAwMS4xIDEuMzN2NS42OWExIDEgMCAwMS0uMjUuMTYgMS40IDEuNCAwIDAxLS4zNS4wOGgtMS4zYTMuMDUgMy4wNSAwIDAxLS4xMy0uMzIgMS42MSAxLjYxIDAgMDEwLS4zOXYtNS4xMWEzLjQ1IDMuNDUgMCAwMC0uMjMtMS40OC44OS44OSAwIDAwLS44NS0uNDIgMS42NCAxLjY0IDAgMDAtLjgxLjIyIDMuNDggMy40OCAwIDAwLS42Ny41M2wuMDYtLjA2djYuNjhjLjAzLjItLjEuMzQtLjM1LjR6TTEyMC42IDQyaC41NmEzLjA1IDMuMDUgMCAwMTEuMzYuMzZjLjI5LjE5LjQ2LjM2LjUuNWExLjI5IDEuMjkgMCAwMS0uMTIuNDggMi42MSAyLjYxIDAgMDEtLjI3LjVoLS4xOGEuODguODggMCAwMS0uMiAwIDMgMyAwIDAwLS4zMi0uMDYgMS41OCAxLjU4IDAgMDEtLjMxLS4wOSAyLjMyIDIuMzIgMCAwMC0uODctLjE3IDEuMTUgMS4xNSAwIDAwLS43OS4yNS43Ny43NyAwIDAwLS4zLjYzIDEgMSAwIDAwLjEuNDQgMS41NCAxLjU0IDAgMDAuNDIuNDZsLjM2LjI3LjQ0LjMxLjU3LjQyLjU1LjRhMy42MyAzLjYzIDAgMDEuOSAxIDIuMjggMi4yOCAwIDAxLjI4IDEuMTNBMi42NSAyLjY1IDAgMDExMjMgNTBhMi41NyAyLjU3IDAgMDEtLjcyLjg1IDMuMTkgMy4xOSAwIDAxLTEuMDguNTIgNC41OSA0LjU5IDAgMDEtMS4zLjE3IDQuNzEgNC43MSAwIDAxLTEuNjYtLjI2IDEuMzggMS4zOCAwIDAxLS44OS0uNjYgMS41NyAxLjU3IDAgMDEuMS0uNTEgMS44NiAxLjg2IDAgMDEuMjgtLjUyaC4yN2ExLjIxIDEuMjEgMCAwMS41OC4xNyAzLjkzIDMuOTMgMCAwMC42Ni4yMiAyLjg2IDIuODYgMCAwMC43LjA5aC4zNGExIDEgMCAwMC42OS0uMzIgMSAxIDAgMDAuMjQtLjcyIDEuMTYgMS4xNiAwIDAwLS4xNy0uNiAxLjgzIDEuODMgMCAwMC0uNTYtLjU1bC0uMTctLjExYy0uMDctLjA1LS4wOS0uMDctLjA2IDAtLjIyLS4xNi0uNDUtLjMyLS42OS0uNTFsLS42Mi0uNTEtLjQ4LS4zOGEyLjYyIDIuNjIgMCAwMS0uODgtMS44NiAyLjExIDIuMTEgMCAwMS44NC0xLjc5IDMuNjYgMy42NiAwIDAxMi4xOC0uNzJ6bS0yMC41MSA0LjdhNi43OSA2Ljc5IDAgMDEtLjI5IDIuMTIgNC4zIDQuMyAwIDAxLS44IDEuNTIgMy40MyAzLjQzIDAgMDEtMS4yMi45MyAzLjg3IDMuODcgMCAwMS0xLjUzLjMgMy41OCAzLjU4IDAgMDEtMi44My0xLjEyIDUuMzkgNS4zOSAwIDAxLTEtMy42NCA2LjgyIDYuODIgMCAwMS4yOS0yLjEzIDQuMjUgNC4yNSAwIDAxLjgtMS41MSAzLjIxIDMuMjEgMCAwMTEuMjMtLjg4IDQuMTggNC4xOCAwIDAxMS41Ny0uMjkgMy40MSAzLjQxIDAgMDEyLjg0IDEuMTkgNS41NSA1LjU1IDAgMDEuOTQgMy41em0tNS41NCAwYTguMTcgOC4xNyAwIDAwLjEzIDEuNjEgMy4zNyAzLjM3IDAgMDAuMzcgMSAxLjQ1IDEuNDUgMCAwMC41NC41OCAxLjQgMS40IDAgMDAuNy4xN0ExLjMgMS4zIDAgMDA5NyA1MGExLjUxIDEuNTEgMCAwMC41My0uNTggMy4zIDMuMyAwIDAwLjM3LTEgOCA4IDAgMDAuMTMtMS42IDUuMDcgNS4wNyAwIDAwLS40Ni0yLjU1IDEuNDMgMS40MyAwIDAwLTEuMjctLjc1IDEuMjggMS4yOCAwIDAwLS42NS4xOCAxLjU1IDEuNTUgMCAwMC0uNTMuNTcgMy4zNCAzLjM0IDAgMDAtLjM4IDEgNy4zNiA3LjM2IDAgMDAtLjE5IDEuNDZ6IiBmaWxsPSIjNWY1ZTVlIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48cGF0aCBkPSJNNzMuNTIgNTAuNjZ2LjA4YS4xMS4xMSAwIDAxMCAuMDcgMi42OCAyLjY4IDAgMDEtLjE1LjM5LjUyLjUyIDAgMDEtLjI5LjIyaC0uMzdjLS4xOSAwLS40NiAwLS44Mi4wNWEyLjE0IDIuMTQgMCAwMS0uMzctLjQ0IDEuNzMgMS43MyAwIDAxLS4yNC0uNWwtLjMtMS4wOS0uMzgtMS4yNGMtLjEzLS40NS0uMjUtLjktLjM4LTEuMzdzLS4yNS0uOTEtLjM2LTEuMzVjLS4yMi0uOC0uNC0xLjQ1LS41My0xLjk0YTUuNjMgNS42MyAwIDAwLS4zLS45Mi45Mi45MiAwIDAxLjU4LS4zNSA0LjgyIDQuODIgMCAwMTEuMzItLjEzLjg5Ljg5IDAgMDEuMjQuMyAxLjc0IDEuNzQgMCAwMS4xMy4zNmMuMTYuNzQuMzUgMS41Mi41NSAyLjM0LjA3LjI1LjEyLjUxLjE3Ljc2cy4wOS41LjE0LjcxLjEuNTEuMTMuNjguMDcuMzMuMS40NSAwIC4yNC4wNy4zNC4wNS4yMS4wOC4zNGMuMDctLjI1LjE0LS41NS4yMi0uOTJzLjE4LS43Ny4yOC0xLjE4YzAtLjExLjA4LS4zMy4xNy0uNjVsLjI1LTFjLjA4LS4zNy4xNi0uNzEuMjMtMXMuMTMtLjU0LjE2LS42NWEuNzMuNzMgMCAwMDAtLjE2di0uMjVhLjkzLjkzIDAgMDEuMjItLjA4IDMuNjEgMy42MSAwIDAxLjQ1LS4xMmwuNTEtLjA3YTEgMSAwIDAxLjM5IDAgLjg5Ljg5IDAgMDEuMjIuMzEgMy4wNyAzLjA3IDAgMDEuMTQuNDdsLjM2IDEuNTJjLjEzLjU1LjI3IDEuMTIuNDEgMS43MiAwIC4yMi4xLjQzLjE0LjY0YTUuNjEgNS42MSAwIDAwLjEzLjU5bC4wOS4zN3YuMTdhLjI3LjI3IDAgMDEwIC4xMnYuMTljLjEzLS40Ni4yNS0xIC4zOC0xLjU3cy4yNS0xLjE5LjM5LTEuODNjLjExLS40Ny4yMi0uOTEuMzEtMS4zMXMuMTYtLjc3LjIzLTEuMTFhLjI0LjI0IDAgMDAwLS4xMy40OC40OCAwIDAxLjA5LS4xOS40My40MyAwIDAxLjIxLS4xMWguNTNsLjQuMDVoLjM2YS40OS40OSAwIDAxLjE5IDAgLjIuMiAwIDAxLjA5LjA5IDEgMSAwIDAwMCAuMS41NC41NCAwIDAxMCAuMjVjMCAuMDkgMCAuMi0uMDguMzRsLS4wOC4xOWMtLjEyLjM4LS4yNC44MS0uMzYgMS4yOEw3OS4zOSA0NmMtLjIxLjc5LS40NCAxLjYtLjY2IDIuNDJzLS40NCAxLjU3LS42NCAyLjIydi4xNWEyIDIgMCAwMS0uMTMuMzkuNTYuNTYgMCAwMS0uMjkuMjJoLS4zOWMtLjE5IDAtLjQ2IDAtLjguMDVhMi4xNSAyLjE1IDAgMDEtLjM4LS40NCAyLjExIDIuMTEgMCAwMS0uMjUtLjVjMC0uMTQtLjA4LS4zLS4xMy0uNDZzLS4wOS0uMzEtLjEyLS40NSAwLS4xOS0uMDctLjI3YTEuMjUgMS4yNSAwIDAwLS4wNy0uMjNjLS4xMS0uNDgtLjI0LTEtLjM2LTEuNTdzLS4yNS0xLjA5LS4zNS0xLjU3Yy0uMTEuNTEtLjI1IDEuMDYtLjQgMS42NnMtLjMgMS4xNS0uNDQgMS42OHptOS4xIDQuMzRhMS4zOSAxLjM5IDAgMDEtLjQyLjEzIDMuMjggMy4yOCAwIDAxLTEuNDMgMCA2IDYgMCAwMTAtLjczVjQ0LjMxYTQuNyA0LjcgMCAwMC0uMDYtLjc5IDQuODcgNC44NyAwIDAwLS4xNS0uNjMuNzQuNzQgMCAwMS4yOS0uMjZsLjUxLS4yNGguMjVhLjc0Ljc0IDAgMDEuNDQuMTMuOC44IDAgMDEuMjcuMjggNS42NCA1LjY0IDAgMDExLjE1LS41OHEuMjgtLjA5LjU3LS4xNWEyLjkgMi45IDAgMDEuNjItLjA2IDMuODcgMy44NyAwIDAxMS4zMy4yMyAyLjc4IDIuNzggMCAwMTEuMS43NCAzLjYzIDMuNjMgMCAwMS43NCAxLjMgNi4zIDYuMyAwIDAxLjE3IDEuODcgNy42NSA3LjY1IDAgMDEtLjQ4IDIuOTQgNC4yOCA0LjI4IDAgMDEtMS4yNCAxLjc0IDIuNzYgMi43NiAwIDAxLTEuMDYuNTkgNC4yNCA0LjI0IDAgMDEtMSAuMTQgMyAzIDAgMDEtMS41LS4zMnYzLjMyYTEuNjkgMS42OSAwIDAxMCAuMzh6bTEuMzItNC45YTEuNTEgMS41MSAwIDAwLjY1LS4xNiAxLjY2IDEuNjYgMCAwMC42My0uNTkgMy41NSAzLjU1IDAgMDAuNDgtMS4xNyA3LjY0IDcuNjQgMCAwMC4yLTEuODkgMy43MyAzLjczIDAgMDAtLjQ1LTIuMTEgMS40MSAxLjQxIDAgMDAtMS4yNC0uNjQgMS44IDEuOCAwIDAwLS44MS4yIDMuNzYgMy43NiAwIDAwLS42Ny40NnY1LjM5YTEuODIgMS44MiAwIDAwLjU0LjM2IDEuNTYgMS41NiAwIDAwLjY3LjE1eiIgZmlsbD0iI2I4NWExYiIgZmlsbC1ydWxlPSJldmVub2RkIi8+PHBhdGggY2xhc3M9ImNscy00IiBkPSJNLTYuMjUgMGg2MHY2MGgtNjB6Ii8+PHBhdGggZD0iTTE2LjY2IDguMTRhMTUuNDMgMTUuNDMgMCAwMC03LjkxIDEwLjE3IDIzLjUxIDIzLjUxIDAgMTAzMCAwIDE1LjQxIDE1LjQxIDAgMDAtOS4zNy0xMC44MyAzLjQgMy40IDAgMDAtMi4wOC0yLjY5IDQuNjMgNC42MyAwIDAwLTguODYtMS42NSAyNC40MSAyNC40MSAwIDAwLTEuNzggNXoiIGZpbGw9IiMzOTUzNjAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjxwYXRoIGZpbGw9IiNmYmFhNmYiIGQ9Ik0xOCAyNmgxMnYxNEgxOHoiLz48cGF0aCBkPSJNMjUuODcgMzMuMThsLS4xMi0uMDhhMS40MiAxLjQyIDAgMTExLjY3LTIuMyAxLjg3IDEuODcgMCAwMC0xLjIyLjgxIDEuODUgMS44NSAwIDAwLS4zMyAxLjU3em0tNC40OCAwYTEuOCAxLjggMCAwMC0uMzktMS41NCAxLjkxIDEuOTEgMCAwMC0xLjIzLS44MSAxLjQyIDEuNDIgMCAwMTEuNjcgMi4zLjU3LjU3IDAgMDEtLjA1LjA1ek0yOC42MSAzMGguNTNsLTEuMDcgNC44Mi0yLjE0IDYuNDNoLTQuMjlsLTMuMjEtNS4zNiAxLjA3LTMuMjFjMS4wNyAxLjQzIDEuNzkgMi4zMiAyLjE0IDIuNjguNTQuNTMgMi42OC41MyAzLjc1LS41NEEyNi4xNyAyNi4xNyAwIDAwMjguNjEgMzB6IiBmaWxsPSIjZGM3ZjNjIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48cGF0aCBkPSJNOS43NCAyOUgxNXYtOWgtNC4wNmExMyAxMyAwIDAxNy41LTEwcTEuMTQtNSAyLjcxLTYuNzVsLjE4LS4xNy4xMS0uMWEyLjI1IDIuMjUgMCAwMTEuMDgtLjQ3IDIuMzIgMi4zMiAwIDAxMi4xNSAzLjc3aC0uMDZhMS42NCAxLjY0IDAgMDEtLjMuMjlBMTUgMTUgMCAwMDIzIDguMTRhNSA1IDAgMDEzLTEuNSAxLjQgMS40IDAgMDEuNjYuMTYgMS4zMyAxLjMzIDAgMDEuNTEgMS43OSAxLjI5IDEuMjkgMCAwMS0uNi41NiAxMyAxMyAwIDAxMTAuMTQgMTFsLjEyLjg3SDMzdjhoNC44M2wxLjc5IDEzLjQzcS02LjMzIDMuOTMtMTUuODUgMy45M1Q4IDQyLjQ0em0xNS4xMyA5LjM5cTMuODctNi4zOSAzLjg3LTcuNjFjMC0yLjIzLTMuMjUtNC4wNi00Ljg3LTQuMDZTMTkgMjguNTQgMTkgMzAuNzhxMCAxLjIyIDMuODEgNy42MmExLjI0IDEuMjQgMCAwMDEuMDYuNTcgMS4wOCAxLjA4IDAgMDAxLS41NnoiIGZpbGw9IiNiZGNmYzgiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTE4Ljk2IDMxLjA3aDkuNjVMMjcgNDcuMTRoLTYuNDNsLTEuNjEtMTYuMDd6Ii8+PHBhdGggZD0iTTM5LjgxIDQ4LjgyYTIwIDIwIDAgMDEtMzIuMDkgMGwuODQtNi4xMWEyLjY4IDIuNjggMCAwMDEgLjE5IDIuODMgMi44MyAwIDAwMi44MS0yLjQzdjEuMjJhMi44NCAyLjg0IDAgMDA1LjY4IDB2MS42MmEyLjg1IDIuODUgMCAwMDUuNjkgMCAyLjg0IDIuODQgMCAwMDUuNjggMHYtMS41N2EyLjg0IDIuODQgMCAxMDUuNjggMHYtMS4yMkEyLjg0IDIuODQgMCAwMDM4IDQzYTIuODcgMi44NyAwIDAwMS0uMThsLjgxIDZ6IiBmaWxsPSIjODA5ZWIwIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48cGF0aCBkPSJNOC4zIDQ0LjY1bC4yNi0xLjg5YTIuNjggMi42OCAwIDAwMSAuMTkgMi44MyAyLjgzIDAgMDAyLjgxLTIuNDN2MS4yMmEyLjg0IDIuODQgMCAwMDUuNjggMHYxLjYyYTIuODUgMi44NSAwIDAwNS42OSAwIDIuODQgMi44NCAwIDAwNS42OCAwdi0xLjYyYTIuODQgMi44NCAwIDEwNS42OCAwdi0xLjIyQTIuODQgMi44NCAwIDAwMzggNDNhMi44NyAyLjg3IDAgMDAxLS4xOGwuMjUgMS44OWEyLjg1IDIuODUgMCAwMS00LjA3LTIuMTR2MS4yMmEyLjg0IDIuODQgMCAxMS01LjY4IDB2MS42MmEyLjg0IDIuODQgMCAwMS01LjY4IDAgMi44NSAyLjg1IDAgMDEtNS42OSAwdi0xLjY3YTIuODQgMi44NCAwIDAxLTUuNjggMHYtMS4yMkEyLjgzIDIuODMgMCAwMTkuNTggNDVhMi45IDIuOSAwIDAxLTEuMjgtLjN6IiBmaWxsPSIjNzM4ZTllIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48cGF0aCBjbGFzcz0iY2xzLTExIiBkPSJNMzcuNzggMjIuMzljLTEtMi44Ny0zLTQuNjktNC43Mi00LjUxLTIuMi4yMy0yLjc0IDMuNzYtMi4yOSA4czEuNyA3LjU2IDMuOSA3LjMzIDQtMy44OSAzLjY4LThjLS4wOCAxLjIzLS41MiAyLjI4LTEuMzkgMi4zNS0xLjEyLjEtMS40NC0xLjE5LTEuNTktMi44MnMtLjE0LTMgMS0zLjA4YTEuNTEgMS41MSAwIDAxMS40MS43M3oiLz48cGF0aCBjbGFzcz0iY2xzLTEyIiBkPSJNMzcgMjEuNzVjLS42My0xLjIxLTEuNS0xLjk1LTIuMzktMS44NS0xLjUxLjE1LTEuODcgMi41Ny0xLjU3IDUuNDdzMS4xNyA1LjE4IDIuNjcgNWMxLjExLS4xMiAxLjkzLTEuNSAyLjE2LTMuMzhhMS4xNiAxLjE2IDAgMDEtLjg5LjU3Yy0xLjEyLjEtMS40NC0xLjE5LTEuNTktMi44MnMtLjE0LTMgMS0zLjA4YTEuNjEgMS42MSAwIDAxLjYxLjA5eiIvPjxwYXRoIGNsYXNzPSJjbHMtMTEiIGQ9Ik05LjYgMjIuMzljMS0yLjg3IDMtNC42OSA0LjcyLTQuNTEgMi4yLjIzIDIuNzQgMy43NiAyLjI5IDhzLTEuNyA3LjU2LTMuOSA3LjMzLTQtMy44OS0zLjY4LThjLjA4IDEuMjMuNTEgMi4yOCAxLjM5IDIuMzUgMS4xMi4xIDEuNDQtMS4xOSAxLjU4LTIuODJzLjE1LTMtMS0zLjA4YTEuNTEgMS41MSAwIDAwLTEuNDMuNzF6Ii8+PHBhdGggY2xhc3M9ImNscy0xMiIgZD0iTTEwLjM3IDIxLjc1Yy42My0xLjIxIDEuNTEtMS45NSAyLjQtMS44NSAxLjUuMTUgMS44NyAyLjU3IDEuNTYgNS40N3MtMS4xNiA1LjE4LTIuNjcgNWMtMS4xMS0uMTItMS45My0xLjUtMi4xNi0zLjM4YTEuMTggMS4xOCAwIDAwLjkuNTdjMS4xMS4xIDEuNDQtMS4xOSAxLjU4LTIuODJzLjE0LTMtMS0zLjA4YTEuNjggMS42OCAwIDAwLS42NC4wN3oiLz48cGF0aCBkPSJNMTkgMjguNjNhNS4zNCA1LjM0IDAgMDEwLS42OWMwLTIuNDcgMS4yMS01LjI4IDQuODctNS4yOHM0Ljg3IDIuODEgNC44NyA1LjI4YTQuNCA0LjQgMCAwMS0uMTMgMWMtLjgtMS4zNS0yLjMtMi4xOC00LjgtMi4xOC0yLjM3LjAzLTMuOTEuNzItNC44MSAxLjg3eiIgZmlsbD0iI2Y0ZjhmZiIgZmlsbC1ydWxlPSJldmVub2RkIi8+PHBhdGggY2xhc3M9ImNscy0xMSIgZD0iTTI2LjUyIDkuMTZMMjMuMzQgOWwzLjkzLTEuMTZhMS4zNSAxLjM1IDAgMDEtLjc1IDEuMzJ6TTIzIDguMTRsLTEuMzIgMWExNi43NyAxNi43NyAwIDAwMi0zLjcyQTYuNTYgNi41NiAwIDAwMjQgMi43NSAyLjM2IDIuMzYgMCAwMTI1LjIxIDVhMi40MyAyLjQzIDAgMDEtLjc1IDEuNTFBMTUgMTUgMCAwMDIzIDguMTR6Ii8+PHBhdGggZD0iTTEyOS41OCA1My43OXYtOS4zNWgxLjQ3di45M2EyLjcyIDIuNzIgMCAwMTIuMTgtMS4wOWMxLjc1IDAgMyAxLjMxIDMgMy41NHMtMS4yNCAzLjU2LTMgMy41NmEyLjY3IDIuNjcgMCAwMS0yLjE4LTEuMTF2My41MnptMy4yMS04LjIxYTIuMjIgMi4yMiAwIDAwLTEuNzQuOTF2Mi42OGEyLjI1IDIuMjUgMCAwMDEuNzQuOTEgMiAyIDAgMDAxLjkxLTIuMjYgMiAyIDAgMDAtMS45MS0yLjI0em00LjkxLTEuMTRoMS40N3YxYTIuODkgMi44OSAwIDAxMi4yLTEuMTV2MS40NmEyIDIgMCAwMC0uNDYgMCAyLjM2IDIuMzYgMCAwMC0xLjc0Ljg5djQuNjFoLTEuNDd6bTQuNDQgMy4zOGEzLjQ4IDMuNDggMCAxMTMuNDcgMy41NiAzLjM4IDMuMzggMCAwMS0zLjQ3LTMuNTZ6bTUuNDQgMGEyIDIgMCAxMC0yIDIuMjYgMiAyIDAgMDAyLTIuMjZ6bTcuNzYgMi40N2EyLjczIDIuNzMgMCAwMS0yLjE3IDEuMDljLTEuNzMgMC0zLTEuMzItMy0zLjU1czEuMjYtMy41NSAzLTMuNTVhMi43MSAyLjcxIDAgMDEyLjE3IDEuMXYtMy41MWgxLjQ4djkuMzRoLTEuNDh6bTAtMy44YTIuMjIgMi4yMiAwIDAwLTEuNzUtLjkxIDIgMiAwIDAwLTEuOSAyLjI1IDIgMiAwIDAwMS45IDIuMjUgMi4yMiAyLjIyIDAgMDAxLjc1LS45em03Ljk0IDMuODJhMy4yMyAzLjIzIDAgMDEtMi4zOSAxLjA3IDEuOTIgMS45MiAwIDAxLTIuMTctMi4xNHYtNC44aDEuNDd2NC4yNmMwIDEgLjUzIDEuMzggMS4zNiAxLjM4YTIuMjIgMi4yMiAwIDAwMS43My0uODl2LTQuNzVoMS40N3Y2Ljc3aC0xLjQ3em02LjQ2LTYuMDNhMy4wNSAzLjA1IDAgMDEyLjU5IDEuMmwtMSAuOWExLjc5IDEuNzkgMCAwMC0xLjU1LS44IDIuMjYgMi4yNiAwIDAwMCA0LjUgMS44NyAxLjg3IDAgMDAxLjU1LS44bDEgLjg5YTMgMyAwIDAxLTIuNTkgMS4yMSAzLjU1IDMuNTUgMCAwMTAtNy4xem00LjE3IDUuMzZ2LTMuOTFoLTEuMTJ2LTEuMjloMS4xMnYtMS44NWgxLjQ3djEuODVoMS4zN3YxLjI5aC0xLjM3djMuNTVjMCAuNDYuMjIuOC42NC44YTEgMSAwIDAwLjY2LS4yNGwuMzUgMS4xYTEuOTEgMS45MSAwIDAxLTEuMzkuNDQgMS41NiAxLjU2IDAgMDEtMS43My0xLjc0em0tMTExLjcxLjg0YTIuODcgMi44NyAwIDAxLTIuMTkuOSAyLjI1IDIuMjUgMCAwMS0yLjM1LTIuMjQgMi4xOCAyLjE4IDAgMDEyLjM0LTIuMiAyLjggMi44IDAgMDEyLjE5Ljg2di0xYzAtLjc5LS42NC0xLjI2LTEuNTgtMS4yNmEyLjc5IDIuNzkgMCAwMC0yIC44NWwtLjYtMWE0LjA1IDQuMDUgMCAwMTIuODUtMS4wOWMxLjQ5IDAgMi44MS42MyAyLjgxIDIuNDV2NC40OEg2Mi4yem0wLTEuODNhMiAyIDAgMDAtMS42MS0uNyAxLjIzIDEuMjMgMCAxMDAgMi40MiAyIDIgMCAwMDEuNjEtLjd6IiBmaWxsPSIjOTk5Ii8+PC9zdmc+';
 
-		$contact_url = ! wp_mail_smtp()->is_pro() ?
-			'https://wordpress.org/support/plugin/wp-mail-smtp/' :
-			'https://wpmailsmtp.com/contact/';
+		if ( ! wp_mail_smtp()->is_pro() ) {
+			$contact_url = 'https://wordpress.org/support/plugin/wp-mail-smtp/';
+		} else {
+			// phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+			$contact_url = esc_url( wp_mail_smtp()->get_utm_url( 'https://wpmailsmtp.com/contact/', [ 'medium' => 'setup-wizard', 'content' => 'Contact Us' ] ) );
+		}
+
 		?>
 		<style type="text/css">
 			#wp-mail-smtp-settings-area {
@@ -327,7 +373,7 @@ class SetupWizard {
 				background: #fff;
 				border: 1px solid #DDDDDD;
 				border-radius: 6px;
-				webkit-box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
+				-webkit-box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
 				box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
 				padding: 20px 30px;
 			}
@@ -502,13 +548,35 @@ class SetupWizard {
 
 		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( wp_mail_smtp()->get_capability_manage_options() ) ) {
 			wp_send_json_error( esc_html__( 'You don\'t have permission to change options for this WP site!', 'wp-mail-smtp' ) );
 		}
 
-		$options = new Options();
+		$options = Options::init();
 
 		wp_send_json_success( $options->get_all() );
+	}
+
+	/**
+	 * Ajax handler for starting the Setup Wizard steps.
+	 *
+	 * @since 3.1.0
+	 */
+	public function wizard_steps_started() {
+
+		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
+
+		if ( ! current_user_can( wp_mail_smtp()->get_capability_manage_options() ) ) {
+			wp_send_json_error( esc_html__( 'You don\'t have permission to change options for this WP site!', 'wp-mail-smtp' ) );
+		}
+
+		self::update_stats(
+			[
+				'launched_time' => time(),
+			]
+		);
+
+		wp_send_json_success();
 	}
 
 	/**
@@ -520,13 +588,33 @@ class SetupWizard {
 
 		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( wp_mail_smtp()->get_capability_manage_options() ) ) {
 			wp_send_json_error();
 		}
 
-		$options   = new Options();
+		$options   = Options::init();
 		$overwrite = ! empty( $_POST['overwrite'] );
-		$value     = isset( $_POST['value'] ) ? wp_slash( json_decode( wp_unslash( $_POST['value'] ), true ) ) : []; // phpcs:ignore
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$value = isset( $_POST['value'] ) ? wp_slash( json_decode( wp_unslash( $_POST['value'] ), true ) ) : [];
+
+		// Cancel summary report email task if summary report email was disabled.
+		if (
+			! SummaryReportEmail::is_disabled() &&
+			isset( $value['general'][ SummaryReportEmail::SETTINGS_SLUG ] ) &&
+			$value['general'][ SummaryReportEmail::SETTINGS_SLUG ] === true
+		) {
+			( new SummaryReportEmailTask() )->cancel();
+		}
+
+		/**
+		 * Before updating settings in Setup Wizard.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param array $post POST data.
+		 */
+		do_action( 'wp_mail_smtp_admin_setup_wizard_update_settings', $value );
 
 		$options->set( $value, false, $overwrite );
 
@@ -542,7 +630,7 @@ class SetupWizard {
 
 		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( wp_mail_smtp()->get_capability_manage_options() ) ) {
 			wp_send_json_error( esc_html__( 'You don\'t have permission to change options for this WP site!', 'wp-mail-smtp' ) );
 		}
 
@@ -558,7 +646,7 @@ class SetupWizard {
 			wp_send_json_error();
 		}
 
-		$options = new Options();
+		$options = Options::init();
 
 		$options->set( $other_plugin_settings, false, false );
 
@@ -572,8 +660,10 @@ class SetupWizard {
 	 * - Post SMTP Mailer
 	 * - SMTP Mailer
 	 * - WP SMTP
+	 * - FluentSMTP
 	 *
 	 * @since 2.6.0
+	 * @since 3.2.0 Added FluentSMTP.
 	 *
 	 * @return array
 	 */
@@ -586,6 +676,7 @@ class SetupWizard {
 			'post-smtp-mailer' => 'postman_options',
 			'smtp-mailer'      => 'smtp_mailer_options',
 			'wp-smtp'          => 'wp_smtp_options',
+			'fluent-smtp'      => 'fluentmail-settings',
 		];
 
 		foreach ( $plugins as $plugin_slug => $plugin_options ) {
@@ -603,6 +694,8 @@ class SetupWizard {
 	 * Prepare mailer options for all mailers.
 	 *
 	 * @since 2.6.0
+	 * @since 3.10.0 Supply WPMS_AMAZONSES_DISPLAY_IDENTITIES constant value to control display of Amazon SES identity list.
+	 * @since 3.11.0 Removed WPMS_AMAZONSES_DISPLAY_IDENTITIES constant handling.
 	 *
 	 * @return array
 	 */
@@ -633,30 +726,32 @@ class SetupWizard {
 	 *
 	 * @since 2.6.0
 	 */
-	public function get_oauth_url() {
+	public function get_oauth_url() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( wp_mail_smtp()->get_capability_manage_options() ) ) {
 			wp_send_json_error();
 		}
 
-		$data     = [];
-		$mailer   = ! empty( $_POST['mailer'] ) ? sanitize_text_field( $_POST['mailer'] ) : ''; // phpcs:ignore
-		$settings = isset( $_POST['settings'] ) ? wp_slash( json_decode( wp_unslash( $_POST['settings'] ), true ) ) : []; // phpcs:ignore
+		$data   = [];
+		$mailer = ! empty( $_POST['mailer'] ) ? sanitize_text_field( wp_unslash( $_POST['mailer'] ) ) : '';
 
-		if ( empty( $mailer ) || empty( $settings ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$settings = isset( $_POST['settings'] ) ? wp_slash( json_decode( wp_unslash( $_POST['settings'] ), true ) ) : [];
+
+		if ( empty( $mailer ) ) {
 			wp_send_json_error();
 		}
 
 		$settings = array_merge( $settings, [ 'is_setup_wizard_auth' => true ] );
 
-		$options = new Options();
+		$options = Options::init();
 		$options->set( [ $mailer => $settings ], false, false );
 
 		switch ( $mailer ) {
 			case 'gmail':
-				$auth = new \WPMailSMTP\Providers\Gmail\Auth();
+				$auth = wp_mail_smtp()->get_providers()->get_auth( 'gmail' );
 
 				if ( $auth->is_clients_saved() && $auth->is_auth_required() ) {
 					$data['oauth_url'] = $auth->get_auth_url();
@@ -674,11 +769,11 @@ class SetupWizard {
 	 *
 	 * @since 2.6.0
 	 */
-	public function get_connected_data() { // phpcs:ignore
+	public function get_connected_data() { // phpcs:ignore Generic.Metrics.NestingLevel.MaxExceeded
 
 		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( wp_mail_smtp()->get_capability_manage_options() ) ) {
 			wp_send_json_error();
 		}
 
@@ -691,20 +786,11 @@ class SetupWizard {
 
 		switch ( $mailer ) {
 			case 'gmail':
-				$auth = new \WPMailSMTP\Providers\Gmail\Auth();
+				$auth = wp_mail_smtp()->get_providers()->get_auth( 'gmail' );
 
 				if ( $auth->is_clients_saved() && ! $auth->is_auth_required() ) {
-					$user_info                            = $auth->get_user_info();
-					$data['connected_email']              = $user_info['email'];
-					$data['possible_send_from_addresses'] = array_map(
-						function( $value ) {
-							return [
-								'value' => $value,
-								'label' => $value,
-							];
-						},
-						$auth->get_user_possible_send_from_addresses()
-					);
+					$user_info               = $auth->get_user_info();
+					$data['connected_email'] = $user_info['email'];
 				}
 				break;
 		}
@@ -717,11 +803,11 @@ class SetupWizard {
 	 *
 	 * @since 2.6.0
 	 */
-	public function remove_oauth_connection() {
+	public function remove_oauth_connection() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( wp_mail_smtp()->get_capability_manage_options() ) ) {
 			wp_send_json_error();
 		}
 
@@ -731,13 +817,24 @@ class SetupWizard {
 			wp_send_json_error();
 		}
 
-		$options = new Options();
+		$options = Options::init();
 		$old_opt = $options->get_all_raw();
 
-		foreach ( $old_opt[ $mailer ] as $key => $value ) {
-			// Unset everything except Client ID, Client Secret and Domain (for Zoho).
-			if ( ! in_array( $key, array( 'domain', 'client_id', 'client_secret' ), true ) ) {
-				unset( $old_opt[ $mailer ][ $key ] );
+		/*
+		 * Since Gmail mailer uses the same settings array for both the custom app and One-Click Setup,
+		 * we need to make sure we don't remove the wrong settings.
+		 */
+		if ( $mailer === 'gmail' ) {
+			unset( $old_opt[ $mailer ]['access_token'] );
+			unset( $old_opt[ $mailer ]['refresh_token'] );
+			unset( $old_opt[ $mailer ]['user_details'] );
+			unset( $old_opt[ $mailer ]['auth_code'] );
+		} else {
+			foreach ( $old_opt[ $mailer ] as $key => $value ) {
+				// Unset everything except Client ID, Client Secret and Domain (for Zoho).
+				if ( ! in_array( $key, [ 'domain', 'client_id', 'client_secret' ], true ) ) {
+					unset( $old_opt[ $mailer ][ $key ] );
+				}
 			}
 		}
 
@@ -752,7 +849,7 @@ class SetupWizard {
 	 *
 	 * @since 2.6.0
 	 */
-	public function install_plugin() { // phpcs:ignore
+	public function install_plugin() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
 		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
 
@@ -761,14 +858,30 @@ class SetupWizard {
 			wp_send_json_error( esc_html__( 'Could not install the plugin. You don\'t have permission to install plugins.', 'wp-mail-smtp' ) );
 		}
 
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			wp_send_json_error( esc_html__( 'Could not install the plugin. You don\'t have permission to activate plugins.', 'wp-mail-smtp' ) );
+		}
+
 		$slug = ! empty( $_POST['slug'] ) ? sanitize_text_field( wp_unslash( $_POST['slug'] ) ) : '';
 
 		if ( empty( $slug ) ) {
 			wp_send_json_error( esc_html__( 'Could not install the plugin. Plugin slug is missing.', 'wp-mail-smtp' ) );
 		}
 
-		$url   = esc_url_raw( WP::admin_url( 'admin.php?page=' . Area::SLUG . '-setup-wizard' ) );
+		if ( ! in_array( $slug, wp_list_pluck( $this->get_partner_plugins(), 'slug' ), true ) ) {
+			wp_send_json_error( esc_html__( 'Could not install the plugin. Plugin is not whitelisted.', 'wp-mail-smtp' ) );
+		}
+
+		$url = esc_url_raw( WP::admin_url( 'admin.php?page=' . Area::SLUG . '-setup-wizard' ) );
+
+		/*
+		 * The `request_filesystem_credentials` function will output a credentials form in case of failure.
+		 * We don't want that, since it will break AJAX response. So just hide output with a buffer.
+		 */
+		ob_start();
+		// phpcs:ignore WPForms.Formatting.EmptyLineAfterAssigmentVariables.AddEmptyLine
 		$creds = request_filesystem_credentials( $url, '', false, false, null );
+		ob_end_clean();
 
 		// Check for file system permissions.
 		if ( false === $creds ) {
@@ -782,8 +895,11 @@ class SetupWizard {
 		// Do not allow WordPress to search/download translations, as this will break JS output.
 		remove_action( 'upgrader_process_complete', [ 'Language_Pack_Upgrader', 'async_upgrade' ], 20 );
 
+		// Import the plugin upgrader.
+		Helpers::include_plugin_upgrader();
+
 		// Create the plugin upgrader with our custom skin.
-		$installer = new PluginsInstallUpgrader( new PluginsInstallSkin() );
+		$installer = new Plugin_Upgrader( new PluginsInstallSkin() );
 
 		// Error check.
 		if ( ! method_exists( $installer, 'install' ) || empty( $slug ) ) {
@@ -828,6 +944,7 @@ class SetupWizard {
 			// Disable the WPForms redirect after plugin activation.
 			if ( $slug === 'wpforms-lite' ) {
 				update_option( 'wpforms_activation_redirect', true );
+				add_option( 'wpforms_installation_source', 'wp-mail-smtp-setup-wizard' );
 			}
 
 			// Disable the AIOSEO redirect after plugin activation.
@@ -840,12 +957,12 @@ class SetupWizard {
 
 			// Disable the RafflePress redirect after plugin activation.
 			if ( $slug === 'rafflepress' ) {
-				delete_transient('_rafflepress_welcome_screen_activation_redirect');
+				delete_transient( '_rafflepress_welcome_screen_activation_redirect' );
 			}
 
 			// Disable the MonsterInsights redirect after plugin activation.
 			if ( $slug === 'google-analytics-for-wordpress' ) {
-				delete_transient('_monsterinsights_activation_redirect');
+				delete_transient( '_monsterinsights_activation_redirect' );
 			}
 
 			// Disable the SeedProd redirect after the plugin activation.
@@ -884,14 +1001,64 @@ class SetupWizard {
 
 		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
 
+		$plugins = $this->get_partner_plugins();
+
+		$contact_form_plugin_already_installed = false;
+
+		$contact_form_basenames = [
+			'wpforms-lite/wpforms.php',
+			'wpforms/wpforms.php',
+			'formidable/formidable.php',
+			'formidable/formidable-pro.php',
+			'gravityforms/gravityforms.php',
+			'ninja-forms/ninja-forms.php',
+		];
+
 		$installed_plugins = get_plugins();
 
-		$plugins = [
+		foreach ( $installed_plugins as $basename => $plugin_info ) {
+			if ( in_array( $basename, $contact_form_basenames, true ) ) {
+				$contact_form_plugin_already_installed = true;
+				break;
+			}
+		}
+
+		// Final check if maybe WPForms is already install and active as a MU plugin.
+		if ( class_exists( '\WPForms\WPForms' ) ) {
+			$contact_form_plugin_already_installed = true;
+		}
+
+		$data = [
+			'plugins'                               => $plugins,
+			'contact_form_plugin_already_installed' => $contact_form_plugin_already_installed,
+		];
+
+		wp_send_json_success( $data );
+	}
+
+	/**
+	 * Get the partner plugins data.
+	 *
+	 * @since 3.3.0
+	 *
+	 * @return array[]
+	 */
+	private function get_partner_plugins() {
+
+		$installed_plugins = get_plugins();
+
+		return [
 			[
 				'slug'         => 'wpforms-lite',
 				'name'         => esc_html__( 'Contact Forms by WPForms', 'wp-mail-smtp' ),
 				'is_activated' => function_exists( 'wpforms' ),
 				'is_installed' => array_key_exists( 'wpforms-lite/wpforms.php', $installed_plugins ),
+			],
+			[
+				'slug'         => 'all-in-one-seo-pack',
+				'name'         => esc_html__( 'All in One SEO', 'wp-mail-smtp' ),
+				'is_activated' => class_exists( 'AIOSEOP_Core' ),
+				'is_installed' => array_key_exists( 'all-in-one-seo-pack/all_in_one_seo_pack.php', $installed_plugins ),
 			],
 			[
 				'slug'         => 'google-analytics-for-wordpress',
@@ -900,10 +1067,10 @@ class SetupWizard {
 				'is_installed' => array_key_exists( 'google-analytics-for-wordpress/googleanalytics.php', $installed_plugins ),
 			],
 			[
-				'slug'         => 'all-in-one-seo-pack',
-				'name'         => esc_html__( 'All in One SEO', 'wp-mail-smtp' ),
-				'is_activated' => class_exists( 'AIOSEOP_Core' ),
-				'is_installed' => array_key_exists( 'all-in-one-seo-pack/all_in_one_seo_pack.php', $installed_plugins ),
+				'slug'         => 'insert-headers-and-footers',
+				'name'         => esc_html__( 'Code Snippets by WPCode', 'wp-mail-smtp' ),
+				'is_activated' => class_exists( 'InsertHeadersAndFooters' ),
+				'is_installed' => array_key_exists( 'insert-headers-and-footers/ihaf.php', $installed_plugins ),
 			],
 			[
 				'slug'         => 'rafflepress',
@@ -930,31 +1097,6 @@ class SetupWizard {
 				'is_installed' => array_key_exists( 'wp-call-button/wp-call-button.php', $installed_plugins ),
 			],
 		];
-
-		$contact_form_plugin_already_installed = false;
-
-		$contact_form_basenames = [
-			'wpforms-lite/wpforms.php',
-			'wpforms/wpforms.php',
-			'formidable/formidable.php',
-			'formidable/formidable-pro.php',
-			'gravityforms/gravityforms.php',
-			'ninja-forms/ninja-forms.php',
-		];
-
-		foreach ( $installed_plugins as $basename => $plugin_info ) {
-			if ( in_array( $basename, $contact_form_basenames, true ) ) {
-				$contact_form_plugin_already_installed = true;
-				break;
-			}
-		}
-
-		$data = [
-			'plugins'                               => $plugins,
-			'contact_form_plugin_already_installed' => $contact_form_plugin_already_installed,
-		];
-
-		wp_send_json_success( $data );
 	}
 
 	/**
@@ -972,16 +1114,47 @@ class SetupWizard {
 			wp_send_json_error();
 		}
 
+		$body = [
+			'email' => base64_encode( $email ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		];
+
+		$wpforms_version_type = $this->get_wpforms_version_type();
+
+		if ( ! empty( $wpforms_version_type ) ) {
+			$body['wpforms_version_type'] = $wpforms_version_type;
+		}
+
 		wp_remote_post(
 			'https://connect.wpmailsmtp.com/subscribe/drip/',
 			[
-				'body' => [
-					'email' => base64_encode( $email ), // phpcs:ignore
-				],
+				'user-agent' => Helpers::get_default_user_agent(),
+				'body' => $body,
 			]
 		);
 
 		wp_send_json_success();
+	}
+
+	/**
+	 * Get the WPForms version type if it's installed.
+	 *
+	 * @since 3.9.0
+	 *
+	 * @return false|string Return `false` if WPForms is not installed, otherwise return either `lite` or `pro`.
+	 */
+	private function get_wpforms_version_type() {
+
+		if ( ! function_exists( 'wpforms' ) ) {
+			return false;
+		}
+
+		if ( method_exists( wpforms(), 'is_pro' ) ) {
+			$is_wpforms_pro = wpforms()->is_pro();
+		} else {
+			$is_wpforms_pro = wpforms()->pro;
+		}
+
+		return $is_wpforms_pro ? 'pro' : 'lite';
 	}
 
 	/**
@@ -1007,10 +1180,9 @@ class SetupWizard {
 			wp_send_json_error( esc_html__( 'Please enter a valid license key!', 'wp-mail-smtp' ) );
 		}
 
-		$oth = hash( 'sha512', wp_rand() );
 		$url = Connect::generate_url(
 			$license_key,
-			$oth,
+			'',
 			add_query_arg( 'upgrade-redirect', '1', self::get_site_url() ) . '#/step/license'
 		);
 
@@ -1032,7 +1204,7 @@ class SetupWizard {
 
 		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
 
-		$options = new Options();
+		$options = Options::init();
 		$mailer  = $options->get( 'mail', 'mailer' );
 		$email   = $options->get( 'mail', 'from_email' );
 		$domain  = '';
@@ -1048,6 +1220,10 @@ class SetupWizard {
 		);
 
 		if ( ! $result ) {
+			$this->update_completed_stat( false );
+
+			( new UsageTracking() )->send_failed_setup_wizard_usage_tracking_data();
+
 			wp_send_json_error();
 		}
 
@@ -1057,11 +1233,17 @@ class SetupWizard {
 		}
 
 		// Perform the domain checker API test.
-		$has_errors = ( new DomainChecker( $mailer, $email, $domain ) )->has_errors();
+		$domain_checker = new DomainChecker( $mailer, $email, $domain );
 
-		if ( $has_errors ) {
+		if ( $domain_checker->has_errors() ) {
+			$this->update_completed_stat( false );
+
+			( new UsageTracking() )->send_failed_setup_wizard_usage_tracking_data( $domain_checker );
+
 			wp_send_json_error();
 		}
+
+		$this->update_completed_stat( true );
 
 		wp_send_json_success();
 	}
@@ -1075,13 +1257,16 @@ class SetupWizard {
 
 		check_ajax_referer( 'wpms-admin-nonce', 'nonce' );
 
-		$data       = ! empty( $_POST['data'] ) ? json_decode( wp_unslash( $_POST['data'] ), true ) : []; // phpcs:ignore
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$data = ! empty( $_POST['data'] ) ? json_decode( wp_unslash( $_POST['data'] ), true ) : [];
+
 		$feedback   = ! empty( $data['feedback'] ) ? sanitize_textarea_field( $data['feedback'] ) : '';
 		$permission = ! empty( $data['permission'] );
 
 		wp_remote_post(
 			'https://wpmailsmtp.com/wizard-feedback/',
 			[
+				'user-agent' => Helpers::get_default_user_agent(),
 				'body' => [
 					'wpforms' => [
 						'id'     => 87892,
@@ -1130,8 +1315,8 @@ class SetupWizard {
 	public function maybe_disable_automatic_query_args_removal( $defaults ) {
 
 		if (
-			( isset( $_GET['page'] ) && $_GET['page'] === 'wp-mail-smtp-setup-wizard' ) &&
-			( ! empty( $_GET['error'] ) )
+			( isset( $_GET['page'] ) && $_GET['page'] === 'wp-mail-smtp-setup-wizard' ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			( ! empty( $_GET['error'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		) {
 			$defaults = array_values( array_diff( $defaults, [ 'error' ] ) );
 		}
@@ -1149,5 +1334,122 @@ class SetupWizard {
 	public function should_setup_wizard_load() {
 
 		return (bool) apply_filters( 'wp_mail_smtp_admin_setup_wizard_load_wizard', true );
+	}
+
+	/**
+	 * Get the Setup Wizard stats.
+	 * - launched_time  -> when the Setup Wizard was last launched.
+	 * - completed_time -> when the Setup Wizard was last completed.
+	 * - was_successful -> if the Setup Wizard was completed successfully.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @return array
+	 */
+	public static function get_stats() {
+
+		$defaults = [
+			'launched_time'  => 0,
+			'completed_time' => 0,
+			'was_successful' => false,
+		];
+
+		return get_option( self::STATS_OPTION_KEY, $defaults );
+	}
+
+	/**
+	 * Update the Setup Wizard stats.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $options Take a look at SetupWizard::get_stats method for the possible array keys.
+	 */
+	public static function update_stats( $options ) {
+
+		update_option( self::STATS_OPTION_KEY, array_merge( self::get_stats(), $options ) , false );
+	}
+
+	/**
+	 * Update the completed Setup Wizard stats.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param bool $was_successful If the Setup Wizard was completed successfully.
+	 */
+	private function update_completed_stat( $was_successful ) {
+
+		self::update_stats(
+			[
+				'completed_time' => time(),
+				'was_successful' => $was_successful,
+			]
+		);
+	}
+
+	/**
+	 * Prepare an array of WP Mail SMTP PHP constants in use.
+	 * Those that are used in the setup wizard.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @return array
+	 */
+	private function prepare_defined_constants() {
+
+		$options = Options::init();
+
+		if ( ! $options->is_const_enabled() ) {
+			return [];
+		}
+
+		$constants = [
+			'WPMS_MAIL_FROM'                     => [ 'mail', 'from_email' ],
+			'WPMS_MAIL_FROM_FORCE'               => [ 'mail', 'from_email_force' ],
+			'WPMS_MAIL_FROM_NAME'                => [ 'mail', 'from_name' ],
+			'WPMS_MAIL_FROM_NAME_FORCE'          => [ 'mail', 'from_name_force' ],
+			'WPMS_MAILER'                        => [ 'mail', 'mailer' ],
+			'WPMS_SMTPCOM_API_KEY'               => [ 'smtpcom', 'api_key' ],
+			'WPMS_SMTPCOM_CHANNEL'               => [ 'smtpcom', 'channel' ],
+			'WPMS_SENDINBLUE_API_KEY'            => [ 'sendinblue', 'api_key' ],
+			'WPMS_SENDINBLUE_DOMAIN'             => [ 'sendinblue', 'domain' ],
+			'WPMS_AMAZONSES_CLIENT_ID'           => [ 'amazonses', 'client_id' ],
+			'WPMS_AMAZONSES_CLIENT_SECRET'       => [ 'amazonses', 'client_secret' ],
+			'WPMS_AMAZONSES_REGION'              => [ 'amazonses', 'region' ],
+			'WPMS_GMAIL_CLIENT_ID'               => [ 'gmail', 'client_id' ],
+			'WPMS_GMAIL_CLIENT_SECRET'           => [ 'gmail', 'client_secret' ],
+			'WPMS_MAILGUN_API_KEY'               => [ 'mailgun', 'api_key' ],
+			'WPMS_MAILGUN_DOMAIN'                => [ 'mailgun', 'domain' ],
+			'WPMS_MAILGUN_REGION'                => [ 'mailgun', 'region' ],
+			'WPMS_OUTLOOK_CLIENT_ID'             => [ 'outlook', 'client_id' ],
+			'WPMS_OUTLOOK_CLIENT_SECRET'         => [ 'outlook', 'client_secret' ],
+			'WPMS_POSTMARK_SERVER_API_TOKEN'     => [ 'postmark', 'server_api_token' ],
+			'WPMS_POSTMARK_MESSAGE_STREAM'       => [ 'postmark', 'message_stream' ],
+			'WPMS_SENDGRID_API_KEY'              => [ 'sendgrid', 'api_key' ],
+			'WPMS_SENDGRID_DOMAIN'               => [ 'sendgrid', 'domain' ],
+			'WPMS_SPARKPOST_API_KEY'             => [ 'sparkpost', 'api_key' ],
+			'WPMS_SPARKPOST_REGION'              => [ 'sparkpost', 'region' ],
+			'WPMS_ZOHO_DOMAIN'                   => [ 'zoho', 'domain' ],
+			'WPMS_ZOHO_CLIENT_ID'                => [ 'zoho', 'client_id' ],
+			'WPMS_ZOHO_CLIENT_SECRET'            => [ 'zoho', 'client_secret' ],
+			'WPMS_SMTP_HOST'                     => [ 'smtp', 'host' ],
+			'WPMS_SMTP_PORT'                     => [ 'smtp', 'port' ],
+			'WPMS_SSL'                           => [ 'smtp', 'encryption' ],
+			'WPMS_SMTP_AUTH'                     => [ 'smtp', 'auth' ],
+			'WPMS_SMTP_AUTOTLS'                  => [ 'smtp', 'autotls' ],
+			'WPMS_SMTP_USER'                     => [ 'smtp', 'user' ],
+			'WPMS_SMTP_PASS'                     => [ 'smtp', 'pass' ],
+			'WPMS_LOGS_ENABLED'                  => [ 'logs', 'enabled' ],
+			'WPMS_SUMMARY_REPORT_EMAIL_DISABLED' => [ 'general', SummaryReportEmail::SETTINGS_SLUG ],
+		];
+
+		$defined = [];
+
+		foreach ( $constants as $constant => $group_and_key ) {
+			if ( $options->is_const_defined( $group_and_key[0], $group_and_key[1] ) ) {
+				$defined[] = $constant;
+			}
+		}
+
+		return $defined;
 	}
 }

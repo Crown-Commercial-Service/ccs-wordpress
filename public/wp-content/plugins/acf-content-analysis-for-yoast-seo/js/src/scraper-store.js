@@ -13,6 +13,8 @@ var scraperObjects = {
 	// TODO: Add oembed handler
 	image: require( "./scraper/scraper.image.js" ),
 	gallery: require( "./scraper/scraper.gallery.js" ),
+	// ACF blocks preview
+	block_preview: require( "./scraper/scraper.block_preview.js" ),
 
 	// Choice
 	// TODO: select, checkbox, radio

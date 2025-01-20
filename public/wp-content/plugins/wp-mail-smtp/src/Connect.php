@@ -2,9 +2,10 @@
 
 namespace WPMailSMTP;
 
+use Plugin_Upgrader;
 use WP_Error;
 use WPMailSMTP\Admin\PluginsInstallSkin;
-use WPMailSMTP\Admin\PluginsInstallUpgrader;
+use WPMailSMTP\Helpers\Helpers;
 
 /**
  * WP Mail SMTP Connect.
@@ -66,17 +67,20 @@ class Connect {
 	 *
 	 * @since 2.6.0
 	 *
-	 * @param string $key      The license key.
-	 * @param string $oth      The One-time hash.
-	 * @param string $redirect The redirect URL.
+	 * @param string $key        The license key.
+	 * @param string $oth        The One-time hash.
+	 * @param string $redirect   The redirect URL.
 	 *
 	 * @return bool|string
 	 */
-	public static function generate_url( $key, $oth, $redirect = '' ) {
+	public static function generate_url( $key, $oth = '', $redirect = '' ) {
 
 		if ( empty( $key ) || wp_mail_smtp()->is_pro() ) {
 			return false;
 		}
+
+		$oth        = ! empty( $oth ) ? $oth : hash( 'sha512', wp_rand() );
+		$hashed_oth = hash_hmac( 'sha512', $oth, wp_salt() );
 
 		$redirect = ! empty( $redirect ) ? $redirect : wp_mail_smtp()->get_admin()->get_admin_page_url();
 
@@ -86,12 +90,12 @@ class Connect {
 		return add_query_arg(
 			[
 				'key'      => $key,
-				'oth'      => $oth,
+				'oth'      => $hashed_oth,
 				'endpoint' => admin_url( 'admin-ajax.php' ),
 				'version'  => WPMS_PLUGIN_VER,
 				'siteurl'  => admin_url(),
-				'homeurl'  => home_url(),
-				'redirect' => rawurldecode( base64_encode( $redirect ) ), // phpcs:ignore
+				'homeurl'  => site_url(),
+				'redirect' => rawurldecode( base64_encode( $redirect ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 				'v'        => 2,
 			],
 			'https://upgrade.wpmailsmtp.com'
@@ -103,7 +107,7 @@ class Connect {
 	 *
 	 * @since 2.6.0
 	 */
-	public function ajax_generate_url() {
+	public function ajax_generate_url() { //phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		// Run a security check.
 		check_ajax_referer( 'wp-mail-smtp-connect', 'nonce' );
@@ -151,8 +155,7 @@ class Connect {
 			);
 		}
 
-		$oth = hash( 'sha512', wp_rand() );
-		$url = self::generate_url( $key, $oth );
+		$url = self::generate_url( $key );
 
 		if ( empty( $url ) ) {
 			wp_send_json_error(
@@ -162,18 +165,7 @@ class Connect {
 			);
 		}
 
-		wp_send_json_success(
-			[
-				'url'      => $url,
-				'back_url' => add_query_arg(
-					[
-						'action' => 'wp_mail_smtp_connect',
-						'oth'    => $oth,
-					],
-					admin_url( 'admin-ajax.php' )
-				),
-			]
-		);
+		wp_send_json_success( [ 'url' => $url ] );
 	}
 
 	/**
@@ -181,7 +173,7 @@ class Connect {
 	 *
 	 * @since 2.6.0
 	 */
-	public function process() {
+	public function process() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
 		$error = esc_html__( 'There was an error while installing an upgrade. Please download the plugin from wpmailsmtp.com and install it manually.', 'wp-mail-smtp' );
 
@@ -196,7 +188,11 @@ class Connect {
 		// Verify oth.
 		$oth = get_option( 'wp_mail_smtp_connect_token' );
 
-		if ( empty( $oth ) || ! hash_equals( $oth, $post_oth ) ) { // phpcs:ignore
+		if ( empty( $oth ) ) {
+			wp_send_json_error( $error );
+		}
+
+		if ( hash_hmac( 'sha512', $oth, wp_salt() ) !== $post_oth ) {
 			wp_send_json_error( $error );
 		}
 
@@ -222,7 +218,14 @@ class Connect {
 			wp_send_json_success( esc_html__( 'Plugin installed & activated.', 'wp-mail-smtp' ) );
 		}
 
+		/*
+		 * The `request_filesystem_credentials` function will output a credentials form in case of failure.
+		 * We don't want that, since it will break AJAX response. So just hide output with a buffer.
+		 */
+		ob_start();
+		// phpcs:ignore WPForms.Formatting.EmptyLineAfterAssigmentVariables.AddEmptyLine
 		$creds = request_filesystem_credentials( $url, '', false, false, null );
+		ob_end_clean();
 
 		// Check for file system permissions.
 		$perm_error = esc_html__( 'There was an error while installing an upgrade. Please check file system permissions and try again. Also, you can download the plugin from wpmailsmtp.com and install it manually.', 'wp-mail-smtp' );
@@ -238,8 +241,11 @@ class Connect {
 		// Do not allow WordPress to search/download translations, as this will break JS output.
 		remove_action( 'upgrader_process_complete', array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 );
 
+		// Import the plugin upgrader.
+		Helpers::include_plugin_upgrader();
+
 		// Create the plugin upgrader with our custom skin.
-		$installer = new PluginsInstallUpgrader( new PluginsInstallSkin() );
+		$installer = new Plugin_Upgrader( new PluginsInstallSkin() );
 
 		// Error check.
 		if ( ! method_exists( $installer, 'install' ) ) {
@@ -259,7 +265,7 @@ class Connect {
 			);
 		}
 
-		$installer->install( $post_url ); // phpcs:ignore
+		$installer->install( $post_url );
 
 		// Flush the cache and return the newly installed plugin basename.
 		wp_cache_flush();
@@ -277,7 +283,7 @@ class Connect {
 			if ( ! is_wp_error( $activated ) ) {
 
 				// Save the license data, since it was verified on the connect page.
-				$options = new Options();
+				$options = Options::init();
 				$all_opt = $options->get_all_raw();
 
 				$all_opt['license']['key']         = $key;

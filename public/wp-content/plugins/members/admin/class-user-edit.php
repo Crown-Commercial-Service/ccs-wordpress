@@ -4,9 +4,9 @@
  *
  * @package    Members
  * @subpackage Admin
- * @author     Justin Tadlock <justintadlock@gmail.com>
- * @copyright  Copyright (c) 2009 - 2018, Justin Tadlock
- * @link       https://themehybrid.com/plugins/members
+ * @author     The MemberPress Team 
+ * @copyright  Copyright (c) 2009 - 2018, The MemberPress Team
+ * @link       https://members-plugin.com/
  * @license    http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
@@ -44,6 +44,7 @@ final class User_Edit {
 
 		// Only run our customization on the 'user-edit.php' page in the admin.
 		add_action( 'load-user-edit.php', array( $this, 'load_user_edit' ) );
+		add_action( 'load-profile.php', array( $this, 'load_user_edit' ) );
 	}
 
 	/**

@@ -3,7 +3,7 @@
  * @package PublishPress
  * @author  PublishPress
  *
- * Copyright (c) 2022 PublishPress
+ * Copyright (c) 2018 PublishPress
  *
  * ------------------------------------------------------------------------------
  * Based on Edit Flow
@@ -30,13 +30,11 @@
 
 namespace PublishPress\Core\Modules;
 
-use PP_Module;
-
 /**
  * Base class for building PublishPress modules.
  *
  * @package PublishPress\Core\Modules
  */
-abstract class AbstractModule extends PP_Module
+abstract class AbstractModule extends \PP_Module
 {
 }

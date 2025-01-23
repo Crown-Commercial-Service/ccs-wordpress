@@ -5,7 +5,7 @@
     const STEP_STATUS_ERROR = 'error';
 
     class ErrorRow extends React.Component {
-        render() {
+        render () {
             return (
                 <div className="error">
                     <p>{this.props.msg}</p>
@@ -15,14 +15,14 @@
     }
 
     class StepList extends React.Component {
-        render() {
+        render () {
             const finished = this.props.finished;
             const errors = this.props.errors;
             const started = this.props.started;
             const hasErrors = errors.length > 0;
             const inProgress = started && !finished;
 
-            var errorRows = errors.map(error =>
+            var errorRows = errors.map((error) =>
                 <ErrorRow key={error.key} msg={error.msg}/>
             );
 
@@ -65,13 +65,13 @@
     }
 
     class StepListContainer extends React.Component {
-        render() {
+        render () {
             return <StepList started={this.props.started} finished={this.props.finished} errors={this.props.errors}/>;
         }
     }
 
     class MigrationForm extends React.Component {
-        constructor() {
+        constructor () {
             super();
 
             this.state = {
@@ -87,12 +87,6 @@
                         label: objectL10n.usermeta,
                         status: STEP_STATUS_IDLE,
                         error: null
-                    },
-                    {
-                        key: 'metadata',
-                        label: objectL10n.metadata,
-                        status: STEP_STATUS_IDLE,
-                        error: null
                     }
                 ],
                 currentStepIndex: -1,
@@ -103,7 +97,7 @@
             this.eventStartMigration = this.eventStartMigration.bind(this);
         }
 
-        executeNextStep() {
+        executeNextStep () {
             // Go to the next step index.
             this.setState({currentStepIndex: this.state.currentStepIndex + 1}, () => {
                 // Check if we finished the step list to finish the process.
@@ -161,39 +155,39 @@
             });
         }
 
-        updateStep(newStep) {
+        updateStep (newStep) {
             var index = this.state.currentStepIndex;
 
-            var newSteps = this.state.steps.map(step => {
+            var newSteps = this.state.steps.map((step) => {
                 return step.key === newStep.key ? newStep : step;
             });
 
             this.setState({steps: newSteps});
         }
 
-        appendError(msg) {
+        appendError (msg) {
             var errors = this.state.errors;
             errors.push({key: errors.length, msg: msg});
 
             this.setState({errors: errors});
         }
 
-        eventStartMigration() {
+        eventStartMigration () {
             this.executeNextStep();
         }
 
-        render() {
+        render () {
             const started = this.state.currentStepIndex > -1;
 
             return (
                 <div>
+                    <div>
+                        <p>{objectL10n.intro_text}</p>
+                    </div>
 
                     {!started
                     &&
-                    <>
-                        <p>{objectL10n.intro_text}</p>
-                        <h4 className="pp-warning">{objectL10n.migration_warning}</h4>
-                    </>
+                    <h4 className="pp-warning">{objectL10n.migration_warning}</h4>
                     }
 
                     <div>

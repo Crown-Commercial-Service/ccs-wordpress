@@ -1,8 +1,7 @@
 <?php
-
 defined('ABSPATH') or die('No direct script access allowed.');
 
-if (! class_exists('Editorial_Metadata_Input_Handler')) {
+if (!class_exists('Editorial_Metadata_Input_Handler')) {
     require_once 'editorial-metadata-input-handler-interface.php';
 
     abstract class Editorial_Metadata_Input_Handler implements Editorial_Metadata_Input_Handler_Contract
@@ -13,7 +12,7 @@ if (! class_exists('Editorial_Metadata_Input_Handler')) {
          * @access  private
          * @since   1.20.0
          *
-         * @var     Editorial_Metadata_Input_Handler_Contract $nextHandler
+         * @var     Editorial_Metadata_Input_Handler_Contract   $nextHandler
          */
         private $nextHandler = null;
 
@@ -23,19 +22,65 @@ if (! class_exists('Editorial_Metadata_Input_Handler')) {
          * @access  protected
          * @since   1.20.0
          *
-         * @var     string $type
+         * @var     string  $type
          */
         protected $type = null;
+
+        /**
+         * Obligates derived classes to have their own constructors where they
+         * might define its $type.
+         *
+         * @abstract
+         * @since   1.20.0
+         */
+        abstract public function __construct();
+
+        /**
+         * Render input html.
+         *
+         * @abstract
+         * @access  protected
+         * @since   1.20.0
+         *
+         * @param   array   $inputOptions   Input options
+         * @param   mixed   $value          Actual input value
+         */
+        abstract protected function renderInput($inputOptions = array(), $value = null);
+
+        /**
+         * Render input-preview html.
+         *
+         * @abstract
+         * @access  protected
+         * @since   1.20.0
+         *
+         * @param   array   $inputOptions   Input options
+         * @param   mixed   $value          Actual input value
+         */
+        abstract protected function renderInputPreview($inputOptions = array(), $value = null);
+
+        /**
+         * Get meta-input value html formatted.
+         *
+         * @abstract
+         * @access  protected
+         * @since   1.20.0
+         *
+         * @param   mixed   $value  Actual input value
+         *
+         * @return  string
+         */
+        abstract public static function getMetaValueHtml($value = null);
 
         /**
          * Check if the input can handle a given action based on $type.
          *
          * @final
-         * @param string $type Input type
-         *
-         * @return  bool
          * @since   1.20.0
          *
+         * @param   string  $type   Input type
+         *
+         * @return  bool
          */
         final public function canHandle($type)
         {
@@ -46,19 +91,19 @@ if (! class_exists('Editorial_Metadata_Input_Handler')) {
          * Register a new handler in the chain.
          *
          * @final
-         * @param Editorial_Metadata_Input_Handler $handler An input handler instance
-         * @throws Exception
-         *
          * @since   1.20.0
          *
+         * @throws \TypeError
+         *
+         * @param   Editorial_Metadata_Input_Handler    $handler An input handler instance
          */
         final public function registerHandler($handler)
         {
-            if (! ($handler instanceof Editorial_Metadata_Input_Handler)) {
-                throw new Exception('Invalid type for handler parameter.');
+            if (!($handler instanceof Editorial_Metadata_Input_Handler)) {
+                throw new \TypeError('Invalid type for handler parameter.');
             }
 
-            if (! is_null($this->nextHandler)) {
+            if (!is_null($this->nextHandler)) {
                 return $this->nextHandler->registerHandler($handler);
             }
 
@@ -70,18 +115,18 @@ if (! class_exists('Editorial_Metadata_Input_Handler')) {
          * the appropriated input based on $type.
          *
          * @final
-         * @param string $type Input type
-         * @param array $inputOptions Input options
-         * @param mixed $value Actual input value
          * @since   1.20.0
          *
+         * @param   string  $type           Input type
+         * @param   array   $inputOptions   Input options
+         * @param   mixed   $value          Actual input value
          */
         final public function handleHtmlRendering($type, $inputOptions = array(), $value = null)
         {
-            if (! $this->canHandle($type)) {
-                return ! is_null($this->nextHandler)
+            if (!$this->canHandle($type)) {
+                return !is_null($this->nextHandler)
                     ? $this->nextHandler->handleHtmlRendering($type, $inputOptions, $value)
-                    : printf("<p>" . esc_html__('This editorial fields type is not yet supported.', 'publishpress') . "</p>");
+                    : printf("<p>" . __('This editorial metadata type is not yet supported.', 'publishpress') . "</p>");
             }
 
             return $this->renderInput($inputOptions, $value);
@@ -92,18 +137,18 @@ if (! class_exists('Editorial_Metadata_Input_Handler')) {
          * the appropriated input-preview based on $type.
          *
          * @final
-         * @param string $type Input type
-         * @param array $inputOptions Input options
-         * @param mixed $value Actual input value
          * @since   1.20.0
          *
+         * @param   string  $type           Input type
+         * @param   array   $inputOptions   Input options
+         * @param   mixed   $value          Actual input value
          */
         final public function handlePreviewRendering($type, $inputOptions = array(), $value = null)
         {
-            if (! $this->canHandle($type)) {
-                return ! is_null($this->nextHandler)
+            if (!$this->canHandle($type)) {
+                return !is_null($this->nextHandler)
                     ? $this->nextHandler->handlePreviewRendering($type, $inputOptions, $value)
-                    : printf("<p>" . esc_html__('This editorial fields type is not yet supported.', 'publishpress') . "</p>");
+                    : printf("<p>" . __('This editorial metadata type is not yet supported.', 'publishpress') . "</p>");
             }
 
             return $this->renderInputPreview($inputOptions, $value);
@@ -113,40 +158,39 @@ if (! class_exists('Editorial_Metadata_Input_Handler')) {
          * Iterate through the chain until a node handles the action and render
          * the appropriated meta-input raw value based on $type.
          *
-         * @param string $type Input type
-         * @param mixed $value Actual input value
-         * @param mixed $term
          * @since   1.20.0
          *
+         * @param   string  $type           Input type
+         * @param   mixed   $value          Actual input value
          */
-        final public function handleMetaValueHtmling($type, $value = null, $term = false)
+        final public function handleMetaValueHtmling($type, $value = null)
         {
-            if (! $this->canHandle($type)) {
-                return ! is_null($this->nextHandler)
-                    ? $this->nextHandler->handleMetaValueHtmling($type, $value, $term)
-                    : printf("<p>" . esc_html__('This editorial fields type is not yet supported.', 'publishpress') . "</p>");
+            if (!$this->canHandle($type)) {
+                return !is_null($this->nextHandler)
+                    ? $this->nextHandler->handleMetaValueHtmling($type, $value)
+                    : printf("<p>" . __('This editorial metadata type is not yet supported.', 'publishpress') . "</p>");
             }
-            return static::getMetaValueHtml($value, $term);
+
+            return static::getMetaValueHtml($value);
         }
 
         /**
          * Get input-handler type.
          *
-         * @return  string
          * @since   1.20.0
          *
+         * @return  string
          */
-        public function getType()
-        {
+        public function getType() {
             return $this->type;
         }
 
         /**
          * Return the input type in case the class is treated as string.
          *
-         * @return  string
          * @since   1.20.0
          *
+         * @return  string
          */
         public function __toString()
         {
@@ -158,17 +202,17 @@ if (! class_exists('Editorial_Metadata_Input_Handler')) {
          *
          * @static
          * @access  protected
-         * @param string $content Label content
-         * @param string $related_input_id Related input id
          * @since   1.20.0
          *
+         * @param   string  $content            Label content
+         * @param   string  $related_input_id   Related input id
          */
         protected static function renderLabel($content, $related_input_id = null)
         {
             printf(
                 '<label for="%s">%s</label>',
-                esc_attr($related_input_id),
-                esc_html($content)
+                $related_input_id,
+                $content
             );
         }
 
@@ -177,11 +221,11 @@ if (! class_exists('Editorial_Metadata_Input_Handler')) {
          *
          * @static
          * @access  protected
-         * @param string $description The description content
-         *
-         * @return  string
          * @since   1.20.0
          *
+         * @param   string  $description    The description content
+         *
+         * @return  string
          */
         protected static function generateDescriptionHtml($description)
         {
@@ -192,7 +236,7 @@ if (! class_exists('Editorial_Metadata_Input_Handler')) {
             return sprintf(
                 '<span class="%s">%s</span>',
                 'description',
-                esc_html($description)
+                $description
             );
         }
 
@@ -201,9 +245,9 @@ if (! class_exists('Editorial_Metadata_Input_Handler')) {
          *
          * @static
          * @access  protected
-         * @param string $description The description content
          * @since   1.20.0
          *
+         * @param   string  $description    The description content
          */
         protected static function renderDescription($description)
         {

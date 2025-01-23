@@ -5,27 +5,15 @@
  * Licensed MIT © Zeno Rocha
  */
 (function (f) {
-    if (typeof exports === 'object' && typeof module !== 'undefined') {
-        module.exports = f();
-    } else if (typeof define === 'function' && define.amd) {
-        define([], f);
-    } else {
+    if (typeof exports === 'object' && typeof module !== 'undefined') {module.exports = f();} else if (typeof define === 'function' && define.amd) {define([], f);} else {
         var g;
-        if (typeof window !== 'undefined') {
-            g = window;
-        } else if (typeof global !== 'undefined') {
-            g = global;
-        } else if (typeof self !== 'undefined') {
-            g = self;
-        } else {
-            g = this;
-        }
+        if (typeof window !== 'undefined') {g = window;} else if (typeof global !== 'undefined') {g = global;} else if (typeof self !== 'undefined') {g = self;} else {g = this;}
         g.Clipboard = f();
     }
 })(function () {
     var define, module, exports;
-    return (function e(t, n, r) {
-        function s(o, u) {
+    return (function e (t, n, r) {
+        function s (o, u) {
             if (!n[o]) {
                 if (!t[o]) {
                     var a = typeof require == 'function' && require;
@@ -70,7 +58,7 @@
              * @param {String} selector
              * @return {Function}
              */
-            function closest(element, selector) {
+            function closest (element, selector) {
                 while (element && element.nodeType !== DOCUMENT_NODE_TYPE) {
                     if (typeof element.matches === 'function' &&
                         element.matches(selector)) {
@@ -95,7 +83,7 @@
              * @param {Boolean} useCapture
              * @return {Object}
              */
-            function delegate(element, selector, type, callback, useCapture) {
+            function delegate (element, selector, type, callback, useCapture) {
                 var listenerFn = listener.apply(this, arguments);
 
                 element.addEventListener(type, listenerFn, useCapture);
@@ -116,7 +104,7 @@
              * @param {Function} callback
              * @return {Function}
              */
-            function listener(element, selector, type, callback) {
+            function listener (element, selector, type, callback) {
                 return function (e) {
                     e.delegateTarget = closest(e.target, selector);
 
@@ -192,7 +180,7 @@
              * @param {Function} callback
              * @return {Object}
              */
-            function listen(target, type, callback) {
+            function listen (target, type, callback) {
                 if (!target && !type && !callback) {
                     throw new Error('Missing required arguments');
                 }
@@ -225,7 +213,7 @@
              * @param {Function} callback
              * @return {Object}
              */
-            function listenNode(node, type, callback) {
+            function listenNode (node, type, callback) {
                 node.addEventListener(type, callback);
 
                 return {
@@ -244,7 +232,7 @@
              * @param {Function} callback
              * @return {Object}
              */
-            function listenNodeList(nodeList, type, callback) {
+            function listenNodeList (nodeList, type, callback) {
                 Array.prototype.forEach.call(nodeList, function (node) {
                     node.addEventListener(type, callback);
                 });
@@ -267,14 +255,14 @@
              * @param {Function} callback
              * @return {Object}
              */
-            function listenSelector(selector, type, callback) {
+            function listenSelector (selector, type, callback) {
                 return delegate(document.body, selector, type, callback);
             }
 
             module.exports = listen;
 
         }, {'./is': 3, 'delegate': 2}], 5: [function (require, module, exports) {
-            function select(element) {
+            function select (element) {
                 var selectedText;
 
                 if (element.nodeName === 'SELECT') {
@@ -317,7 +305,7 @@
             module.exports = select;
 
         }, {}], 6: [function (require, module, exports) {
-            function E() {
+            function E () {
                 // Keep this empty so it's easier to inherit from
                 // (via https://github.com/lipsmack from https://github.com/scottcorgan/tiny-emitter/issues/3)
             }
@@ -337,11 +325,10 @@
                 once: function (name, callback, ctx) {
                     var self = this;
 
-                    function listener() {
+                    function listener () {
                         self.off(name, listener);
                         callback.apply(ctx, arguments);
                     }
-
                     listener._ = callback;
                     return this.on(name, listener, ctx);
                 },
@@ -403,7 +390,7 @@
 
                 var _select2 = _interopRequireDefault(_select);
 
-                function _interopRequireDefault(obj) {
+                function _interopRequireDefault (obj) {
                     return obj && obj.__esModule ? obj : {
                         default: obj
                     };
@@ -415,14 +402,14 @@
                     return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj;
                 };
 
-                function _classCallCheck(instance, Constructor) {
+                function _classCallCheck (instance, Constructor) {
                     if (!(instance instanceof Constructor)) {
                         throw new TypeError('Cannot call a class as a function');
                     }
                 }
 
                 var _createClass = function () {
-                    function defineProperties(target, props) {
+                    function defineProperties (target, props) {
                         for (var i = 0; i < props.length; i++) {
                             var descriptor = props[i];
                             descriptor.enumerable = descriptor.enumerable || false;
@@ -443,7 +430,7 @@
                     /**
                      * @param {Object} options
                      */
-                    function ClipboardAction(options) {
+                    function ClipboardAction (options) {
                         _classCallCheck(this, ClipboardAction);
 
                         this.resolveOptions(options);
@@ -458,7 +445,7 @@
 
                     _createClass(ClipboardAction, [{
                         key: 'resolveOptions',
-                        value: function resolveOptions() {
+                        value: function resolveOptions () {
                             var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
                             this.action = options.action;
@@ -472,7 +459,7 @@
                         }
                     }, {
                         key: 'initSelection',
-                        value: function initSelection() {
+                        value: function initSelection () {
                             if (this.text) {
                                 this.selectFake();
                             } else if (this.target) {
@@ -481,7 +468,7 @@
                         }
                     }, {
                         key: 'selectFake',
-                        value: function selectFake() {
+                        value: function selectFake () {
                             var _this = this;
 
                             var isRTL = document.documentElement.getAttribute('dir') == 'rtl';
@@ -517,7 +504,7 @@
                         }
                     }, {
                         key: 'removeFake',
-                        value: function removeFake() {
+                        value: function removeFake () {
                             if (this.fakeHandler) {
                                 this.container.removeEventListener('click', this.fakeHandlerCallback);
                                 this.fakeHandler = null;
@@ -531,13 +518,13 @@
                         }
                     }, {
                         key: 'selectTarget',
-                        value: function selectTarget() {
+                        value: function selectTarget () {
                             this.selectedText = (0, _select2.default)(this.target);
                             this.copyText();
                         }
                     }, {
                         key: 'copyText',
-                        value: function copyText() {
+                        value: function copyText () {
                             var succeeded = void 0;
 
                             try {
@@ -550,7 +537,7 @@
                         }
                     }, {
                         key: 'handleResult',
-                        value: function handleResult(succeeded) {
+                        value: function handleResult (succeeded) {
                             this.emitter.emit(succeeded ? 'success' : 'error', {
                                 action: this.action,
                                 text: this.selectedText,
@@ -560,7 +547,7 @@
                         }
                     }, {
                         key: 'clearSelection',
-                        value: function clearSelection() {
+                        value: function clearSelection () {
                             if (this.trigger) {
                                 this.trigger.focus();
                             }
@@ -569,12 +556,12 @@
                         }
                     }, {
                         key: 'destroy',
-                        value: function destroy() {
+                        value: function destroy () {
                             this.removeFake();
                         }
                     }, {
                         key: 'action',
-                        set: function set() {
+                        set: function set () {
                             var action = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'copy';
 
                             this._action = action;
@@ -583,12 +570,12 @@
                                 throw new Error('Invalid "action" value, use either "copy" or "cut"');
                             }
                         },
-                        get: function get() {
+                        get: function get () {
                             return this._action;
                         }
                     }, {
                         key: 'target',
-                        set: function set(target) {
+                        set: function set (target) {
                             if (target !== undefined) {
                                 if (target && (typeof target === 'undefined' ? 'undefined' : _typeof(target)) === 'object' && target.nodeType === 1) {
                                     if (this.action === 'copy' && target.hasAttribute('disabled')) {
@@ -605,7 +592,7 @@
                                 }
                             }
                         },
-                        get: function get() {
+                        get: function get () {
                             return this._target;
                         }
                     }]);
@@ -638,7 +625,7 @@
 
                 var _goodListener2 = _interopRequireDefault(_goodListener);
 
-                function _interopRequireDefault(obj) {
+                function _interopRequireDefault (obj) {
                     return obj && obj.__esModule ? obj : {
                         default: obj
                     };
@@ -650,14 +637,14 @@
                     return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj;
                 };
 
-                function _classCallCheck(instance, Constructor) {
+                function _classCallCheck (instance, Constructor) {
                     if (!(instance instanceof Constructor)) {
                         throw new TypeError('Cannot call a class as a function');
                     }
                 }
 
                 var _createClass = function () {
-                    function defineProperties(target, props) {
+                    function defineProperties (target, props) {
                         for (var i = 0; i < props.length; i++) {
                             var descriptor = props[i];
                             descriptor.enumerable = descriptor.enumerable || false;
@@ -674,7 +661,7 @@
                     };
                 }();
 
-                function _possibleConstructorReturn(self, call) {
+                function _possibleConstructorReturn (self, call) {
                     if (!self) {
                         throw new ReferenceError('this hasn\'t been initialised - super() hasn\'t been called');
                     }
@@ -682,7 +669,7 @@
                     return call && (typeof call === 'object' || typeof call === 'function') ? call : self;
                 }
 
-                function _inherits(subClass, superClass) {
+                function _inherits (subClass, superClass) {
                     if (typeof superClass !== 'function' && superClass !== null) {
                         throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass);
                     }
@@ -705,7 +692,7 @@
                      * @param {String|HTMLElement|HTMLCollection|NodeList} trigger
                      * @param {Object} options
                      */
-                    function Clipboard(trigger, options) {
+                    function Clipboard (trigger, options) {
                         _classCallCheck(this, Clipboard);
 
                         var _this = _possibleConstructorReturn(this, (Clipboard.__proto__ || Object.getPrototypeOf(Clipboard)).call(this));
@@ -724,7 +711,7 @@
 
                     _createClass(Clipboard, [{
                         key: 'resolveOptions',
-                        value: function resolveOptions() {
+                        value: function resolveOptions () {
                             var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
                             this.action = typeof options.action === 'function' ? options.action : this.defaultAction;
@@ -734,7 +721,7 @@
                         }
                     }, {
                         key: 'listenClick',
-                        value: function listenClick(trigger) {
+                        value: function listenClick (trigger) {
                             var _this2 = this;
 
                             this.listener = (0, _goodListener2.default)(trigger, 'click', function (e) {
@@ -743,7 +730,7 @@
                         }
                     }, {
                         key: 'onClick',
-                        value: function onClick(e) {
+                        value: function onClick (e) {
                             var trigger = e.delegateTarget || e.currentTarget;
 
                             if (this.clipboardAction) {
@@ -761,12 +748,12 @@
                         }
                     }, {
                         key: 'defaultAction',
-                        value: function defaultAction(trigger) {
+                        value: function defaultAction (trigger) {
                             return getAttributeValue('action', trigger);
                         }
                     }, {
                         key: 'defaultTarget',
-                        value: function defaultTarget(trigger) {
+                        value: function defaultTarget (trigger) {
                             var selector = getAttributeValue('target', trigger);
 
                             if (selector) {
@@ -775,12 +762,12 @@
                         }
                     }, {
                         key: 'defaultText',
-                        value: function defaultText(trigger) {
+                        value: function defaultText (trigger) {
                             return getAttributeValue('text', trigger);
                         }
                     }, {
                         key: 'destroy',
-                        value: function destroy() {
+                        value: function destroy () {
                             this.listener.destroy();
 
                             if (this.clipboardAction) {
@@ -790,7 +777,7 @@
                         }
                     }], [{
                         key: 'isSupported',
-                        value: function isSupported() {
+                        value: function isSupported () {
                             var action = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : ['copy', 'cut'];
 
                             var actions = typeof action === 'string' ? [action] : action;
@@ -812,7 +799,7 @@
                  * @param {String} suffix
                  * @param {Element} element
                  */
-                function getAttributeValue(suffix, element) {
+                function getAttributeValue (suffix, element) {
                     var attribute = 'data-clipboard-' + suffix;
 
                     if (!element.hasAttribute(attribute)) {

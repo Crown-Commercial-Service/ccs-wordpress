@@ -3,7 +3,7 @@
  * @package PublishPress
  * @author  PublishPress
  *
- * Copyright (c) 2022 PublishPress
+ * Copyright (c) 2018 PublishPress
  *
  * ------------------------------------------------------------------------------
  * Based on Edit Flow
@@ -32,8 +32,7 @@
  * class PP_Efmigration
  */
 
-if (! class_exists('PP_Efmigration')) {
-    #[\AllowDynamicProperties]
+if ( ! class_exists('PP_Efmigration')) {
     class PP_Efmigration extends PP_Module
     {
         const OPTION_PREFIX = 'publishpress_';
@@ -64,17 +63,17 @@ if (! class_exists('PP_Efmigration')) {
             $this->module_url = $this->get_module_url(__FILE__);
 
             // Register the User Groups module with PublishPress
-            $args = [
-                'title' => __('Edit Flow Migration', self::PLUGIN_NAMESPACE),
-                'short_description' => __('Migrate data from Edit Flow into PublishPress Planner', self::PLUGIN_NAMESPACE),
-                'module_url' => $this->module_url,
-                'icon_class' => 'dashicons dashicons-groups',
-                'slug' => 'efmigration',
-                'settings_slug' => self::PAGE_SLUG,
-                'default_options' => [
+            $args         = [
+                'title'             => __('Edit Flow Migration', self::PLUGIN_NAMESPACE),
+                'short_description' => __('Migrate data from Edit Flow into PublishPress', self::PLUGIN_NAMESPACE),
+                'module_url'        => $this->module_url,
+                'icon_class'        => 'dashicons dashicons-groups',
+                'slug'              => 'efmigration',
+                'settings_slug'     => self::PAGE_SLUG,
+                'default_options'   => [
                     'enabled' => 'on',
                 ],
-                'autoload' => true,
+                'autoload'          => true,
             ];
             $this->module = PublishPress()->register_module('efmigration', $args);
         }
@@ -90,12 +89,12 @@ if (! class_exists('PP_Efmigration')) {
          */
         public function init()
         {
-            if (false === current_user_can('manage_options') || false === is_admin()) {
+            if ( ! current_user_can('manage_options')) {
                 return;
             }
 
             add_action('admin_menu', [$this, 'action_register_page']);
-            add_action('admin_notices', [$this, 'action_admin_notice_migration']);
+            add_action('admin_notices', [$this, 'action_admin_notice']);
             add_action('admin_init', [$this, 'action_editflow_migrate']);
             add_action('wp_ajax_pp_migrate_ef_data', [$this, 'migrate_data']);
             add_action('wp_ajax_pp_finish_migration', [$this, 'migrate_data_finish']);
@@ -104,8 +103,6 @@ if (! class_exists('PP_Efmigration')) {
                 add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
                 add_action('admin_print_styles', [$this, 'enqueue_admin_styles']);
             }
-
-            add_action('admin_init', [$this, 'checkEditFlowIsInstalledAndShowWarning'], 999);
         }
 
         /**
@@ -138,30 +135,14 @@ if (! class_exists('PP_Efmigration')) {
             global $wp_scripts;
 
             if ($this->checkEditFlowIsInstalled()) {
-                if (! isset($wp_scripts->queue['react'])) {
-                    wp_enqueue_script(
-                        'react',
-                        PUBLISHPRESS_URL . 'common/js/react.min.js',
-                        [],
-                        PUBLISHPRESS_VERSION,
-                        true
-                    );
-                    wp_enqueue_script(
-                        'react-dom',
-                        PUBLISHPRESS_URL . 'common/js/react-dom.min.js',
-                        ['react'],
-                        PUBLISHPRESS_VERSION,
-                        true
-                    );
+                if ( ! isset($wp_scripts->queue['react'])) {
+                    wp_enqueue_script('react', $this->module_url . 'lib/js/react.min.js', [], PUBLISHPRESS_VERSION, true);
+                    wp_enqueue_script('react-dom', $this->module_url . 'lib/js/react-dom.min.js', ['react'],
+                        PUBLISHPRESS_VERSION, true);
                 }
 
-                wp_enqueue_script(
-                    'pp-efmigration',
-                    $this->module_url . 'lib/js/efmigration.min.js',
-                    ['react', 'react-dom'],
-                    PUBLISHPRESS_VERSION,
-                    true
-                );
+                wp_enqueue_script('pp-efmigration', $this->module_url . 'lib/js/efmigration.js',
+                    ['react', 'react-dom'], PUBLISHPRESS_VERSION, true);
 
                 $publishPressUrl = add_query_arg(
                     [
@@ -170,38 +151,24 @@ if (! class_exists('PP_Efmigration')) {
                     admin_url('/admin.php')
                 );
 
-                wp_localize_script(
-                    'pp-efmigration',
-                    'objectL10n',
-                    [
-                        'intro_text' => esc_html__(
-                            'This migration will import all your data and settings from Edit Flow.',
-                            self::PLUGIN_NAMESPACE
-                        ),
-                        'migration_warning' => esc_html__(
-                            'Heads up! Importing data from EditFlow will overwrite any current data in PublishPress Planner.',
-                            self::PLUGIN_NAMESPACE
-                        ),
-                        'start_migration' => esc_html__('Start', self::PLUGIN_NAMESPACE),
-                        'options' => esc_html__(
-                            'Plugin and Modules Options',
-                            self::PLUGIN_NAMESPACE
-                        ),
-                        'usermeta' => esc_html__('User Meta-data', self::PLUGIN_NAMESPACE),
-                        'metadata' => esc_html__('Editorial Fields', self::PLUGIN_NAMESPACE),
-                        'success_msg' => esc_html__('Finished!', self::PLUGIN_NAMESPACE),
-                        'header_msg' => esc_html__(
-                            'Please, wait while we migrate your legacy data...',
-                            self::PLUGIN_NAMESPACE
-                        ),
-                        'error' => esc_html__('Error', self::PLUGIN_NAMESPACE),
-                        'error_msg_intro' => esc_html__('If needed, feel free to', self::PLUGIN_NAMESPACE),
-                        'error_msg_contact' => esc_html__('contact the support team', self::PLUGIN_NAMESPACE),
-                        'back_to_publishpress_label' => esc_html__('Back to Planner', self::PLUGIN_NAMESPACE),
-                        'back_to_publishpress_url' => $publishPressUrl,
-                        'wpnonce' => wp_create_nonce(self::NONCE_KEY),
-                    ]
-                );
+                wp_localize_script('pp-efmigration', 'objectL10n', [
+                    'intro_text'                 => esc_html__('This migration will import all of your data and settings from Edit Flow.',
+                        self::PLUGIN_NAMESPACE),
+                    'migration_warning'          => esc_html__('Heads up! Importing data from EditFlow will overwrite any current data in PublishPress.',
+                        self::PLUGIN_NAMESPACE),
+                    'start_migration'            => esc_html__('Start', self::PLUGIN_NAMESPACE),
+                    'options'                    => esc_html__('Plugin and Modules Options', self::PLUGIN_NAMESPACE),
+                    'usermeta'                   => esc_html__('User Meta-data', self::PLUGIN_NAMESPACE),
+                    'success_msg'                => esc_html__('Finished!', self::PLUGIN_NAMESPACE),
+                    'header_msg'                 => esc_html__('Please, wait while we migrate your legacy data...',
+                        self::PLUGIN_NAMESPACE),
+                    'error'                      => esc_html__('Error', self::PLUGIN_NAMESPACE),
+                    'error_msg_intro'            => esc_html__('If needed, feel free to', self::PLUGIN_NAMESPACE),
+                    'error_msg_contact'          => esc_html__('contact the support team', self::PLUGIN_NAMESPACE),
+                    'back_to_publishpress_label' => esc_html__('Back to PublishPress', self::PLUGIN_NAMESPACE),
+                    'back_to_publishpress_url'   => $publishPressUrl,
+                    'wpnonce'                    => wp_create_nonce(self::NONCE_KEY),
+                ]);
             }
         }
 
@@ -214,12 +181,8 @@ if (! class_exists('PP_Efmigration')) {
          */
         public function enqueue_admin_styles()
         {
-            wp_enqueue_style(
-                'pp-efmigration-css',
-                $this->module_url . 'lib/efmigration.css',
-                false,
-                PUBLISHPRESS_VERSION
-            );
+            wp_enqueue_style('pp-efmigration-css', $this->module_url . 'lib/efmigration.css', false,
+                PUBLISHPRESS_VERSION);
         }
 
         /**
@@ -231,7 +194,7 @@ if (! class_exists('PP_Efmigration')) {
         {
             global $publishpress;
 
-            if (! current_user_can('manage_options')) {
+            if ( ! current_user_can('manage_options')) {
                 _e('Access Denied', self::PLUGIN_NAMESPACE);
 
                 return;
@@ -249,7 +212,7 @@ if (! class_exists('PP_Efmigration')) {
         public function action_register_page()
         {
             add_submenu_page(
-                '',
+                null,
                 'PublishPress',
                 'PublishPress',
                 'manage_options',
@@ -260,7 +223,7 @@ if (! class_exists('PP_Efmigration')) {
 
         /**
          * Check if the Edit Flow plugin is installed, looking for its options.
-         * We don't check if it is activated or deactivated because we would like
+         * We don't check if it is activate or deactivate because we would like
          * to be able to recover the settings, even if the files aren't there
          * anymore.
          *
@@ -273,43 +236,21 @@ if (! class_exists('PP_Efmigration')) {
             return ! empty($editFlowVersion);
         }
 
-        public function checkEditFlowIsInstalledAndShowWarning()
-        {
-            if (defined('EDIT_FLOW_VERSION')) {
-                add_action('admin_notices', [$this, 'noticeEditFlowIsInstalled']);
-            }
-        }
-
-        public function noticeEditFlowIsInstalled()
-        {
-            ?>
-            <div class="updated notice">
-                <p><?php
-                    _e(
-                        'Edit Flow should not be used alongside PublishPress Planner. If you want to use PublishPress Planner, please complete Edit Flow data migration and then deactivate Edit Flow.',
-                        'publishpress'
-                    ); ?></p>
-            </div>
-            <?php
-        }
-
         /**
          * Show a notice for admins giving the option to migrate data from EditFlow
          */
-        public function action_admin_notice_migration()
+        public function action_admin_notice()
         {
             // Check if EditFlow is installed
             if ($this->checkEditFlowIsInstalled()) {
                 $dismissMigration = (bool)get_site_option(self::OPTION_DISMISS_MIGRATION, 0);
-                if (! $dismissMigration && (! isset($_GET['page']) || self::PAGE_SLUG !== $_GET['page'])) {
+                if ( ! $dismissMigration && ( ! isset($_GET['page']) || self::PAGE_SLUG !== $_GET['page'])) {
                     echo '<div class="updated"><p>';
                     printf(
-                        __(
-                            'We have found Edit Flow and its data! Would you like to import the data into PublishPress? <a href="%1$s">Yes, import the data</a> | <a href="%2$s">Dismiss</a>'
-                        ),
+                        __('We have found Edit Flow and its data! Would you like to import the data into PublishPress? <a href="%1$s">Yes, import the data</a> | <a href="%2$s">Dismiss</a>'),
                         add_query_arg(
                             [
-                                'page' => self::PAGE_SLUG,
+                                'page'                            => self::PAGE_SLUG,
                                 self::EDITFLOW_MIGRATION_URL_FLAG => 1,
                             ],
                             admin_url()
@@ -330,15 +271,15 @@ if (! class_exists('PP_Efmigration')) {
         {
             if ($this->checkEditFlowIsInstalled()) {
                 $dismissMigration = (bool)get_site_option(self::OPTION_DISMISS_MIGRATION, 0);
-                if (! $dismissMigration) {
+                if ( ! $dismissMigration) {
                     // If user clicks to ignore the notice, and register in the options
                     if (isset($_GET[self::EDITFLOW_MIGRATION_URL_FLAG])) {
-                        if (! current_user_can('manage_options')) {
+                        if ( ! current_user_can('manage_options')) {
                             $this->accessDenied();
                         }
 
                         $migrate = (bool)$_GET[self::EDITFLOW_MIGRATION_URL_FLAG];
-                        if (! $migrate) {
+                        if ( ! $migrate) {
                             update_site_option(self::OPTION_DISMISS_MIGRATION, 1, true);
                         }
                     }
@@ -350,25 +291,25 @@ if (! class_exists('PP_Efmigration')) {
         {
             check_ajax_referer(self::NONCE_KEY);
 
-            if (! current_user_can('manage_options')) {
+            if ( ! current_user_can('manage_options')) {
                 $this->accessDenied();
             }
 
-            $allowedSteps = ['options', 'usermeta', 'metadata'];
-            $result = (object)[
-                'error' => false,
+            $allowedSteps = ['options', 'usermeta'];
+            $result       = (object)[
+                'error'  => false,
                 'output' => '',
             ];
 
             // Get and validate the step
-            $step = sanitize_text_field($_POST['step']);
-            if (! in_array($step, $allowedSteps)) {
+            $step = $_POST['step'];
+            if ( ! in_array($step, $allowedSteps)) {
                 $result->error = __('Unknown step', self::PLUGIN_NAMESPACE);
             }
 
             $methodName = 'migrate_data_' . $step;
 
-            if (! method_exists($this, $methodName)) {
+            if ( ! method_exists($this, $methodName)) {
                 $result->error = __('Undefined migration method', self::PLUGIN_NAMESPACE);
             } else {
                 $this->$methodName();
@@ -384,7 +325,7 @@ if (! class_exists('PP_Efmigration')) {
          */
         protected function migrate_data_options()
         {
-            if (! get_site_option(self::OPTION_MIGRATED_OPTIONS, false)) {
+            if ( ! get_site_option(self::OPTION_MIGRATED_OPTIONS, false)) {
                 $optionsToMigrate = [
                     'calendar_options',
                     'custom_status_options',
@@ -412,7 +353,7 @@ if (! class_exists('PP_Efmigration')) {
         {
             global $wpdb;
 
-            if (! get_site_option(self::OPTION_MIGRATED_USERMETA, false)) {
+            if ( ! get_site_option(self::OPTION_MIGRATED_USERMETA, false)) {
                 // Remove PublishPress data
                 $data = $wpdb->get_results(
                     "
@@ -422,7 +363,7 @@ if (! class_exists('PP_Efmigration')) {
                     "
                 );
 
-                if (! empty($data)) {
+                if ( ! empty($data)) {
                     foreach ($data as $meta) {
                         $key = preg_replace('/^ef_/', 'pp_', $meta->meta_key);
                         update_user_meta($meta->user_id, $key, $meta->meta_value);
@@ -433,170 +374,11 @@ if (! class_exists('PP_Efmigration')) {
             }
         }
 
-        /**
-         * 1. Migrate metadata terms taxonomy.
-         * 2. Migrate Posts for duplicate Terms
-         * 3. Update posts meta terms key for other terms
-         * 4. Delete duplicate terms if any.
-         */
-        protected function migrate_data_metadata()
-        {
-            global $wpdb;
-
-            if (
-                ! defined('PUBLISHPRESS_PLANNER_DISABLE_EF_METADATA_MIGRATION')
-                || (defined('PUBLISHPRESS_PLANNER_DISABLE_EF_METADATA_MIGRATION') &&PUBLISHPRESS_PLANNER_DISABLE_EF_METADATA_MIGRATION !== true)
-            ) {
-
-                // Define the source and destination taxonomies and postmeta key
-                $pp_editorial_meta         = PP_Editorial_Metadata::metadata_taxonomy;
-                $pp_metadata_postmeta_key  = PP_Editorial_Metadata::metadata_postmeta_key;
-
-                if (class_exists('EF_Editorial_Metadata')) {
-                    $ef_editorial_meta         = EF_Editorial_Metadata::metadata_taxonomy;
-                    $ef_metadata_postmeta_key  = EF_Editorial_Metadata::metadata_postmeta_key;
-                } else {
-                    $ef_editorial_meta         = 'ef_editorial_meta';
-                    $ef_metadata_postmeta_key  = '_ef_editorial_meta';
-                }
-
-                /**
-                 * Post types are added to each metadata in Planner unlike Edit Flow
-                 */
-                $metadata_post_types = ['post'];
-
-                $edit_flow_editorial_metadata_options = get_option('edit_flow_editorial_metadata_options');
-                if (is_object($edit_flow_editorial_metadata_options) 
-                    && isset($edit_flow_editorial_metadata_options->post_types)
-                ) {
-                    $metadata_post_types = [];
-                    if (is_array($edit_flow_editorial_metadata_options->post_types) 
-                        && !empty($edit_flow_editorial_metadata_options->post_types)
-                    ) {
-                        foreach ($edit_flow_editorial_metadata_options->post_types as $post_type => $status) {
-                            if ($status == 'on') {
-                                $metadata_post_types[] = $post_type;
-                            }
-                        }
-                    }
-                }
-
-                // Step 1: Get all the terms from the source (Edit Flow) taxonomy
-                $terms = $wpdb->get_results(
-                    $wpdb->prepare(
-                        "SELECT t.term_id, t.slug, tt.description
-                        FROM {$wpdb->terms} AS t
-                        INNER JOIN {$wpdb->term_taxonomy} AS tt ON t.term_id = tt.term_id
-                        WHERE tt.taxonomy = %s",
-                        $ef_editorial_meta
-                    )
-                );
-
-                if (!empty($terms)) {
-                    $duplicate_terms = [];
-                    // Step 2: Update the terms to planner's and description to add post type based on viewable
-                    foreach ($terms as $term) {
-                        // Decode the description
-                        $description = $this->get_unencoded_description($term->description);
-                        // Add post types to description
-                        $description['post_types'] = $metadata_post_types;
-                        // Add post types column (responsible for showing metadata in cpt column) based on viewable
-                        if (!empty($description['viewable'])) {
-                            $description['show_in_calendar_form'] = 1;
-                            $description['post_types_column'] = $metadata_post_types;
-                        }
-                        // Encode description back before update
-                        $description = $this->get_encoded_description($description);
-
-                        // Check if Metadata already exists in Planner
-                        $term_exists = term_exists($term->slug, $pp_editorial_meta);
-                        if ($term_exists) {
-                            // Migrate term posts to Planner instead
-                            $this->migrate_posts_between_taxonomies_terms($term->term_id, $ef_editorial_meta, $term_exists['term_id'], $pp_editorial_meta);
-                            // Mark Edit Flow term as duplicate to be deleted
-                            $duplicate_terms[] = $term->term_id;
-                            // Replace term ID so Planner's term is updated instead since Edit Flow term will be deleted
-                            $term->term_id = $term_exists['term_id'];
-                        }
-
-                        // Update the taxonomy and description
-                        $wpdb->update(
-                            $wpdb->term_taxonomy,
-                            array(
-                                'taxonomy' => $pp_editorial_meta,
-                                'description' => $description
-                            ),
-                            array('term_id' => $term->term_id)
-                        );
-
-                    }
-
-                    // Step 3: Update post meta keys to match Planner's from Edit Flow
-                    $wpdb->query(
-                        $wpdb->prepare(
-                            "UPDATE {$wpdb->postmeta}
-                                    SET meta_key = REPLACE(meta_key, %s, %s)
-                                    WHERE meta_key LIKE %s",
-                            $ef_metadata_postmeta_key,
-                            $pp_metadata_postmeta_key,
-                            $ef_metadata_postmeta_key . '%'
-                        )
-                    );
-
-                    // Step 4: Delete duplicate terms
-                    if (!empty($duplicate_terms)) {
-                        foreach ($duplicate_terms as $term_id) {
-                            $deleted = wp_delete_term($term_id, $ef_editorial_meta);
-                        }
-                    }
-                }
-            }
-            
-        }
-
-        /**
-         * Migrate posts between taxonomies terms
-         *
-         * @param integer $source_term_id
-         * @param string $source_taxonomy
-         * @param integer $target_term_id
-         * @param string $target_taxonomy
-         * 
-         * @return bool
-         */
-        private function migrate_posts_between_taxonomies_terms($source_term_id, $source_taxonomy, $target_term_id, $target_taxonomy) {
-            global $wpdb;
-        
-            // Step 1: Update term_taxonomy_id for posts in Source Term to Target Term
-            $sql_update_relationships = $wpdb->prepare(
-                "UPDATE {$wpdb->term_relationships}
-                SET term_taxonomy_id = %d
-                WHERE term_taxonomy_id = %d",
-                $target_term_id,
-                $source_term_id
-            );
-            $wpdb->query($sql_update_relationships);
-        
-            
-            // Step 2: Update term_count for Target Terms
-            $sql_update_term_count_target = $wpdb->prepare(
-                "UPDATE {$wpdb->term_taxonomy}
-                SET count = (SELECT COUNT(*) FROM {$wpdb->term_relationships} WHERE term_taxonomy_id = %d)
-                WHERE term_taxonomy_id = %d",
-                $target_term_id,
-                $target_term_id
-            );
-            $wpdb->query($sql_update_term_count_target);
-        
-            return true;
-        }
-
         public function migrate_data_finish()
         {
             check_ajax_referer(self::NONCE_KEY);
 
-            if (! current_user_can('manage_options')) {
-                // todo: Replace with WP_Error and wp_send_json_error
+            if ( ! current_user_can('manage_options')) {
                 $this->accessDenied();
             }
 
@@ -607,7 +389,7 @@ if (! class_exists('PP_Efmigration')) {
 
         protected function accessDenied()
         {
-            if (! headers_sent()) {
+            if ( ! headers_sent()) {
                 header('HTTP/1.1 403 ' . __('Access Denied', self::PLUGIN_NAMESPACE));
             } else {
                 _e('Access Denied', self::PLUGIN_NAMESPACE);

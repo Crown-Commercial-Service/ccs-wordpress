@@ -527,15 +527,16 @@ class Import
                 $currentSupplier = $this->lotSupplierRepository->findByLotIdAndSupplierId($lotSalesforceId, $supplier->getSalesforceId());
 
                 if($currentSupplier){
-                    $lastUpdatedOnSalesforce    = $supplier->getLastModifiedDate(); 
-                    $lastUpdatedOnDatabase      = $currentSupplier->getDateUpdated();
+                    // $lastUpdatedOnSalesforce    = $supplier->getLastModifiedDate(); 
+                    // $lastUpdatedOnDatabase      = $currentSupplier->getDateUpdated();
                    
-                    if(new DateTime($lastUpdatedOnSalesforce) > new DateTime($lastUpdatedOnDatabase)){
+                    // if(new DateTime($lastUpdatedOnSalesforce) > new DateTime($lastUpdatedOnDatabase)){
                         $lotSupplier = $currentSupplier;
                         $lotSupplier->setDateUpdated($this->dateTime->format('y-m-d H:i:s')); 
-                    }else{
-                        continue;
-                    }
+                    // }else{
+                    //     continue;
+                    // }
+
 
                 }else{
                     // creating new lot supplier

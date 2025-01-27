@@ -1,20 +1,5 @@
 /** Comments **/
 
-#pp-comments li:target {
-  border: 1px solid #ffd400 !important;
-  border-left: 5px solid #ffd400 !important;
-  border-right: 5px solid #ffd400 !important;
-  background: #f7eaff;
-}
-
-#pp-comments li:target:before {
-  display: block;
-  content: " ";
-  margin-top: -75px;
-  height: 75px;
-  visibility: hidden;
-}
-
 #pp-comments_wrapper {
   padding: 0;
 }
@@ -40,16 +25,12 @@
   background: #fff;
 }
 
-#pp-comments li:hover .row-actions {
+#pp-comments li:hover p.row-actions {
   visibility: visible;
 }
 
-#pp-comments li .row-actions {
+#pp-comments li p.row-actions {
   text-align: right;
-  margin: 4px 0;
-  display: block;
-  width: 100%;
-  height: 20px;
 }
 
 #pp-comments ul.children {
@@ -61,18 +42,6 @@
   /*background: #EAF2FA;*/
   border-left: 5px solid #e5e5e5;
   border-bottom: 1px solid #e5e5e5;
-}
-
-#pp-comment_loading {
-  margin-left: 10px;
-}
-
-#pp-editcontainer .pp-error {
-  width: calc(100% - 70px);
-  margin-left: 70px;
-  padding: 10px;
-  background: #ffdddd;
-  border: 1px solid #f7bebe;
 }
 
 /*
@@ -102,8 +71,7 @@
   font-style: normal;
 }
 
-#pp-comments .comment-content,
-#pp-comments .comment-files {
+#pp-comments .comment-content {
   margin-left: 67px;
 }
 
@@ -114,101 +82,26 @@
   margin: 0.7em 0;
 }
 
+#pp-replyrow {
+}
+
 #pp-replyrow #pp-replycontent {
   width: 100%;
-  height: 150px;
-  padding: 5px;
+  height: 100px;
 }
 
-#pp-replyrow .pp-replyattachment {
-  margin-bottom: 6px;
-}
-
-#pp-replyrow .editorial-attachments {
-  display: inline-block;
-}
-
-#pp-replyrow .editorial-uploaded-file,
-.editorial-single-file {
-  margin-bottom: 5px;
-}
-
-#pp-replyrow .editorial-uploaded-file .file {
-  color: green;
-  margin-right: 5px;
-}
-
-#pp-replyrow .editorial-uploaded-file .editorial-comment-file-remove,
-.editorial-comment-edit-file-remove {
-  color: red;
-  cursor: pointer;
-}
-
-.editorial-comment-edit-file-remove {
-  margin-left: 5px;
-  display: none;
-}
-
-.pressshack-admin-wrapper .search-box .button#search-submit,
-.pressshack-admin-wrapper .tablenav .button#post-query-submit {
-    display: inline-block !important;
-    text-decoration: none !important;
-    font-size: 13px !important;
-    line-height: 2.15384615 !important;
-    min-height: 30px !important;
-    margin: 0 !important;
-    padding: 0 10px !important;
-    cursor: pointer !important;
-    border-width: 1px !important;
-    border-style: solid !important;
-    -webkit-appearance: none !important;
-    border-radius: 3px !important;
-    white-space: nowrap !important;
-    box-sizing: border-box !important;
-}
-
-.planner_page_pp-editorial-comments .editorial-comment-filter-posts,
-.planner_page_pp-editorial-comments .editorial-comment-filter-users {
-    width: 190px;
-}
-
-.planner_page_pp-editorial-comments .tablenav .select2-container {
-    margin-right: 7px;
-}
-
-.planner_page_pp-editorial-comments .fixed .column-author {
-    width: 15%;
-}
-
-#pp-editrow #pp-editcontent {
-  box-sizing: border-box;
-  width: calc(100% - 70px);
-  height: 150px;
-  margin-left: 70px;
-  padding: 5px;
-}
-
-#pp-editrow #pp-editsubmit,
 #pp-replyrow #pp-replysubmit {
   margin: 6px 0;
 }
 
-#pp-editrow #pp-editsubmit *,
 #pp-replyrow #pp-replysubmit * {
   margin-left: 3px;
 }
 
-#pp-editrow #pp-editsubmit .error,
 #pp-replyrow #pp-replysubmit .error {
   margin: 6px 6px 0 0;
   line-height: 1.2em;
   padding: 4px 10px;
-  color: red;
-}
-
-#pp-editrow #pp-editsubmit {
-  width: 100%;
-  height: 40px;
 }
 
 .pp-comment {
@@ -253,8 +146,7 @@ body.gutenberg-editor-page {
     margin-bottom: 7px;
   }
 
-  #pp-comments .comment-content,
-  #pp-comments .comment-files {
+  #pp-comments .comment-content {
     margin-left: 0;
   }
 
@@ -266,7 +158,7 @@ body.gutenberg-editor-page {
     margin: 0;
   }
 
-  #pp-comments li .row-actions {
+  #pp-comments li p.row-actions {
     margin: 4px 0;
   }
 }

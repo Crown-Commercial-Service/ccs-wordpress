@@ -582,7 +582,10 @@ add_action('pre_get_posts', function ($query) {
 		}
     }
 	//checking if the request is from API and it is not called from getAllHiddenPosts()
-	if(! is_user_logged_in() && newsEndpoint($query->query["post_type"]) && $query->query["posts_per_page"] != 100){
+	if(   
+		!is_user_logged_in() &&
+    	newsEndpoint($query->query["post_type"] ?? '') &&
+    	($query->query["posts_per_page"] ?? 0) != 100) {
 
 		$contentTypeParams = isset($_GET['digitalDownload']) ? array_map('intval', explode(",", htmlspecialchars($_GET["digitalDownload"]))) : null;
 
@@ -836,10 +839,10 @@ function add_sectors_to_acf( $data, $post, $request ) {
 		}
     }
 
-	if ( $post->post_type === 'event' ){
-		$terms = get_the_terms( $post->ID, 'event_type' );
-		$data->data['acf']['event_type'] = $terms[0]->name;
-	}
+	// if ( $post->post_type === 'event' ){
+	// 	$terms = get_the_terms( $post->ID, 'event_type' );
+	// 	$data->data['acf']['event_type'] = $terms[0]->name;
+	// }
 
     return $data;
 }

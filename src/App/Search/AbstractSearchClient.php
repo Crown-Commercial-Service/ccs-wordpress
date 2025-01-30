@@ -208,7 +208,7 @@ class AbstractSearchClient extends \Elastica\Client
      */
     protected function addMatchQueryToBoolFilter(Query\BoolQuery $boolQuery, $key, $value, $condition = 'AND'): Query\BoolQuery
     {
-        $matchQuery = new Query\Match($key, $value);
+        $matchQuery = new Query\MatchQuery($key, $value);
 
         if (strtoupper($condition) == 'AND') {
             $boolQuery->addMust($matchQuery);

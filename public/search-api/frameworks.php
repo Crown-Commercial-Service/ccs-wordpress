@@ -14,7 +14,7 @@ $dotenv->load($rootDir . '.env');
 
 function filtering($filterName){
     if (!is_array(($_GET[$filterName]))) {
-        $filter = filter_var($_GET[$filterName], FILTER_SANITIZE_STRING);
+        $filter = filter_var($_GET[$filterName], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     } else {
         foreach ($_GET[$filterName] as $each) {
             $filter[] = $each;
@@ -45,36 +45,36 @@ $page = 0;
 $limit = 20;
 
 if (isset($_GET['limit'])) {
-    $limit = (int)filter_var($_GET['limit'], FILTER_SANITIZE_STRING);
+    $limit = (int)filter_var($_GET['limit'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 }
 
 if (isset($_GET['page'])) {
-    $page = (int)filter_var($_GET['page'], FILTER_SANITIZE_STRING);
+    $page = (int)filter_var($_GET['page'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 }
 
 if (isset($_GET['keyword'])) {
-    $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_STRING);
+    $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 }
 
 if (isset($_GET['sort'])) {
-    $sortField = filter_var($_GET['sort'], FILTER_SANITIZE_STRING);
+    $sortField = filter_var($_GET['sort'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 }
 
 if (isset($_GET['status'])) {
     if (!is_array(($_GET['status']))) {
-        $statuses = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
+        $statuses = filter_var($_GET['status'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     } else {
         foreach ($_GET['status'] as $status) {
-            if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'ALL') {
+            if (strtoupper(filter_var($status, FILTER_SANITIZE_FULL_SPECIAL_CHARS)) == 'ALL') {
                 $statuses = array_merge($statuses, $liveStatus);
                 $statuses = array_merge($statuses, $expiredStatus);
                 $statuses = array_merge($statuses, $upcomingStatus);
                 break;
-            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'EXPIRED') {
+            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_FULL_SPECIAL_CHARS)) == 'EXPIRED') {
                 $statuses = array_merge($statuses, $expiredStatus);
-            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'LIVE') {
+            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_FULL_SPECIAL_CHARS)) == 'LIVE') {
                 $statuses = array_merge($statuses, $liveStatus);
-            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_STRING)) == 'UPCOMING') {
+            }else if (strtoupper(filter_var($status, FILTER_SANITIZE_FULL_SPECIAL_CHARS)) == 'UPCOMING') {
                 $statuses = array_merge($statuses, $upcomingStatus);
                 $rmNumbers = extractRmNumbersFromUpcoming(get_upcoming_deals());
             }

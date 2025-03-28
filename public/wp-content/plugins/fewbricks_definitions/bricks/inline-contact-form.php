@@ -29,6 +29,8 @@ class inline_contact_form extends project_brick
             'instructions' => 'Select if specific newsletter form is to be displayed',
         ]));
 
+        $this->add_field(new acf_fields\true_false('Hide callback option on form?', 'hide_callback_form', '202527031250a'));
+
         $this->add_field(new acf_fields\text('Form heading', 'form_heading', '202002031251a', [
             'conditional_logic' => [
                 [

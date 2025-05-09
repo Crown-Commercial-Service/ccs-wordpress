@@ -944,7 +944,6 @@ function custom_lostpassword_errors ($errors, $user_data) {
     return $errors;
 }
 
-
 function custom_lost_password_message( $translated_text, $text, $domain ) {
 	if ( $text === 'Check your email for the confirmation link, then visit the <a href="%s">login page</a>.' ) {
 		$new_message = "You’ve requested to reset the password. If an account exists for that username/email address then you’ll receive a link to reset your password.";

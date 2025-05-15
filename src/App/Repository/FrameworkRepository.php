@@ -23,7 +23,9 @@ class FrameworkRepository extends AbstractRepository
       'pillar'                  => ':pillar',
       'category'                => ':category',
       'status'                  => ':status',
-      'regulation_type'          => ':regulation_type',
+      'regulation'              => ':regulation',
+      'regulation_type'         => ':regulation_type',
+      'policy_compliance'       => ':policy_compliance',
       'start_date'              => ':start_date',
       'end_date'                => ':end_date',
       'tenders_open_date'       => ':tenders_open_date',
@@ -43,7 +45,6 @@ class FrameworkRepository extends AbstractRepository
       'upcoming_deal_summary'   => ':upcoming_deal_summary',
       'availability'            => ':availability',
       'cannot_use'              => ':cannot_use',
-      'regulation'              => ':regulation',
     ];
 
      /**
@@ -213,9 +214,19 @@ class FrameworkRepository extends AbstractRepository
             $query->bindParam(':status', $status, \PDO::PARAM_STR);
         }
 
+        if (isset($databaseBindings['regulation'])) {
+            $regulation = $framework->getRegulation();
+            $query->bindParam(':regulation', $regulation, \PDO::PARAM_STR);
+        }
+
         if (isset($databaseBindings['regulation_type'])) {
             $regulationType = $framework->getRegulationType();
             $query->bindParam(':regulation_type', $regulationType, \PDO::PARAM_STR);
+        }
+        
+        if (isset($databaseBindings['policy_compliance'])) {
+            $policyCompliance = $framework->getPolicyCompliance();
+            $query->bindParam(':policy_compliance', $policyCompliance, \PDO::PARAM_STR);
         }
 
         if (isset($databaseBindings['start_date'])) {
@@ -329,11 +340,6 @@ class FrameworkRepository extends AbstractRepository
         if (isset($databaseBindings['cannot_use'])) {
             $cannotUse = $framework->getCannotUse();
             $query->bindParam(':cannot_use', $cannotUse, \PDO::PARAM_STR);
-        }
-
-        if (isset($databaseBindings['regulation'])) {
-            $regulation = $framework->getRegulation();
-            $query->bindParam(':regulation', $regulation, \PDO::PARAM_STR);
         }
 
         return $query;

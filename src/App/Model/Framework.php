@@ -79,11 +79,19 @@ class Framework extends AbstractModel
     /**
      * @var string
      */
-    protected $status;
+    protected $status;    
+    /**
+     * @var string
+     */
+    protected $regulation;
     /**
      * @var string
      */
     protected $regulationType;
+    /**
+     * @var string
+     */
+    protected $policyCompliance;
     /**
      * @var \DateTime
      */
@@ -143,12 +151,6 @@ class Framework extends AbstractModel
      * @var string
      */
     protected $upcomingDealSummary;
-
-    /**
-     * @var string
-     */
-    protected $regulation;
-
 
 
     /**
@@ -488,6 +490,7 @@ class Framework extends AbstractModel
         $this->status = $status;
         return $this;
     }
+
     /**
      * @return string
      */
@@ -503,6 +506,24 @@ class Framework extends AbstractModel
     public function setRegulationType(?string $regulationType): Framework
     {
         $this->regulationType = $regulationType;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPolicyCompliance(): ?string
+    {
+        return $this->policyCompliance;
+    }
+
+    /**
+     * @param string $regulationType
+     * @return Framework
+     */
+    public function setPolicyCompliance(?string $policyCompliance): Framework
+    {
+        $this->policyCompliance = $policyCompliance;
         return $this;
     }
 
@@ -870,7 +891,9 @@ class Framework extends AbstractModel
           'pillar'                  => $this->getPillar(),
           'category'                => $this->getCategory(),
           'status'                  => $this->getStatus(),
+          'regulation'              => $this->getRegulation(),
           'regulation_type'         => $this->getRegulationType(),
+          'policy_compliance'       => $this->getPolicyCompliance(),
           'start_date'              => !empty($this->getStartDate()) ? $this->getStartDate()->format('Y-m-d') : null,
           'end_date'                => !empty($this->getEndDate()) ? $this->getEndDate()->format('Y-m-d') : null,
           'tenders_open_date'       => !empty($this->getTendersOpenDate()) ? $this->getTendersOpenDate()->format('Y-m-d') : null,
@@ -884,7 +907,6 @@ class Framework extends AbstractModel
           'keywords'                => $this->getKeywords(),
           'upcoming_deal_details'   => $this->getUpcomingDealDetails(),
           'upcoming_deal_summary'   => $this->getUpcomingDealSummary(),
-          'regulation'              => $this->getRegulation(),
         ];
     }
 }

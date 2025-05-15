@@ -79,7 +79,7 @@ class Framework extends AbstractModel
     /**
      * @var string
      */
-    protected $status;    
+    protected $status;
     /**
      * @var string
      */

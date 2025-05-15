@@ -223,7 +223,7 @@ class FrameworkRepository extends AbstractRepository
             $regulationType = $framework->getRegulationType();
             $query->bindParam(':regulation_type', $regulationType, \PDO::PARAM_STR);
         }
-        
+
         if (isset($databaseBindings['policy_compliance'])) {
             $policyCompliance = $framework->getPolicyCompliance();
             $query->bindParam(':policy_compliance', $policyCompliance, \PDO::PARAM_STR);

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# reindexes elasticsearch on local environment
+# reindexes elasticsearch
 
 # loads variables from .env file
 ELASTIC_SUFFIX=$(grep ELASTIC_SUFFIX ../.env | xargs)

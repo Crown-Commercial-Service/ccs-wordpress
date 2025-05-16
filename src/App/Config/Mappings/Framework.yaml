@@ -17,3 +17,4 @@ properties:
   publishOnWebsite: Don_t_publish_as_Framework_on_website__c
   createDraftPage: Create_draft_web_page__c
   regulation: Regulation_Used__c
+  policyCompliance: Policy_Compliance_Statement__c

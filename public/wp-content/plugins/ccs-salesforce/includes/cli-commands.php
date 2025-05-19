@@ -330,6 +330,8 @@ class Import
 
     public function all()
     {
+        $this->startTime = microtime(true);
+        $initialTime = microtime(true);
         // Start lock
         $lock = $this->lockFactory->createLock('ccs-salesforce-import-all');
         if (!$lock->acquire()) {
@@ -342,8 +344,6 @@ class Import
         $this->generateSalesforceToken();
 
         $this->processTempData();
-        $this->startTime = microtime(true);
-        $initialTime = microtime(true);
 
         // Get all frameworks from Salesforce
         try {
@@ -370,9 +370,9 @@ class Import
 
         foreach ($frameworks as $index => $framework) {
             // How much time has elapsed
-            $elapsedTime = round(microtime(true) - $this->startTime, 2);
+            // $elapsedTime = round(microtime(true) - $this->startTime, 2);
             // What is the estimated remaining time in minutes.
-            $this->timeRemaining = round((($elapsedTime/$index)*count($frameworks)-$index)/60, 0);
+            // $this->timeRemaining = round((($elapsedTime/$index)*count($frameworks)-$index)/60, 0);
 
             // Import the framework
             $this->importSingleFramework($framework);

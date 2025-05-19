@@ -25,6 +25,11 @@ $fg1->add_field( new acf_fields\image( 'Event image', 'image', '202002061421a', 
     'instructions' => 'This image will be shown in featured events on a landing page and as the thumbnail image on the events page. Minimum size: 160&times;80. Recommended size: 320&times;160.',
 ] ) );
 
+$fg1->add_field( new acf_fields\text( 'Summary', 'event_summary', '202505191545a', [
+    'instructions' => 'A few short sentences - a maximum of 180 characters.',
+    'maxlength' => 180
+] ) );
+
 $fg1->add_field( new acf_fields\wysiwyg( 'Description', 'description', '202002061420a', [
     'instructions' => 'If you add an image in this section it will show in the body copy only.',
     'required' => 1

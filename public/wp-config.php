@@ -74,8 +74,8 @@ define('WP_HOME', WP_SITEURL);
 define( 'FORCE_SSL_ADMIN', $ssl );
 
 // Ensure SSL works when HTTPS is terminated at load balancer
-if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
-    $_SERVER['HTTPS']='on';
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && stripos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
+    $_SERVER['HTTPS'] = 'on';
 }
 
 

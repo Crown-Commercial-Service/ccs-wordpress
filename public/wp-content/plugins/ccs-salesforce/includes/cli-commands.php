@@ -238,25 +238,25 @@ class Import
      */
     public function single($args)
     {
+        $this->startTime = microtime(true);
+
         // Start lock
         $lock = $this->lockFactory->createLock('ccs-salesforce-import-single');
+
         if (!$lock->acquire()) {
             $this->addErrorAndExit('Lock file is currently in use by another process, quitting script');
         }
 
-        if (!empty($args)) {
+        if (empty($args) || !isset($args[0]) || empty($args[0])) {
+            $this->addError('No Framework ID was provided, please enter a Framework ID in the command.', 'framework');
+            exit;
+        } else {
             $frameworkId = $args[0];
         }
 
-        if (!isset($frameworkId) || empty($frameworkId)) {
-            $this->addError('No Framework ID was provided, please enter a Framework ID in the command.', 'framework');
-            exit;
-        }
-
-        $this->addSuccess('Salesforce single Framework import started', null, true);
-
         // Lets hardcode this on average, it's correct.
         $this->timeRemaining = 'Less than 2';
+        $this->addSuccess('Salesforce single Framework import started', null, true);
 
         // Lets generate an access token
         $this->generateSalesforceToken();
@@ -287,11 +287,9 @@ class Import
         // Import this Framework
         $framework = $this->importSingleFramework($framework);
 
-       $this->printSummary();
+        $this->printSummary();
        
-       WP_CLI::success(sprintf('Import took %s seconds to run', round(microtime(true) - $this->startTime, 2)));
-        
-       $this->startTime = 0;
+        WP_CLI::success(sprintf('Import took %s seconds to run', round(microtime(true) - $this->startTime, 2)));
 
         $this->updateFrameworkSearchIndexWithSingleFramework($framework);
 
@@ -332,6 +330,8 @@ class Import
 
     public function all()
     {
+        $this->startTime = microtime(true);
+        $initialTime = microtime(true);
         // Start lock
         $lock = $this->lockFactory->createLock('ccs-salesforce-import-all');
         if (!$lock->acquire()) {
@@ -344,8 +344,6 @@ class Import
         $this->generateSalesforceToken();
 
         $this->processTempData();
-        $this->startTime = microtime(true);
-        $initialTime = microtime(true);
 
         // Get all frameworks from Salesforce
         try {
@@ -372,9 +370,9 @@ class Import
 
         foreach ($frameworks as $index => $framework) {
             // How much time has elapsed
-            $elapsedTime = round(microtime(true) - $this->startTime, 2);
+            // $elapsedTime = round(microtime(true) - $this->startTime, 2);
             // What is the estimated remaining time in minutes.
-            $this->timeRemaining = round((($elapsedTime/$index)*count($frameworks)-$index)/60, 0);
+            // $this->timeRemaining = round((($elapsedTime/$index)*count($frameworks)-$index)/60, 0);
 
             // Import the framework
             $this->importSingleFramework($framework);

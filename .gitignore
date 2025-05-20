@@ -39,6 +39,7 @@ vendor/*
 
 public/wp-content/themes/twentynineteen/package-lock.json
 public/wp-content/themes/twentytwenty/package-lock.json
+public/wp-content/themes/twentytwentyone/package-lock.json
 
 .idea
 .phpcs-cache

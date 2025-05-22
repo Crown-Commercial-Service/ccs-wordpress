@@ -935,11 +935,27 @@ function malicous_upload_filter($file) {
 
 add_filter('wp_handle_upload_prefilter', 'malicous_upload_filter');
 
-function custom_login_error_message() {
-	return "You’ve requested to reset the password for {$_REQUEST["user_login"]}. If an account exists for that email address then you’ll receive a link to reset your password.";
+function custom_lostpassword_errors ($errors, $user_data) {
+	
+	if ($errors->get_error_code() === 'invalid_email' || (!$errors->has_errors() && !$user_data)) {
+		wp_safe_redirect( 'wp-login.php?checkemail=confirm' );
+        exit;
+    }
+    return $errors;
 }
 
-add_filter('login_errors', 'custom_login_error_message');
+function custom_lost_password_message( $translated_text, $text, $domain ) {
+	if ( $text === 'Check your email for the confirmation link, then visit the <a href="%s">login page</a>.' ) {
+		$new_message = "You’ve requested to reset the password. If an account exists for that username/email address then you’ll receive a link to reset your password.";
+		
+        return $new_message;
+    }
+    return $translated_text;
+}
+
+add_filter( 'lostpassword_errors', 'custom_lostpassword_errors', 20, 3 );
+add_filter( 'gettext', 'custom_lost_password_message', 10, 3 );
+
 function enqueue_jquery_modal_for_new_posts()
 {
 	$current_screen =  get_current_screen();

@@ -57,7 +57,7 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
 
     echo "> > Installing common web packages..."
     sudo amazon-linux-extras disable php7.3
-    sudo amazon-linux-extras enable php7.4
+    sudo amazon-linux-extras enable php8.2
     sudo yum clean metadata
     sudo yum -y install \
         php \

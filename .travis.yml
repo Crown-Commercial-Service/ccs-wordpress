@@ -21,6 +21,11 @@ matrix:
     - php: '8.2'
       env: SNIFF=1
     - php: '8.2'
+  
+addons:
+  apt:
+    packages:
+      - libonig-dev
 
 before_install:
   - composer self-update;

@@ -393,7 +393,7 @@ function framework_add_custom_column_do_sortable( $vars ) {
 add_action('save_post_framework', 'update_lot_data');
 function update_lot_data ($post_id) {
 		// get lot content from request method
-		$lot_content = $_REQUEST['lotContent'];
+		$lot_content = $_REQUEST['lotContent'] ?? [];
 		$lot_keys = array_keys($lot_content);
 
 		// update each lot post
@@ -543,15 +543,15 @@ function perpareWhitepaperAndWebinar( $args, $request ) {
 
 	$postTypeArray = array('post');
 
-	if( $request->get_param( 'noPost' ) == '1' ) {
+	if(( $request->get_param( 'noPost' ) ?? '') == '1') {
 		unset($postTypeArray[0]);
 	}
 
-	if( $request->get_param( 'whitepaper' ) == '1' ) {
+	if(( $request->get_param( 'whitepaper' ) ?? '') == '1') {
 		$postTypeArray[] = 'whitepaper';
 	}
 
-	if( $request->get_param( 'webinar' ) == '1' ) {
+	if(( $request->get_param( 'webinar' ) ?? '') == '1') {
 		$postTypeArray[] = 'webinar';
 	}
 
@@ -723,9 +723,14 @@ function casField_summary( $field ) {
 	return $field;
 }
 
-function flatten_array(array $inputArray) {
+function flatten_array(?array $inputArray): array {
+    if ($inputArray === null) {
+        return [];
+    }
     $result = array();
-    array_walk_recursive($inputArray, function($array) use (&$result) { $result[] = $array; });
+    array_walk_recursive($inputArray, function($array) use (&$result) { 
+        $result[] = $array; 
+    });
     return $result;
 }
 
@@ -742,7 +747,7 @@ function validateGlossary($valid, $value, $field, $input) {
     }
 
 	$used = [];
-	if (!empty($value)){
+	if (!empty($value) && is_array($value)){
 		foreach ( $value as $index => $row) {
 		$first_entry = trim(strtolower(reset($row)));
 		if ($first_entry) {
@@ -755,8 +760,6 @@ function validateGlossary($valid, $value, $field, $input) {
 		}
 	}
 }
-	
-
 	return $valid;
 }
 

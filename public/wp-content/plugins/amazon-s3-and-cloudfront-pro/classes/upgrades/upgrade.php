@@ -12,6 +12,7 @@
 namespace DeliciousBrains\WP_Offload_Media\Upgrades;
 
 use Amazon_S3_And_CloudFront;
+use AS3CF_Utils;
 use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
 use DeliciousBrains\WP_Offload_Media\Upgrades\Exceptions\No_More_Blogs_Exception;
 use DeliciousBrains\WP_Offload_Media\Upgrades\Exceptions\Batch_Limits_Exceeded_Exception;
@@ -21,7 +22,7 @@ use WP_Error;
 /**
  * Upgrade Class
  *
- * This class handles updates to attachments and attachment meta data
+ * This class handles updates to offloaded items.
  *
  * @since 0.6.2
  */
@@ -113,7 +114,7 @@ abstract class Upgrade {
 	protected $items_processed;
 
 	/**
-	 * @var mixed Last attachment processed.
+	 * @var mixed Last item processed.
 	 */
 	protected $last_item;
 
@@ -143,8 +144,8 @@ abstract class Upgrade {
 	protected $session;
 
 	const STATUS_RUNNING = 1;
-	const STATUS_ERROR = 2;
-	const STATUS_PAUSED = 3;
+	const STATUS_ERROR   = 2;
+	const STATUS_PAUSED  = 3;
 
 	/**
 	 * Start it up
@@ -162,11 +163,18 @@ abstract class Upgrade {
 		$this->error_threshold          = apply_filters( 'as3cf_update_' . $this->upgrade_name . '_error_threshold', 20 );
 		$this->max_items_processable    = apply_filters( 'as3cf_update_' . $this->upgrade_name . '_batch_size', $this->size_limit );
 
-		add_filter( 'cron_schedules', array( $this, 'cron_schedules' ) );
+		if ( $this->is_completed() ) {
+			return;
+		}
+
+		add_filter( 'cron_schedules', array( $this, 'cron_schedules' ) );  // phpcs:ignore WordPress.WP.CronInterval
 		add_action( $this->cron_hook, array( $this, 'do_upgrade' ) );
 
-		add_action( 'as3cf_pre_settings_render', array( $this, 'maybe_display_notices' ) );
 		add_action( 'admin_init', array( $this, 'maybe_handle_action' ) );
+
+		// Each upgrade potentially has a unique settings locked notification.
+		add_filter( 'as3cf_get_upgrade_locked_notifications', array( $this, 'get_locked_notifications' ) );
+		add_filter( 'as3cf_get_running_upgrade', array( $this, 'get_running_upgrade' ) );
 
 		// Do default checks if the upgrade can be started
 		if ( $this->maybe_init() ) {
@@ -180,7 +188,7 @@ abstract class Upgrade {
 	 * @return bool
 	 */
 	protected function maybe_init() {
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+		if ( AS3CF_Utils::is_ajax() ) {
 			return false;
 		}
 
@@ -241,13 +249,13 @@ abstract class Upgrade {
 	abstract protected function get_items_to_process( $prefix, $limit, $offset = false );
 
 	/**
-	 * Upgrade attachment.
+	 * Upgrade item.
 	 *
-	 * @param mixed $attachment
+	 * @param mixed $item
 	 *
 	 * @return bool
 	 */
-	abstract protected function upgrade_item( $attachment );
+	abstract protected function upgrade_item( $item );
 
 	/**
 	 * Get running update text.
@@ -301,7 +309,7 @@ abstract class Upgrade {
 					// If the blog didn't complete, break and try again next time before moving on.
 					break;
 				}
-			} while ( $blog_id = $this->next_blog_id() );
+			} while ( $blog_id = $this->next_blog_id() ); // phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
 		} catch ( No_More_Blogs_Exception $e ) {
 			/*
 			 * The upgrade is complete when there are no more blogs left to finish.
@@ -313,7 +321,7 @@ abstract class Upgrade {
 			$this->upgrade_error();
 
 			return;
-		} catch ( Batch_Limits_Exceeded_Exception $e ) {
+		} catch ( Batch_Limits_Exceeded_Exception $e ) { //phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 
 			// Save the session and finish this round right away.
 		}
@@ -363,16 +371,15 @@ abstract class Upgrade {
 	 *
 	 * @return int
 	 * @throws No_More_Blogs_Exception
-	 *
 	 */
 	protected function next_blog_id() {
-		$blog_id = $this->blog_id ?: $this->last_blog_id;
+		$blog_id = $this->blog_id ? $this->blog_id : $this->last_blog_id;
 
 		do {
 			$blog_id--;
 
 			if ( $blog_id < 1 ) {
-				throw new No_More_Blogs_Exception;
+				throw new No_More_Blogs_Exception();
 			}
 		} while ( ! $this->is_blog_processable( $blog_id ) );
 
@@ -392,7 +399,7 @@ abstract class Upgrade {
 	}
 
 	/**
-	 * Adds notices about issues with upgrades allowing user to restart them
+	 * Adds notices about issues with upgrades allowing user to restart them.
 	 */
 	public function maybe_display_notices() {
 		$action_url = $this->as3cf->get_plugin_page_url( array(
@@ -400,6 +407,7 @@ abstract class Upgrade {
 			'update' => $this->upgrade_name,
 		), 'self' );
 		$msg_type   = 'notice-info';
+		$custom_id  = 'as3cf-upgrade-notice-' . $this->upgrade_name;
 
 		switch ( $this->get_upgrade_status() ) {
 			case self::STATUS_RUNNING:
@@ -420,17 +428,21 @@ abstract class Upgrade {
 				$msg_type    = 'error';
 				break;
 			default:
+				$this->as3cf->notices->remove_notice_by_id( $custom_id );
+
 				return;
 		}
 
 		$msg .= ' <strong><a href="' . $action_url . '">' . $action_text . '</a></strong>';
 
 		$args = array(
-			'message' => $msg,
-			'type'    => $msg_type,
+			'custom_id'             => $custom_id,
+			'type'                  => $msg_type,
+			'dismissible'           => false,
+			'only_show_in_settings' => true,
 		);
 
-		$this->as3cf->render_view( 'notice', $args );
+		$this->as3cf->notices->add_notice( $msg, $args );
 	}
 
 	/**
@@ -497,19 +509,20 @@ abstract class Upgrade {
 	 * Calculate progress.
 	 *
 	 * @return bool|float
+	 * @throws Batch_Limits_Exceeded_Exception
 	 */
 	protected function calculate_progress() {
 		$this->boot_session();
 
 		if ( is_multisite() ) {
-			$all_blog_ids = $this->as3cf->get_blog_ids();
+			$all_blog_ids = AS3CF_Utils::get_blog_ids();
 			$decimal      = count( $this->processed_blogs_ids ) / count( $all_blog_ids );
 		} else {
 			// Set up any per-site state
 			$this->switch_to_blog( get_current_blog_id() );
-			$counts = Media_Library_Item::count_attachments();
+			$counts = Media_Library_Item::count_items();
 
-			// If there are no attachments, disable progress calculation
+			// If there are no items, disable progress calculation
 			// and protect against division by zero.
 			if ( ! $counts['total'] ) {
 				return false;
@@ -570,6 +583,7 @@ abstract class Upgrade {
 	 */
 	protected function action_restart_update() {
 		$this->init();
+		$this->end_action();
 	}
 
 	/**
@@ -581,6 +595,20 @@ abstract class Upgrade {
 		if ( $this->is_running() ) {
 			$this->change_status_request( self::STATUS_PAUSED );
 		}
+
+		$this->end_action();
+	}
+
+	/**
+	 * Common function for ending an action in a consistent way.
+	 */
+	private function end_action() {
+		// Make sure notices reflect new status.
+		$this->maybe_display_notices();
+
+		$url = $this->as3cf->get_plugin_page_url( array(), 'self' );
+		wp_redirect( $url );
+		exit;
 	}
 
 	/**
@@ -592,10 +620,6 @@ abstract class Upgrade {
 		$session           = $this->get_session();
 		$session['status'] = $status;
 		$this->save_session( $session );
-
-		$url = $this->as3cf->get_plugin_page_url( array(), 'self' );
-		wp_redirect( $url );
-		exit;
 	}
 
 	/**
@@ -663,7 +687,6 @@ abstract class Upgrade {
 
 	/**
 	 * Remove the session data to be used between requests
-	 *
 	 */
 	protected function clear_session() {
 		delete_site_option( 'as3cf_update_' . $this->upgrade_name . '_session' );
@@ -746,6 +769,15 @@ abstract class Upgrade {
 	}
 
 	/**
+	 * Whether this upgrade is currently paused or not.
+	 *
+	 * @return bool
+	 */
+	protected function is_paused() {
+		return self::STATUS_PAUSED === $this->get_upgrade_status();
+	}
+
+	/**
 	 * Set the time when the upgrade must finish by.
 	 */
 	protected function start_timer() {
@@ -760,7 +792,7 @@ abstract class Upgrade {
 	 */
 	protected function check_batch_limits() {
 		if ( $this->error_count > $this->error_threshold ) {
-			throw new Too_Many_Errors_Exception;
+			throw new Too_Many_Errors_Exception();
 		}
 
 		if ( $this->items_processed > $this->max_items_processable ) {
@@ -779,7 +811,7 @@ abstract class Upgrade {
 	/**
 	 * Check if a blog exists for the given blog ID.
 	 *
-	 * @param $blog_id
+	 * @param int $blog_id
 	 *
 	 * @return bool
 	 */
@@ -791,7 +823,7 @@ abstract class Upgrade {
 		}
 
 		if ( ! $all_ids ) {
-			$all_ids = $this->as3cf->get_blog_ids();
+			$all_ids = AS3CF_Utils::get_blog_ids();
 		}
 
 		return in_array( $blog_id, $all_ids );
@@ -806,7 +838,7 @@ abstract class Upgrade {
 		global $wpdb;
 
 		if ( is_multisite() ) {
-			return $wpdb->get_var( "SELECT MAX(blog_id) FROM {$wpdb->prefix}blogs" );
+			return $wpdb->get_var( "SELECT MAX(blog_id) FROM {$wpdb->blogs}" );
 		}
 
 		return 1;
@@ -857,7 +889,7 @@ abstract class Upgrade {
 	 * @return array
 	 */
 	protected function load_processesed_blog_ids() {
-		$session = $this->session ?: $this->get_session();
+		$session = $this->session ? $this->session : $this->get_session();
 
 		return isset( $session['processed_blog_ids'] ) ? $session['processed_blog_ids'] : array();
 	}
@@ -874,7 +906,7 @@ abstract class Upgrade {
 	/**
 	 * Perform any actions necessary after the given item is completed.
 	 *
-	 * @param $item
+	 * @param mixed $item
 	 */
 	protected function item_upgrade_completed( $item ) {
 		$this->last_item = $item;
@@ -906,7 +938,7 @@ abstract class Upgrade {
 	/**
 	 * Switch to the given blog, and update blog-specific state.
 	 *
-	 * @param $blog_id
+	 * @param int $blog_id
 	 *
 	 * @throws Batch_Limits_Exceeded_Exception
 	 */
@@ -936,5 +968,54 @@ abstract class Upgrade {
 		}
 
 		return is_admin();
+	}
+
+	/**
+	 * Get description for locked notification.
+	 *
+	 * @return string
+	 */
+	public function get_locked_notification() {
+		return sprintf(
+			__(
+				'<strong>Settings Locked</strong> &mdash; You can\'t change any of your settings until the "%s" update has completed.',
+				'amazon-s3-and-cloudfront'
+			),
+			ucwords( $this->upgrade_type )
+		);
+	}
+
+	/**
+	 * Append this upgrade's locked notification text to an array, and maybe show the upgrade status notice.
+	 *
+	 * @handles as3cf_get_upgrade_locked_notifications
+	 *
+	 * @param array $notifications
+	 *
+	 * @return array
+	 */
+	public function get_locked_notifications( array $notifications ) {
+		$this->maybe_display_notices();
+
+		$notifications[ $this->upgrade_name ] = $this->get_locked_notification();
+
+		return $notifications;
+	}
+
+	/**
+	 * Returns upgrade's name if it is running, paused or locked (usually due to errors if not running or paused).
+	 *
+	 * @handles as3cf_get_running_upgrade
+	 *
+	 * @param string $running_upgrade
+	 *
+	 * @return string
+	 */
+	public function get_running_upgrade( $running_upgrade ) {
+		if ( empty( $running_upgrade ) && ( $this->is_running() || $this->is_paused() || $this->is_locked() ) ) {
+			return $this->upgrade_name;
+		}
+
+		return $running_upgrade;
 	}
 }

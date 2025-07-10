@@ -17,21 +17,30 @@
  */
 namespace DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Logger;
 
+use DeliciousBrains\WP_Offload_Media\Gcp\Monolog\LogRecord;
 /**
  * Shared trait to enrich and format a record with
  * App Engine Flex specific information.
  */
 trait FormatterTrait
 {
-    protected function formatPayload(array $record, $message)
+    /**
+     * @param array|LogRecord $record
+     * @param string $message
+     * @return string
+     */
+    protected function formatPayload($record, $message)
     {
-        list($usec, $sec) = explode(' ', microtime());
-        $usec = (int) ((double) $usec * 1000000000);
+        if ($record instanceof LogRecord) {
+            $record = $record->toArray();
+        }
+        list($usec, $sec) = \explode(' ', \microtime());
+        $usec = (int) ((float) $usec * 1000000000);
         $sec = (int) $sec;
         $payload = ['message' => $message, 'timestamp' => ['seconds' => $sec, 'nanos' => $usec], 'thread' => '', 'severity' => $record['level_name']];
         if (isset($_SERVER['HTTP_X_CLOUD_TRACE_CONTEXT'])) {
-            $payload['traceId'] = explode('/', $_SERVER['HTTP_X_CLOUD_TRACE_CONTEXT'])[0];
+            $payload['traceId'] = \explode('/', $_SERVER['HTTP_X_CLOUD_TRACE_CONTEXT'])[0];
         }
-        return "\n" . json_encode($payload);
+        return "\n" . \json_encode($payload);
     }
 }

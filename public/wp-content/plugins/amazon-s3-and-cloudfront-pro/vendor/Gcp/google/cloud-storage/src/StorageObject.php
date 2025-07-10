@@ -23,7 +23,7 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Timestamp;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Upload\SignedUrlUploader;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Connection\ConnectionInterface;
 use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Promise\PromiseInterface;
-use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7;
+use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\Utils;
 use DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\StreamInterface;
 /**
  * Objects are the individual pieces of data that you store in Google Cloud
@@ -46,7 +46,7 @@ class StorageObject
     /**
      * @deprecated
      */
-    const DEFAULT_DOWNLOAD_URL = \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\SigningHelper::DEFAULT_DOWNLOAD_HOST;
+    const DEFAULT_DOWNLOAD_URL = SigningHelper::DEFAULT_DOWNLOAD_HOST;
     /**
      * @var Acl ACL for the object.
      */
@@ -79,13 +79,13 @@ class StorageObject
      * @param string $encryptionKeySHA256 [optional] The SHA256 hash of the
      *        customer-supplied encryption key.
      */
-    public function __construct(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Connection\ConnectionInterface $connection, $name, $bucket, $generation = null, array $info = [], $encryptionKey = null, $encryptionKeySHA256 = null)
+    public function __construct(ConnectionInterface $connection, $name, $bucket, $generation = null, array $info = [], $encryptionKey = null, $encryptionKeySHA256 = null)
     {
         $this->connection = $connection;
         $this->info = $info;
         $this->encryptionData = ['encryptionKey' => $encryptionKey, 'encryptionKeySHA256' => $encryptionKeySHA256];
-        $this->identity = ['bucket' => $bucket, 'object' => $name, 'generation' => $generation, 'userProject' => $this->pluck('requesterProjectId', $info, false)];
-        $this->acl = new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Acl($this->connection, 'objectAccessControls', $this->identity);
+        $this->identity = ['bucket' => $bucket, 'object' => $name, 'generation' => $generation, 'userProject' => $this->pluck('requesterProjectId', $info, \false)];
+        $this->acl = new Acl($this->connection, 'objectAccessControls', $this->identity);
     }
     /**
      * Configure ACL for this object.
@@ -121,9 +121,9 @@ class StorageObject
         try {
             $this->connection->getObject($this->identity + $options + ['fields' => 'name']);
         } catch (NotFoundException $ex) {
-            return false;
+            return \false;
         }
-        return true;
+        return \true;
     }
     /**
      * Delete the object.
@@ -155,7 +155,7 @@ class StorageObject
      */
     public function delete(array $options = [])
     {
-        $this->connection->deleteObject($options + array_filter($this->identity));
+        $this->connection->deleteObject($options + \array_filter($this->identity));
     }
     /**
      * Update the object. Upon receiving a result the local object's data will
@@ -208,7 +208,7 @@ class StorageObject
         if (isset($options['predefinedAcl'])) {
             $options['acl'] = null;
         }
-        return $this->info = $this->connection->patchObject($options + array_filter($this->identity));
+        return $this->info = $this->connection->patchObject($options + \array_filter($this->identity));
     }
     /**
      * Copy the object to a destination bucket.
@@ -282,10 +282,10 @@ class StorageObject
      */
     public function copy($destination, array $options = [])
     {
-        $key = isset($options['encryptionKey']) ? $options['encryptionKey'] : null;
-        $keySHA256 = isset($options['encryptionKeySHA256']) ? $options['encryptionKeySHA256'] : null;
+        $key = $options['encryptionKey'] ?? null;
+        $keySHA256 = $options['encryptionKeySHA256'] ?? null;
         $response = $this->connection->copyObject($this->formatDestinationRequest($destination, $options));
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\StorageObject($this->connection, $response['name'], $response['bucket'], $response['generation'], $response + ['requesterProjectId' => $this->identity['userProject']], $key, $keySHA256);
+        return new StorageObject($this->connection, $response['name'], $response['bucket'], $response['generation'], $response + ['requesterProjectId' => $this->identity['userProject']], $key, $keySHA256);
     }
     /**
      * Rewrite the object to a destination bucket.
@@ -397,15 +397,15 @@ class StorageObject
      */
     public function rewrite($destination, array $options = [])
     {
-        $options['useCopySourceHeaders'] = true;
-        $destinationKey = isset($options['destinationEncryptionKey']) ? $options['destinationEncryptionKey'] : null;
-        $destinationKeySHA256 = isset($options['destinationEncryptionKeySHA256']) ? $options['destinationEncryptionKeySHA256'] : null;
+        $options['useCopySourceHeaders'] = \true;
+        $destinationKey = $options['destinationEncryptionKey'] ?? null;
+        $destinationKeySHA256 = $options['destinationEncryptionKeySHA256'] ?? null;
         $options = $this->formatDestinationRequest($destination, $options);
         do {
             $response = $this->connection->rewriteObject($options);
-            $options['rewriteToken'] = isset($response['rewriteToken']) ? $response['rewriteToken'] : null;
+            $options['rewriteToken'] = $response['rewriteToken'] ?? null;
         } while ($options['rewriteToken']);
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\StorageObject($this->connection, $response['resource']['name'], $response['resource']['bucket'], $response['resource']['generation'], $response['resource'] + ['requesterProjectId' => $this->identity['userProject']], $destinationKey, $destinationKeySHA256);
+        return new StorageObject($this->connection, $response['resource']['name'], $response['resource']['bucket'], $response['resource']['generation'], $response['resource'] + ['requesterProjectId' => $this->identity['userProject']], $destinationKey, $destinationKeySHA256);
     }
     /**
      * Renames the object.
@@ -468,10 +468,10 @@ class StorageObject
      */
     public function rename($name, array $options = [])
     {
-        $destinationBucket = isset($options['destinationBucket']) ? $options['destinationBucket'] : $this->identity['bucket'];
+        $destinationBucket = $options['destinationBucket'] ?? $this->identity['bucket'];
         unset($options['destinationBucket']);
         $copiedObject = $this->copy($destinationBucket, ['name' => $name] + $options);
-        $this->delete(array_intersect_key($options, ['restOptions' => null, 'retries' => null]));
+        $this->delete(\array_intersect_key($options, ['restOptions' => null, 'retries' => null]));
         $this->info = [];
         return $copiedObject;
     }
@@ -539,13 +539,17 @@ class StorageObject
      */
     public function downloadToFile($path, array $options = [])
     {
-        $destination = \DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\stream_for(fopen($path, 'w'));
-        \DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\copy_to_stream($this->downloadAsStream($options), $destination);
+        $source = $this->downloadAsStream($options);
+        $destination = Utils::streamFor(\fopen($path, 'w'));
+        Utils::copyToStream($source, $destination);
         $destination->seek(0);
         return $destination;
     }
     /**
-     * Download an object as a stream.
+     * Download an object as a stream. The library will attempt to resume the download
+     * if a retry-able error is thrown. An attempt to fetch the remaining file will
+     * be made only if the user has not supplied a custom retry
+     * function of their own.
      *
      * Please note Google Cloud Storage respects the Range header as specified
      * by [RFC7233](https://tools.ietf.org/html/rfc7233#section-3.1). See below
@@ -592,7 +596,7 @@ class StorageObject
      */
     public function downloadAsStream(array $options = [])
     {
-        return $this->connection->downloadObject($this->formatEncryptionHeaders($options + $this->encryptionData + array_filter($this->identity)));
+        return $this->connection->downloadObject($this->formatEncryptionHeaders($options + $this->encryptionData + \array_filter($this->identity)));
     }
     /**
      * Asynchronously download an object as a stream.
@@ -614,7 +618,7 @@ class StorageObject
      *
      * ```
      * // Download all objects in a bucket asynchronously.
-     * use GuzzleHttp\Promise;
+     * use GuzzleHttp\Promise\Utils;
      * use Psr\Http\Message\StreamInterface;
      *
      * $promises = [];
@@ -626,7 +630,7 @@ class StorageObject
      *         });
      * }
      *
-     * Promise\unwrap($promises);
+     * Utils::unwrap($promises);
      * ```
      *
      * @see https://cloud.google.com/storage/docs/json_api/v1/objects/get Objects get API documentation.
@@ -653,7 +657,7 @@ class StorageObject
      */
     public function downloadAsStreamAsync(array $options = [])
     {
-        return $this->connection->downloadObjectAsync($this->formatEncryptionHeaders($options + $this->encryptionData + array_filter($this->identity)));
+        return $this->connection->downloadObjectAsync($this->formatEncryptionHeaders($options + $this->encryptionData + \array_filter($this->identity)));
     }
     /**
      * Create a Signed URL for this object.
@@ -696,6 +700,25 @@ class StorageObject
      * ]);
      * ```
      *
+     * ```
+     * // Using Bucket-Bound hostnames
+     * // By default, a custom bucket-bound hostname will use `http` as the schema rather than `https`.
+     * // In order to get an https URI, we need to specify the proper scheme.
+     * $url = $object->signedUrl(new \DateTime('tomorrow'), [
+     *     'version' => 'v4',
+     *     'bucketBoundHostname' => 'cdn.example.com',
+     *     'scheme' => 'https'
+     * ]);
+     * ```
+     *
+     * ```
+     * // Using virtual hosted style URIs
+     * // When true, returns a URL with the hostname `<bucket>.storage.googleapis.com`.
+     * $url = $object->signedUrl(new \DateTime('tomorrow'), [
+     *     'virtualHostedStyle' => true
+     * ]);
+     * ````
+     *
      * @see https://cloud.google.com/storage/docs/access-control/signed-urls Signed URLs
      *
      * @param Timestamp|\DateTimeInterface|int $expires Specifies when the URL
@@ -705,9 +728,10 @@ class StorageObject
      * @param array $options {
      *     Configuration Options.
      *
-     *     @type string $cname The CNAME for the bucket, for instance
-     *           `https://cdn.example.com`. **Defaults to**
-     *           `https://storage.googleapis.com`.
+     *     @type string $bucketBoundHostname The hostname for the bucket, for
+     *           instance `cdn.example.com`. May be used for Google Cloud Load
+     *           Balancers or for custom bucket CNAMEs. **Defaults to**
+     *           `storage.googleapis.com`.
      *     @type string $contentMd5 The MD5 digest value in base64. If you
      *           provide this, the client must provide this HTTP header with
      *           this same value in its request. If provided, take care to
@@ -744,6 +768,10 @@ class StorageObject
      *     @type string $saveAsName The filename to prompt the user to save the
      *           file as when the signed url is accessed. This is ignored if
      *           `$options.responseDisposition` is set.
+     *     @type string $scheme Either `http` or `https`. Only used if a custom
+     *           hostname is provided via `$options.bucketBoundHostname`. If a
+     *           custom bucketBoundHostname is provided, **defaults to** `http`.
+     *           In all other cases, **defaults to** `https`.
      *     @type string|array $scopes One or more authentication scopes to be
      *           used with a key file. This option is ignored unless
      *           `$options.keyFile` or `$options.keyFilePath` is set.
@@ -751,6 +779,9 @@ class StorageObject
      *           as part of the signed URL query string. For allowed values,
      *           see [Reference Headers](https://cloud.google.com/storage/docs/xml-api/reference-headers#query).
      *     @type string $version One of "v2" or "v4". **Defaults to** `"v2"`.
+     *     @type bool $virtualHostedStyle If `true`, URL will be of form
+     *           `mybucket.storage.googleapis.com`. If `false`,
+     *           `storage.googleapis.com/mybucket`. **Defaults to** `false`.
      * }
      * @return string
      * @throws \InvalidArgumentException If the given expiration is invalid or in the past.
@@ -763,8 +794,8 @@ class StorageObject
     public function signedUrl($expires, array $options = [])
     {
         // May be overridden for testing.
-        $signingHelper = $this->pluck('helper', $options, false) ?: \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\SigningHelper::getHelper();
-        $resource = sprintf('/%s/%s', $this->identity['bucket'], $this->identity['object']);
+        $signingHelper = $this->pluck('helper', $options, \false) ?: SigningHelper::getHelper();
+        $resource = \sprintf('/%s/%s', $this->identity['bucket'], $this->identity['object']);
         return $signingHelper->sign($this->connection, $expires, $resource, $this->identity['generation'], $options);
     }
     /**
@@ -805,9 +836,6 @@ class StorageObject
      * @param array $options {
      *     Configuration Options.
      *
-     *     @type string $cname The CNAME for the bucket, for instance
-     *           `https://cdn.example.com`. **Defaults to**
-     *           `https://storage.googleapis.com`.
      *     @type string $contentMd5 The MD5 digest value in base64. If you
      *           provide this, the client must provide this HTTP header with
      *           this same value in its request. If provided, take care to
@@ -842,6 +870,10 @@ class StorageObject
      *     @type string $saveAsName The filename to prompt the user to save the
      *           file as when the signed url is accessed. This is ignored if
      *           `$options.responseDisposition` is set.
+     *     @type string $scheme Either `http` or `https`. Only used if a custom
+     *           hostname is provided via `$options.bucketBoundHostname`. In all
+     *           other cases, `https` is used. When a custom bucketBoundHostname
+     *           is provided, **defaults to** `http`.
      *     @type string|array $scopes One or more authentication scopes to be
      *           used with a key file. This option is ignored unless
      *           `$options.keyFile` or `$options.keyFilePath` is set.
@@ -856,8 +888,8 @@ class StorageObject
     {
         $options += ['headers' => []];
         $options['headers']['x-goog-resumable'] = 'start';
-        unset($options['cname'], $options['saveAsName'], $options['responseDisposition'], $options['responseType']);
-        return $this->signedUrl($expires, ['method' => 'POST', 'allowPost' => true] + $options);
+        unset($options['cname'], $options['bucketBoundHostname'], $options['saveAsName'], $options['responseDisposition'], $options['responseType'], $options['virtualHostedStyle']);
+        return $this->signedUrl($expires, ['method' => 'POST', 'allowPost' => \true] + $options);
     }
     /**
      * Create a signed URL upload session.
@@ -932,7 +964,7 @@ class StorageObject
         if (!isset($uploaderOptions['origin'])) {
             $uploaderOptions['origin'] = '*';
         }
-        $uploader = new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Upload\SignedUrlUploader($this->connection->requestWrapper(), '', $startUri, $uploaderOptions);
+        $uploader = new SignedUrlUploader($this->connection->requestWrapper(), '', $startUri, $uploaderOptions);
         return $uploader->getResumeUri();
     }
     /**
@@ -1023,7 +1055,7 @@ class StorageObject
      */
     public function reload(array $options = [])
     {
-        return $this->info = $this->connection->getObject($this->formatEncryptionHeaders($options + $this->encryptionData + array_filter($this->identity)));
+        return $this->info = $this->connection->getObject($this->formatEncryptionHeaders($options + $this->encryptionData + \array_filter($this->identity)));
     }
     /**
      * Retrieves the object's name.
@@ -1066,7 +1098,7 @@ class StorageObject
      */
     public function gcsUri()
     {
-        return sprintf('gs://%s/%s', $this->identity['bucket'], $this->identity['object']);
+        return \sprintf('gs://%s/%s', $this->identity['bucket'], $this->identity['object']);
     }
     /**
      * Formats a destination based request, such as copy or rewrite.
@@ -1077,13 +1109,13 @@ class StorageObject
      */
     private function formatDestinationRequest($destination, array $options)
     {
-        if (!is_string($destination) && !$destination instanceof Bucket) {
+        if (!\is_string($destination) && !$destination instanceof Bucket) {
             throw new \InvalidArgumentException('$destination must be either a string or an instance of Bucket.');
         }
-        $destAcl = isset($options['predefinedAcl']) ? $options['predefinedAcl'] : null;
-        $destObject = isset($options['name']) ? $options['name'] : $this->identity['object'];
+        $destAcl = $options['predefinedAcl'] ?? null;
+        $destObject = $options['name'] ?? $this->identity['object'];
         unset($options['name']);
         unset($options['predefinedAcl']);
-        return array_filter(['destinationBucket' => $destination instanceof Bucket ? $destination->name() : $destination, 'destinationObject' => $destObject, 'destinationPredefinedAcl' => $destAcl, 'sourceBucket' => $this->identity['bucket'], 'sourceObject' => $this->identity['object'], 'sourceGeneration' => $this->identity['generation'], 'userProject' => $this->identity['userProject']]) + $this->formatEncryptionHeaders($options + $this->encryptionData);
+        return \array_filter(['destinationBucket' => $destination instanceof Bucket ? $destination->name() : $destination, 'destinationObject' => $destObject, 'destinationPredefinedAcl' => $destAcl, 'sourceBucket' => $this->identity['bucket'], 'sourceObject' => $this->identity['object'], 'sourceGeneration' => $this->identity['generation'], 'userProject' => $this->identity['userProject']]) + $this->formatEncryptionHeaders($options + $this->encryptionData);
     }
 }

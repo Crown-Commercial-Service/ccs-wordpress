@@ -17,7 +17,8 @@
  */
 namespace DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage;
 
-use DeliciousBrains\WP_Offload_Media\Gcp\phpseclib\Crypt\RSA;
+use DeliciousBrains\WP_Offload_Media\Gcp\phpseclib\Crypt\RSA as RSA2;
+use DeliciousBrains\WP_Offload_Media\Gcp\phpseclib3\Crypt\RSA as RSA3;
 /**
  * Trait which provides helper methods for customer-supplied encryption.
  */
@@ -41,17 +42,17 @@ trait EncryptionTrait
     public function formatEncryptionHeaders(array $options)
     {
         $encryptionHeaders = [];
-        $useCopySourceHeaders = isset($options['useCopySourceHeaders']) ? $options['useCopySourceHeaders'] : false;
-        $key = isset($options['encryptionKey']) ? $options['encryptionKey'] : null;
-        $keySHA256 = isset($options['encryptionKeySHA256']) ? $options['encryptionKeySHA256'] : null;
-        $destinationKey = isset($options['destinationEncryptionKey']) ? $options['destinationEncryptionKey'] : null;
-        $destinationKeySHA256 = isset($options['destinationEncryptionKeySHA256']) ? $options['destinationEncryptionKeySHA256'] : null;
+        $useCopySourceHeaders = $options['useCopySourceHeaders'] ?? \false;
+        $key = $options['encryptionKey'] ?? null;
+        $keySHA256 = $options['encryptionKeySHA256'] ?? null;
+        $destinationKey = $options['destinationEncryptionKey'] ?? null;
+        $destinationKeySHA256 = $options['destinationEncryptionKeySHA256'] ?? null;
         unset($options['useCopySourceHeaders']);
         unset($options['encryptionKey']);
         unset($options['encryptionKeySHA256']);
         unset($options['destinationEncryptionKey']);
         unset($options['destinationEncryptionKeySHA256']);
-        $encryptionHeaders = $this->buildHeaders($key, $keySHA256, $useCopySourceHeaders) + $this->buildHeaders($destinationKey, $destinationKeySHA256, false);
+        $encryptionHeaders = $this->buildHeaders($key, $keySHA256, $useCopySourceHeaders) + $this->buildHeaders($destinationKey, $destinationKeySHA256, \false);
         if (!empty($encryptionHeaders)) {
             if (isset($options['restOptions']['headers'])) {
                 $options['restOptions']['headers'] += $encryptionHeaders;
@@ -74,8 +75,8 @@ trait EncryptionTrait
         if ($key) {
             $headerNames = $useCopySourceHeaders ? $this->copySourceEncryptionHeaderNames : $this->encryptionHeaderNames;
             if (!$keySHA256) {
-                $decodedKey = base64_decode($key);
-                $keySHA256 = base64_encode(hash('SHA256', $decodedKey, true));
+                $decodedKey = \base64_decode($key);
+                $keySHA256 = \base64_encode(\hash('SHA256', $decodedKey, \true));
             }
             return [$headerNames['algorithm'] => 'AES256', $headerNames['key'] => $key, $headerNames['keySHA256'] => $keySHA256];
         }
@@ -94,17 +95,21 @@ trait EncryptionTrait
      *        whether phpseclib is available. **Defaults to** `false`.
      * @return string The signature
      */
-    protected function signString($privateKey, $data, $forceOpenssl = false)
+    protected function signString($privateKey, $data, $forceOpenssl = \false)
     {
         $signature = '';
-        if (class_exists(\DeliciousBrains\WP_Offload_Media\Gcp\phpseclib\Crypt\RSA::class) && !$forceOpenssl) {
-            $rsa = new \DeliciousBrains\WP_Offload_Media\Gcp\phpseclib\Crypt\RSA();
+        if (\class_exists(RSA3::class) && !$forceOpenssl) {
+            $rsa = RSA3::loadPrivateKey($privateKey);
+            $rsa = $rsa->withPadding(RSA3::SIGNATURE_PKCS1)->withHash('sha256');
+            $signature = $rsa->sign($data);
+        } elseif (\class_exists(RSA2::class) && !$forceOpenssl) {
+            $rsa = new RSA2();
             $rsa->loadKey($privateKey);
-            $rsa->setSignatureMode(\DeliciousBrains\WP_Offload_Media\Gcp\phpseclib\Crypt\RSA::SIGNATURE_PKCS1);
+            $rsa->setSignatureMode(RSA2::SIGNATURE_PKCS1);
             $rsa->setHash('sha256');
             $signature = $rsa->sign($data);
-        } elseif (extension_loaded('openssl')) {
-            openssl_sign($data, $signature, $privateKey, 'sha256WithRSAEncryption');
+        } elseif (\extension_loaded('openssl')) {
+            \openssl_sign($data, $signature, $privateKey, 'sha256WithRSAEncryption');
         } else {
             // @codeCoverageIgnoreStart
             throw new \RuntimeException('OpenSSL is not installed.');

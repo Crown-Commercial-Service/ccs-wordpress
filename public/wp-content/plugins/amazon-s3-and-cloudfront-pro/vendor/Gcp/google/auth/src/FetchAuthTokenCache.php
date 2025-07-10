@@ -22,7 +22,7 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Psr\Cache\CacheItemPoolInterface;
  * A class to implement caching for any object implementing
  * FetchAuthTokenInterface
  */
-class FetchAuthTokenCache implements \DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\FetchAuthTokenInterface, \DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\SignBlobInterface
+class FetchAuthTokenCache implements FetchAuthTokenInterface, GetQuotaProjectInterface, SignBlobInterface, ProjectIdProviderInterface, UpdateMetadataInterface
 {
     use CacheTrait;
     /**
@@ -30,18 +30,26 @@ class FetchAuthTokenCache implements \DeliciousBrains\WP_Offload_Media\Gcp\Googl
      */
     private $fetcher;
     /**
-     * @var array
+     * @var int
      */
-    private $cacheConfig;
+    private $eagerRefreshThresholdSeconds = 10;
     /**
-     * @var CacheItemPoolInterface
+     * @param FetchAuthTokenInterface $fetcher A credentials fetcher
+     * @param array<mixed> $cacheConfig Configuration for the cache
+     * @param CacheItemPoolInterface $cache
      */
-    private $cache;
-    public function __construct(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\FetchAuthTokenInterface $fetcher, array $cacheConfig = null, \DeliciousBrains\WP_Offload_Media\Gcp\Psr\Cache\CacheItemPoolInterface $cache)
+    public function __construct(FetchAuthTokenInterface $fetcher, array $cacheConfig = null, CacheItemPoolInterface $cache)
     {
         $this->fetcher = $fetcher;
         $this->cache = $cache;
-        $this->cacheConfig = array_merge(['lifetime' => 1500, 'prefix' => ''], (array) $cacheConfig);
+        $this->cacheConfig = \array_merge(['lifetime' => 1500, 'prefix' => ''], (array) $cacheConfig);
+    }
+    /**
+     * @return FetchAuthTokenInterface
+     */
+    public function getFetcher()
+    {
+        return $this->fetcher;
     }
     /**
      * Implements FetchAuthTokenInterface#fetchAuthToken.
@@ -50,28 +58,16 @@ class FetchAuthTokenCache implements \DeliciousBrains\WP_Offload_Media\Gcp\Googl
      * from the supplied fetcher.
      *
      * @param callable $httpHandler callback which delivers psr7 request
-     *
-     * @return array the response
-     *
+     * @return array<mixed> the response
      * @throws \Exception
      */
     public function fetchAuthToken(callable $httpHandler = null)
     {
-        // Use the cached value if its available.
-        //
-        // TODO: correct caching; update the call to setCachedValue to set the expiry
-        // to the value returned with the auth token.
-        //
-        // TODO: correct caching; enable the cache to be cleared.
-        $cacheKey = $this->fetcher->getCacheKey();
-        $cached = $this->getCachedValue($cacheKey);
-        if (!empty($cached)) {
-            return ['access_token' => $cached];
+        if ($cached = $this->fetchAuthTokenFromCache()) {
+            return $cached;
         }
         $auth_token = $this->fetcher->fetchAuthToken($httpHandler);
-        if (isset($auth_token['access_token'])) {
-            $this->setCachedValue($cacheKey, $auth_token['access_token']);
-        }
+        $this->saveAuthTokenInCache($auth_token);
         return $auth_token;
     }
     /**
@@ -82,7 +78,7 @@ class FetchAuthTokenCache implements \DeliciousBrains\WP_Offload_Media\Gcp\Googl
         return $this->getFullCacheKey($this->fetcher->getCacheKey());
     }
     /**
-     * @return array|null
+     * @return array<mixed>|null
      */
     public function getLastReceivedToken()
     {
@@ -96,24 +92,133 @@ class FetchAuthTokenCache implements \DeliciousBrains\WP_Offload_Media\Gcp\Googl
      */
     public function getClientName(callable $httpHandler = null)
     {
+        if (!$this->fetcher instanceof SignBlobInterface) {
+            throw new \RuntimeException('Credentials fetcher does not implement ' . 'DeliciousBrains\\WP_Offload_Media\\Gcp\\Google\\Auth\\SignBlobInterface');
+        }
         return $this->fetcher->getClientName($httpHandler);
     }
     /**
      * Sign a blob using the fetcher.
      *
      * @param string $stringToSign The string to sign.
-     * @param bool $forceOpenssl Require use of OpenSSL for local signing. Does
+     * @param bool $forceOpenSsl Require use of OpenSSL for local signing. Does
      *        not apply to signing done using external services. **Defaults to**
      *        `false`.
      * @return string The resulting signature.
      * @throws \RuntimeException If the fetcher does not implement
      *     `Google\Auth\SignBlobInterface`.
      */
-    public function signBlob($stringToSign, $forceOpenSsl = false)
+    public function signBlob($stringToSign, $forceOpenSsl = \false)
     {
         if (!$this->fetcher instanceof SignBlobInterface) {
             throw new \RuntimeException('Credentials fetcher does not implement ' . 'DeliciousBrains\\WP_Offload_Media\\Gcp\\Google\\Auth\\SignBlobInterface');
         }
+        // Pass the access token from cache to GCECredentials for signing a blob.
+        // This saves a call to the metadata server when a cached token exists.
+        if ($this->fetcher instanceof Credentials\GCECredentials) {
+            $cached = $this->fetchAuthTokenFromCache();
+            $accessToken = $cached['access_token'] ?? null;
+            return $this->fetcher->signBlob($stringToSign, $forceOpenSsl, $accessToken);
+        }
         return $this->fetcher->signBlob($stringToSign, $forceOpenSsl);
+    }
+    /**
+     * Get the quota project used for this API request from the credentials
+     * fetcher.
+     *
+     * @return string|null
+     */
+    public function getQuotaProject()
+    {
+        if ($this->fetcher instanceof GetQuotaProjectInterface) {
+            return $this->fetcher->getQuotaProject();
+        }
+        return null;
+    }
+    /*
+     * Get the Project ID from the fetcher.
+     *
+     * @param callable $httpHandler Callback which delivers psr7 request
+     * @return string|null
+     * @throws \RuntimeException If the fetcher does not implement
+     *     `Google\Auth\ProvidesProjectIdInterface`.
+     */
+    public function getProjectId(callable $httpHandler = null)
+    {
+        if (!$this->fetcher instanceof ProjectIdProviderInterface) {
+            throw new \RuntimeException('Credentials fetcher does not implement ' . 'DeliciousBrains\\WP_Offload_Media\\Gcp\\Google\\Auth\\ProvidesProjectIdInterface');
+        }
+        return $this->fetcher->getProjectId($httpHandler);
+    }
+    /**
+     * Updates metadata with the authorization token.
+     *
+     * @param array<mixed> $metadata metadata hashmap
+     * @param string $authUri optional auth uri
+     * @param callable $httpHandler callback which delivers psr7 request
+     * @return array<mixed> updated metadata hashmap
+     * @throws \RuntimeException If the fetcher does not implement
+     *     `Google\Auth\UpdateMetadataInterface`.
+     */
+    public function updateMetadata($metadata, $authUri = null, callable $httpHandler = null)
+    {
+        if (!$this->fetcher instanceof UpdateMetadataInterface) {
+            throw new \RuntimeException('Credentials fetcher does not implement ' . 'DeliciousBrains\\WP_Offload_Media\\Gcp\\Google\\Auth\\UpdateMetadataInterface');
+        }
+        $cached = $this->fetchAuthTokenFromCache($authUri);
+        if ($cached) {
+            // Set the access token in the `Authorization` metadata header so
+            // the downstream call to updateMetadata know they don't need to
+            // fetch another token.
+            if (isset($cached['access_token'])) {
+                $metadata[self::AUTH_METADATA_KEY] = ['Bearer ' . $cached['access_token']];
+            }
+        }
+        $newMetadata = $this->fetcher->updateMetadata($metadata, $authUri, $httpHandler);
+        if (!$cached && ($token = $this->fetcher->getLastReceivedToken())) {
+            $this->saveAuthTokenInCache($token, $authUri);
+        }
+        return $newMetadata;
+    }
+    /**
+     * @param string|null $authUri
+     * @return array<mixed>|null
+     */
+    private function fetchAuthTokenFromCache($authUri = null)
+    {
+        // Use the cached value if its available.
+        //
+        // TODO: correct caching; update the call to setCachedValue to set the expiry
+        // to the value returned with the auth token.
+        //
+        // TODO: correct caching; enable the cache to be cleared.
+        // if $authUri is set, use it as the cache key
+        $cacheKey = $authUri ? $this->getFullCacheKey($authUri) : $this->fetcher->getCacheKey();
+        $cached = $this->getCachedValue($cacheKey);
+        if (\is_array($cached)) {
+            if (empty($cached['expires_at'])) {
+                // If there is no expiration data, assume token is not expired.
+                // (for JwtAccess and ID tokens)
+                return $cached;
+            }
+            if (\time() + $this->eagerRefreshThresholdSeconds < $cached['expires_at']) {
+                // access token is not expired
+                return $cached;
+            }
+        }
+        return null;
+    }
+    /**
+     * @param array<mixed> $authToken
+     * @param string|null  $authUri
+     * @return void
+     */
+    private function saveAuthTokenInCache($authToken, $authUri = null)
+    {
+        if (isset($authToken['access_token']) || isset($authToken['id_token'])) {
+            // if $authUri is set, use it as the cache key
+            $cacheKey = $authUri ? $this->getFullCacheKey($authUri) : $this->fetcher->getCacheKey();
+            $this->setCachedValue($cacheKey, $authToken);
+        }
     }
 }

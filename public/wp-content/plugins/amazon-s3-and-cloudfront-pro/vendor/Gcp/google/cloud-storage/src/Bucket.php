@@ -31,7 +31,9 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\PubSub\Topic;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Connection\ConnectionInterface;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Connection\IamBucket;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\SigningHelper;
-use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7;
+use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Promise\PromiseInterface;
+use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\MimeType;
+use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\Utils;
 use DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\StreamInterface;
 /**
  * Buckets are the basic containers that hold your data. Everything that you
@@ -87,14 +89,14 @@ class Bucket
      * @param string $name The bucket's name.
      * @param array $info [optional] The bucket's metadata.
      */
-    public function __construct(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Connection\ConnectionInterface $connection, $name, array $info = [])
+    public function __construct(ConnectionInterface $connection, $name, array $info = [])
     {
         $this->connection = $connection;
-        $this->identity = ['bucket' => $name, 'userProject' => $this->pluck('requesterProjectId', $info, false)];
+        $this->identity = ['bucket' => $name, 'userProject' => $this->pluck('requesterProjectId', $info, \false)];
         $this->info = $info;
         $this->projectId = $this->connection->projectId();
-        $this->acl = new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Acl($this->connection, 'bucketAccessControls', $this->identity);
-        $this->defaultAcl = new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Acl($this->connection, 'defaultObjectAccessControls', $this->identity);
+        $this->acl = new Acl($this->connection, 'bucketAccessControls', $this->identity);
+        $this->defaultAcl = new Acl($this->connection, 'defaultObjectAccessControls', $this->identity);
     }
     /**
      * Configure ACL for this bucket.
@@ -139,16 +141,19 @@ class Bucket
      * }
      * ```
      *
+     * @param array $options [optional] {
+     *     Configuration options.
+     * }
      * @return bool
      */
-    public function exists()
+    public function exists(array $options = [])
     {
         try {
-            $this->connection->getBucket($this->identity + ['fields' => 'name']);
+            $this->connection->getBucket($options + $this->identity + ['fields' => 'name']);
         } catch (NotFoundException $ex) {
-            return false;
+            return \false;
         }
-        return true;
+        return \true;
     }
     /**
      * Upload your data in a simple fashion. Uploads will default to being
@@ -264,10 +269,99 @@ class Bucket
         if ($this->isObjectNameRequired($data) && !isset($options['name'])) {
             throw new \InvalidArgumentException('A name is required when data is of type string or null.');
         }
-        $encryptionKey = isset($options['encryptionKey']) ? $options['encryptionKey'] : null;
-        $encryptionKeySHA256 = isset($options['encryptionKeySHA256']) ? $options['encryptionKeySHA256'] : null;
+        $encryptionKey = $options['encryptionKey'] ?? null;
+        $encryptionKeySHA256 = $options['encryptionKeySHA256'] ?? null;
         $response = $this->connection->insertObject($this->formatEncryptionHeaders($options) + $this->identity + ['data' => $data])->upload();
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\StorageObject($this->connection, $response['name'], $this->identity['bucket'], $response['generation'], $response, $encryptionKey, $encryptionKeySHA256);
+        return new StorageObject($this->connection, $response['name'], $this->identity['bucket'], $response['generation'], $response, $encryptionKey, $encryptionKeySHA256);
+    }
+    /**
+     * Asynchronously uploads an object.
+     *
+     * Please note this method does not support resumable or streaming uploads.
+     *
+     * Example:
+     * ```
+     * $promise = $bucket->uploadAsync('Lorem Ipsum', ['name' => 'keyToData']);
+     * $object = $promise->wait();
+     * ```
+     *
+     * ```
+     * // Upload multiple objects to a bucket asynchronously.
+     * $promises = [];
+     * $objects = ['key1' => 'Lorem', 'key2' => 'Ipsum', 'key3' => 'Gypsum'];
+     *
+     * foreach ($objects as $k => $v) {
+     *     $promises[] = $bucket->uploadAsync($v, ['name' => $k])
+     *         ->then(function (StorageObject $object) {
+     *             echo $object->name() . PHP_EOL;
+     *         }, function(\Exception $e) {
+     *             throw new Exception('An error has occurred in the matrix.', null, $e);
+     *         });
+     * }
+     *
+     * foreach ($promises as $promise) {
+     *     $promise->wait();
+     * }
+     * ```
+     *
+     * @see https://cloud.google.com/storage/docs/json_api/v1/objects/insert Objects insert API documentation.
+     * @see https://cloud.google.com/storage/docs/encryption#customer-supplied Customer-supplied encryption keys.
+     * @see https://github.com/google/php-crc32 crc32c PHP extension for hardware-accelerated validation hashes.
+     * @see https://github.com/guzzle/promises Learn more about Guzzle Promises
+     *
+     * @param string|resource|StreamInterface|null $data The data to be uploaded.
+     * @param array $options [optional] {
+     *     Configuration options.
+     *
+     *     @type string $name The name of the destination. Required when data is
+     *           of type string or null.
+     *     @type bool|string $validate Indicates whether or not validation will
+     *           be applied using md5 or crc32c hashing functionality. If
+     *           enabled, and the calculated hash does not match that of the
+     *           upstream server, the upload will be rejected. Available options
+     *           are `true`, `false`, `md5` and `crc32`. If true, either md5 or
+     *           crc32c will be chosen based on your platform. If false, no
+     *           validation hash will be sent. Choose either `md5` or `crc32` to
+     *           force a hash method regardless of performance implications. In
+     *           PHP versions earlier than 7.4, performance will be very
+     *           adversely impacted by using crc32c unless you install the
+     *           `crc32c` PHP extension. **Defaults to** `true`.ß
+     *     @type string $predefinedAcl Predefined ACL to apply to the object.
+     *           Acceptable values include, `"authenticatedRead"`,
+     *           `"bucketOwnerFullControl"`, `"bucketOwnerRead"`, `"private"`,
+     *           `"projectPrivate"`, and `"publicRead"`.
+     *     @type array $metadata The full list of available options are outlined
+     *           at the [JSON API docs](https://cloud.google.com/storage/docs/json_api/v1/objects/insert#request-body).
+     *     @type array $metadata.metadata User-provided metadata, in key/value pairs.
+     *     @type string $encryptionKey A base64 encoded AES-256 customer-supplied
+     *           encryption key. If you would prefer to manage encryption
+     *           utilizing the Cloud Key Management Service (KMS) please use the
+     *           `$metadata.kmsKeyName` setting. Please note if using KMS the
+     *           key ring must use the same location as the bucket.
+     *     @type string $encryptionKeySHA256 Base64 encoded SHA256 hash of the
+     *           customer-supplied encryption key. This value will be calculated
+     *           from the `encryptionKey` on your behalf if not provided, but
+     *           for best performance it is recommended to pass in a cached
+     *           version of the already calculated SHA.
+     * }
+     * @return PromiseInterface<StorageObject>
+     * @throws \InvalidArgumentException
+     * @experimental The experimental flag means that while we believe this method
+     *      or class is ready for use, it may change before release in backwards-
+     *      incompatible ways. Please use with caution, and test thoroughly when
+     *      upgrading.
+     */
+    public function uploadAsync($data, array $options = [])
+    {
+        if ($this->isObjectNameRequired($data) && !isset($options['name'])) {
+            throw new \InvalidArgumentException('A name is required when data is of type string or null.');
+        }
+        $encryptionKey = $options['encryptionKey'] ?? null;
+        $encryptionKeySHA256 = $options['encryptionKeySHA256'] ?? null;
+        $promise = $this->connection->insertObject($this->formatEncryptionHeaders($options) + $this->identity + ['data' => $data, 'resumable' => \false])->uploadAsync();
+        return $promise->then(function (array $response) use($encryptionKey, $encryptionKeySHA256) {
+            return new StorageObject($this->connection, $response['name'], $this->identity['bucket'], $response['generation'], $response, $encryptionKey, $encryptionKeySHA256);
+        });
     }
     /**
      * Get a resumable uploader which can provide greater control over the
@@ -335,7 +429,7 @@ class Bucket
         if ($this->isObjectNameRequired($data) && !isset($options['name'])) {
             throw new \InvalidArgumentException('A name is required when data is of type string or null.');
         }
-        return $this->connection->insertObject($this->formatEncryptionHeaders($options) + $this->identity + ['data' => $data, 'resumable' => true]);
+        return $this->connection->insertObject($this->formatEncryptionHeaders($options) + $this->identity + ['data' => $data, 'resumable' => \true]);
     }
     /**
      * Get a streamable uploader which can provide greater control over the
@@ -396,7 +490,7 @@ class Bucket
         if ($this->isObjectNameRequired($data) && !isset($options['name'])) {
             throw new \InvalidArgumentException('A name is required when data is of type string or null.');
         }
-        return $this->connection->insertObject($this->formatEncryptionHeaders($options) + $this->identity + ['data' => $data, 'streamable' => true, 'validate' => false]);
+        return $this->connection->insertObject($this->formatEncryptionHeaders($options) + $this->identity + ['data' => $data, 'streamable' => \true, 'validate' => \false]);
     }
     /**
      * Lazily instantiates an object. There are no network requests made at this
@@ -426,10 +520,10 @@ class Bucket
      */
     public function object($name, array $options = [])
     {
-        $generation = isset($options['generation']) ? $options['generation'] : null;
-        $encryptionKey = isset($options['encryptionKey']) ? $options['encryptionKey'] : null;
-        $encryptionKeySHA256 = isset($options['encryptionKeySHA256']) ? $options['encryptionKeySHA256'] : null;
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\StorageObject($this->connection, $name, $this->identity['bucket'], $generation, array_filter(['requesterProjectId' => $this->identity['userProject']]), $encryptionKey, $encryptionKeySHA256);
+        $generation = $options['generation'] ?? null;
+        $encryptionKey = $options['encryptionKey'] ?? null;
+        $encryptionKeySHA256 = $options['encryptionKeySHA256'] ?? null;
+        return new StorageObject($this->connection, $name, $this->identity['bucket'], $generation, \array_filter(['requesterProjectId' => $this->identity['userProject']]), $encryptionKey, $encryptionKeySHA256);
     }
     /**
      * Fetches all objects in the bucket.
@@ -471,14 +565,17 @@ class Bucket
      *           distinct results. **Defaults to** `false`.
      *     @type string $fields Selector which will cause the response to only
      *           return the specified fields.
+     *     @type string $matchGlob A glob pattern to filter results. The string
+     *           value must be UTF-8 encoded. See:
+     *           https://cloud.google.com/storage/docs/json_api/v1/objects/list#list-object-glob
      * }
      * @return ObjectIterator<StorageObject>
      */
     public function objects(array $options = [])
     {
-        $resultLimit = $this->pluck('resultLimit', $options, false);
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\ObjectIterator(new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\ObjectPageIterator(function (array $object) {
-            return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\StorageObject($this->connection, $object['name'], $this->identity['bucket'], isset($object['generation']) ? $object['generation'] : null, $object + array_filter(['requesterProjectId' => $this->identity['userProject']]));
+        $resultLimit = $this->pluck('resultLimit', $options, \false);
+        return new ObjectIterator(new ObjectPageIterator(function (array $object) {
+            return new StorageObject($this->connection, $object['name'], $this->identity['bucket'], isset($object['generation']) ? $object['generation'] : null, $object + \array_filter(['requesterProjectId' => $this->identity['userProject']]));
         }, [$this->connection, 'listObjects'], $options + $this->identity, ['resultLimit' => $resultLimit]));
     }
     /**
@@ -573,7 +670,7 @@ class Bucket
     public function createNotification($topic, array $options = [])
     {
         $res = $this->connection->insertNotification($options + $this->identity + ['topic' => $this->getFormattedTopic($topic), 'payload_format' => 'JSON_API_V1']);
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Notification($this->connection, $res['id'], $this->identity['bucket'], $res + ['requesterProjectId' => $this->identity['userProject']]);
+        return new Notification($this->connection, $res['id'], $this->identity['bucket'], $res + ['requesterProjectId' => $this->identity['userProject']]);
     }
     /**
      * Lazily instantiates a notification. There are no network requests made at
@@ -596,7 +693,7 @@ class Bucket
      */
     public function notification($id)
     {
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Notification($this->connection, $id, $this->identity['bucket'], ['requesterProjectId' => $this->identity['userProject']]);
+        return new Notification($this->connection, $id, $this->identity['bucket'], ['requesterProjectId' => $this->identity['userProject']]);
     }
     /**
      * Fetches all notifications associated with this bucket.
@@ -628,9 +725,9 @@ class Bucket
      */
     public function notifications(array $options = [])
     {
-        $resultLimit = $this->pluck('resultLimit', $options, false);
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Iterator\ItemIterator(new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Iterator\PageIterator(function (array $notification) {
-            return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Notification($this->connection, $notification['id'], $this->identity['bucket'], $notification + ['requesterProjectId' => $this->identity['userProject']]);
+        $resultLimit = $this->pluck('resultLimit', $options, \false);
+        return new ItemIterator(new PageIterator(function (array $notification) {
+            return new Notification($this->connection, $notification['id'], $this->identity['bucket'], $notification + ['requesterProjectId' => $this->identity['userProject']]);
         }, [$this->connection, 'listNotifications'], $options + $this->identity, ['resultLimit' => $resultLimit]));
     }
     /**
@@ -708,9 +805,18 @@ class Bucket
      *           current bucket's logs.
      *     @type string $storageClass The bucket's storage class. This defines
      *           how objects in the bucket are stored and determines the SLA and
-     *           the cost of storage. Acceptable values include
-     *           `"MULTI_REGIONAL"`, `"REGIONAL"`, `"NEARLINE"`, `"COLDLINE"`,
-     *           `"STANDARD"` and `"DURABLE_REDUCED_AVAILABILITY"`.
+     *           the cost of storage. Acceptable values include the following
+     *           strings: `"STANDARD"`, `"NEARLINE"`, `"COLDLINE"` and
+     *           `"ARCHIVE"`. Legacy values including `"MULTI_REGIONAL"`,
+     *           `"REGIONAL"` and `"DURABLE_REDUCED_AVAILABILITY"` are also
+     *           available, but should be avoided for new implementations. For
+     *           more information, refer to the
+     *           [Storage Classes](https://cloud.google.com/storage/docs/storage-classes)
+     *           documentation. **Defaults to** `"STANDARD"`.
+     *     @type array $autoclass The bucket's autoclass configuration.
+     *           Buckets can have either StorageClass OLM rules or Autoclass,
+     *           but not both. When Autoclass is enabled on a bucket, adding
+     *           StorageClass OLM rules will result in failure.
      *     @type array $versioning The bucket's versioning configuration.
      *     @type array $website The bucket's website configuration.
      *     @type array $billing The bucket's billing configuration.
@@ -748,6 +854,11 @@ class Bucket
      *           [feature documentation](https://cloud.google.com/storage/docs/uniform-bucket-level-access),
      *           as well as
      *           [Should You Use uniform bucket-level access](https://cloud.google.com/storage/docs/uniform-bucket-level-access#should-you-use)
+     *     @type string $iamConfiguration.publicAccessPrevention The bucket's
+     *           Public Access Prevention configuration. Currently,
+     *           'inherited' and 'enforced' are supported. **defaults to**
+     *           `inherited`. For more details, see
+     *           [Public Access Prevention](https://cloud.google.com/storage/docs/public-access-prevention).
      * }
      * @codingStandardsIgnoreEnd
      * @return array
@@ -805,28 +916,28 @@ class Bucket
      */
     public function compose(array $sourceObjects, $name, array $options = [])
     {
-        if (count($sourceObjects) < 2) {
+        if (\count($sourceObjects) < 2) {
             throw new \InvalidArgumentException('Must provide at least two objects to compose.');
         }
-        $options += ['destinationBucket' => $this->name(), 'destinationObject' => $name, 'destinationPredefinedAcl' => isset($options['predefinedAcl']) ? $options['predefinedAcl'] : null, 'destination' => isset($options['metadata']) ? $options['metadata'] : null, 'userProject' => $this->identity['userProject'], 'sourceObjects' => array_map(function ($sourceObject) {
+        $options += ['destinationBucket' => $this->name(), 'destinationObject' => $name, 'destinationPredefinedAcl' => isset($options['predefinedAcl']) ? $options['predefinedAcl'] : null, 'destination' => isset($options['metadata']) ? $options['metadata'] : null, 'userProject' => $this->identity['userProject'], 'sourceObjects' => \array_map(function ($sourceObject) {
             $name = null;
             $generation = null;
             if ($sourceObject instanceof StorageObject) {
                 $name = $sourceObject->name();
-                $generation = isset($sourceObject->identity()['generation']) ? $sourceObject->identity()['generation'] : null;
+                $generation = $sourceObject->identity()['generation'] ?? null;
             }
-            return array_filter(['name' => $name ?: $sourceObject, 'generation' => $generation]);
+            return \array_filter(['name' => $name ?: $sourceObject, 'generation' => $generation]);
         }, $sourceObjects)];
         if (!isset($options['destination']['contentType'])) {
-            $options['destination']['contentType'] = \DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\mimetype_from_filename($name);
+            $options['destination']['contentType'] = MimeType::fromFilename($name);
         }
         if ($options['destination']['contentType'] === null) {
             throw new \InvalidArgumentException('A content type could not be detected and must be provided manually.');
         }
         unset($options['metadata']);
         unset($options['predefinedAcl']);
-        $response = $this->connection->composeObject(array_filter($options));
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\StorageObject($this->connection, $response['name'], $this->identity['bucket'], $response['generation'], $response + array_filter(['requesterProjectId' => $this->identity['userProject']]));
+        $response = $this->connection->composeObject(\array_filter($options));
+        return new StorageObject($this->connection, $response['name'], $this->identity['bucket'], $response['generation'], $response + \array_filter(['requesterProjectId' => $this->identity['userProject']]));
     }
     /**
      * Retrieves the bucket's details. If no bucket data is cached a network
@@ -934,7 +1045,7 @@ class Bucket
      */
     public static function lifecycle(array $lifecycle = [])
     {
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Lifecycle($lifecycle);
+        return new Lifecycle($lifecycle);
     }
     /**
      * Retrieves a lifecycle builder preconfigured with the lifecycle rules that
@@ -991,27 +1102,35 @@ class Bucket
     public function isWritable($file = null)
     {
         $file = $file ?: '__tempfile';
-        $uploader = $this->getResumableUploader(\DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\stream_for(''), ['name' => $file]);
+        $uploader = $this->getResumableUploader(Utils::streamFor(''), ['name' => $file]);
         try {
             $uploader->getResumeUri();
         } catch (ServiceException $e) {
             // We expect a 403 access denied error if the bucket is not writable
             if ($e->getCode() == 403) {
-                return false;
+                return \false;
             }
             // If not a 403, re-raise the unexpected error
             throw $e;
         }
-        return true;
+        return \true;
     }
     /**
      * Manage the IAM policy for the current Bucket.
      *
-     * Please note that this method may not yet be available in your project.
+     * To request a policy with conditions, pass an array with
+     * '[requestedPolicyVersion => 3]' as argument to the policy() and
+     * reload() methods.
      *
      * Example:
      * ```
      * $iam = $bucket->iam();
+     *
+     * // Returns the stored policy, or fetches the policy if none exists.
+     * $policy = $iam->policy(['requestedPolicyVersion' => 3]);
+     *
+     * // Fetches a policy from the server.
+     * $policy = $iam->reload(['requestedPolicyVersion' => 3]);
      * ```
      *
      * @codingStandardsIgnoreStart
@@ -1019,6 +1138,7 @@ class Bucket
      * @see https://cloud.google.com/storage/docs/json_api/v1/buckets/getIamPolicy Get Bucket IAM Policy
      * @see https://cloud.google.com/storage/docs/json_api/v1/buckets/setIamPolicy Set Bucket IAM Policy
      * @see https://cloud.google.com/storage/docs/json_api/v1/buckets/testIamPermissions Test Bucket Permissions
+     * @see https://cloud.google.com/iam/docs/policies#versions policy versioning.
      * @codingStandardsIgnoreEnd
      *
      * @return Iam
@@ -1026,7 +1146,7 @@ class Bucket
     public function iam()
     {
         if (!$this->iam) {
-            $this->iam = new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Iam\Iam(new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Connection\IamBucket($this->connection), $this->identity['bucket'], ['parent' => null, 'args' => $this->identity]);
+            $this->iam = new Iam(new IamBucket($this->connection), $this->identity['bucket'], ['parent' => null, 'args' => $this->identity]);
         }
         return $this->iam;
     }
@@ -1154,9 +1274,89 @@ class Bucket
     public function signedUrl($expires, array $options = [])
     {
         // May be overridden for testing.
-        $signingHelper = $this->pluck('helper', $options, false) ?: \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\SigningHelper::getHelper();
-        $resource = sprintf('/%s', $this->identity['bucket']);
+        $signingHelper = $this->pluck('helper', $options, \false) ?: SigningHelper::getHelper();
+        $resource = \sprintf('/%s', $this->identity['bucket']);
         return $signingHelper->sign($this->connection, $expires, $resource, null, $options);
+    }
+    /**
+     * Create a signed upload policy for uploading objects.
+     *
+     * This method generates and signs a policy document. You can use policy
+     * documents to allow visitors to a website to upload files to Google Cloud
+     * Storage without giving them direct write access.
+     *
+     * Google Cloud PHP does not support v2 post policies.
+     *
+     * Example:
+     * ```
+     * $policy = $bucket->generateSignedPostPolicyV4($objectName, new \DateTime('tomorrow'), [
+     *     'conditions' => [
+     *         ['content-length-range', 0, 255]
+     *     ],
+     *     'fields' => [
+     *          'x-goog-meta-hello' => 'world',
+     *          'success_action_redirect' => 'https://google.com'
+     *     ]
+     * ]);
+     *
+     * echo '<form action="' . $policy['url'] . '" method="post" enctype="multipart/form-data">';
+     * foreach ($policy['fields'] as $name => $value) {
+     *     echo '<input type="hidden" name="' . $name . '" value="' . $value . '">';
+     * }
+     *
+     * echo 'Upload a file!<br>';
+     * echo '<input type="file" name="file">';
+     * echo '<button type="submit">Submit!</button>';
+     * echo '</form>';
+     * ```
+     *
+     * @see https://cloud.google.com/storage/docs/xml-api/post-object#policydocument Policy Documents
+     *
+     * @param string $objectName The path to the file in Google Cloud Storage,
+     *        relative to the bucket.
+     * @param Timestamp|\DateTimeInterface|int $expires Specifies when the URL
+     *        will expire. May provide an instance of {@see Google\Cloud\Core\Timestamp},
+     *        [http://php.net/datetimeimmutable](`\DateTimeImmutable`), or a
+     *        UNIX timestamp as an integer.
+     * @param array $options [optional] {
+     *     Configuration options
+     *
+     *     @type string $bucketBoundHostname The hostname for the bucket, for
+     *           instance `cdn.example.com`. May be used for Google Cloud Load
+     *           Balancers or for custom bucket CNAMEs. **Defaults to**
+     *           `storage.googleapis.com`.
+     *     @type array $conditions A list of arrays containing policy matching
+     *           conditions (e.g. `eq`, `starts-with`, `content-length-range`).
+     *     @type array $fields Additional form fields (do not include
+     *           `x-goog-signature`, `file`, `policy` or fields with an
+     *           `x-ignore` prefix), given as key/value pairs.
+     *     @type bool $forceOpenssl If true, OpenSSL will be used regardless of
+     *           whether phpseclib is available. **Defaults to** `false`.
+     *     @type array $keyFile Keyfile data to use in place of the keyfile with
+     *           which the client was constructed. If `$options.keyFilePath` is
+     *           set, this option is ignored.
+     *     @type string $keyFilePath A path to a valid Keyfile to use in place
+     *           of the keyfile with which the client was constructed.
+     *     @type string $scheme Either `http` or `https`. Only used if a custom
+     *           hostname is provided via `$options.bucketBoundHostname`. If a
+     *           custom bucketBoundHostname is provided, **defaults to** `http`.
+     *           In all other cases, **defaults to** `https`.
+     *     @type string|array $scopes One or more authentication scopes to be
+     *           used with a key file. This option is ignored unless
+     *           `$options.keyFile` or `$options.keyFilePath` is set.
+     *     @type bool $virtualHostedStyle If `true`, URL will be of form
+     *           `mybucket.storage.googleapis.com`. If `false`,
+     *           `storage.googleapis.com/mybucket`. **Defaults to** `false`.
+     * }
+     * @return array An associative array, containing (string) `uri` and
+     *        (array) `fields` keys.
+     */
+    public function generateSignedPostPolicyV4($objectName, $expires, array $options = [])
+    {
+        // May be overridden for testing.
+        $signingHelper = $this->pluck('helper', $options, \false) ?: SigningHelper::getHelper();
+        $resource = \sprintf('/%s/%s', $this->identity['bucket'], $objectName);
+        return $signingHelper->v4PostPolicy($this->connection, $expires, $resource, $options);
     }
     /**
      * Determines if an object name is required.
@@ -1166,7 +1366,7 @@ class Bucket
      */
     private function isObjectNameRequired($data)
     {
-        return is_string($data) || is_null($data);
+        return \is_string($data) || \is_null($data);
     }
     /**
      * Return a topic name in its fully qualified format.
@@ -1179,17 +1379,17 @@ class Bucket
     private function getFormattedTopic($topic)
     {
         if ($topic instanceof Topic) {
-            return sprintf(self::NOTIFICATION_TEMPLATE, $topic->name());
+            return \sprintf(self::NOTIFICATION_TEMPLATE, $topic->name());
         }
-        if (!is_string($topic)) {
-            throw new \InvalidArgumentException('$topic may only be a string or instance of Google\\Cloud\\PubSub\\Topic');
+        if (!\is_string($topic)) {
+            throw new \InvalidArgumentException('DeliciousBrains\\WP_Offload_Media\\Gcp\\$topic may only be a string or instance of Google\\Cloud\\PubSub\\Topic');
         }
-        if (preg_match('/projects\\/[^\\/]*\\/topics\\/(.*)/', $topic) === 1) {
-            return sprintf(self::NOTIFICATION_TEMPLATE, $topic);
+        if (\preg_match('/projects\\/[^\\/]*\\/topics\\/(.*)/', $topic) === 1) {
+            return \sprintf(self::NOTIFICATION_TEMPLATE, $topic);
         }
         if (!$this->projectId) {
-            throw new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\GoogleException('No project ID was provided, ' . 'and we were unable to detect a default project ID.');
+            throw new GoogleException('No project ID was provided, ' . 'and we were unable to detect a default project ID.');
         }
-        return sprintf(self::NOTIFICATION_TEMPLATE, sprintf(self::TOPIC_TEMPLATE, $this->projectId, $topic));
+        return \sprintf(self::NOTIFICATION_TEMPLATE, \sprintf(self::TOPIC_TEMPLATE, $this->projectId, $topic));
     }
 }

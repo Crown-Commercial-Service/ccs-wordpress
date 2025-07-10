@@ -28,12 +28,16 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Connection\Connect
  * notification contains information describing both the event that triggered it
  * and the object that changed.
  *
+ * To utilize this class and see more examples, please see the relevant
+ * notifications based methods exposed on {@see Google\Cloud\Storage\Bucket}.
+ *
  * Example:
  * ```
  * use Google\Cloud\Storage\StorageClient;
  *
  * $storage = new StorageClient();
  *
+ * // Fetch an existing notification by ID.
  * $bucket = $storage->bucket('my-bucket');
  * $notification = $bucket->notification('2482');
  * ```
@@ -67,10 +71,10 @@ class Notification
      *        notification.
      * @param array $info [optional] The notification's metadata.
      */
-    public function __construct(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Connection\ConnectionInterface $connection, $id, $bucket, array $info = [])
+    public function __construct(ConnectionInterface $connection, $id, $bucket, array $info = [])
     {
         $this->connection = $connection;
-        $this->identity = ['bucket' => $bucket, 'notification' => $id, 'userProject' => $this->pluck('requesterProjectId', $info, false)];
+        $this->identity = ['bucket' => $bucket, 'notification' => $id, 'userProject' => $this->pluck('requesterProjectId', $info, \false)];
         $this->info = $info;
     }
     /**
@@ -82,17 +86,19 @@ class Notification
      *     echo 'Notification exists!';
      * }
      * ```
-     *
+     * @param array $options [optional] {
+     *     Configuration options.
+     * }
      * @return bool
      */
-    public function exists()
+    public function exists(array $options = [])
     {
         try {
-            $this->connection->getNotification($this->identity + ['fields' => 'id']);
+            $this->connection->getNotification($options + $this->identity + ['fields' => 'id']);
         } catch (NotFoundException $ex) {
-            return false;
+            return \false;
         }
-        return true;
+        return \true;
     }
     /**
      * Delete the notification.

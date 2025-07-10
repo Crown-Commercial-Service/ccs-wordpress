@@ -19,6 +19,7 @@ namespace DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core;
 
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\ApplicationDefaultCredentials;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\Cache\MemoryCacheItemPool;
+use DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\Credentials\ServiceAccountCredentials;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\CredentialsLoader;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\FetchAuthTokenCache;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\FetchAuthTokenInterface;
@@ -59,6 +60,11 @@ trait RequestWrapperTrait
      */
     private $scopes = [];
     /**
+     * @var string|null The user project to bill for access charges associated
+     *      with the request.
+     */
+    private $quotaProject;
+    /**
      * Sets common defaults between request wrappers.
      *
      * @param array $config {
@@ -77,12 +83,14 @@ trait RequestWrapperTrait
      *     @type int $retries Number of retries for a failed request.
      *           **Defaults to** `3`.
      *     @type array $scopes Scopes to be used for the request.
+     *     @type string $quotaProject Specifies a user project to bill for
+     *           access charges associated with the request.
      * }
      * @throws \InvalidArgumentException
      */
     public function setCommonDefaults(array $config)
     {
-        $config += ['authCache' => new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\Cache\MemoryCacheItemPool(), 'authCacheOptions' => [], 'credentialsFetcher' => null, 'keyFile' => null, 'requestTimeout' => null, 'retries' => 3, 'scopes' => null];
+        $config += ['authCache' => new MemoryCacheItemPool(), 'authCacheOptions' => [], 'credentialsFetcher' => null, 'keyFile' => null, 'requestTimeout' => null, 'retries' => 3, 'scopes' => null, 'quotaProject' => null];
         if ($config['credentialsFetcher'] && !$config['credentialsFetcher'] instanceof FetchAuthTokenInterface) {
             throw new \InvalidArgumentException('credentialsFetcher must implement FetchAuthTokenInterface.');
         }
@@ -96,6 +104,7 @@ trait RequestWrapperTrait
         $this->scopes = $config['scopes'];
         $this->keyFile = $config['keyFile'];
         $this->requestTimeout = $config['requestTimeout'];
+        $this->quotaProject = $config['quotaProject'];
     }
     /**
      * Get the Keyfile.
@@ -131,16 +140,35 @@ trait RequestWrapperTrait
         $fetcher = null;
         if ($this->credentialsFetcher) {
             $fetcher = $this->credentialsFetcher;
-        } elseif ($this->keyFile) {
-            $fetcher = \DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\CredentialsLoader::makeCredentials($this->scopes, $this->keyFile);
         } else {
-            try {
-                $fetcher = $this->getADC();
-            } catch (\DomainException $ex) {
-                $fetcher = new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\AnonymousCredentials();
+            if ($this->keyFile) {
+                if ($this->quotaProject) {
+                    $this->keyFile['quota_project_id'] = $this->quotaProject;
+                }
+                $fetcher = CredentialsLoader::makeCredentials($this->scopes, $this->keyFile);
+            } else {
+                try {
+                    $fetcher = $this->getADC();
+                } catch (\DomainException $ex) {
+                    $fetcher = new AnonymousCredentials();
+                }
+            }
+            // Note: If authCache is set and keyFile is not set, the resulting
+            // credentials instance will be FetchAuthTokenCache, and we will be
+            // unable to enable "useJwtAccessWithScope". This is unlikely, as
+            // keyFile is automatically set in ClientTrait::configureAuthentication,
+            // and so should always exist when ServiceAccountCredentials are in use.
+            if ($fetcher instanceof ServiceAccountCredentials) {
+                $fetcher->useJwtAccessWithScope();
             }
         }
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\FetchAuthTokenCache($fetcher, $this->authCacheOptions, $this->authCache);
+        if ($fetcher instanceof FetchAuthTokenCache) {
+            // The fetcher has already been wrapped in a cache by `ApplicationDefaultCredentials`;
+            // no need to wrap it another time.
+            return $fetcher;
+        } else {
+            return new FetchAuthTokenCache($fetcher, $this->authCacheOptions, $this->authCache);
+        }
     }
     /**
      * Returns application default credentials. Abstracted out for unit testing.
@@ -150,6 +178,6 @@ trait RequestWrapperTrait
      */
     protected function getADC()
     {
-        return \DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\ApplicationDefaultCredentials::getCredentials($this->scopes, $this->authHttpHandler);
+        return ApplicationDefaultCredentials::getCredentials($this->scopes, $this->authHttpHandler, $this->authCacheOptions, $this->authCache, $this->quotaProject);
     }
 }

@@ -19,12 +19,13 @@ namespace DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Upload;
 
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\GoogleException;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\ServiceException;
+use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Promise\PromiseInterface;
 use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\Request;
 /**
  * Uploader that is a special case of the ResumableUploader where we can write
  * the file contents in a streaming manner.
  */
-class StreamableUploader extends \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Upload\ResumableUploader
+class StreamableUploader extends ResumableUploader
 {
     /**
      * Triggers the upload process.
@@ -48,18 +49,34 @@ class StreamableUploader extends \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cl
         } else {
             $rangeEnd = '*';
             $data = $this->data->getContents();
-            $writeSize = strlen($data);
+            $writeSize = \strlen($data);
         }
         // do the streaming write
         $headers = ['Content-Length' => $writeSize, 'Content-Type' => $this->contentType, 'Content-Range' => "bytes {$this->rangeStart}-{$rangeEnd}/*"];
-        $request = new \DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\Request('PUT', $resumeUri, $headers, $data);
+        $request = new Request('PUT', $resumeUri, $headers, $data);
         try {
             $response = $this->requestWrapper->send($request, $this->requestOptions);
         } catch (ServiceException $ex) {
-            throw new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\GoogleException("Upload failed. Please use this URI to resume your upload: {$resumeUri}", $ex->getCode(), $ex);
+            throw new GoogleException("Upload failed. Please use this URI to resume your upload: {$resumeUri}", $ex->getCode(), $ex);
         }
         // reset the buffer with the remaining contents
         $this->rangeStart += $writeSize;
-        return json_decode($response->getBody(), true);
+        return \json_decode($response->getBody(), \true);
+    }
+    /**
+     * Currently only the MultiPartUploader supports async.
+     *
+     * Any calls to this will throw a generic Google Exception.
+     *
+     * @return PromiseInterface
+     * @throws GoogleException
+     * @experimental The experimental flag means that while we believe this method
+     *      or class is ready for use, it may change before release in backwards-
+     *      incompatible ways. Please use with caution, and test thoroughly when
+     *      upgrading.
+     */
+    public function uploadAsync()
+    {
+        throw new GoogleException('Currently only the MultiPartUploader supports async.');
     }
 }

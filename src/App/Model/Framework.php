@@ -601,6 +601,11 @@ class Framework extends AbstractModel
      */
     public function setTendersOpenDate($tendersOpenDate, $format = 'Y-m-d'): Framework
     {
+        if ($tendersOpenDate === null) {
+            $this->tendersOpenDate = null;
+            return $this;
+        }
+
         if (!$tendersOpenDate instanceof \DateTime) {
             if (!$tendersOpenDate = date_create_from_format($format, $tendersOpenDate)) {
                 $tendersOpenDate = null;
@@ -629,6 +634,11 @@ class Framework extends AbstractModel
      */
     public function setTendersCloseDate($tendersCloseDate, $format = 'Y-m-d'): Framework
     {
+        if ($tendersCloseDate === null) {
+            $this->tendersCloseDate = null;
+            return $this;
+        }
+
         if (!$tendersCloseDate instanceof \DateTime) {
             if (!$tendersCloseDate = date_create_from_format($format, $tendersCloseDate)) {
                 $tendersCloseDate = null;
@@ -656,7 +666,11 @@ class Framework extends AbstractModel
      * @return Framework
      */
     public function setExpectedLiveDate($expectedLiveDate, $format = 'Y-m-d'): Framework
-    {
+    {   
+        if ($expectedLiveDate === null) {
+            $this->expectedLiveDate = null;
+            return $this;
+        }
         if (!$expectedLiveDate instanceof \DateTime) {
             if (!$expectedLiveDate = date_create_from_format($format, $expectedLiveDate)) {
                 $expectedLiveDate = null;
@@ -685,6 +699,11 @@ class Framework extends AbstractModel
      */
     public function setExpectedAwardDate($expectedAwardDate, $format = 'Y-m-d'): Framework
     {
+        if ($expectedAwardDate === null) {
+            $this->expectedAwardDate = null;
+            return $this;
+        }
+        
         if (!$expectedAwardDate instanceof \DateTime) {
             if (!$expectedAwardDate = date_create_from_format($format, $expectedAwardDate)) {
                 $expectedAwardDate = null;

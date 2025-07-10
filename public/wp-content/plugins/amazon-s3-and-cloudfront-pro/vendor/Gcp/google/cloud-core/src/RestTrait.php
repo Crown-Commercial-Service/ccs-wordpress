@@ -18,6 +18,7 @@
 namespace DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core;
 
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\NotFoundException;
+use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\ServiceException;
 /**
  * Provides shared functionality for REST service implementations.
  */
@@ -41,7 +42,7 @@ trait RestTrait
      * @param RequestBuilder $requestBuilder Builds PSR7 requests from a service
      *        definition.
      */
-    public function setRequestBuilder(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\RequestBuilder $requestBuilder)
+    public function setRequestBuilder(RequestBuilder $requestBuilder)
     {
         $this->requestBuilder = $requestBuilder;
     }
@@ -51,7 +52,7 @@ trait RestTrait
      * @param RequestWrapper $requestWrapper Wrapper used to handle sending
      *        requests to the JSON API.
      */
-    public function setRequestWrapper(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\RequestWrapper $requestWrapper)
+    public function setRequestWrapper(RequestWrapper $requestWrapper)
     {
         $this->requestWrapper = $requestWrapper;
     }
@@ -72,12 +73,14 @@ trait RestTrait
      * @param array $options [optional] Options used to build out the request.
      * @param array $whitelisted [optional]
      * @return array
+     * @throws ServiceException
      */
-    public function send($resource, $method, array $options = [], $whitelisted = false)
+    public function send($resource, $method, array $options = [], $whitelisted = \false)
     {
-        $requestOptions = $this->pluckArray(['restOptions', 'retries', 'requestTimeout'], $options);
+        $options += ['prettyPrint' => \false];
+        $requestOptions = $this->pluckArray(['restOptions', 'retries', 'retryHeaders', 'requestTimeout', 'restRetryFunction', 'restRetryListener'], $options);
         try {
-            return json_decode($this->requestWrapper->send($this->requestBuilder->build($resource, $method, $options), $requestOptions)->getBody(), true);
+            return \json_decode($this->requestWrapper->send($this->requestBuilder->build($resource, $method, $options), $requestOptions)->getBody(), \true);
         } catch (NotFoundException $e) {
             if ($whitelisted) {
                 throw $this->modifyWhitelistedError($e);
@@ -94,11 +97,11 @@ trait RestTrait
      */
     private function getApiEndpoint($default, array $config)
     {
-        $res = isset($config['apiEndpoint']) ? $config['apiEndpoint'] : $default;
-        if (substr($res, -1) !== '/') {
+        $res = $config['apiEndpoint'] ?? $default;
+        if (\substr($res, -1) !== '/') {
             $res = $res . '/';
         }
-        if (strpos($res, '//') === false) {
+        if (\strpos($res, '//') === \false) {
             $res = 'https://' . $res;
         }
         return $res;

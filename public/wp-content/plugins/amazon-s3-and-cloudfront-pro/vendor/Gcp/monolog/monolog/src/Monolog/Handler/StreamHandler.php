@@ -1,5 +1,6 @@
 <?php
 
+declare (strict_types=1);
 /*
  * This file is part of the Monolog package.
  *
@@ -11,38 +12,63 @@
 namespace DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Handler;
 
 use DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Logger;
+use DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Utils;
 /**
  * Stores to any stream resource
  *
  * Can be used to store into php://stderr, remote and local files, etc.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * @phpstan-import-type FormattedRecord from AbstractProcessingHandler
  */
-class StreamHandler extends \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Handler\AbstractProcessingHandler
+class StreamHandler extends AbstractProcessingHandler
 {
+    /** @const int */
+    protected const MAX_CHUNK_SIZE = 2147483647;
+    /** @const int 10MB */
+    protected const DEFAULT_CHUNK_SIZE = 10 * 1024 * 1024;
+    /** @var int */
+    protected $streamChunkSize;
+    /** @var resource|null */
     protected $stream;
-    protected $url;
-    private $errorMessage;
+    /** @var ?string */
+    protected $url = null;
+    /** @var ?string */
+    private $errorMessage = null;
+    /** @var ?int */
     protected $filePermission;
+    /** @var bool */
     protected $useLocking;
-    private $dirCreated;
+    /** @var true|null */
+    private $dirCreated = null;
     /**
-     * @param resource|string $stream
-     * @param int             $level          The minimum logging level at which this handler will be triggered
-     * @param bool            $bubble         Whether the messages that are handled can bubble up the stack or not
+     * @param resource|string $stream         If a missing path can't be created, an UnexpectedValueException will be thrown on first write
      * @param int|null        $filePermission Optional file permissions (default (0644) are only for owner read/write)
      * @param bool            $useLocking     Try to lock log file before doing any writes
      *
-     * @throws \Exception                If a missing directory is not buildable
      * @throws \InvalidArgumentException If stream is not a resource or string
      */
-    public function __construct($stream, $level = \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Logger::DEBUG, $bubble = true, $filePermission = null, $useLocking = false)
+    public function __construct($stream, $level = Logger::DEBUG, bool $bubble = \true, ?int $filePermission = null, bool $useLocking = \false)
     {
         parent::__construct($level, $bubble);
-        if (is_resource($stream)) {
+        if (($phpMemoryLimit = Utils::expandIniShorthandBytes(\ini_get('memory_limit'))) !== \false) {
+            if ($phpMemoryLimit > 0) {
+                // use max 10% of allowed memory for the chunk size, and at least 100KB
+                $this->streamChunkSize = \min(static::MAX_CHUNK_SIZE, \max((int) ($phpMemoryLimit / 10), 100 * 1024));
+            } else {
+                // memory is unlimited, set to the default 10MB
+                $this->streamChunkSize = static::DEFAULT_CHUNK_SIZE;
+            }
+        } else {
+            // no memory limit information, set to the default 10MB
+            $this->streamChunkSize = static::DEFAULT_CHUNK_SIZE;
+        }
+        if (\is_resource($stream)) {
             $this->stream = $stream;
-        } elseif (is_string($stream)) {
-            $this->url = $stream;
+            \stream_set_chunk_size($this->stream, $this->streamChunkSize);
+        } elseif (\is_string($stream)) {
+            $this->url = Utils::canonicalizePath($stream);
         } else {
             throw new \InvalidArgumentException('A stream must either be a resource or a string.');
         }
@@ -50,12 +76,12 @@ class StreamHandler extends \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Handle
         $this->useLocking = $useLocking;
     }
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function close()
+    public function close() : void
     {
-        if ($this->url && is_resource($this->stream)) {
-            fclose($this->stream);
+        if ($this->url && \is_resource($this->stream)) {
+            \fclose($this->stream);
         }
         $this->stream = null;
         $this->dirCreated = null;
@@ -74,86 +100,98 @@ class StreamHandler extends \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Handle
      *
      * @return string|null
      */
-    public function getUrl()
+    public function getUrl() : ?string
     {
         return $this->url;
     }
     /**
-     * {@inheritdoc}
+     * @return int
      */
-    protected function write(array $record)
+    public function getStreamChunkSize() : int
     {
-        if (!is_resource($this->stream)) {
-            if (null === $this->url || '' === $this->url) {
-                throw new \LogicException('Missing stream url, the stream can not be opened. This may be caused by a premature call to close().');
+        return $this->streamChunkSize;
+    }
+    /**
+     * {@inheritDoc}
+     */
+    protected function write(array $record) : void
+    {
+        if (!\is_resource($this->stream)) {
+            $url = $this->url;
+            if (null === $url || '' === $url) {
+                throw new \LogicException('Missing stream url, the stream can not be opened. This may be caused by a premature call to close().' . Utils::getRecordMessageForException($record));
             }
-            $this->createDir();
+            $this->createDir($url);
             $this->errorMessage = null;
-            set_error_handler(array($this, 'customErrorHandler'));
-            $this->stream = fopen($this->url, 'a');
+            \set_error_handler([$this, 'customErrorHandler']);
+            $stream = \fopen($url, 'a');
             if ($this->filePermission !== null) {
-                @chmod($this->url, $this->filePermission);
+                @\chmod($url, $this->filePermission);
             }
-            restore_error_handler();
-            if (!is_resource($this->stream)) {
+            \restore_error_handler();
+            if (!\is_resource($stream)) {
                 $this->stream = null;
-                throw new \UnexpectedValueException(sprintf('The stream or file "%s" could not be opened: ' . $this->errorMessage, $this->url));
+                throw new \UnexpectedValueException(\sprintf('The stream or file "%s" could not be opened in append mode: ' . $this->errorMessage, $url) . Utils::getRecordMessageForException($record));
             }
+            \stream_set_chunk_size($stream, $this->streamChunkSize);
+            $this->stream = $stream;
+        }
+        $stream = $this->stream;
+        if (!\is_resource($stream)) {
+            throw new \LogicException('No stream was opened yet' . Utils::getRecordMessageForException($record));
         }
         if ($this->useLocking) {
             // ignoring errors here, there's not much we can do about them
-            flock($this->stream, LOCK_EX);
+            \flock($stream, \LOCK_EX);
         }
-        $this->streamWrite($this->stream, $record);
+        $this->streamWrite($stream, $record);
         if ($this->useLocking) {
-            flock($this->stream, LOCK_UN);
+            \flock($stream, \LOCK_UN);
         }
     }
     /**
      * Write to stream
      * @param resource $stream
-     * @param array $record
-     */
-    protected function streamWrite($stream, array $record)
-    {
-        fwrite($stream, (string) $record['formatted']);
-    }
-    private function customErrorHandler($code, $msg)
-    {
-        $this->errorMessage = preg_replace('{^(fopen|mkdir)\\(.*?\\): }', '', $msg);
-    }
-    /**
-     * @param string $stream
+     * @param array    $record
      *
-     * @return null|string
+     * @phpstan-param FormattedRecord $record
      */
-    private function getDirFromStream($stream)
+    protected function streamWrite($stream, array $record) : void
     {
-        $pos = strpos($stream, '://');
-        if ($pos === false) {
-            return dirname($stream);
-        }
-        if ('file://' === substr($stream, 0, 7)) {
-            return dirname(substr($stream, 7));
-        }
-        return;
+        \fwrite($stream, (string) $record['formatted']);
     }
-    private function createDir()
+    private function customErrorHandler(int $code, string $msg) : bool
+    {
+        $this->errorMessage = \preg_replace('{^(fopen|mkdir)\\(.*?\\): }', '', $msg);
+        return \true;
+    }
+    private function getDirFromStream(string $stream) : ?string
+    {
+        $pos = \strpos($stream, '://');
+        if ($pos === \false) {
+            return \dirname($stream);
+        }
+        if ('file://' === \substr($stream, 0, 7)) {
+            return \dirname(\substr($stream, 7));
+        }
+        return null;
+    }
+    private function createDir(string $url) : void
     {
         // Do not try to create dir if it has already been tried.
         if ($this->dirCreated) {
             return;
         }
-        $dir = $this->getDirFromStream($this->url);
-        if (null !== $dir && !is_dir($dir)) {
+        $dir = $this->getDirFromStream($url);
+        if (null !== $dir && !\is_dir($dir)) {
             $this->errorMessage = null;
-            set_error_handler(array($this, 'customErrorHandler'));
-            $status = mkdir($dir, 0777, true);
-            restore_error_handler();
-            if (false === $status && !is_dir($dir)) {
-                throw new \UnexpectedValueException(sprintf('There is no existing directory at "%s" and its not buildable: ' . $this->errorMessage, $dir));
+            \set_error_handler([$this, 'customErrorHandler']);
+            $status = \mkdir($dir, 0777, \true);
+            \restore_error_handler();
+            if (\false === $status && !\is_dir($dir) && \strpos((string) $this->errorMessage, 'File exists') === \false) {
+                throw new \UnexpectedValueException(\sprintf('There is no existing directory at "%s" and it could not be created: ' . $this->errorMessage, $dir));
             }
         }
-        $this->dirCreated = true;
+        $this->dirCreated = \true;
     }
 }

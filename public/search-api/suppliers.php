@@ -31,21 +31,21 @@ $page = 0;
 $limit = 20;
 
 if (isset($_GET['limit']) && !empty($_GET['limit'])) {
-    $limit = (int)filter_var($_GET['limit'], FILTER_SANITIZE_STRING);
+    $limit = (int)filter_var($_GET['limit'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 }
 
 if (isset($_GET['page']) && !empty($_GET['page'])) {
-    $page = (int)filter_var($_GET['page'], FILTER_SANITIZE_STRING);
+    $page = (int)filter_var($_GET['page'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 }
 
 if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
-    $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_STRING);
+    $keyword = filter_var($_GET['keyword'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 }
 
 $nestedLiveFrameworkFilterData = [];
 
 if (isset($_GET['framework']) && !empty($_GET['framework'])) {
-    $frameworkRmNumber = filter_var($_GET['framework'], FILTER_SANITIZE_STRING);
+    $frameworkRmNumber = filter_var($_GET['framework'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $nestedLiveFrameworkFilterData[] = [
       'field' => 'live_frameworks.rm_number',
       'value' => $frameworkRmNumber
@@ -55,7 +55,7 @@ if (isset($_GET['framework']) && !empty($_GET['framework'])) {
 }
 
 if (isset($_GET['lot']) && !empty($_GET['lot'])) {
-    $lotId = filter_var($_GET['lot'], FILTER_SANITIZE_STRING);
+    $lotId = filter_var($_GET['lot'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $nestedLiveFrameworkFilterData[] = [
       'field' => 'live_frameworks.lot_ids',
       'value' => $lotId

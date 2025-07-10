@@ -55,13 +55,13 @@ class Acl
      * @param string $type The type of access control this instance applies to.
      * @param array $identity Represents which bucket, file, or generation this
      *        instance applies to.
-     * @throws InvalidArgumentException Thrown when an invalid type is passed in.
+     * @throws \InvalidArgumentException Thrown when an invalid type is passed in.
      */
-    public function __construct(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Connection\ConnectionInterface $connection, $type, array $identity)
+    public function __construct(ConnectionInterface $connection, $type, array $identity)
     {
         $validTypes = ['bucketAccessControls', 'defaultObjectAccessControls', 'objectAccessControls'];
-        if (!in_array($type, $validTypes)) {
-            throw new \InvalidArgumentException('type must be one of the following: ' . implode(', ', $validTypes));
+        if (!\in_array($type, $validTypes)) {
+            throw new InvalidArgumentException('type must be one of the following: ' . \implode(', ', $validTypes));
         }
         $this->connection = $connection;
         $this->aclOptions = $identity + ['type' => $type];

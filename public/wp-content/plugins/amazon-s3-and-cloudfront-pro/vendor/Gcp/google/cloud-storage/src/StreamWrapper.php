@@ -21,10 +21,9 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\NotFoundExc
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\ServiceException;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Bucket;
 use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\CachingStream;
-use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7;
 /**
  * A streamWrapper implementation for handling `gs://bucket/path/to/file.jpg`.
- * Note that you can only open a file with mode 'r', 'rb', 'rb', 'w', 'wb', or 'wt'.
+ * Note that you can only open a file with mode 'r', 'rb', 'rt', 'w', 'wb', 'wt', 'a', 'ab', or 'at'.
  *
  * See: http://php.net/manual/en/class.streamwrapper.php
  */
@@ -39,8 +38,14 @@ class StreamWrapper
     // 40777 in octal
     const DIRECTORY_READABLE_MODE = 16676;
     // 40444 in octal
+    const TAIL_NAME_SUFFIX = '~';
     /**
      * @var resource|null Must be public according to the PHP documentation.
+     *
+     * Contains array of context options in form ['protocol' => ['option' => value]].
+     * Options used by StreamWrapper:
+     *
+     * flush (bool) `true`: fflush() will flush output buffer; `false`: fflush() will do nothing
      */
     public $context;
     /**
@@ -74,11 +79,40 @@ class StreamWrapper
      */
     private $object;
     /**
+     * @var array Context options passed to stream_open(), used for append mode and flushing.
+     */
+    private $options = [];
+    /**
+     * @var bool `true`: fflush() will flush output buffer and redirect output to the "tail" object.
+     */
+    private $flushing = \false;
+    /**
+     * @var string|null Content type for composed object. Will be filled on first composing.
+     */
+    private $contentType = null;
+    /**
+     * @var bool `true`: writing the "tail" object, next fflush() or fclose() will compose.
+     */
+    private $composing = \false;
+    /**
+     * @var bool `true`: data has been written to the stream.
+     */
+    private $dirty = \false;
+    /**
      * Ensure we close the stream when this StreamWrapper is destroyed.
      */
     public function __destruct()
     {
         $this->stream_close();
+    }
+    /**
+     * Starting PHP 7.4, this is called when include/require is used on a stream.
+     * Absence of this method presents a warning.
+     * https://www.php.net/manual/en/migration74.incompatible.php
+     */
+    public function stream_set_option()
+    {
+        return \false;
     }
     /**
      * Register a StreamWrapper for reading and writing to Google Storage
@@ -88,17 +122,17 @@ class StreamWrapper
      *        `gs`.
      * @throws \RuntimeException
      */
-    public static function register(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\StorageClient $client, $protocol = null)
+    public static function register(StorageClient $client, $protocol = null)
     {
         $protocol = $protocol ?: self::DEFAULT_PROTOCOL;
-        if (!in_array($protocol, stream_get_wrappers())) {
-            if (!stream_wrapper_register($protocol, \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\StreamWrapper::class, STREAM_IS_URL)) {
+        if (!\in_array($protocol, \stream_get_wrappers())) {
+            if (!\stream_wrapper_register($protocol, StreamWrapper::class, \STREAM_IS_URL)) {
                 throw new \RuntimeException("Failed to register '{$protocol}://' protocol");
             }
             self::$clients[$protocol] = $client;
-            return true;
+            return \true;
         }
-        return false;
+        return \false;
     }
     /**
      * Unregisters the SteamWrapper
@@ -109,7 +143,7 @@ class StreamWrapper
     public static function unregister($protocol = null)
     {
         $protocol = $protocol ?: self::DEFAULT_PROTOCOL;
-        stream_wrapper_unregister($protocol);
+        \stream_wrapper_unregister($protocol);
         unset(self::$clients[$protocol]);
     }
     /**
@@ -129,7 +163,7 @@ class StreamWrapper
      * download the file to see if it can be opened.
      *
      * @param string $path The path of the resource to open
-     * @param string $mode The fopen mode. Currently only supports ('r', 'rb', 'rt', 'w', 'wb', 'wt')
+     * @param string $mode The fopen mode. Currently supports ('r', 'rb', 'rt', 'w', 'wb', 'wt', 'a', 'ab', 'at')
      * @param int $flags Bitwise options STREAM_USE_PATH|STREAM_REPORT_ERRORS|STREAM_MUST_SEEK
      * @param string $openedPath Will be set to the path on success if STREAM_USE_PATH option is set
      * @return bool
@@ -138,25 +172,42 @@ class StreamWrapper
     {
         $client = $this->openPath($path);
         // strip off 'b' or 't' from the mode
-        $mode = rtrim($mode, 'bt');
+        $mode = \rtrim($mode, 'bt');
         $options = [];
         if ($this->context) {
-            $contextOptions = stream_context_get_options($this->context);
-            if (array_key_exists($this->protocol, $contextOptions)) {
+            $contextOptions = \stream_context_get_options($this->context);
+            if (\array_key_exists($this->protocol, $contextOptions)) {
                 $options = $contextOptions[$this->protocol] ?: [];
             }
+            if (isset($options['flush'])) {
+                $this->flushing = (bool) $options['flush'];
+                unset($options['flush']);
+            }
+            $this->options = $options;
         }
         if ($mode == 'w') {
-            $this->stream = new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\WriteStream(null, $options);
+            $this->stream = new WriteStream(null, $options);
             $this->stream->setUploader($this->bucket->getStreamableUploader($this->stream, $options + ['name' => $this->file]));
+        } elseif ($mode == 'a') {
+            try {
+                $info = $this->bucket->object($this->file)->info();
+                $this->composing = $info['size'] > 0;
+            } catch (NotFoundException $e) {
+            }
+            $this->stream = new WriteStream(null, $options);
+            $name = $this->file;
+            if ($this->composing) {
+                $name .= self::TAIL_NAME_SUFFIX;
+            }
+            $this->stream->setUploader($this->bucket->getStreamableUploader($this->stream, $options + ['name' => $name]));
         } elseif ($mode == 'r') {
             try {
                 // Lazy read from the source
-                $options['restOptions']['stream'] = true;
-                $this->stream = new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\ReadStream($this->bucket->object($this->file)->downloadAsStream($options));
+                $options['restOptions']['stream'] = \true;
+                $this->stream = new ReadStream($this->bucket->object($this->file)->downloadAsStream($options));
                 // Wrap the response in a caching stream to make it seekable
-                if (!$this->stream->isSeekable() && $flags & STREAM_MUST_SEEK) {
-                    $this->stream = new \DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\CachingStream($this->stream);
+                if (!$this->stream->isSeekable() && $flags & \STREAM_MUST_SEEK) {
+                    $this->stream = new CachingStream($this->stream);
                 }
             } catch (ServiceException $ex) {
                 return $this->returnError($ex->getMessage(), $flags);
@@ -164,10 +215,10 @@ class StreamWrapper
         } else {
             return $this->returnError('Unknown stream_open mode.', $flags);
         }
-        if ($flags & STREAM_USE_PATH) {
+        if ($flags & \STREAM_USE_PATH) {
             $openedPath = $path;
         }
-        return true;
+        return \true;
     }
     /**
      * Callback handler for when we try to read a certain number of bytes.
@@ -189,7 +240,9 @@ class StreamWrapper
      */
     public function stream_write($data)
     {
-        return $this->stream->write($data);
+        $result = $this->stream->write($data);
+        $this->dirty = $this->dirty || (bool) $result;
+        return $result;
     }
     /**
      * Callback handler for getting data about the stream.
@@ -218,6 +271,17 @@ class StreamWrapper
         if (isset($this->stream)) {
             $this->stream->close();
         }
+        if ($this->composing) {
+            if ($this->dirty) {
+                $this->compose();
+                $this->dirty = \false;
+            }
+            try {
+                $this->bucket->object($this->file . self::TAIL_NAME_SUFFIX)->delete();
+            } catch (NotFoundException $e) {
+            }
+            $this->composing = \false;
+        }
     }
     /**
      * Callback handler for trying to seek to a certain location in the stream.
@@ -227,13 +291,13 @@ class StreamWrapper
      *        http://php.net/manual/en/streamwrapper.stream-seek.php
      * @return bool
      */
-    public function stream_seek($offset, $whence = SEEK_SET)
+    public function stream_seek($offset, $whence = \SEEK_SET)
     {
         if ($this->stream->isSeekable()) {
             $this->stream->seek($offset, $whence);
-            return true;
+            return \true;
         }
-        return false;
+        return \false;
     }
     /**
      * Callhack handler for inspecting our current position in the stream
@@ -251,7 +315,7 @@ class StreamWrapper
      */
     public function dir_closedir()
     {
-        return false;
+        return \false;
     }
     /**
      * Callback handler for trying to open a directory.
@@ -272,12 +336,12 @@ class StreamWrapper
      */
     public function dir_readdir()
     {
-        $object = $this->directoryIterator->current();
-        if ($object) {
+        $name = $this->directoryIterator->current();
+        if ($name) {
             $this->directoryIterator->next();
-            return $object->name();
+            return $name;
         }
-        return false;
+        return \false;
     }
     /**
      * Callback handler for rewind the directory handle.
@@ -287,11 +351,31 @@ class StreamWrapper
     public function dir_rewinddir()
     {
         try {
-            $this->directoryIterator = $this->bucket->objects(['prefix' => $this->file, 'fields' => 'items/name,nextPageToken']);
+            $iterator = $this->bucket->objects(['prefix' => $this->file, 'fields' => 'items/name,nextPageToken']);
+            // The delimiter options do not give us what we need, so instead we
+            // list all results matching the given prefix, enumerate the
+            // iterator, filter and transform results, and yield a fresh
+            // generator containing only the directory listing.
+            $this->directoryIterator = \call_user_func(function () use($iterator) {
+                $yielded = [];
+                $pathLen = \strlen($this->makeDirectory($this->file));
+                foreach ($iterator as $object) {
+                    $name = \substr($object->name(), $pathLen);
+                    $parts = \explode('/', $name);
+                    // since the service call returns nested results and we only
+                    // want to yield results directly within the requested directory,
+                    // check if we've already yielded this value.
+                    if ($parts[0] === "" || \in_array($parts[0], $yielded)) {
+                        continue;
+                    }
+                    $yielded[] = $parts[0];
+                    (yield $name => $parts[0]);
+                }
+            });
         } catch (ServiceException $e) {
-            return false;
+            return \false;
         }
-        return true;
+        return \true;
     }
     /**
      * Callback handler for trying to create a directory. If no file path is specified,
@@ -308,7 +392,7 @@ class StreamWrapper
         $client = $this->openPath($path);
         $predefinedAcl = $this->determineAclFromMode($mode);
         try {
-            if ($options & STREAM_MKDIR_RECURSIVE || $this->file == '') {
+            if ($options & \STREAM_MKDIR_RECURSIVE || $this->file == '') {
                 if (!$this->bucket->exists()) {
                     $client->createBucket($this->bucket->name(), ['predefinedAcl' => $predefinedAcl, 'predefinedDefaultObjectAcl' => $predefinedAcl]);
                 }
@@ -316,13 +400,20 @@ class StreamWrapper
             // If the file name is empty, we were trying to create a bucket. In this case,
             // don't create the placeholder file.
             if ($this->file != '') {
+                $bucketInfo = $this->bucket->info();
+                $ublEnabled = isset($bucketInfo['iamConfiguration']['uniformBucketLevelAccess']) && $bucketInfo['iamConfiguration']['uniformBucketLevelAccess']['enabled'] === \true;
+                // if bucket has uniform bucket level access enabled, don't set ACLs.
+                $acl = [];
+                if (!$ublEnabled) {
+                    $acl = ['predefinedAcl' => $predefinedAcl];
+                }
                 // Fake a directory by creating an empty placeholder file whose name ends in '/'
-                $this->bucket->upload('', ['name' => $this->file, 'predefinedAcl' => $predefinedAcl]);
+                $this->bucket->upload('', ['name' => $this->file] + $acl);
             }
         } catch (ServiceException $e) {
-            return false;
+            return \false;
         }
-        return true;
+        return \true;
     }
     /**
      * Callback handler for trying to move a file or directory.
@@ -333,22 +424,22 @@ class StreamWrapper
      */
     public function rename($from, $to)
     {
-        $url = (array) parse_url($to) + ['path' => '', 'host' => ''];
-        $destinationBucket = $url['host'];
-        $destinationPath = substr($url['path'], 1);
-        $this->dir_opendir($from, 0);
-        foreach ($this->directoryIterator as $file) {
-            $name = $file->name();
-            $newPath = str_replace($this->file, $destinationPath, $name);
-            $obj = $this->bucket->object($name);
+        $this->openPath($from);
+        $destination = (array) \parse_url($to) + ['path' => '', 'host' => ''];
+        $destinationBucket = $destination['host'];
+        $destinationPath = \substr($destination['path'], 1);
+        // loop through to rename file and children, if given path is a directory.
+        $objects = $this->bucket->objects(['prefix' => $this->file]);
+        foreach ($objects as $obj) {
+            $oldName = $obj->name();
+            $newPath = \str_replace($this->file, $destinationPath, $oldName);
             try {
                 $obj->rename($newPath, ['destinationBucket' => $destinationBucket]);
             } catch (ServiceException $e) {
-                // If any rename calls fail, abort and return false
-                return false;
+                return \false;
             }
         }
-        return true;
+        return \true;
     }
     /**
      * Callback handler for trying to remove a directory or a bucket. If the path is empty
@@ -369,12 +460,12 @@ class StreamWrapper
         try {
             if ($this->file == '') {
                 $this->bucket->delete();
-                return true;
+                return \true;
             } else {
                 return $this->unlink($path);
             }
         } catch (ServiceException $e) {
-            return false;
+            return \false;
         }
     }
     /**
@@ -385,7 +476,7 @@ class StreamWrapper
      */
     public function stream_cast($castAs)
     {
-        return false;
+        return \false;
     }
     /**
      * Callback handler for deleting a file
@@ -399,9 +490,9 @@ class StreamWrapper
         $object = $this->bucket->object($this->file);
         try {
             $object->delete();
-            return true;
+            return \true;
         } catch (ServiceException $e) {
-            return false;
+            return \false;
         }
     }
     /**
@@ -415,10 +506,37 @@ class StreamWrapper
     {
         $client = $this->openPath($path);
         // if directory
-        if ($this->isDirectory($this->file)) {
-            return $this->urlStatDirectory();
+        $dir = $this->getDirectoryInfo($this->file);
+        if ($dir) {
+            return $this->urlStatDirectory($dir);
         }
         return $this->urlStatFile();
+    }
+    /**
+     * Callback handler for fflush() function.
+     *
+     * @return bool
+     */
+    public function stream_flush()
+    {
+        if (!$this->flushing) {
+            return \false;
+        }
+        if (!$this->dirty) {
+            return \true;
+        }
+        if (isset($this->stream)) {
+            $this->stream->close();
+        }
+        if ($this->composing) {
+            $this->compose();
+        }
+        $options = $this->options;
+        $this->stream = new WriteStream(null, $options);
+        $this->stream->setUploader($this->bucket->getStreamableUploader($this->stream, $options + ['name' => $this->file . self::TAIL_NAME_SUFFIX]));
+        $this->composing = \true;
+        $this->dirty = \false;
+        return \true;
     }
     /**
      * Parse the URL and set protocol, filename and bucket.
@@ -428,9 +546,9 @@ class StreamWrapper
      */
     private function openPath($path)
     {
-        $url = (array) parse_url($path) + ['scheme' => '', 'path' => '', 'host' => ''];
+        $url = (array) \parse_url($path) + ['scheme' => '', 'path' => '', 'host' => ''];
         $this->protocol = $url['scheme'];
-        $this->file = ltrim($url['path'], '/');
+        $this->file = \ltrim($url['path'], '/');
         $client = self::getClient($this->protocol);
         $this->bucket = $client->bucket($url['host']);
         return $client;
@@ -443,7 +561,10 @@ class StreamWrapper
      */
     private function makeDirectory($path)
     {
-        if (substr($path, -1) == '/') {
+        if ($path == '' or $path == '/') {
+            return '';
+        }
+        if (\substr($path, -1) == '/') {
             return $path;
         }
         return $path . '/';
@@ -453,34 +574,14 @@ class StreamWrapper
      *
      * @return array|bool
      */
-    private function urlStatDirectory()
+    private function urlStatDirectory(StorageObject $object)
     {
         $stats = [];
-        // 1. try to look up the directory as a file
-        try {
-            $this->object = $this->bucket->object($this->file);
-            $info = $this->object->info();
-            // equivalent to 40777 and 40444 in octal
-            $stats['mode'] = $this->bucket->isWritable() ? self::DIRECTORY_WRITABLE_MODE : self::DIRECTORY_READABLE_MODE;
-            $this->statsFromFileInfo($info, $stats);
-            return $this->makeStatArray($stats);
-        } catch (NotFoundException $e) {
-        } catch (ServiceException $e) {
-            return false;
-        }
-        // 2. try list files in that directory
-        try {
-            $objects = $this->bucket->objects(['prefix' => $this->file]);
-            if (!$objects->current()) {
-                // can't list objects or doesn't exist
-                return false;
-            }
-        } catch (ServiceException $e) {
-            return false;
-        }
+        $info = $object->info();
         // equivalent to 40777 and 40444 in octal
-        $mode = $this->bucket->isWritable() ? self::DIRECTORY_WRITABLE_MODE : self::DIRECTORY_READABLE_MODE;
-        return $this->makeStatArray(['mode' => $mode]);
+        $stats['mode'] = $this->bucket->isWritable() ? self::DIRECTORY_WRITABLE_MODE : self::DIRECTORY_READABLE_MODE;
+        $this->statsFromFileInfo($info, $stats);
+        return $this->makeStatArray($stats);
     }
     /**
      * Calculate the `url_stat` response for a file
@@ -494,7 +595,7 @@ class StreamWrapper
             $info = $this->object->info();
         } catch (ServiceException $e) {
             // couldn't stat file
-            return false;
+            return \false;
         }
         // equivalent to 100666 and 100444 in octal
         $stats = array('mode' => $this->bucket->isWritable() ? self::FILE_WRITABLE_MODE : self::FILE_READABLE_MODE);
@@ -511,18 +612,25 @@ class StreamWrapper
     private function statsFromFileInfo(array &$info, array &$stats)
     {
         $stats['size'] = isset($info['size']) ? (int) $info['size'] : null;
-        $stats['mtime'] = isset($info['updated']) ? strtotime($info['updated']) : null;
-        $stats['ctime'] = isset($info['timeCreated']) ? strtotime($info['timeCreated']) : null;
+        $stats['mtime'] = isset($info['updated']) ? \strtotime($info['updated']) : null;
+        $stats['ctime'] = isset($info['timeCreated']) ? \strtotime($info['timeCreated']) : null;
     }
     /**
-     * Return whether we think the provided path is a directory or not
+     * Get the given path as a directory.
+     *
+     * In list objects calls, directories are returned with a trailing slash. By
+     * providing the given path with a trailing slash as a list prefix, we can
+     * check whether the given path exists as a directory.
+     *
+     * If the path does not exist or is not a directory, return null.
      *
      * @param  string $path
-     * @return bool
+     * @return StorageObject|null
      */
-    private function isDirectory($path)
+    private function getDirectoryInfo($path)
     {
-        return substr($path, -1) == '/';
+        $scan = $this->bucket->objects(['prefix' => $this->makeDirectory($path), 'resultLimit' => 1, 'fields' => 'items/name,items/size,items/updated,items/timeCreated,nextPageToken']);
+        return $scan->current();
     }
     /**
      * Returns the associative array that a `stat()` response expects using the
@@ -533,7 +641,7 @@ class StreamWrapper
      */
     private function makeStatArray($stats)
     {
-        return array_merge(array_fill_keys(['dev', 'ino', 'mode', 'nlink', 'uid', 'gid', 'rdev', 'size', 'atime', 'mtime', 'ctime', 'blksize', 'blocks'], 0), $stats);
+        return \array_merge(\array_fill_keys(['dev', 'ino', 'mode', 'nlink', 'uid', 'gid', 'rdev', 'size', 'atime', 'mtime', 'ctime', 'blksize', 'blocks'], 0), $stats);
     }
     /**
      * Helper for whether or not to trigger an error or just return false on an error.
@@ -544,10 +652,10 @@ class StreamWrapper
      */
     private function returnError($message, $flags)
     {
-        if ($flags & STREAM_REPORT_ERRORS) {
-            trigger_error($message, E_USER_WARNING);
+        if ($flags & \STREAM_REPORT_ERRORS) {
+            \trigger_error($message, \E_USER_WARNING);
         }
-        return false;
+        return \false;
     }
     /**
      * Helper for determining which predefinedAcl to use given a mode.
@@ -566,5 +674,14 @@ class StreamWrapper
         }
         // Otherwise, assume only the project/bucket owner can use the bucket.
         return 'private';
+    }
+    private function compose()
+    {
+        if (!isset($this->contentType)) {
+            $info = $this->bucket->object($this->file)->info();
+            $this->contentType = $info['contentType'] ?: 'application/octet-stream';
+        }
+        $options = ['destination' => ['contentType' => $this->contentType]];
+        $this->bucket->compose([$this->file, $this->file . self::TAIL_NAME_SUFFIX], $this->file, $options);
     }
 }

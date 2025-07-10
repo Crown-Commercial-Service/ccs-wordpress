@@ -25,14 +25,16 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Google\CRC32\Table;
  *
  * Uses a simple lookup table to improve the performances.
  */
-final class PHP implements \DeliciousBrains\WP_Offload_Media\Gcp\Google\CRC32\CRCInterface
+final class PHP implements CRCInterface
 {
     use CRCTrait;
+    private $polynomial;
+    private $crc;
+    private $table = [];
     public static function supports($algo)
     {
-        return true;
+        return \true;
     }
-    private $table = [];
     /**
      * Creates a new instance for this polynomial.
      *
@@ -41,7 +43,7 @@ final class PHP implements \DeliciousBrains\WP_Offload_Media\Gcp\Google\CRC32\CR
     public function __construct($polynomial)
     {
         $this->polynomial = $polynomial;
-        $this->table = \DeliciousBrains\WP_Offload_Media\Gcp\Google\CRC32\Table::get($polynomial);
+        $this->table = Table::get($polynomial);
         $this->reset();
     }
     public function reset()
@@ -52,15 +54,15 @@ final class PHP implements \DeliciousBrains\WP_Offload_Media\Gcp\Google\CRC32\CR
     {
         $crc = $this->crc;
         $table = $this->table;
-        $len = strlen($data);
+        $len = \strlen($data);
         for ($i = 0; $i < $len; ++$i) {
-            $crc = $crc >> 8 & 0xffffff ^ $table[($crc ^ ord($data[$i])) & 0xff];
+            $crc = $crc >> 8 & 0xffffff ^ $table[($crc ^ \ord($data[$i])) & 0xff];
         }
         $this->crc = $crc;
     }
-    public function hash($raw_output = null)
+    public function hash($raw_output = \false)
     {
-        return $this->crcHash(~$this->crc, $raw_output === true);
+        return $this->crcHash(~$this->crc, $raw_output);
     }
     public function version()
     {

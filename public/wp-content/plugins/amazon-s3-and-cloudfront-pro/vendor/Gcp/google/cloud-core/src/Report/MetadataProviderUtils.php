@@ -32,10 +32,13 @@ class MetadataProviderUtils
     {
         if (isset($server['GAE_SERVICE'])) {
             if (isset($server['GAE_ENV']) && $server['GAE_ENV'] === 'standard') {
-                return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Report\GAEStandardMetadataProvider($server);
+                return new GAEStandardMetadataProvider($server);
             }
-            return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Report\GAEFlexMetadataProvider($server);
+            return new GAEFlexMetadataProvider($server);
         }
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Report\EmptyMetadataProvider();
+        if (!empty(\getenv('K_CONFIGURATION'))) {
+            return new CloudRunMetadataProvider(\getenv());
+        }
+        return new EmptyMetadataProvider();
     }
 }

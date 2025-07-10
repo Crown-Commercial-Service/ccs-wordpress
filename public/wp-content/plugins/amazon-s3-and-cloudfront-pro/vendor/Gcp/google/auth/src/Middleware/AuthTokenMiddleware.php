@@ -18,6 +18,7 @@
 namespace DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\Middleware;
 
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\FetchAuthTokenInterface;
+use DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\GetQuotaProjectInterface;
 use DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\RequestInterface;
 /**
  * AuthTokenMiddleware is a Guzzle Middleware that adds an Authorization header
@@ -33,7 +34,7 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\RequestInterface;
 class AuthTokenMiddleware
 {
     /**
-     * @var callback
+     * @var callable
      */
     private $httpHandler;
     /**
@@ -41,7 +42,7 @@ class AuthTokenMiddleware
      */
     private $fetcher;
     /**
-     * @var callable
+     * @var ?callable
      */
     private $tokenCallback;
     /**
@@ -51,7 +52,7 @@ class AuthTokenMiddleware
      * @param callable $httpHandler (optional) callback which delivers psr7 request
      * @param callable $tokenCallback (optional) function to be called when a new token is fetched.
      */
-    public function __construct(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Auth\FetchAuthTokenInterface $fetcher, callable $httpHandler = null, callable $tokenCallback = null)
+    public function __construct(FetchAuthTokenInterface $fetcher, callable $httpHandler = null, callable $tokenCallback = null)
     {
         $this->fetcher = $fetcher;
         $this->httpHandler = $httpHandler;
@@ -80,34 +81,50 @@ class AuthTokenMiddleware
      *   $res = $client->get('myproject/taskqueues/myqueue');
      *
      * @param callable $handler
-     *
      * @return \Closure
      */
     public function __invoke(callable $handler)
     {
-        return function (\DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\RequestInterface $request, array $options) use($handler) {
+        return function (RequestInterface $request, array $options) use($handler) {
             // Requests using "auth"="google_auth" will be authorized.
             if (!isset($options['auth']) || $options['auth'] !== 'google_auth') {
                 return $handler($request, $options);
             }
             $request = $request->withHeader('authorization', 'Bearer ' . $this->fetchToken());
+            if ($quotaProject = $this->getQuotaProject()) {
+                $request = $request->withHeader(GetQuotaProjectInterface::X_GOOG_USER_PROJECT_HEADER, $quotaProject);
+            }
             return $handler($request, $options);
         };
     }
     /**
      * Call fetcher to fetch the token.
      *
-     * @return string
+     * @return string|null
      */
     private function fetchToken()
     {
-        $auth_tokens = $this->fetcher->fetchAuthToken($this->httpHandler);
-        if (array_key_exists('access_token', $auth_tokens)) {
+        $auth_tokens = (array) $this->fetcher->fetchAuthToken($this->httpHandler);
+        if (\array_key_exists('access_token', $auth_tokens)) {
             // notify the callback if applicable
             if ($this->tokenCallback) {
-                call_user_func($this->tokenCallback, $this->fetcher->getCacheKey(), $auth_tokens['access_token']);
+                \call_user_func($this->tokenCallback, $this->fetcher->getCacheKey(), $auth_tokens['access_token']);
             }
             return $auth_tokens['access_token'];
         }
+        if (\array_key_exists('id_token', $auth_tokens)) {
+            return $auth_tokens['id_token'];
+        }
+        return null;
+    }
+    /**
+     * @return string|null
+     */
+    private function getQuotaProject()
+    {
+        if ($this->fetcher instanceof GetQuotaProjectInterface) {
+            return $this->fetcher->getQuotaProject();
+        }
+        return null;
     }
 }

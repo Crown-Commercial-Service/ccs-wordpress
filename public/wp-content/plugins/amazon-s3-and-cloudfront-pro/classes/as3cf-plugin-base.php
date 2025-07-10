@@ -1,8 +1,13 @@
 <?php
 
-abstract class AS3CF_Plugin_Base {
+use DeliciousBrains\WP_Offload_Media\Settings_Interface;
+use DeliciousBrains\WP_Offload_Media\Settings_Trait;
+
+abstract class AS3CF_Plugin_Base implements Settings_Interface {
+	use Settings_Trait;
 
 	const DBRAINS_URL = 'https://deliciousbrains.com';
+	const WPE_URL     = 'https://wpengine.com';
 
 	const SETTINGS_KEY = '';
 
@@ -12,34 +17,48 @@ abstract class AS3CF_Plugin_Base {
 	protected static $settings_constants = array();
 
 	protected static $plugin_page = 'amazon-s3-and-cloudfront';
-	protected $default_tab = '';
 
 	protected $plugin_file_path;
 	protected $plugin_dir_path;
 	protected $plugin_slug;
 	protected $plugin_basename;
 	protected $plugin_version;
-	protected $plugin_pagenow;
+	protected $plugin_name;
 
 	/**
-	 * @var array
+	 * Initiate plugin
+	 *
+	 * @param string $plugin_file_path
 	 */
-	private $settings;
-
-	/**
-	 * @var array
-	 */
-	private $defined_settings;
-
 	function __construct( $plugin_file_path ) {
 		$this->plugin_file_path = $plugin_file_path;
 		$this->plugin_dir_path  = rtrim( plugin_dir_path( $plugin_file_path ), '/' );
 		$this->plugin_basename  = plugin_basename( $plugin_file_path );
-		$this->plugin_pagenow   = is_multisite() ? 'settings.php' : 'options-general.php';
 
 		if ( $this->plugin_slug && isset( $GLOBALS['aws_meta'][ $this->plugin_slug ]['version'] ) ) {
 			$this->plugin_version = $GLOBALS['aws_meta'][ $this->plugin_slug ]['version'];
 		}
+
+		$plugin_headers = array();
+
+		if ( is_admin() ) {
+			if ( ! function_exists( 'get_plugin_data' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+			$plugin_headers = get_plugin_data( $plugin_file_path, false, false );
+		}
+
+		// Fallback to generic plugin name if it can't be retrieved from the plugin headers.
+		$this->plugin_name = empty( $plugin_headers['Name'] ) ? 'WP Offload Media' : $plugin_headers['Name'];
+	}
+
+	/**
+	 * Accessor for plugin name.
+	 *
+	 * @return string
+	 */
+	public function get_plugin_name() {
+		return $this->plugin_name;
 	}
 
 	/**
@@ -97,205 +116,98 @@ abstract class AS3CF_Plugin_Base {
 	}
 
 	/**
-	 * Accessor for plugin_pagenow
+	 * Which page name should we use?
 	 *
 	 * @return string
 	 */
-	public function get_plugin_pagenow() {
-		return $this->plugin_pagenow;
+	public static function get_plugin_pagenow() {
+		return is_multisite() ? 'settings.php' : 'options-general.php';
 	}
 
 	/**
-	 * Get the plugin's settings array
+	 * Get a specific setting.
 	 *
-	 * @param bool $force
+	 * @param string $key
+	 * @param mixed  $default
 	 *
-	 * @return array
+	 * @return mixed
 	 */
-	function get_settings( $force = false ) {
-		if ( is_null( $this->settings ) || $force ) {
-			$saved_settings = get_site_option( static::SETTINGS_KEY );
-			$this->settings = $this->filter_settings( $saved_settings );
+	public function get_setting( string $key, $default = '' ) {
+		$this->get_settings();
 
-			// If defined settings keys have changed since last time settings were saved to database, re-save to remove the new keys.
-			if ( ! empty( $saved_settings ) && ! empty( $this->defined_settings ) && ! empty( array_intersect_key( $saved_settings, $this->defined_settings ) ) ) {
-				$this->save_settings();
-			}
-		}
-
-		return $this->settings;
-	}
-
-	/**
-	 * Returns first (preferred) settings constant that can be defined, otherwise blank.
-	 *
-	 * @return string
-	 */
-	public static function preferred_settings_constant() {
-		if ( ! empty( static::$settings_constants ) ) {
-			return static::$settings_constants[0];
+		if ( isset( $this->settings[ $key ] ) ) {
+			$setting = $this->settings[ $key ];
 		} else {
-			return '';
+			$setting = $default;
 		}
+
+		/**
+		 * Filter the setting value retrieved for the given key.
+		 *
+		 * @param mixed  $setting
+		 * @param string $key
+		 */
+		return apply_filters( 'as3cf_get_setting', $setting, $key );
 	}
 
 	/**
-	 * Get the constant used to define the settings.
+	 * Get a specific setting from the core plugin.
 	 *
-	 * @return string|false Constant name if defined, otherwise false
+	 * @param string $key
+	 * @param mixed  $default
+	 *
+	 * @return mixed
 	 */
-	public static function settings_constant() {
-		return AS3CF_Utils::get_first_defined_constant( static::$settings_constants );
+	public function get_core_setting( string $key, $default = '' ) {
+		return $this->get_setting( $key, $default );
 	}
 
 	/**
-	 * Get all settings that have been defined via constant for the plugin
+	 * Add or overwrite new style defined values with legacy value.
 	 *
-	 * @param bool $force
+	 * Should be overridden by concrete plugin classes.
+	 *
+	 * @param array $defines
 	 *
 	 * @return array
 	 */
-	function get_defined_settings( $force = false ) {
-		if ( ! static::settings_constant() ) {
-			$this->defined_settings = array();
-
-			return $this->defined_settings;
-		}
-
-		if ( is_null( $this->defined_settings ) || $force ) {
-			$this->defined_settings = array();
-			$unserialized           = maybe_unserialize( constant( static::settings_constant() ) );
-			$unserialized           = is_array( $unserialized ) ? $unserialized : array();
-
-			foreach ( $unserialized as $key => $value ) {
-				if ( ! in_array( $key, $this->get_settings_whitelist() ) ) {
-					continue;
-				}
-
-				if ( is_bool( $value ) || is_null( $value ) ) {
-					$value = (int) $value;
-				}
-
-				if ( is_numeric( $value ) ) {
-					$value = strval( $value );
-				} else {
-					$value = $this->sanitize_setting( $key, $value );
-				}
-
-				$this->defined_settings[ $key ] = $value;
-			}
-
-			$this->listen_for_settings_constant_changes();
-
-			// Normalize the defined settings before saving, so we can detect when a real change happens.
-			ksort( $this->defined_settings );
-			update_site_option( 'as3cf_constant_' . static::settings_constant(), array_diff_key( $this->defined_settings, array_flip( $this->get_monitored_settings_blacklist() ) ) );
-		}
-
-		return $this->defined_settings;
+	protected function get_legacy_defined_settings( array $defines ): array {
+		return $defines;
 	}
 
 	/**
-	 * Subscribe to changes of the site option used to store the constant-defined settings.
-	 */
-	protected function listen_for_settings_constant_changes() {
-		if ( false !== static::settings_constant() && ! has_action( 'update_site_option_' . 'as3cf_constant_' . static::settings_constant(), array(
-				$this,
-				'settings_constant_changed',
-			) ) ) {
-			add_action( 'add_site_option_' . 'as3cf_constant_' . static::settings_constant(), array(
-				$this,
-				'settings_constant_added',
-			), 10, 3 );
-			add_action( 'update_site_option_' . 'as3cf_constant_' . static::settings_constant(), array(
-				$this,
-				'settings_constant_changed',
-			), 10, 4 );
-		}
-	}
-
-	/**
-	 * Translate a settings constant option addition into a change.
+	 * Which defined settings keys are from the standard settings constant?
 	 *
-	 * @param string $option     Name of the option.
-	 * @param mixed  $value      Value the option is being initialized with.
-	 * @param int    $network_id ID of the network.
+	 * @return array
 	 */
-	public function settings_constant_added( $option, $value, $network_id ) {
-		$db_settings = get_site_option( static::SETTINGS_KEY, array() );
-		$this->settings_constant_changed( $option, $value, $db_settings, $network_id );
+	public function get_non_legacy_defined_settings_keys(): array {
+		static $keys = null;
+
+		if ( is_null( $keys ) ) {
+			$keys = array_keys( array_diff_key( $this->get_defined_settings(), $this->get_legacy_defined_settings( array() ) ) );
+		}
+
+		return $keys;
 	}
 
 	/**
-	 * Callback for announcing when settings-defined values change.
-	 *
-	 * @param string $option       Name of the option.
-	 * @param mixed  $new_settings Current value of the option.
-	 * @param mixed  $old_settings Old value of the option.
-	 * @param int    $network_id   ID of the network.
-	 */
-	public function settings_constant_changed( $option, $new_settings, $old_settings, $network_id ) {
-		if ( ! static::settings_constant() ) {
-			return;
-		}
-
-		$old_settings = $old_settings ?: array();
-
-		foreach ( $this->get_settings_whitelist() as $setting ) {
-			$old_value = isset( $old_settings[ $setting ] ) ? $old_settings[ $setting ] : null;
-			$new_value = isset( $new_settings[ $setting ] ) ? $new_settings[ $setting ] : null;
-
-			if ( $old_value !== $new_value ) {
-				/**
-				 * Setting-specific hook for setting change.
-				 *
-				 * @param mixed  $new_value
-				 * @param mixed  $old_value
-				 * @param string $setting
-				 */
-				do_action( 'as3cf_constant_' . static::settings_constant() . '_changed_' . $setting, $new_value, $old_value, $setting );
-
-				/**
-				 * Generic hook for setting change.
-				 *
-				 * @param mixed  $new_value
-				 * @param mixed  $old_value
-				 * @param string $setting
-				 */
-				do_action( 'as3cf_constant_' . static::settings_constant() . '_changed', $new_value, $old_value, $setting );
-			}
-		}
-	}
-
-	/**
-	 * Filter the plugin settings array
-	 *
-	 * @param array $settings
-	 *
-	 * @return array $settings
-	 */
-	function filter_settings( $settings ) {
-		$defined_settings = $this->get_defined_settings();
-
-		// Bail early if there are no defined settings
-		if ( empty( $defined_settings ) ) {
-			return $settings;
-		}
-
-		foreach ( $defined_settings as $key => $value ) {
-			$settings[ $key ] = $value;
-		}
-
-		return $settings;
-	}
-
-	/**
-	 * Get the whitelisted settings for the plugin.
+	 * Allowed settings keys for this plugin.
 	 * Meant to be overridden in child classes.
 	 *
+	 * @param bool $include_legacy Should legacy keys be included? Optional, default false.
+	 *
 	 * @return array
 	 */
-	function get_settings_whitelist() {
+	public function get_allowed_settings_keys( bool $include_legacy = false ): array {
+		return array();
+	}
+
+	/**
+	 * Get the settings that should not be shown once saved.
+	 *
+	 * @return array
+	 */
+	public function get_sensitive_settings(): array {
 		return array();
 	}
 
@@ -306,7 +218,7 @@ abstract class AS3CF_Plugin_Base {
 	 *
 	 * @return array
 	 */
-	function get_monitored_settings_blacklist() {
+	public function get_monitored_settings_blacklist(): array {
 		return array();
 	}
 
@@ -315,111 +227,35 @@ abstract class AS3CF_Plugin_Base {
 	 *
 	 * @return array
 	 */
-	function get_skip_sanitize_settings() {
+	public function get_skip_sanitize_settings(): array {
 		return array();
 	}
 
 	/**
-	 * Sanitize a setting value, maybe.
+	 * List of settings that should be treated as paths.
 	 *
-	 * @param string $key
-	 * @param mixed  $value
-	 *
-	 * @return mixed
+	 * @return array
 	 */
-	function sanitize_setting( $key, $value ) {
-		$skip_sanitize = $this->get_skip_sanitize_settings();
-
-		if ( in_array( $key, $skip_sanitize ) ) {
-			if ( is_array( $value ) ) {
-				$result = array();
-				foreach ( $value as $k => $v ) {
-					$result[ $k ] = wp_strip_all_tags( $v );
-				}
-				$value = $result;
-			} else {
-				$value = wp_strip_all_tags( $value );
-			}
-		} else {
-			$value = sanitize_text_field( $value );
-		}
-
-		return $value;
+	public function get_path_format_settings(): array {
+		return array();
 	}
 
 	/**
-	 * Get a specific setting
+	 * List of settings that should be treated as directory paths.
 	 *
-	 * @param        $key
-	 * @param string $default
-	 *
-	 * @return string
+	 * @return array
 	 */
-	function get_setting( $key, $default = '' ) {
-		$this->get_settings();
-
-		if ( isset( $this->settings[ $key ] ) ) {
-			$setting = $this->settings[ $key ];
-		} else {
-			$setting = $default;
-		}
-
-		return apply_filters( 'as3cf_get_setting', $setting, $key );
+	public function get_prefix_format_settings(): array {
+		return array();
 	}
 
 	/**
-	 * Get a specific setting from the core plugin.
+	 * List of settings that should be treated as booleans.
 	 *
-	 * @param        $key
-	 * @param string $default
-	 *
-	 * @return string
+	 * @return array
 	 */
-	public function get_core_setting( $key, $default = '' ) {
-		return $this->get_setting( $key, $default );
-	}
-
-	/**
-	 * Gets a single setting that has been defined in the plugin settings constant
-	 *
-	 * @param string $key
-	 * @param mixed  $default
-	 *
-	 * @return mixed
-	 */
-	function get_defined_setting( $key, $default = '' ) {
-		$defined_settings = $this->get_defined_settings();
-		$setting          = isset( $defined_settings[ $key ] ) ? $defined_settings[ $key ] : $default;
-
-		return $setting;
-	}
-
-	/**
-	 * Delete a setting
-	 *
-	 * @param $key
-	 */
-	function remove_setting( $key ) {
-		$this->get_settings();
-
-		if ( isset( $this->settings[ $key ] ) ) {
-			unset( $this->settings[ $key ] );
-		}
-	}
-
-	/**
-	 * Removes a defined setting from the defined_settings array.
-	 *
-	 * Does not unset the actual constant.
-	 *
-	 * @param $key
-	 */
-	function remove_defined_setting( $key ) {
-		$this->get_defined_settings();
-
-		if ( isset( $this->defined_settings[ $key ] ) ) {
-			unset( $this->defined_settings[ $key ] );
-		}
+	public function get_boolean_format_settings(): array {
+		return array();
 	}
 
 	/**
@@ -428,58 +264,9 @@ abstract class AS3CF_Plugin_Base {
 	 * @param string $view View filename without the extension
 	 * @param array  $args Arguments to pass to the view
 	 */
-	function render_view( $view, $args = array() ) {
+	public function render_view( $view, $args = array() ) {
 		extract( $args );
 		include $this->plugin_dir_path . '/view/' . $view . '.php';
-	}
-
-	/**
-	 * Set a setting
-	 *
-	 * @param $key
-	 * @param $value
-	 */
-	function set_setting( $key, $value ) {
-		$this->get_settings();
-
-		$this->settings[ $key ] = $value;
-	}
-
-	/**
-	 * Bulk set the settings array
-	 *
-	 * @param array $settings
-	 */
-	function set_settings( $settings ) {
-		$this->settings = $settings;
-	}
-
-	/**
-	 * Save the settings to the database
-	 */
-	public function save_settings() {
-		if ( is_array( $this->settings ) ) {
-			ksort( $this->settings );
-		}
-
-		$this->update_site_option( static::SETTINGS_KEY, array_diff_key( $this->settings, $this->defined_settings ) );
-	}
-
-	/**
-	 * Update site option.
-	 *
-	 * @param string $option
-	 * @param mixed  $value
-	 * @param bool   $autoload
-	 *
-	 * @return bool
-	 */
-	public function update_site_option( $option, $value, $autoload = true ) {
-		if ( is_multisite() ) {
-			return update_site_option( $option, $value );
-		}
-
-		return update_option( $option, $value, $autoload );
 	}
 
 	/**
@@ -491,7 +278,7 @@ abstract class AS3CF_Plugin_Base {
 	 *
 	 * @return string
 	 */
-	public function get_plugin_page_url( $args = array(), $url_method = 'network', $escape = true ) {
+	public static function get_plugin_page_url( $args = array(), $url_method = 'network', $escape = true ) {
 		$default_args = array(
 			'page' => static::$plugin_page,
 		);
@@ -500,10 +287,10 @@ abstract class AS3CF_Plugin_Base {
 
 		switch ( $url_method ) {
 			case 'self':
-				$base_url = self_admin_url( $this->get_plugin_pagenow() );
+				$base_url = self_admin_url( static::get_plugin_pagenow() );
 				break;
 			default:
-				$base_url = network_admin_url( $this->get_plugin_pagenow() );
+				$base_url = network_admin_url( static::get_plugin_pagenow() );
 		}
 
 		// Add a hash to the URL
@@ -511,8 +298,6 @@ abstract class AS3CF_Plugin_Base {
 		if ( isset( $args['hash'] ) ) {
 			$hash = $args['hash'];
 			unset( $args['hash'] );
-		} else if ( $this->default_tab ) {
-			$hash = $this->default_tab;
 		}
 
 		$url = add_query_arg( $args, $base_url );
@@ -609,7 +394,7 @@ abstract class AS3CF_Plugin_Base {
 	}
 
 	/**
-	 * Generate site URL with correct UTM tags.
+	 * Generate Delicious Brains site URL with correct UTM tags.
 	 *
 	 * @param string $path
 	 * @param array  $args
@@ -617,13 +402,39 @@ abstract class AS3CF_Plugin_Base {
 	 *
 	 * @return string
 	 */
-	public function dbrains_url( $path, $args = array(), $hash = '' ) {
+	public static function dbrains_url( $path, $args = array(), $hash = '' ) {
 		$args = wp_parse_args( $args, array(
 			'utm_medium' => 'insideplugin',
-			'utm_source' => $this->get_utm_source(),
+			'utm_source' => static::get_utm_source(),
 		) );
 		$args = array_map( 'urlencode', $args );
 		$url  = trailingslashit( self::DBRAINS_URL ) . ltrim( $path, '/' );
+		$url  = add_query_arg( $args, $url );
+
+		if ( $hash ) {
+			$url .= '#' . $hash;
+		}
+
+		return $url;
+	}
+
+	/**
+	 * Generate WP Engine site URL with correct UTM tags.
+	 *
+	 * @param string $path
+	 * @param array  $args
+	 * @param string $hash
+	 *
+	 * @return string
+	 */
+	public static function wpe_url( $path = '', $args = array(), $hash = '' ) {
+		$args = wp_parse_args( $args, array(
+			'utm_medium'   => 'referral',
+			'utm_source'   => 'ome_plugin',
+			'utm_campaign' => 'bx_prod_referral',
+		) );
+		$args = array_map( 'urlencode', $args );
+		$url  = trailingslashit( self::WPE_URL ) . ltrim( $path, '/' );
 		$url  = add_query_arg( $args, $url );
 
 		if ( $hash ) {
@@ -638,8 +449,19 @@ abstract class AS3CF_Plugin_Base {
 	 *
 	 * @return string
 	 */
-	protected function get_utm_source() {
+	protected static function get_utm_source() {
 		return 'AWS';
+	}
+
+	/**
+	 * Get UTM content for WP Engine URL.
+	 *
+	 * @param string $content
+	 *
+	 * @return string
+	 */
+	protected static function get_wpe_url_utm_content( $content = 'plugin_footer_text' ) {
+		return $content;
 	}
 
 	/**
@@ -652,5 +474,85 @@ abstract class AS3CF_Plugin_Base {
 	 */
 	public function get_my_account_url( $args = array(), $hash = '' ) {
 		return $this->dbrains_url( '/my-account/', $args, $hash );
+	}
+
+	/**
+	 * Sets up hooks to alter the footer of our admin pages.
+	 *
+	 * @return void
+	 */
+	protected function init_admin_footer() {
+		add_filter( 'admin_footer_text', array( $this, 'filter_admin_footer_text' ) );
+		add_filter( 'update_footer', array( $this, 'filter_update_footer' ) );
+	}
+
+	/**
+	 * Filters the admin footer text to add our own links.
+	 *
+	 * @param string $text
+	 *
+	 * @return string
+	 */
+	public function filter_admin_footer_text( $text ) {
+		$product_link = AS3CF_Utils::dbrains_link(
+			static::dbrains_url(
+				'/wp-offload-media/',
+				array( 'utm_campaign' => 'plugin_footer', 'utm_content' => 'footer_colophon' )
+			),
+			$this->plugin_name
+		);
+
+		$wpe_link = AS3CF_Utils::dbrains_link(
+			static::wpe_url(
+				'',
+				array( 'utm_content' => static::get_wpe_url_utm_content() )
+			),
+			'WP Engine'
+		);
+
+		return sprintf(
+		/* translators: %1$s is a link to WP Offload Media's website, and %2$s is a link to WP Engine's website. */
+			__( '%1$s is developed and maintained by %2$s.', 'amazon-s3-and-cloudfront' ),
+			$product_link,
+			$wpe_link
+		);
+	}
+
+	/**
+	 * Filters the admin footer's WordPress version text to add our own links.
+	 *
+	 * @param string $content
+	 *
+	 * @return string
+	 */
+	public function filter_update_footer( $content ) {
+		$links[] = AS3CF_Utils::dbrains_link(
+			static::dbrains_url(
+				'/wp-offload-media/docs/',
+				array( 'utm_campaign' => 'plugin_footer', 'utm_content' => 'footer_navigation' )
+			),
+			__( 'Documentation', 'amazon-s3-and-cloudfront' )
+		);
+
+		$links[] = '<a href="' . static::get_plugin_page_url( array( 'hash' => '/support' ) ) . '">' . __( 'Support', 'amazon-s3-and-cloudfront' ) . '</a>';
+
+		$links[] = AS3CF_Utils::dbrains_link(
+			static::dbrains_url(
+				'/wp-offload-media/feedback/',
+				array( 'utm_campaign' => 'plugin_footer', 'utm_content' => 'footer_navigation' )
+			),
+			__( 'Feedback', 'amazon-s3-and-cloudfront' )
+		);
+
+		$links[] = AS3CF_Utils::dbrains_link(
+			static::dbrains_url(
+				'/wp-offload-media/whats-new/',
+				array( 'utm_campaign' => 'plugin_footer', 'utm_content' => 'footer_navigation' )
+			),
+			$this->plugin_name . ' ' . $this->plugin_version,
+			'whats-new'
+		);
+
+		return join( ' &#8729; ', $links );
 	}
 }

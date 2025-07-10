@@ -32,7 +32,7 @@ use InvalidArgumentException;
  * $point = new GeoPoint(37.423147, -122.085015);
  * ```
  */
-class GeoPoint
+class GeoPoint implements \JsonSerializable
 {
     /**
      * @var float
@@ -58,9 +58,9 @@ class GeoPoint
      *        in the constructor only. This switch exists to handle a rare case
      *        wherein a geopoint may be empty and is not intended for use from
      *        outside the client. **Defaults to** `false`.
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
-    public function __construct($latitude, $longitude, $allowNull = false)
+    public function __construct($latitude, $longitude, $allowNull = \false)
     {
         $this->latitude = $this->validateValue($latitude, 'latitude', $allowNull);
         $this->longitude = $this->validateValue($longitude, 'longitude', $allowNull);
@@ -77,7 +77,7 @@ class GeoPoint
      */
     public function latitude()
     {
-        $this->checkContext('latitude', func_get_args());
+        $this->checkContext('latitude', \func_get_args());
         return $this->latitude;
     }
     /**
@@ -92,7 +92,7 @@ class GeoPoint
      *
      * @param int|float $latitude The new latitude
      * @return GeoPoint
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function setLatitude($latitude)
     {
@@ -111,7 +111,7 @@ class GeoPoint
      */
     public function longitude()
     {
-        $this->checkContext('longitude', func_get_args());
+        $this->checkContext('longitude', \func_get_args());
         return $this->longitude;
     }
     /**
@@ -126,7 +126,7 @@ class GeoPoint
      *
      * @param float|int $longitude The new longitude value
      * @return GeoPoint
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function setLongitude($longitude)
     {
@@ -152,13 +152,13 @@ class GeoPoint
      *
      * @param string $method the method name
      * @param array $args The method arguments
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      * @return void
      */
     private function checkContext($method, array $args)
     {
-        if (count($args) > 0) {
-            throw new \InvalidArgumentException(sprintf('Calling method %s with arguments is unsupported.', $method));
+        if (\count($args) > 0) {
+            throw new InvalidArgumentException(\sprintf('Calling method %s with arguments is unsupported.', $method));
         }
     }
     /**
@@ -173,11 +173,29 @@ class GeoPoint
      *        **Defaults to** `false`.
      * @return float|null
      */
-    private function validateValue($value, $type, $allowNull = false)
+    private function validateValue($value, $type, $allowNull = \false)
     {
-        if (!is_numeric($value) && (!$allowNull || $allowNull && $value !== null)) {
-            throw new \InvalidArgumentException(sprintf('Given %s must be a numeric value.', $type));
+        if (!\is_numeric($value) && (!$allowNull || $allowNull && $value !== null)) {
+            throw new InvalidArgumentException(\sprintf('Given %s must be a numeric value.', $type));
         }
-        return $allowNull && $value === null ? $value : (double) $value;
+        return $allowNull && $value === null ? $value : (float) $value;
+    }
+    /**
+     * Implement JsonSerializable by representing GeoPoint as a JSON-object:
+     *
+     * ```
+     * {
+     *   latitude: 31.778333
+     *   longitude: 35.229722
+     * }
+     * ```
+     *
+     * @return object
+     * @access private
+     */
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        return (object) $this->point();
     }
 }

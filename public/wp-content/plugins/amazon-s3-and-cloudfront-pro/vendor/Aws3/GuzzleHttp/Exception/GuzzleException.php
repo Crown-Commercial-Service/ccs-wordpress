@@ -2,15 +2,7 @@
 
 namespace DeliciousBrains\WP_Offload_Media\Aws3\GuzzleHttp\Exception;
 
-/**
- * @method string getMessage()
- * @method \Throwable|null getPrevious()
- * @method mixed getCode()
- * @method string getFile()
- * @method int getLine()
- * @method array getTrace()
- * @method string getTraceAsString()
- */
-interface GuzzleException
+use DeliciousBrains\WP_Offload_Media\Aws3\Psr\Http\Client\ClientExceptionInterface;
+interface GuzzleException extends ClientExceptionInterface
 {
 }

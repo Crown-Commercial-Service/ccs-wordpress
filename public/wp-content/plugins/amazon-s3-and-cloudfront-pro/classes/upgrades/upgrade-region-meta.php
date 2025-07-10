@@ -12,6 +12,7 @@
 namespace DeliciousBrains\WP_Offload_Media\Upgrades;
 
 use AS3CF_Error;
+use AS3CF_Utils;
 use DeliciousBrains\WP_Offload_Media\Items\Media_Library_Item;
 
 /**
@@ -50,24 +51,40 @@ class Upgrade_Region_Meta extends Upgrade {
 	/**
 	 * Get the region for the bucket where an attachment is located, update the S3 meta.
 	 *
-	 * @param mixed $attachment
+	 * @param mixed $item
 	 *
 	 * @return bool
 	 */
-	protected function upgrade_item( $attachment ) {
-		$provider_object = unserialize( $attachment->provider_object );
+	protected function upgrade_item( $item ) {
+		$provider_object = AS3CF_Utils::maybe_fix_serialized_string( $item->provider_object );
+		$fixed           = $item->provider_object !== $provider_object;
+
+		$provider_object = unserialize( $provider_object );
+
 		if ( false === $provider_object ) {
-			AS3CF_Error::log( 'Failed to unserialize offload meta for attachment ' . $attachment->ID . ': ' . $attachment->provider_object );
+			AS3CF_Error::log( 'Failed to unserialize offload meta for attachment ' . $item->ID . ': ' . $item->provider_object );
 			$this->error_count++;
 
 			return false;
 		}
 
+		if ( $fixed ) {
+			if ( update_post_meta( $item->ID, 'amazonS3_info', $provider_object ) ) {
+				$msg = sprintf( __( 'Fixed legacy amazonS3_info metadata when updating its region, please check bucket and path for attachment ID %1$s', 'amazon-s3-and-cloudfront' ), $item->ID );
+				AS3CF_Error::log( $msg );
+			} else {
+				AS3CF_Error::log( 'Failed to fix broken serialized legacy offload metadata for attachment ' . $item->ID . ': ' . $item->provider_object );
+				$this->error_count++;
+
+				return false;
+			}
+		}
+
 		// Using Media_Library_Item::get_by_source_id falls back to legacy metadata and substitutes in defaults and potentially missing values.
-		$as3cf_item = Media_Library_Item::get_by_source_id( $attachment->ID );
+		$as3cf_item = Media_Library_Item::get_by_source_id( $item->ID );
 
 		if ( ! $as3cf_item ) {
-			AS3CF_Error::log( 'Could not construct item for attachment with ID ' . $attachment->ID . ' from legacy offload metadata.' );
+			AS3CF_Error::log( 'Could not construct item for attachment with ID ' . $item->ID . ' from legacy offload metadata.' );
 			$this->error_count++;
 
 			return false;
@@ -76,10 +93,10 @@ class Upgrade_Region_Meta extends Upgrade {
 		// Update legacy amazonS3_info record with region required for subsequent upgrades.
 		$provider_object['region'] = $as3cf_item->region();
 
-		$result = update_post_meta( $attachment->ID, 'amazonS3_info', $provider_object );
+		$result = update_post_meta( $item->ID, 'amazonS3_info', $provider_object );
 
 		if ( false === $result ) {
-			AS3CF_Error::log( 'Error updating region in legacy offload metadata for attachment ' . $attachment->ID );
+			AS3CF_Error::log( 'Error updating region in legacy offload metadata for attachment ' . $item->ID );
 			$this->error_count++;
 
 			return false;
@@ -116,7 +133,7 @@ class Upgrade_Region_Meta extends Upgrade {
 	/**
 	 * Get a count of attachments that don't have region in their S3 meta data for a blog
 	 *
-	 * @param $prefix
+	 * @param string $prefix
 	 *
 	 * @return int
 	 */

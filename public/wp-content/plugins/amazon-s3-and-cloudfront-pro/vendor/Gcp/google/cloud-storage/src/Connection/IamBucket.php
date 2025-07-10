@@ -21,7 +21,7 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Iam\IamConnectionInte
 /**
  * IAM Implementation for GCS Buckets
  */
-class IamBucket implements \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Iam\IamConnectionInterface
+class IamBucket implements IamConnectionInterface
 {
     /**
      * @var ConnectionInterface
@@ -30,7 +30,7 @@ class IamBucket implements \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Co
     /**
      * @param  ConnectionInterface $connection
      */
-    public function __construct(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Storage\Connection\ConnectionInterface $connection)
+    public function __construct(ConnectionInterface $connection)
     {
         $this->connection = $connection;
     }
@@ -39,6 +39,10 @@ class IamBucket implements \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Co
      */
     public function getPolicy(array $args)
     {
+        if (isset($args['requestedPolicyVersion'])) {
+            $args['optionsRequestedPolicyVersion'] = $args['requestedPolicyVersion'];
+            unset($args['requestedPolicyVersion']);
+        }
         return $this->connection->getBucketIamPolicy($args);
     }
     /**

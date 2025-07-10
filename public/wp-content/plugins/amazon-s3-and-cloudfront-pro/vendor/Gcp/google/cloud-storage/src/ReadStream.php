@@ -23,7 +23,7 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\StreamInterface;
  * A Stream implementation that wraps a GuzzleHttp download stream to
  * provide `getSize()` from the response headers.
  */
-class ReadStream implements \DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\StreamInterface
+class ReadStream implements StreamInterface
 {
     use StreamDecoratorTrait;
     private $stream;
@@ -32,7 +32,7 @@ class ReadStream implements \DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Messa
      *
      * @param StreamInterface $stream The stream interface to wrap
      */
-    public function __construct(\DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\StreamInterface $stream)
+    public function __construct(StreamInterface $stream)
     {
         $this->stream = $stream;
     }
@@ -43,7 +43,7 @@ class ReadStream implements \DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Messa
      *
      * @return int The size of the stream.
      */
-    public function getSize()
+    public function getSize() : ?int
     {
         return $this->stream->getSize() ?: $this->getSizeFromMetadata();
     }
@@ -53,11 +53,11 @@ class ReadStream implements \DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Messa
      *
      * @return int The Size of the stream
      */
-    private function getSizeFromMetadata()
+    private function getSizeFromMetadata() : int
     {
         foreach ($this->stream->getMetadata('wrapper_data') as $value) {
-            if (substr($value, 0, 15) == "Content-Length:") {
-                return (int) substr($value, 16);
+            if (\substr($value, 0, 15) == "Content-Length:") {
+                return (int) \substr($value, 16);
             }
         }
         return 0;
@@ -72,13 +72,13 @@ class ReadStream implements \DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Messa
      * @param  int $length The number of bytes to read.
      * @return string Read bytes from the underlying stream.
      */
-    public function read($length)
+    public function read($length) : string
     {
         $data = '';
         do {
             $moreData = $this->stream->read($length);
             $data .= $moreData;
-            $readLength = strlen($moreData);
+            $readLength = \strlen($moreData);
             $length -= $readLength;
         } while ($length > 0 && $readLength > 0);
         return $data;

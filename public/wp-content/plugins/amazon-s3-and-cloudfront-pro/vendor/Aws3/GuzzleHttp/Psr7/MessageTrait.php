@@ -1,26 +1,28 @@
 <?php
 
+declare (strict_types=1);
 namespace DeliciousBrains\WP_Offload_Media\Aws3\GuzzleHttp\Psr7;
 
+use DeliciousBrains\WP_Offload_Media\Aws3\Psr\Http\Message\MessageInterface;
 use DeliciousBrains\WP_Offload_Media\Aws3\Psr\Http\Message\StreamInterface;
 /**
  * Trait implementing functionality common to requests and responses.
  */
 trait MessageTrait
 {
-    /** @var array Map of all registered headers, as original name => array of values */
+    /** @var array<string, string[]> Map of all registered headers, as original name => array of values */
     private $headers = [];
-    /** @var array Map of lowercase header name => original name at registration */
+    /** @var array<string, string> Map of lowercase header name => original name at registration */
     private $headerNames = [];
     /** @var string */
     private $protocol = '1.1';
-    /** @var StreamInterface */
+    /** @var StreamInterface|null */
     private $stream;
-    public function getProtocolVersion()
+    public function getProtocolVersion() : string
     {
         return $this->protocol;
     }
-    public function withProtocolVersion($version)
+    public function withProtocolVersion($version) : MessageInterface
     {
         if ($this->protocol === $version) {
             return $this;
@@ -29,34 +31,32 @@ trait MessageTrait
         $new->protocol = $version;
         return $new;
     }
-    public function getHeaders()
+    public function getHeaders() : array
     {
         return $this->headers;
     }
-    public function hasHeader($header)
+    public function hasHeader($header) : bool
     {
-        return isset($this->headerNames[strtolower($header)]);
+        return isset($this->headerNames[\strtolower($header)]);
     }
-    public function getHeader($header)
+    public function getHeader($header) : array
     {
-        $header = strtolower($header);
+        $header = \strtolower($header);
         if (!isset($this->headerNames[$header])) {
             return [];
         }
         $header = $this->headerNames[$header];
         return $this->headers[$header];
     }
-    public function getHeaderLine($header)
+    public function getHeaderLine($header) : string
     {
-        return implode(', ', $this->getHeader($header));
+        return \implode(', ', $this->getHeader($header));
     }
-    public function withHeader($header, $value)
+    public function withHeader($header, $value) : MessageInterface
     {
-        if (!is_array($value)) {
-            $value = [$value];
-        }
-        $value = $this->trimHeaderValues($value);
-        $normalized = strtolower($header);
+        $this->assertHeader($header);
+        $value = $this->normalizeHeaderValue($value);
+        $normalized = \strtolower($header);
         $new = clone $this;
         if (isset($new->headerNames[$normalized])) {
             unset($new->headers[$new->headerNames[$normalized]]);
@@ -65,26 +65,24 @@ trait MessageTrait
         $new->headers[$header] = $value;
         return $new;
     }
-    public function withAddedHeader($header, $value)
+    public function withAddedHeader($header, $value) : MessageInterface
     {
-        if (!is_array($value)) {
-            $value = [$value];
-        }
-        $value = $this->trimHeaderValues($value);
-        $normalized = strtolower($header);
+        $this->assertHeader($header);
+        $value = $this->normalizeHeaderValue($value);
+        $normalized = \strtolower($header);
         $new = clone $this;
         if (isset($new->headerNames[$normalized])) {
             $header = $this->headerNames[$normalized];
-            $new->headers[$header] = array_merge($this->headers[$header], $value);
+            $new->headers[$header] = \array_merge($this->headers[$header], $value);
         } else {
             $new->headerNames[$normalized] = $header;
             $new->headers[$header] = $value;
         }
         return $new;
     }
-    public function withoutHeader($header)
+    public function withoutHeader($header) : MessageInterface
     {
-        $normalized = strtolower($header);
+        $normalized = \strtolower($header);
         if (!isset($this->headerNames[$normalized])) {
             return $this;
         }
@@ -93,14 +91,14 @@ trait MessageTrait
         unset($new->headers[$header], $new->headerNames[$normalized]);
         return $new;
     }
-    public function getBody()
+    public function getBody() : StreamInterface
     {
         if (!$this->stream) {
-            $this->stream = stream_for('');
+            $this->stream = Utils::streamFor('');
         }
         return $this->stream;
     }
-    public function withBody(\DeliciousBrains\WP_Offload_Media\Aws3\Psr\Http\Message\StreamInterface $body)
+    public function withBody(StreamInterface $body) : MessageInterface
     {
         if ($body === $this->stream) {
             return $this;
@@ -109,23 +107,41 @@ trait MessageTrait
         $new->stream = $body;
         return $new;
     }
-    private function setHeaders(array $headers)
+    /**
+     * @param array<string|int, string|string[]> $headers
+     */
+    private function setHeaders(array $headers) : void
     {
         $this->headerNames = $this->headers = [];
         foreach ($headers as $header => $value) {
-            if (!is_array($value)) {
-                $value = [$value];
-            }
-            $value = $this->trimHeaderValues($value);
-            $normalized = strtolower($header);
+            // Numeric array keys are converted to int by PHP.
+            $header = (string) $header;
+            $this->assertHeader($header);
+            $value = $this->normalizeHeaderValue($value);
+            $normalized = \strtolower($header);
             if (isset($this->headerNames[$normalized])) {
                 $header = $this->headerNames[$normalized];
-                $this->headers[$header] = array_merge($this->headers[$header], $value);
+                $this->headers[$header] = \array_merge($this->headers[$header], $value);
             } else {
                 $this->headerNames[$normalized] = $header;
                 $this->headers[$header] = $value;
             }
         }
+    }
+    /**
+     * @param mixed $value
+     *
+     * @return string[]
+     */
+    private function normalizeHeaderValue($value) : array
+    {
+        if (!\is_array($value)) {
+            return $this->trimAndValidateHeaderValues([$value]);
+        }
+        if (\count($value) === 0) {
+            throw new \InvalidArgumentException('Header value can not be an empty array.');
+        }
+        return $this->trimAndValidateHeaderValues($value);
     }
     /**
      * Trims whitespace from the header values.
@@ -135,16 +151,62 @@ trait MessageTrait
      * header-field = field-name ":" OWS field-value OWS
      * OWS          = *( SP / HTAB )
      *
-     * @param string[] $values Header values
+     * @param mixed[] $values Header values
      *
      * @return string[] Trimmed header values
      *
      * @see https://tools.ietf.org/html/rfc7230#section-3.2.4
      */
-    private function trimHeaderValues(array $values)
+    private function trimAndValidateHeaderValues(array $values) : array
     {
-        return array_map(function ($value) {
-            return trim($value, " \t");
-        }, $values);
+        return \array_map(function ($value) {
+            if (!\is_scalar($value) && null !== $value) {
+                throw new \InvalidArgumentException(\sprintf('Header value must be scalar or null but %s provided.', \is_object($value) ? \get_class($value) : \gettype($value)));
+            }
+            $trimmed = \trim((string) $value, " \t");
+            $this->assertValue($trimmed);
+            return $trimmed;
+        }, \array_values($values));
+    }
+    /**
+     * @see https://tools.ietf.org/html/rfc7230#section-3.2
+     *
+     * @param mixed $header
+     */
+    private function assertHeader($header) : void
+    {
+        if (!\is_string($header)) {
+            throw new \InvalidArgumentException(\sprintf('Header name must be a string but %s provided.', \is_object($header) ? \get_class($header) : \gettype($header)));
+        }
+        if (!\preg_match('/^[a-zA-Z0-9\'`#$%&*+.^_|~!-]+$/D', $header)) {
+            throw new \InvalidArgumentException(\sprintf('"%s" is not valid header name.', $header));
+        }
+    }
+    /**
+     * @see https://tools.ietf.org/html/rfc7230#section-3.2
+     *
+     * field-value    = *( field-content / obs-fold )
+     * field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
+     * field-vchar    = VCHAR / obs-text
+     * VCHAR          = %x21-7E
+     * obs-text       = %x80-FF
+     * obs-fold       = CRLF 1*( SP / HTAB )
+     */
+    private function assertValue(string $value) : void
+    {
+        // The regular expression intentionally does not support the obs-fold production, because as
+        // per RFC 7230#3.2.4:
+        //
+        // A sender MUST NOT generate a message that includes
+        // line folding (i.e., that has any field-value that contains a match to
+        // the obs-fold rule) unless the message is intended for packaging
+        // within the message/http media type.
+        //
+        // Clients must not send a request with line folding and a server sending folded headers is
+        // likely very rare. Line folding is a fairly obscure feature of HTTP/1.1 and thus not accepting
+        // folding is not likely to break any legitimate use case.
+        if (!\preg_match('/^[\\x20\\x09\\x21-\\x7E\\x80-\\xFF]*$/D', $value)) {
+            throw new \InvalidArgumentException(\sprintf('"%s" is not valid header value.', $value));
+        }
     }
 }

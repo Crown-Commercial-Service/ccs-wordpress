@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "25f4ae049be8567cd644021e13e2b30d",
+    "content-hash": "107784501410f2aaf02e6293c4b680ac",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -3464,7 +3464,6 @@
         "monolog/monolog": 20,
         "nayjest/str-case-converter": 20,
         "roave/security-advisories": 20,
-        "ruflin/elastica": 20,
         "symfony/console": 20,
         "symfony/lock": 20,
         "symfony/yaml": 20

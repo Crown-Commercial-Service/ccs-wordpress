@@ -133,7 +133,7 @@ class FrameworkSearchClient extends AbstractSearchClient implements SearchClient
         // Create a bool query to allow us to set up multiple query types
         $boolQuery = new Query\BoolQuery();
 
-        $publishedStatusQuery = new Query\Match('published_status', 'publish');
+        $publishedStatusQuery = new Query\MatchQuery('published_status', 'publish');
         $boolQuery->addMust($publishedStatusQuery);
 
         // upcoming agreements

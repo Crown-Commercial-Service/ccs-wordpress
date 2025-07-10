@@ -545,6 +545,11 @@ class Framework extends AbstractModel
      */
     public function setStartDate($startDate, $format = 'Y-m-d'): Framework
     {
+        if ($startDate === null) {
+            $this->startDate = null;
+            return $this;
+        }
+
         if (!$startDate instanceof \DateTime) {
             if (!$startDate = date_create_from_format($format, $startDate)) {
                 $startDate = null;
@@ -572,7 +577,12 @@ class Framework extends AbstractModel
      * @return Framework
      */
     public function setEndDate($endDate, $format = 'Y-m-d'): Framework
-    {
+    {   
+        if ($endDate=== null) {
+            $this->endDate = null;
+            return $this;
+        }
+
         if (!$endDate instanceof \DateTime) {
             if (!$endDate = date_create_from_format($format, $endDate)) {
                 $endDate = null;
@@ -703,7 +713,7 @@ class Framework extends AbstractModel
             $this->expectedAwardDate = null;
             return $this;
         }
-        
+
         if (!$expectedAwardDate instanceof \DateTime) {
             if (!$expectedAwardDate = date_create_from_format($format, $expectedAwardDate)) {
                 $expectedAwardDate = null;

@@ -577,8 +577,8 @@ class Framework extends AbstractModel
      * @return Framework
      */
     public function setEndDate($endDate, $format = 'Y-m-d'): Framework
-    {   
-        if ($endDate=== null) {
+    {
+        if ($endDate === null) {
             $this->endDate = null;
             return $this;
         }
@@ -676,7 +676,7 @@ class Framework extends AbstractModel
      * @return Framework
      */
     public function setExpectedLiveDate($expectedLiveDate, $format = 'Y-m-d'): Framework
-    {   
+    {
         if ($expectedLiveDate === null) {
             $this->expectedLiveDate = null;
             return $this;

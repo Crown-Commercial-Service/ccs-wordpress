@@ -18,13 +18,13 @@ if [ "$APPLICATION_NAME" == "$IMPORT_APP_NAME" ]; then
     fi
 
     SERVICES=(
-        "awslogsd.service"
+        "amazon-cloudwatch-agent" #"awslogsd.service"
     )
 else
     echo "cms."
 
     SERVICES=(
-        "awslogsd.service"
+        "amazon-cloudwatch-agent" #"awslogsd.service"
         "httpd.service"
     )
 fi

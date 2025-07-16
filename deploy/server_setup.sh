@@ -33,7 +33,9 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     echo "> Running once-only deployment tasks..."
 
     echo "> > Installing awslogs service..."
-    sudo yum install -y awslogs
+    #sudo yum install -y awslogs
+    sudo yum install -y amazon-cloudwatch-agent
+    sudo systemctl enable amazon-cloudwatch-agent
 
     echo "> > chown'ing awslogs config files..."
     sudo chown root:root \
@@ -56,11 +58,11 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     sudo yum install -y https://repo.ius.io/ius-release-el$(rpm -E '%{rhel}').rpm
 
     echo "> > Installing common web packages..."
-    sudo amazon-linux-extras disable php7.3
-    sudo amazon-linux-extras enable php8.2
+    # sudo amazon-linux-extras disable php7.3
+    # sudo amazon-linux-extras enable php8.2
     sudo yum clean metadata
     sudo yum -y install \
-        php \
+        php8.2 \
         php-mysqlnd.x86_64 \
         php-opcache.x86_64 \
         php-xml.x86_64 \

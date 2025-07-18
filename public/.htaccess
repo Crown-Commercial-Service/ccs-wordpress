@@ -71,5 +71,7 @@ RewriteRule . /index.php [L]
 </IfModule>
 
 # END WordPress
-php_value upload_max_filesize 20M
-php_value post_max_size 20M
+<IfModule php_module>
+    php_value upload_max_filesize 20M
+    php_value post_max_size 20M
+</IfModule>

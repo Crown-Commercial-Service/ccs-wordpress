@@ -1,13 +1,16 @@
 <?php
 // phpinfo();
-class customNewsApi{
+class customNewsApi
+{
 
-    private function getTerms($params, $termsName){
+    private function getTerms($params, $termsName)
+    {
         $terms = $params[$termsName];
         return is_array($terms) ? $terms : explode(",", $terms);
     }
 
-    private function getInTaxArray($name, $terms){
+    private function getInTaxArray($name, $terms)
+    {
         return array(
             'taxonomy' => $name,
             'field'    => 'term_id',
@@ -16,7 +19,8 @@ class customNewsApi{
         );
     }
 
-    public function getNewsPageContent($request) {
+    public function getNewsPageContent($request)
+    {
         $params = $request->get_params();
 
         $per_page = isset($params['per_page']) ? max(1, intval($params['per_page'])) : 5;
@@ -25,14 +29,14 @@ class customNewsApi{
         // Build post types array
         $post_types = array('post');
 
-        if(( $request->get_param( 'noPost' ) ?? '') == '1') {
-		    unset($post_types[0]);
+        if (($request->get_param('noPost') ?? '') == '1') {
+            unset($post_types[0]);
         }
-        if(( $request->get_param( 'whitepaper' ) ?? '') == '1') {
-		    $post_types[] = 'whitepaper';
+        if (($request->get_param('whitepaper') ?? '') == '1') {
+            $post_types[] = 'whitepaper';
         }
 
-        if(( $request->get_param( 'webinar' ) ?? '') == '1') {
+        if (($request->get_param('webinar') ?? '') == '1') {
             $post_types[] = 'webinar';
         }
 
@@ -49,10 +53,9 @@ class customNewsApi{
             'order'          => 'DESC',
         );
 
-        // If categories param is set, use the mixed tax_query
         if (!empty($params['categories'])) {
-            $terms = $this->getTerms($params, 'categories');         
-            
+            $terms = $this->getTerms($params, 'categories');
+
             $args['tax_query'] = array(
                 'relation' => 'OR',
                 $this->getInTaxArray('category', $terms),
@@ -63,10 +66,10 @@ class customNewsApi{
             );
         };
 
-        if (!empty($params['sectors']) ) {
+        if (!empty($params['sectors'])) {
             $terms = $this->getTerms($params, 'sectors');
-            
-            if (isset($args['tax_query']) && $args["tax_query"]["relation"] == 'OR' ) {
+
+            if (isset($args['tax_query']) && $args["tax_query"]["relation"] == 'OR') {
                 $tempTaxArray = $args['tax_query'];
 
                 $args['tax_query'] = array(
@@ -74,15 +77,15 @@ class customNewsApi{
                     $tempTaxArray,
                     $this->getInTaxArray('sectors', $terms),
                 );
-            }else {
+            } else {
                 $args['tax_query'][] = $this->getInTaxArray('sectors', $terms);
             }
         }
 
         if (!empty($params['products_services'])) {
             $terms = $this->getTerms($params, 'products_services');
-            
-            if (isset($args['tax_query']) && $args["tax_query"]["relation"] == 'OR' ) {
+
+            if (isset($args['tax_query']) && $args["tax_query"]["relation"] == 'OR') {
                 $tempTaxArray = $args['tax_query'];
 
                 $args['tax_query'] = array(
@@ -90,9 +93,8 @@ class customNewsApi{
                     $tempTaxArray,
                     $this->getInTaxArray('products_services', $terms),
                 );
-            }else{
+            } else {
                 $args['tax_query'][] = $this->getInTaxArray('products_services', $terms);
-
             }
         }
 
@@ -108,8 +110,8 @@ class customNewsApi{
                 )
             );
 
-            
-            if (isset($args['tax_query']) ) {
+
+            if (isset($args['tax_query'])) {
                 $tempTaxArray = $args['tax_query'];
 
                 $args['tax_query'] = array(
@@ -120,34 +122,32 @@ class customNewsApi{
                         $defultContentType
                     )
                 );
-            }else{
+            } else {
                 $args['tax_query'] = $defultContentType;
             }
-
-            
-            
         }
 
-        
+
         //Hide post from "View All"
         if (!empty($params['digitalDownload'])) {
-            if ( count($this->getTerms($params, 'digitalDownload')) == count(get_terms( array('taxonomy'   => 'content_type'))) 
-                && ($request->get_param( 'whitepaper' ) ?? '') == '1' 
-                && ($request->get_param( 'webinar' ) ?? '') == '1'
-            ){
+            if (
+                count($this->getTerms($params, 'digitalDownload')) == count(get_terms(array('taxonomy'   => 'content_type')))
+                && ($request->get_param('whitepaper') ?? '') == '1'
+                && ($request->get_param('webinar') ?? '') == '1'
+            ) {
                 $args['meta_query'] = array(
-                    'relation'		=> 'AND',
+                    'relation'        => 'AND',
                     array(
-                        'key'	  	=> 'Hide_from_View_All',
-                        'value'	  	=> '0',
-                        'compare' 	=> '=',
+                        'key'          => 'Hide_from_View_All',
+                        'value'          => '0',
+                        'compare'     => '=',
                     ),
                 );
             }
         }
 
         $query = new WP_Query($args);
-        
+
         $items = array();
         foreach ($query->posts as $post) {
             $controller = new WP_REST_Posts_Controller($post->post_type);
@@ -159,10 +159,10 @@ class customNewsApi{
 
             $item["acf"]['featured_image_url'] = $featured_image_url;
             $item["acf"]['alt_text'] = get_post_meta($featured_image_id, '_wp_attachment_image_alt', true);
-            
+
 
             switch ($item["type"]) {
-                case "post" :
+                case "post":
                     $item["acf"]['category_type'] = get_the_category($item['id'])[0]->name;
                     break;
                 case "whitepaper":
@@ -174,16 +174,16 @@ class customNewsApi{
                     $item["acf"]['categories'] = array(000);
                     break;
                 case "downloadable":
-                    $contentTerm = get_the_terms( $item["id"], 'content_type' )[0];
+                    $contentTerm = get_the_terms($item["id"], 'content_type')[0];
 
                     $item["acf"]['category_type'] = "Downloadable";
                     $item["acf"]['categories'] = array(000);
                     $item["acf"]['content_type_id'] = $contentTerm->term_id;
                     $item["acf"]['content_type_name'] = $contentTerm->name;
                     break;
-                }
+            }
 
-            
+
             $items[] = $item;
         }
 

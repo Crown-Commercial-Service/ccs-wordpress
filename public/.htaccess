@@ -69,9 +69,3 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.php [L]
 </IfModule>
-
-# END WordPress
-<IfModule php_module>
-    php_value upload_max_filesize 20M
-    php_value post_max_size 20M
-</IfModule>

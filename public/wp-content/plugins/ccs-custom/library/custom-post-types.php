@@ -236,7 +236,7 @@ function ccs_register_my_cpts() {
         "has_archive" => true,
         "show_in_menu" => true,
         "exclude_from_search" => false,
-        "capability_type" => "downloadable",
+        "capability_type" => "whitepaper",
         "map_meta_cap" => true,
         "hierarchical" => false,
         "rewrite" => array("slug" => "downloadable"),

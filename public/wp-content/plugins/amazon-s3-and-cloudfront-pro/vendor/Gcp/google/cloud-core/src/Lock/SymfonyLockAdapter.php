@@ -20,8 +20,9 @@ namespace DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Lock;
 use DeliciousBrains\WP_Offload_Media\Gcp\Symfony\Component\Lock\LockInterface as SymfonyLockInterface;
 /**
  * Symfony lock component adapter.
+ * @deprecated
  */
-class SymfonyLockAdapter implements \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Lock\LockInterface
+class SymfonyLockAdapter implements LockInterface
 {
     use LockTrait;
     /**
@@ -31,7 +32,7 @@ class SymfonyLockAdapter implements \DeliciousBrains\WP_Offload_Media\Gcp\Google
     /**
      * @param SymfonyLockInterface $lock
      */
-    public function __construct(\DeliciousBrains\WP_Offload_Media\Gcp\Symfony\Component\Lock\LockInterface $lock)
+    public function __construct(SymfonyLockInterface $lock)
     {
         $this->lock = $lock;
     }
@@ -49,11 +50,11 @@ class SymfonyLockAdapter implements \DeliciousBrains\WP_Offload_Media\Gcp\Google
      */
     public function acquire(array $options = [])
     {
-        $options += ['blocking' => true];
+        $options += ['blocking' => \true];
         try {
             return $this->lock->acquire($options['blocking']);
         } catch (\Exception $ex) {
-            throw new \RuntimeException(sprintf('Acquiring the lock failed with the following message: %s', $ex->getMessage()), 0, $ex);
+            throw new \RuntimeException(\sprintf('Acquiring the lock failed with the following message: %s', $ex->getMessage()), 0, $ex);
         }
     }
     /**
@@ -66,7 +67,7 @@ class SymfonyLockAdapter implements \DeliciousBrains\WP_Offload_Media\Gcp\Google
         try {
             $this->lock->release();
         } catch (\Exception $ex) {
-            throw new \RuntimeException(sprintf('Releasing the lock failed with the following message: %s', $ex->getMessage()), 0, $ex);
+            throw new \RuntimeException(\sprintf('Releasing the lock failed with the following message: %s', $ex->getMessage()), 0, $ex);
         }
     }
 }

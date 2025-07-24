@@ -54,7 +54,7 @@ trait SerializableClientTrait
     private function setSerializableClientOptions(array $options)
     {
         $options += ['closureSerializer' => null, 'clientConfig' => []];
-        $this->closureSerializer = isset($options['closureSerializer']) ? $options['closureSerializer'] : $this->getDefaultClosureSerializer();
+        $this->closureSerializer = $options['closureSerializer'] ?? $this->getDefaultClosureSerializer();
         $this->setWrappedClientConfig($options);
     }
     /**
@@ -62,7 +62,7 @@ trait SerializableClientTrait
      */
     private function setWrappedClientConfig(array $options)
     {
-        $config = isset($options['clientConfig']) ? $options['clientConfig'] : [];
+        $config = $options['clientConfig'] ?? [];
         if ($config && $this->closureSerializer) {
             $this->closureSerializer->wrapClosures($config);
         }
@@ -83,8 +83,8 @@ trait SerializableClientTrait
      */
     private function getDefaultClosureSerializer()
     {
-        if (class_exists(\DeliciousBrains\WP_Offload_Media\Gcp\Opis\Closure\SerializableClosure::class)) {
-            return new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Batch\OpisClosureSerializer();
+        if (\class_exists(SerializableClosure::class)) {
+            return new OpisClosureSerializer();
         }
     }
 }

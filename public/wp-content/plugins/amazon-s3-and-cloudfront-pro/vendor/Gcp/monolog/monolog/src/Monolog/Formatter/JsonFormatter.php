@@ -1,5 +1,6 @@
 <?php
 
+declare (strict_types=1);
 /*
  * This file is part of the Monolog package.
  *
@@ -10,8 +11,6 @@
  */
 namespace DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Formatter;
 
-use Exception;
-use DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Utils;
 use Throwable;
 /**
  * Encodes whatever record data is passed to it as json
@@ -19,25 +18,31 @@ use Throwable;
  * This can be useful to log to databases or remote APIs
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * @phpstan-import-type Record from \Monolog\Logger
  */
-class JsonFormatter extends \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Formatter\NormalizerFormatter
+class JsonFormatter extends NormalizerFormatter
 {
-    const BATCH_MODE_JSON = 1;
-    const BATCH_MODE_NEWLINES = 2;
+    public const BATCH_MODE_JSON = 1;
+    public const BATCH_MODE_NEWLINES = 2;
+    /** @var self::BATCH_MODE_* */
     protected $batchMode;
+    /** @var bool */
     protected $appendNewline;
+    /** @var bool */
+    protected $ignoreEmptyContextAndExtra;
+    /** @var bool */
+    protected $includeStacktraces = \false;
     /**
-     * @var bool
+     * @param self::BATCH_MODE_* $batchMode
      */
-    protected $includeStacktraces = false;
-    /**
-     * @param int $batchMode
-     * @param bool $appendNewline
-     */
-    public function __construct($batchMode = self::BATCH_MODE_JSON, $appendNewline = true)
+    public function __construct(int $batchMode = self::BATCH_MODE_JSON, bool $appendNewline = \true, bool $ignoreEmptyContextAndExtra = \false, bool $includeStacktraces = \false)
     {
         $this->batchMode = $batchMode;
         $this->appendNewline = $appendNewline;
+        $this->ignoreEmptyContextAndExtra = $ignoreEmptyContextAndExtra;
+        $this->includeStacktraces = $includeStacktraces;
+        parent::__construct();
     }
     /**
      * The batch mode option configures the formatting style for
@@ -45,33 +50,44 @@ class JsonFormatter extends \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Format
      * formatted as a JSON-encoded array. However, for
      * compatibility with some API endpoints, alternative styles
      * are available.
-     *
-     * @return int
      */
-    public function getBatchMode()
+    public function getBatchMode() : int
     {
         return $this->batchMode;
     }
     /**
      * True if newlines are appended to every formatted record
-     *
-     * @return bool
      */
-    public function isAppendingNewlines()
+    public function isAppendingNewlines() : bool
     {
         return $this->appendNewline;
     }
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function format(array $record)
+    public function format(array $record) : string
     {
-        return $this->toJson($this->normalize($record), true) . ($this->appendNewline ? "\n" : '');
+        $normalized = $this->normalize($record);
+        if (isset($normalized['context']) && $normalized['context'] === []) {
+            if ($this->ignoreEmptyContextAndExtra) {
+                unset($normalized['context']);
+            } else {
+                $normalized['context'] = new \stdClass();
+            }
+        }
+        if (isset($normalized['extra']) && $normalized['extra'] === []) {
+            if ($this->ignoreEmptyContextAndExtra) {
+                unset($normalized['extra']);
+            } else {
+                $normalized['extra'] = new \stdClass();
+            }
+        }
+        return $this->toJson($normalized, \true) . ($this->appendNewline ? "\n" : '');
     }
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function formatBatch(array $records)
+    public function formatBatch(array $records) : string
     {
         switch ($this->batchMode) {
             case static::BATCH_MODE_NEWLINES:
@@ -82,39 +98,38 @@ class JsonFormatter extends \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Format
         }
     }
     /**
-     * @param bool $include
+     * @return self
      */
-    public function includeStacktraces($include = true)
+    public function includeStacktraces(bool $include = \true) : self
     {
         $this->includeStacktraces = $include;
+        return $this;
     }
     /**
      * Return a JSON-encoded array of records.
      *
-     * @param  array  $records
-     * @return string
+     * @phpstan-param Record[] $records
      */
-    protected function formatBatchJson(array $records)
+    protected function formatBatchJson(array $records) : string
     {
-        return $this->toJson($this->normalize($records), true);
+        return $this->toJson($this->normalize($records), \true);
     }
     /**
      * Use new lines to separate records instead of a
      * JSON-encoded array.
      *
-     * @param  array  $records
-     * @return string
+     * @phpstan-param Record[] $records
      */
-    protected function formatBatchNewlines(array $records)
+    protected function formatBatchNewlines(array $records) : string
     {
         $instance = $this;
         $oldNewline = $this->appendNewline;
-        $this->appendNewline = false;
-        array_walk($records, function (&$value, $key) use($instance) {
+        $this->appendNewline = \false;
+        \array_walk($records, function (&$value, $key) use($instance) {
             $value = $instance->format($value);
         });
         $this->appendNewline = $oldNewline;
-        return implode("\n", $records);
+        return \implode("\n", $records);
     }
     /**
      * Normalizes given $data.
@@ -123,25 +138,41 @@ class JsonFormatter extends \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Format
      *
      * @return mixed
      */
-    protected function normalize($data, $depth = 0)
+    protected function normalize($data, int $depth = 0)
     {
-        if ($depth > 9) {
-            return 'Over 9 levels deep, aborting normalization';
+        if ($depth > $this->maxNormalizeDepth) {
+            return 'Over ' . $this->maxNormalizeDepth . ' levels deep, aborting normalization';
         }
-        if (is_array($data)) {
-            $normalized = array();
+        if (\is_array($data)) {
+            $normalized = [];
             $count = 1;
             foreach ($data as $key => $value) {
-                if ($count++ > 1000) {
-                    $normalized['...'] = 'Over 1000 items (' . count($data) . ' total), aborting normalization';
+                if ($count++ > $this->maxNormalizeItemCount) {
+                    $normalized['...'] = 'Over ' . $this->maxNormalizeItemCount . ' items (' . \count($data) . ' total), aborting normalization';
                     break;
                 }
                 $normalized[$key] = $this->normalize($value, $depth + 1);
             }
             return $normalized;
         }
-        if ($data instanceof Exception || $data instanceof Throwable) {
-            return $this->normalizeException($data);
+        if (\is_object($data)) {
+            if ($data instanceof \DateTimeInterface) {
+                return $this->formatDate($data);
+            }
+            if ($data instanceof Throwable) {
+                return $this->normalizeException($data, $depth);
+            }
+            // if the object has specific json serializability we want to make sure we skip the __toString treatment below
+            if ($data instanceof \JsonSerializable) {
+                return $data;
+            }
+            if (\method_exists($data, '__toString')) {
+                return $data->__toString();
+            }
+            return $data;
+        }
+        if (\is_resource($data)) {
+            return parent::normalize($data);
         }
         return $data;
     }
@@ -149,27 +180,13 @@ class JsonFormatter extends \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Format
      * Normalizes given exception with or without its own stack trace based on
      * `includeStacktraces` property.
      *
-     * @param Exception|Throwable $e
-     *
-     * @return array
+     * {@inheritDoc}
      */
-    protected function normalizeException($e)
+    protected function normalizeException(Throwable $e, int $depth = 0) : array
     {
-        // TODO 2.0 only check for Throwable
-        if (!$e instanceof Exception && !$e instanceof Throwable) {
-            throw new \InvalidArgumentException('Exception/Throwable expected, got ' . gettype($e) . ' / ' . \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Utils::getClass($e));
-        }
-        $data = array('class' => \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Utils::getClass($e), 'message' => $e->getMessage(), 'code' => (int) $e->getCode(), 'file' => $e->getFile() . ':' . $e->getLine());
-        if ($this->includeStacktraces) {
-            $trace = $e->getTrace();
-            foreach ($trace as $frame) {
-                if (isset($frame['file'])) {
-                    $data['trace'][] = $frame['file'] . ':' . $frame['line'];
-                }
-            }
-        }
-        if ($previous = $e->getPrevious()) {
-            $data['previous'] = $this->normalizeException($previous);
+        $data = parent::normalizeException($e, $depth);
+        if (!$this->includeStacktraces) {
+            unset($data['trace']);
         }
         return $data;
     }

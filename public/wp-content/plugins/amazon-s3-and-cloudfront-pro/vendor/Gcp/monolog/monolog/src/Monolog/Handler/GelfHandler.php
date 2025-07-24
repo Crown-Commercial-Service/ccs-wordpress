@@ -1,5 +1,6 @@
 <?php
 
+declare (strict_types=1);
 /*
  * This file is part of the Monolog package.
  *
@@ -10,49 +11,42 @@
  */
 namespace DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Handler;
 
-use DeliciousBrains\WP_Offload_Media\Gcp\Gelf\IMessagePublisher;
 use DeliciousBrains\WP_Offload_Media\Gcp\Gelf\PublisherInterface;
-use DeliciousBrains\WP_Offload_Media\Gcp\Gelf\Publisher;
-use InvalidArgumentException;
 use DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Logger;
 use DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Formatter\GelfMessageFormatter;
+use DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Formatter\FormatterInterface;
 /**
  * Handler to send messages to a Graylog2 (http://www.graylog2.org) server
  *
  * @author Matt Lehner <mlehner@gmail.com>
  * @author Benjamin Zikarsky <benjamin@zikarsky.de>
  */
-class GelfHandler extends \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Handler\AbstractProcessingHandler
+class GelfHandler extends AbstractProcessingHandler
 {
     /**
-     * @var Publisher the publisher object that sends the message to the server
+     * @var PublisherInterface the publisher object that sends the message to the server
      */
     protected $publisher;
     /**
-     * @param PublisherInterface|IMessagePublisher|Publisher $publisher a publisher object
-     * @param int                                            $level     The minimum logging level at which this handler will be triggered
-     * @param bool                                           $bubble    Whether the messages that are handled can bubble up the stack or not
+     * @param PublisherInterface $publisher a gelf publisher object
      */
-    public function __construct($publisher, $level = \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Logger::DEBUG, $bubble = true)
+    public function __construct(PublisherInterface $publisher, $level = Logger::DEBUG, bool $bubble = \true)
     {
         parent::__construct($level, $bubble);
-        if (!$publisher instanceof Publisher && !$publisher instanceof IMessagePublisher && !$publisher instanceof PublisherInterface) {
-            throw new \InvalidArgumentException('Invalid publisher, expected a Gelf\\Publisher, Gelf\\IMessagePublisher or Gelf\\PublisherInterface instance');
-        }
         $this->publisher = $publisher;
     }
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    protected function write(array $record)
+    protected function write(array $record) : void
     {
         $this->publisher->publish($record['formatted']);
     }
     /**
      * {@inheritDoc}
      */
-    protected function getDefaultFormatter()
+    protected function getDefaultFormatter() : FormatterInterface
     {
-        return new \DeliciousBrains\WP_Offload_Media\Gcp\Monolog\Formatter\GelfMessageFormatter();
+        return new GelfMessageFormatter();
     }
 }

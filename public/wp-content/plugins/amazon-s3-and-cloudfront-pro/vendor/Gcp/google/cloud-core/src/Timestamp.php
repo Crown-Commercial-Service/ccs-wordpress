@@ -37,12 +37,12 @@ namespace DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core;
  * echo (string) $timestamp;
  * ```
  */
-class Timestamp
+class Timestamp implements \JsonSerializable
 {
     use TimeTrait;
-    const FORMAT = 'Y-m-d\\TH:i:s.u\\Z';
-    const FORMAT_NO_MS = 'Y-m-d\\TH:i:s\\Z';
-    const FORMAT_INTERPOLATE = 'Y-m-d\\TH:i:s.%\\s\\Z';
+    const FORMAT = 'DeliciousBrains\\WP_Offload_Media\\Gcp\\Y-m-d\\TH:i:s.u\\Z';
+    const FORMAT_NO_MS = 'DeliciousBrains\\WP_Offload_Media\\Gcp\\Y-m-d\\TH:i:s\\Z';
+    const FORMAT_INTERPOLATE = 'DeliciousBrains\\WP_Offload_Media\\Gcp\\Y-m-d\\TH:i:s.%\\s\\Z';
     /**
      * @var \DateTimeInterface
      */
@@ -129,5 +129,16 @@ class Timestamp
     public function formatForApi()
     {
         return $this->formatTimeAsArray($this->value, $this->nanoSeconds());
+    }
+    /**
+     * Implement JsonSerializable by returning a ISO 8601 formatted string
+     *
+     * @return string
+     * @access private
+     */
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        return $this->formatAsString();
     }
 }

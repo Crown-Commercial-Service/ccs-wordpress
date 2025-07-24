@@ -22,7 +22,7 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\ServiceExce
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\UploadException;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\JsonTrait;
 use DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\RequestWrapper;
-use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7;
+use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Promise\PromiseInterface;
 use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\LimitStream;
 use DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\Request;
 use DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\ResponseInterface;
@@ -30,7 +30,7 @@ use DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\StreamInterface;
 /**
  * Resumable upload implementation.
  */
-class ResumableUploader extends \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Upload\AbstractUploader
+class ResumableUploader extends AbstractUploader
 {
     use JsonTrait;
     /**
@@ -77,11 +77,11 @@ class ResumableUploader extends \DeliciousBrains\WP_Offload_Media\Gcp\Google\Clo
      *     @type string $contentType Content type of the resource.
      * }
      */
-    public function __construct(\DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\RequestWrapper $requestWrapper, $data, $uri, array $options = [])
+    public function __construct(RequestWrapper $requestWrapper, $data, $uri, array $options = [])
     {
         parent::__construct($requestWrapper, $data, $uri, $options);
         // Set uploadProgressCallback if it's passed as an option.
-        if (isset($options['uploadProgressCallback']) && is_callable($options['uploadProgressCallback'])) {
+        if (isset($options['uploadProgressCallback']) && \is_callable($options['uploadProgressCallback'])) {
             $this->uploadProgressCallback = $options['uploadProgressCallback'];
         } elseif (isset($options['uploadProgressCallback'])) {
             throw new \InvalidArgumentException('$options.uploadProgressCallback must be a callable.');
@@ -109,7 +109,7 @@ class ResumableUploader extends \DeliciousBrains\WP_Offload_Media\Gcp\Google\Clo
     public function resume($resumeUri)
     {
         if (!$this->data->isSeekable()) {
-            throw new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\GoogleException('Cannot resume upload on a stream which cannot be seeked.');
+            throw new GoogleException('Cannot resume upload on a stream which cannot be seeked.');
         }
         $this->resumeUri = $resumeUri;
         $response = $this->getStatusResponse();
@@ -135,22 +135,38 @@ class ResumableUploader extends \DeliciousBrains\WP_Offload_Media\Gcp\Google\Clo
         $resumeUri = $this->getResumeUri();
         $size = $this->data->getSize() ?: '*';
         do {
-            $data = new \DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\LimitStream($this->data, $this->chunkSize ?: -1, $rangeStart);
+            $data = new LimitStream($this->data, $this->chunkSize ?: -1, $rangeStart);
             $currStreamLimitSize = $data->getSize();
             $rangeEnd = $rangeStart + ($currStreamLimitSize - 1);
             $headers = $this->headers + ['Content-Length' => $currStreamLimitSize, 'Content-Type' => $this->contentType, 'Content-Range' => "bytes {$rangeStart}-{$rangeEnd}/{$size}"];
-            $request = new \DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\Request('PUT', $resumeUri, $headers, $data);
+            $request = new Request('PUT', $resumeUri, $headers, $data);
             try {
                 $response = $this->requestWrapper->send($request, $this->requestOptions);
             } catch (GoogleException $ex) {
-                throw new \DeliciousBrains\WP_Offload_Media\Gcp\Google\Cloud\Core\Exception\ServiceException("Upload failed. Please use this URI to resume your upload: {$this->resumeUri}", $ex->getCode(), null, json_decode($ex->getMessage(), true) ?: []);
+                throw new ServiceException("Upload failed. Please use this URI to resume your upload: {$this->resumeUri}", $ex->getCode(), null, \json_decode($ex->getMessage(), \true) ?: []);
             }
-            if (is_callable($this->uploadProgressCallback)) {
-                call_user_func($this->uploadProgressCallback, $currStreamLimitSize);
+            if (\is_callable($this->uploadProgressCallback)) {
+                \call_user_func($this->uploadProgressCallback, $currStreamLimitSize);
             }
             $rangeStart = $this->getRangeStart($response->getHeaderLine('Range'));
         } while ($response->getStatusCode() === 308);
         return $this->decodeResponse($response);
+    }
+    /**
+     * Currently only the MultiPartUploader supports async.
+     *
+     * Any calls to this will throw a generic Google Exception.
+     *
+     * @return PromiseInterface
+     * @throws GoogleException
+     * @experimental The experimental flag means that while we believe this method
+     *      or class is ready for use, it may change before release in backwards-
+     *      incompatible ways. Please use with caution, and test thoroughly when
+     *      upgrading.
+     */
+    public function uploadAsync()
+    {
+        throw new GoogleException('Currently only the MultiPartUploader supports async.');
     }
     /**
      * Fetch and decode the response body
@@ -158,9 +174,9 @@ class ResumableUploader extends \DeliciousBrains\WP_Offload_Media\Gcp\Google\Clo
      * @param ResponseInterface $response
      * @return array
      */
-    protected function decodeResponse(\DeliciousBrains\WP_Offload_Media\Gcp\Psr\Http\Message\ResponseInterface $response)
+    protected function decodeResponse(ResponseInterface $response)
     {
-        return $this->jsonDecode($response->getBody(), true);
+        return $this->jsonDecode($response->getBody(), \true);
     }
     /**
      * Creates the resume URI.
@@ -171,7 +187,7 @@ class ResumableUploader extends \DeliciousBrains\WP_Offload_Media\Gcp\Google\Clo
     {
         $headers = $this->headers + ['X-Upload-Content-Type' => $this->contentType, 'X-Upload-Content-Length' => $this->data->getSize(), 'Content-Type' => 'application/json'];
         $body = $this->jsonEncode($this->metadata);
-        $request = new \DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\Request('POST', $this->uri, $headers, $body);
+        $request = new Request('POST', $this->uri, $headers, $body);
         $response = $this->requestWrapper->send($request, $this->requestOptions);
         return $this->resumeUri = $response->getHeaderLine('Location');
     }
@@ -182,7 +198,7 @@ class ResumableUploader extends \DeliciousBrains\WP_Offload_Media\Gcp\Google\Clo
      */
     protected function getStatusResponse()
     {
-        $request = new \DeliciousBrains\WP_Offload_Media\Gcp\GuzzleHttp\Psr7\Request('PUT', $this->resumeUri, ['Content-Range' => 'bytes */*']);
+        $request = new Request('PUT', $this->resumeUri, ['Content-Range' => 'bytes */*']);
         return $this->requestWrapper->send($request, $this->requestOptions);
     }
     /**
@@ -196,6 +212,6 @@ class ResumableUploader extends \DeliciousBrains\WP_Offload_Media\Gcp\Google\Clo
         if (!$rangeHeader) {
             return null;
         }
-        return (int) explode('-', $rangeHeader)[1] + 1;
+        return (int) \explode('-', $rangeHeader)[1] + 1;
     }
 }

@@ -118,6 +118,11 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     if [ "$APPLICATION_NAME" == "$IMPORT_APP_NAME" ]; then
         echo "> Installing import-specific wp_import process..."
 
+        echo "> Installing cronie..."
+        sudo yum install cronie -y
+        sudo systemctl enable crond.service
+        sudo systemctl start crond.service
+
         echo "> > chown'ing wp_import.sh..."
         sudo chown ec2-user:ec2-user "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/wp_import.sh"
 

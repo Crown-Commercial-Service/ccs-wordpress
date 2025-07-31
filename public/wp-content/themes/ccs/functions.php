@@ -801,4 +801,21 @@ function enqueue_jquery_modal_for_new_posts()
 
 add_action('admin_enqueue_scripts', 'enqueue_jquery_modal_for_new_posts');
 
+add_action('rest_api_init', function () {
+    register_rest_field('post', 'author_image_url', [
+        'get_callback' => function($post) {
+            $image_id = get_field('author_image', $post['id']);
+            if ($image_id) {
+                $image_url = wp_get_attachment_image_url($image_id, 'full');
+                return $image_url ? $image_url : null;
+            }
+            return null;
+        },
+        'schema' => [
+            'description' => 'Author Image URL',
+            'type' => 'string'
+        ]
+    ]);
+});
+
 

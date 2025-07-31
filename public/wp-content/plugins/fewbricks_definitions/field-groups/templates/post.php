@@ -48,7 +48,6 @@ $fg9->add_field( new acf_fields\text( 'Author Name', 'author_name_text', '202201
 
 $fg9->register();
 
-
 $fg10 = ( new fewacf\field_group( 'Hide from "View All"/ Only show when filter is selected', '202204261430a', $location, 7, [
 ]));
 
@@ -58,3 +57,15 @@ $fg10->add_field(new acf_fields\true_false('Hide from "View All"', 'Hide_from_Vi
 ]));
 
 $fg10->register();
+
+$fg11 = ( new fewacf\field_group( 'Author Image', '202501261530a', $location, 6, [
+    'position' => 'acf_after_title',
+    'names_of_items_to_hide_on_screen' => [
+    ]
+] ));
+
+$fg11->add_field( new acf_fields\image( 'Author Image', 'author_image', '202501261530b', [
+    'instructions' => 'Optionally add author image:',
+] ) );
+
+$fg11->register();

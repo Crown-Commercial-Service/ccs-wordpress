@@ -69,3 +69,12 @@ $fg11->add_field( new acf_fields\image( 'Author Image', 'author_image', '2025012
 ] ) );
 
 $fg11->register();
+
+$fg12 = (new fewacf\field_group('Feature News Section', '202501261540a', $location, 8, [
+    'position' => 'normal',
+    'names_of_items_to_hide_on_screen' => []
+]));
+
+$fg12->add_brick((new bricks\component_feature_news('feature_news_feature_news')));
+
+$fg12->register();

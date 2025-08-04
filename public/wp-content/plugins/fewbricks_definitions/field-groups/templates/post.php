@@ -58,3 +58,12 @@ $fg10->add_field(new acf_fields\true_false('Hide from "View All"', 'Hide_from_Vi
 ]));
 
 $fg10->register();
+
+$fg11 = (new fewacf\field_group('Feature News Section', '202501261540a', $location, 8, [
+    'position' => 'normal',
+    'names_of_items_to_hide_on_screen' => []
+]));
+
+$fg11->add_brick((new bricks\component_feature_news('feature_news_feature_news')));
+
+$fg11->register();

@@ -51,6 +51,7 @@ require __DIR__ . '/includes/wp-rest-api/cscMessageApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/MessageBannerApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/customNewsApi.php';
 /**
  * Begins execution of the plugin.
  *
@@ -78,6 +79,7 @@ function run_plugin()
     $glossaryApi = new GlossaryApi();
     $cscMessageApi = new cscMessageApi();
     $messageBannerApi = new MessageBannerApi();
+    $newsApi = new customNewsApi();
 
 
     //Get all frameworks
@@ -215,6 +217,13 @@ function run_plugin()
         register_rest_route('ccs/v1', '/message-banner/0', array(
             'methods' => 'GET',
             'callback' => [$messageBannerApi, 'getMessageBanner']
+        ));
+    });
+
+    add_action('rest_api_init', function () use ($newsApi) {
+        register_rest_route('ccs/v1', '/news', array(
+            'methods' => 'GET',
+            'callback' => [$newsApi, 'getNewsPageContent']
         ));
     });
 }

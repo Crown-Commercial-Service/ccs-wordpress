@@ -57,4 +57,12 @@ $fg10->add_field(new acf_fields\true_false('Hide from "View All"', 'Hide_from_Vi
     
 ]));
 
-$fg10->register();
+
+$field_group = (new fewacf\field_group('Post components', '202501031015a', $location, 50, [
+    'position' => 'normal',
+]));
+
+// Use the new post-specific brick instead of group_page_content_default
+$field_group->add_brick((new bricks\group_post_content_default('post_components', '202501031015b')));
+
+$field_group->register();

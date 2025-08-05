@@ -57,13 +57,12 @@ $fg10->add_field(new acf_fields\true_false('Hide from "View All"', 'Hide_from_Vi
     
 ]));
 
-$fg10->register();
 
-$fg11 = (new fewacf\field_group('Feature News Section', '202501261540a', $location, 8, [
+$field_group = (new fewacf\field_group('Post components', '202501031015a', $location, 50, [
     'position' => 'normal',
-    'names_of_items_to_hide_on_screen' => []
 ]));
 
-$fg11->add_brick((new bricks\component_feature_news('feature_news_feature_news')));
+// Use the new post-specific brick instead of group_page_content_default
+$field_group->add_brick((new bricks\group_post_content_default('post_components', '202501031015b')));
 
-$fg11->register();
+$field_group->register();

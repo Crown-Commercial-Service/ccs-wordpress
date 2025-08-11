@@ -176,7 +176,7 @@ abstract class AbstractRepository implements RepositoryInterface
      *
      * @param string $fieldName
      * @param $id
-     * @return bool
+     * @return \App\Model\Framnework|\App\Model\Lot|\App\Model\Supplier|bool
      */
     public function findById($id, $fieldName = 'id')
     {
@@ -203,7 +203,7 @@ abstract class AbstractRepository implements RepositoryInterface
      *
      * @param string $fieldName
      * @param $id
-     * @return bool
+     * @return mixed
      */
     public function findAllById($id, $fieldName = 'id')
     {

@@ -122,6 +122,7 @@ function get_upcoming_deals()
     $underwayFrameworks = [];
     $awardedFrameworks = [];
     $dynamicFrameworks = [];
+    $marketFrameworks = [];
 
 
     foreach ($frameworks as $framework) {
@@ -154,6 +155,11 @@ function get_upcoming_deals()
             if ($framework->getStatus() === 'Live' && $framework->getTerms() === 'DPS') {
                 $dynamicFrameworks[] = $framework->toArray();
             }
+
+            if ($framework->getStatus() === 'Live' && $framework->getRegulationType() === 'Dynamic Market') {
+                $marketFrameworks[] = $framework->toArray();
+            }
+
         }
     }
 
@@ -163,7 +169,8 @@ function get_upcoming_deals()
         $plannedFrameworks,
         $underwayFrameworks,
         $awardedFrameworks,
-        $dynamicFrameworks
+        $dynamicFrameworks,
+        $marketFrameworks
     );
 
     return $upcomingAgreements;

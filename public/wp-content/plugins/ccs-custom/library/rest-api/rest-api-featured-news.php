@@ -1,33 +1,31 @@
 <?php
 
-/**
- * Modify the whitepapers relationship field that is returned on relevant
- * pages so that it includes fields we need (featured image and whitepaper file)
- */
 if (!function_exists('modify_featured_news')) {
     function modify_featured_news($response, $post) {
-        // there are no components set on this page
-        if(empty($response->data['acf']['page_components_rows'])) {
-            return $response;
-        }
+        // Check for both page and post components
+        $component_types = ['page_components_rows', 'post_components_rows'];
+        
+        foreach ($component_types as $component_type) {
+            if(empty($response->data['acf'][$component_type])) {
+                continue;
+            }
 
-        $iteration = 0;
-        foreach($response->data['acf']['page_components_rows'] as $component) {
-            if($component['acf_fc_layout'] == 'feature_news_feature_news') {
-                $articles = [];
-                $articleIds = [];
-                $numCherryPicked = 0;
+            $iteration = 0;
+            foreach($response->data['acf'][$component_type] as $component) {
+                if($component['acf_fc_layout'] == 'feature_news_feature_news') {
+                    $articles = [];
+                    $articleIds = [];
+                    $numCherryPicked = 0;
 
-                $cherryPickedArticles = $component['feature_news_feature_news_cherry_picked_articles'];
-                if(!empty($cherryPickedArticles)) {
-                    $numCherryPicked = count($cherryPickedArticles);
-                    foreach ($cherryPickedArticles as $article) {
-                        $articleIds[] = $article->ID;
+                    $cherryPickedArticles = $component['feature_news_feature_news_cherry_picked_articles'];
+                    if(!empty($cherryPickedArticles)) {
+                        $numCherryPicked = count($cherryPickedArticles);
+                        foreach ($cherryPickedArticles as $article) {
+                            $articleIds[] = $article->ID;
+                        }
                     }
 
-                }
-
-                // calculate how many articles we need to query for
+                    // calculate how many articles we need to query for
                 $numQueryArticles = 3 - $numCherryPicked;
 
                 $newsTypes        = processApiTaxonomyList($component['feature_news_feature_news_news_type']);
@@ -89,24 +87,27 @@ if (!function_exists('modify_featured_news')) {
                     wp_reset_postdata();
                 }
 
-                if(!empty($articleIds)) {
-                    $articles = additionalPostFormatting($articleIds);
-                }
-
-                foreach($articles as $key => $article) {
-                    if(!isset($article['post_type'])) {
-                        $articles[$key]['post_type'] = $articles[$key]['type'];
+                    if(!empty($articleIds)) {
+                        $articles = additionalPostFormatting($articleIds);
                     }
+
+                    foreach($articles as $key => $article) {
+                        if(!isset($article['post_type'])) {
+                            $articles[$key]['post_type'] = $articles[$key]['type'];
+                        }
+                    }
+
+                    $response->data['acf'][$component_type][$iteration]['articles'] = $articles;
                 }
 
-                $response->data['acf']['page_components_rows'][$iteration]['articles'] = $articles;
-
+                $iteration++;
             }
-
-            $iteration++;
         }
 
         return $response;
     }
 }
+
+// Add filters for both post and page types
 add_filter('rest_prepare_page', 'modify_featured_news', 10, 3);
+add_filter('rest_prepare_post', 'modify_featured_news', 10, 3);

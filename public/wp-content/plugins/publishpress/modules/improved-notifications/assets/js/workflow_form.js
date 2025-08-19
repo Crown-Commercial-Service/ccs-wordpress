@@ -2,7 +2,7 @@
  * @package PublishPress
  * @author PublishPress
  *
- * Copyright (c) 2018 PublishPress
+ * Copyright (c) 2022 PublishPress
  *
  * This file is part of PublishPress
  *
@@ -21,7 +21,7 @@
  */
 (function ($) {
     $(function () {
-        function setupFieldFilters (name) {
+        function setupFieldFilters(name) {
             // "When the content is moved to a new status"'s filters
             if ($('#publishpress_notif_' + name).length > 0) {
                 var $chkb = $('#publishpress_notif_' + name),
@@ -45,19 +45,34 @@
         setupFieldFilters('event_content_post_type');
         setupFieldFilters('event_content_category');
         setupFieldFilters('event_content_taxonomy');
+        setupFieldFilters('event_taxonomy_update');
         setupFieldFilters('user');
         setupFieldFilters('role');
+        setupFieldFilters('group');
 
         function getEditor() {
             var editor = tinymce.activeEditor;
 
             for (var editorIndex = 0; editorIndex < tinymce.editors.length; editorIndex++) {
                 if (tinymce.editors[editorIndex].id === 'input_id') {
-                  return tinymce.editors[editorIndex];
+                    return tinymce.editors[editorIndex];
                 }
             }
 
             return editor;
+        }
+
+        function getEditorContent() {
+            var editor = getEditor();
+            var content = '';
+
+            if (editor !== null) {
+                content = editor.getContent();
+            } else {
+                content = $('#input_id').val();
+            }
+
+            return content.trim();
         }
 
         // List search
@@ -77,7 +92,7 @@
              * @param section
              * @param status
              */
-            function set_validation_status (section, status) {
+            function set_validation_status(section, status) {
                 var selector = '#psppno-workflow-metabox-section-' + section + ' .psppno_workflow_metabox_section_header';
 
                 if (status) {
@@ -87,7 +102,7 @@
                 }
             }
 
-            function set_tooltip (section) {
+            function set_tooltip(section) {
                 var selector = '#psppno-workflow-metabox-section-' + section + ' .psppno_workflow_metabox_section_header';
 
                 $(selector).tooltip();
@@ -190,18 +205,16 @@
                 }
             }
 
-
-
             // Check the Content section
             if ($('#publishpress_notification_content_main_subject').val().trim() == ''
-                || getEditor().getContent().trim() === '') {
+                || getEditorContent() === '') {
                 set_validation_status('content', false);
 
                 if ($('#publishpress_notification_content_main_subject').val().trim() == '') {
                     messages.push(workflowFormData.messages['setASubject']);
                 }
 
-                if (getEditor().getContent().trim() === '') {
+                if (getEditorContent() === '') {
                     messages.push(workflowFormData.messages['setABody']);
                 }
             } else {

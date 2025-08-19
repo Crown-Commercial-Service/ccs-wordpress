@@ -13,14 +13,16 @@ $WpReportsPlugin = new WpReportsPlugin();
 if ( ! defined('ABSPATH')) exit; // exit if accessed directly
 
 class WpReportsPlugin {
-
+    
+    private $util;
 
     function __construct() {
-        $this->util = new Util();
+        $util = new Util();
+
         add_action('admin_menu', array($this, 'reportsMenu'));
-        add_action('admin_post_authors_form', array($this->util, 'downloadAuthorsReport'));
-        add_action('admin_post_frameworks_form', array($this->util, 'downloadFrameworksReport'));
-        add_action('admin_post_documents_form', array($this->util, 'downloadDocumentsReport'));
+        add_action('admin_post_authors_form', array($util, 'downloadAuthorsReport'));
+        add_action('admin_post_frameworks_form', array($util, 'downloadFrameworksReport'));
+        add_action('admin_post_documents_form', array($util, 'downloadDocumentsReport'));
     }
 
     function reportsMenu () {

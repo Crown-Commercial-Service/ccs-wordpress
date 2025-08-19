@@ -1,7 +1,8 @@
 <?php
+
 defined('ABSPATH') or die('No direct script access allowed.');
 
-if (!class_exists('Editorial_Metadata_Input_User_Handler')) {
+if (! class_exists('Editorial_Metadata_Input_User_Handler')) {
     require_once 'editorial-metadata-input-handler.php';
 
     class Editorial_Metadata_Input_User_Handler extends Editorial_Metadata_Input_Handler
@@ -17,30 +18,49 @@ if (!class_exists('Editorial_Metadata_Input_User_Handler')) {
         }
 
         /**
+         * Get input html for public access
+         * @param array $inputOptions Input options
+         * @param mixed $value Actual input value
+         */
+        public static function getInputHtml($inputOptions = array(), $value = null)
+        {
+            ob_start();
+
+            return ob_get_clean();
+        }
+
+        /**
          * Render input html.
          *
          * @access  protected
+         * @param array $inputOptions Input options
+         * @param mixed $value Actual input value
          * @since   1.20.0
          *
-         * @param   array   $inputOptions   Input options
-         * @param   mixed   $value          Actual input value
          */
-        protected function renderInput($inputOptions = array(), $value = null)
+        protected function renderInput($inputOptions = array(), $value = null, $input_only = false)
         {
             $input_name = isset($inputOptions['name']) ? $inputOptions['name'] : '';
             $input_label = isset($inputOptions['label']) ? $inputOptions['label'] : '';
             $input_description = isset($inputOptions['description']) ? $inputOptions['description'] : '';
+            $input_term_options = isset($inputOptions['term_options']) ? $inputOptions['term_options'] : false;
 
             self::renderLabel(
-                $input_label . self::generateDescriptionHtml($input_description),
+                $input_label,
                 $input_name
             );
 
+            echo self::generateDescriptionHtml($input_description);
+
             $user_dropdown_args = [
                 'show_option_all' => self::getOptionShowAll(),
-                'name'            => $input_name,
-                'selected'        => $value,
+                'name' => $input_name,
+                'selected' => $value,
             ];
+
+            if ($input_term_options && isset($input_term_options->user_role) && is_array($input_term_options->user_role)) {
+                $user_dropdown_args['role__in'] = $input_term_options->user_role;
+            }
 
             $user_dropdown_args = apply_filters('pp_editorial_metadata_user_dropdown_args', $user_dropdown_args);
             wp_dropdown_users($user_dropdown_args);
@@ -56,17 +76,17 @@ if (!class_exists('Editorial_Metadata_Input_User_Handler')) {
          */
         protected static function getOptionShowAll()
         {
-            return __('-- Select a user --', 'publishpress');
+            return esc_html__('-- Select a user --', 'publishpress');
         }
 
         /**
          * Render input-preview html.
          *
          * @access  protected
+         * @param array $inputOptions Input options
+         * @param mixed $value Actual input value
          * @since   1.20.0
          *
-         * @param   array   $inputOptions   Input options
-         * @param   mixed   $value          Actual input value
          */
         protected function renderInputPreview($inputOptions = array(), $value = null)
         {
@@ -75,15 +95,17 @@ if (!class_exists('Editorial_Metadata_Input_User_Handler')) {
             $input_description = isset($inputOptions['description']) ? $inputOptions['description'] : '';
 
             self::renderLabel(
-                $input_label . self::generateDescriptionHtml($input_description),
+                $input_label,
                 $input_name
             );
+
+            echo self::generateDescriptionHtml($input_description);
 
             $user = get_user_by('ID', $value);
             if (is_object($user)) {
                 printf(
                     '<span class="pp_editorial_metadata_value">%s</span>',
-                    $user->user_nicename
+                    esc_html($user->user_nicename)
                 );
             } else {
                 self::renderValuePlaceholder();
@@ -96,8 +118,8 @@ if (!class_exists('Editorial_Metadata_Input_User_Handler')) {
                     name="%1$s"
                     value="%2$s"
                 />',
-                $input_name,
-                $value
+                esc_attr($input_name),
+                esc_attr($value)
             );
         }
 
@@ -105,11 +127,11 @@ if (!class_exists('Editorial_Metadata_Input_User_Handler')) {
          * Get meta-input value html formatted.
          *
          * @static
-         * @since   1.20.0
-         *
-         * @param   mixed   $value  Actual input value
+         * @param mixed $value Actual input value
          *
          * @return  string
+         * @since   1.20.0
+         *
          */
         public static function getMetaValueHtml($value = null)
         {
@@ -118,7 +140,7 @@ if (!class_exists('Editorial_Metadata_Input_User_Handler')) {
             }
 
             $user = get_user_by('id', (int)$value);
-            if (!is_object($user)) {
+            if (! is_object($user)) {
                 return '';
             }
 

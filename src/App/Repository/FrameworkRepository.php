@@ -457,7 +457,8 @@ AND (status = \'Future (Pipeline)\'
         OR (status = \'Live\' 
             AND start_date >= DATE_ADD(NOW(), INTERVAL -3 MONTH) 
             AND terms <> \'DPS\')) 
-    OR (status = \'Live\' AND terms = \'DPS\'))';
+    OR (status = \'Live\' AND terms = \'DPS\')
+    OR (status = \'Live\' AND regulation_type = \'Dynamic Market\'))';
 
         $upcomingDeals = $this->findAllFrameworks($sql);
 

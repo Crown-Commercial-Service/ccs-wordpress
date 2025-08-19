@@ -3,7 +3,7 @@
  * @package PublishPress
  * @author  PublishPress
  *
- * Copyright (c) 2018 PublishPress
+ * Copyright (c) 2022 PublishPress
  *
  * ------------------------------------------------------------------------------
  * Based on Edit Flow
@@ -28,17 +28,18 @@
  * along with PublishPress.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-if ( ! defined('PP_NOTIFICATION_USE_CRON')) {
+if (! defined('PP_NOTIFICATION_USE_CRON')) {
     define('PP_NOTIFICATION_USE_CRON', false);
 }
 
 use PublishPress\Notifications\Traits\Dependency_Injector;
 
-if ( ! class_exists('PP_Notifications')) {
+if (! class_exists('PP_Notifications')) {
     /**
      * Class PP_Notifications
      * Notifications for PublishPress and more
      */
+    #[\AllowDynamicProperties]
     class PP_Notifications extends PP_Module
     {
         use Dependency_Injector;
@@ -53,6 +54,9 @@ if ( ! class_exists('PP_Notifications')) {
         // Taxonomy name used to store roles which will be notified for changes in the posts.
         public $notify_role_taxonomy = 'pp_notify_role';
 
+        // Taxonomy name used to store groups which will be notified for changes in the posts.
+        public $notify_group_taxonomy = 'pp_notify_group';
+
         // Taxonomy name used to store emails which will be notified for changes in the posts.
         public $notify_email_taxonomy = 'pp_notify_email';
 
@@ -65,32 +69,31 @@ if ( ! class_exists('PP_Notifications')) {
          */
         public function __construct()
         {
-
             // Register the module with PublishPress
             $this->module_url = $this->get_module_url(__FILE__);
-            $args             = [
-                'title'                 => __('Notifications', 'publishpress'),
-                'short_description'     => false,
-                'extended_description'  => false,
-                'module_url'            => $this->module_url,
-                'icon_class'            => 'dashicons dashicons-email',
-                'slug'                  => 'notifications',
-                'default_options'       => [
-                    'enabled'                        => 'on',
-                    'post_types'                     => [
+            $args = [
+                'title' => __('Notifications', 'publishpress'),
+                'short_description' => false,
+                'extended_description' => false,
+                'module_url' => $this->module_url,
+                'icon_class' => 'dashicons dashicons-email',
+                'slug' => 'notifications',
+                'default_options' => [
+                    'enabled' => 'on',
+                    'post_types' => [
                         'post' => 'on',
                         'page' => 'on',
                     ],
-                    'notify_author_by_default'       => '1',
+                    'notify_author_by_default' => '1',
                     'notify_current_user_by_default' => '1',
-                    'blacklisted_taxonomies'         => '',
+                    'blacklisted_taxonomies' => '',
                 ],
-                'configure_page_cb'     => 'print_configure_view',
-                'post_type_support'     => 'pp_notification',
-                'autoload'              => false,
-                'settings_help_tab'     => [
-                    'id'      => 'pp-notifications-overview',
-                    'title'   => __('Overview', 'publishpress'),
+                'configure_page_cb' => 'print_configure_view',
+                'post_type_support' => 'pp_notification',
+                'autoload' => false,
+                'settings_help_tab' => [
+                    'id' => 'pp-notifications-overview',
+                    'title' => __('Overview', 'publishpress'),
                     'content' => __(
                         '<p>Notifications ensure you keep up to date with progress your most important content. Users can be subscribed to notifications on a post one by one or by selecting roles.</p><p>When enabled, notifications can be sent when a post changes status or an editorial comment is left by a writer or an editor.</p>',
                         'publishpress'
@@ -100,9 +103,9 @@ if ( ! class_exists('PP_Notifications')) {
                     '<p><strong>For more information:</strong></p><p><a href="https://publishpress.com/features/notifications/">Notifications Documentation</a></p><p><a href="https://github.com/ostraining/PublishPress">PublishPress on Github</a></p>',
                     'publishpress'
                 ),
-                'general_options'       => true,
+                'options_page' => true,
             ];
-            $this->module     = PublishPress()->register_module('notifications', $args);
+            $this->module = PublishPress()->register_module('notifications', $args);
         }
 
         /**
@@ -110,9 +113,10 @@ if ( ! class_exists('PP_Notifications')) {
          */
         public function init()
         {
-
             // Register our taxonomies for managing relationships
             $this->register_taxonomies();
+
+            $this->setDefaultCapabilities();
 
             // Allow users to use a different user capability for editing post subscriptions
             $this->edit_post_subscriptions_cap = apply_filters(
@@ -120,8 +124,38 @@ if ( ! class_exists('PP_Notifications')) {
                 $this->edit_post_subscriptions_cap
             );
 
-            // Set up metabox and related actions
-            add_action('add_meta_boxes', [$this, 'add_post_meta_box']);
+            if (is_admin()) {
+                // Set up metabox and related actions
+                add_action('add_meta_boxes', [$this, 'add_post_meta_box']);
+
+                add_action('admin_init', [$this, 'register_settings']);
+
+                // Javascript and CSS if we need it
+                add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
+                add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_styles']);
+
+                // Add a "Notify" link to posts
+                if (apply_filters('pp_notifications_show_notify_link', true)) {
+                    // A little extra JS for the Notify button
+                    add_action('admin_head', [$this, 'action_admin_head_notify_js']);
+                    // Manage Posts
+                    add_filter('post_row_actions', [$this, 'filter_post_row_actions'], 10, 2);
+                    add_filter('page_row_actions', [$this, 'filter_post_row_actions'], 10, 2);
+                    // Calendar and Content Overview
+                    add_filter('pp_calendar_item_actions', [$this, 'filter_post_row_actions'], 10, 2);
+                    add_filter('pp_story_budget_item_actions', [$this, 'filter_post_row_actions'], 10, 2);
+                }
+
+                /*add_filter(
+                    'publishpress_calendar_get_post_data',
+                    [$this, 'filterCalendarGetPostData'],
+                    10,
+                    2
+                );*/
+
+                // Ajax for saving notification updates
+                add_action('wp_ajax_pp_notifications_user_post_subscription', [$this, 'handle_user_post_subscription']);
+            }
 
             // Saving post actions
             // self::save_post_subscriptions() is hooked into transition_post_status so we can ensure role data
@@ -132,27 +166,6 @@ if ( ! class_exists('PP_Notifications')) {
                 PP_NOTIFICATION_PRIORITY_STATUS_CHANGE,
                 3
             );
-            add_action('pp_post_insert_editorial_comment', [$this, 'notification_comment']);
-            add_action('delete_user', [$this, 'delete_user_action']);
-            add_action('pp_send_scheduled_notification', [$this, 'send_single_email'], 10, 4);
-
-            add_action('admin_init', [$this, 'register_settings']);
-
-            // Javascript and CSS if we need it
-            add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
-            add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_styles']);
-
-            // Add a "Notify" link to posts
-            if (apply_filters('pp_notifications_show_notify_link', true)) {
-                // A little extra JS for the Notify button
-                add_action('admin_head', [$this, 'action_admin_head_notify_js']);
-                // Manage Posts
-                add_filter('post_row_actions', [$this, 'filter_post_row_actions'], 10, 2);
-                add_filter('page_row_actions', [$this, 'filter_post_row_actions'], 10, 2);
-                // Calendar and Content Overview
-                add_filter('pp_calendar_item_actions', [$this, 'filter_post_row_actions'], 10, 2);
-                add_filter('pp_story_budget_item_actions', [$this, 'filter_post_row_actions'], 10, 2);
-            }
 
             add_filter(
                 'pp_notification_auto_subscribe_post_author',
@@ -167,10 +180,11 @@ if ( ! class_exists('PP_Notifications')) {
                 2
             );
 
-            add_action('save_post', [$this, 'action_save_post'], 10);
+            add_action('pp_post_insert_editorial_comment', [$this, 'notification_comment']);
+            add_action('delete_user', [$this, 'delete_user_action']);
+            add_action('pp_send_scheduled_notification', [$this, 'send_single_email'], 10, 5);
 
-            // Ajax for saving notification updates
-            add_action('wp_ajax_pp_notifications_user_post_subscription', [$this, 'handle_user_post_subscription']);
+            add_action('save_post', [$this, 'action_save_post'], 10);
 
             add_action('pp_send_notification_status_update', [$this, 'send_notification_status_update']);
             add_action('pp_send_notification_comment', [$this, 'send_notification_comment']);
@@ -225,14 +239,38 @@ if ( ! class_exists('PP_Notifications')) {
             }
         }
 
+        private function setDefaultCapabilities()
+        {
+            $role = get_role('administrator');
+
+            $capabilities = [
+                'edit_pp_notif_workflow',
+                'read_pp_notif_workflow',
+                'delete_pp_notif_workflow',
+                'edit_pp_notif_workflows',
+                'edit_others_pp_notif_workflows',
+                'publish_pp_notif_workflows',
+                'read_private_pp_notif_workflows',
+                'edit_pp_notif_workflows',
+            ];
+
+            foreach ($capabilities as $capability) {
+                $role->add_cap($capability);
+            }
+        }
+
 
         protected function migrateLegacyFollowingTerms()
         {
             global $wpdb;
 
             // Migrate Following Users
-            $query = "UPDATE {$wpdb->prefix}term_taxonomy SET taxonomy = '{$this->notify_user_taxonomy}' WHERE taxonomy = 'following_users'";
-            $wpdb->query($query);
+            $wpdb->query(
+                $wpdb->prepare(
+                    "UPDATE {$wpdb->prefix}term_taxonomy SET taxonomy = %s WHERE taxonomy = 'following_users'",
+                    $this->notify_user_taxonomy
+                )
+            );
         }
 
         /**
@@ -248,18 +286,76 @@ if ( ! class_exists('PP_Notifications')) {
             $supported_post_types = $this->get_post_types_for_module($this->module);
 
             $args = [
-                'hierarchical'          => false,
+                'hierarchical' => false,
                 'update_count_callback' => '_update_post_term_count',
-                'label'                 => false,
-                'query_var'             => false,
-                'rewrite'               => false,
-                'public'                => false,
-                'show_ui'               => false,
+                'label' => false,
+                'query_var' => false,
+                'rewrite' => false,
+                'public' => false,
+                'show_ui' => false,
             ];
 
-            register_taxonomy($this->notify_user_taxonomy, $supported_post_types, $args);
-            register_taxonomy($this->notify_role_taxonomy, $supported_post_types, $args);
-            register_taxonomy($this->notify_email_taxonomy, $supported_post_types, $args);
+            register_taxonomy(
+                $this->notify_user_taxonomy,
+                $supported_post_types,
+                wp_parse_args(
+                    [
+                        'label' => __('Notify User', 'publishpress'),
+                        'labels' => [
+                            'name' => __('Notify Users', 'publishpress'),
+                            'singular_name' => __('Notify User', 'publishpress'),
+                        ],
+                    ],
+                    $args
+                )
+            );
+
+            register_taxonomy(
+                $this->notify_role_taxonomy,
+                $supported_post_types,
+                wp_parse_args(
+                    [
+                        'label' => __('Notify Role', 'publishpress'),
+                        'labels' => [
+                            'name' => __('Notify Roles', 'publishpress'),
+                            'singular_name' => __('Notify Role', 'publishpress'),
+                        ],
+                    ],
+                    $args
+                )
+            );
+
+            if (defined('PRESSPERMIT_VERSION')) {
+                register_taxonomy(
+                    $this->notify_group_taxonomy,
+                    $supported_post_types,
+                    wp_parse_args(
+                        [
+                            'label' => __('Notification Group', 'publishpress'),
+                            'labels' => [
+                                'name' => __('Notification Groups', 'publishpress'),
+                                'singular_name' => __('Notification Group', 'publishpress'),
+                            ],
+                        ],
+                        $args
+                    )
+                );
+            }
+
+            register_taxonomy(
+                $this->notify_email_taxonomy,
+                $supported_post_types,
+                wp_parse_args(
+                    [
+                        'label' => __('Notify Email', 'publishpress'),
+                        'labels' => [
+                            'name' => __('Notify Emails', 'publishpress'),
+                            'singular_name' => __('Notify Email', 'publishpress'),
+                        ],
+                    ],
+                    $args
+                )
+            );
         }
 
         /**
@@ -272,23 +368,46 @@ if ( ! class_exists('PP_Notifications')) {
         public function enqueue_admin_scripts()
         {
             if ($this->is_whitelisted_functional_view()) {
+
+                wp_enqueue_script(
+                    'publishpress-select2',
+                    PUBLISHPRESS_URL . 'common/libs/select2/js/select2-full.min.js',
+                    ['jquery'],
+                    PUBLISHPRESS_VERSION
+                );
+
                 wp_enqueue_script(
                     'publishpress-notifications-js',
                     $this->module_url . 'assets/notifications.js',
                     [
                         'jquery',
+                        'publishpress-select2'
                     ],
                     PUBLISHPRESS_VERSION,
                     true
                 );
-
-                wp_enqueue_script(
-                    'publishpress-chosen-js',
-                    PUBLISHPRESS_URL . 'common/libs/chosen-v1.8.3/chosen.jquery.js',
-                    ['jquery'],
-                    PUBLISHPRESS_VERSION
-                );
             }
+        }
+
+        /**
+         * Whether or not the current page is a user-facing PublishPress View
+         *
+         * @param string $module_name (Optional) Module name to check against
+         *
+         * @since 0.7
+         *
+         * @todo  Think of a creative way to make this work
+         *
+         */
+        protected function is_whitelisted_functional_view($module_name = null)
+        {
+            global $current_screen;
+
+            if (! is_object($current_screen)) {
+                return false;
+            }
+
+            return $current_screen->base === 'post';
         }
 
         /**
@@ -310,8 +429,8 @@ if ( ! class_exists('PP_Notifications')) {
                 );
 
                 wp_enqueue_style(
-                    'publishpress-chosen-css',
-                    PUBLISHPRESS_URL . 'common/libs/chosen-v1.8.3/chosen.css',
+                    'publishpress-select2',
+                    PUBLISHPRESS_URL . 'common/libs/select2/css/select2-full.min.css',
                     false,
                     PUBLISHPRESS_VERSION
                 );
@@ -362,8 +481,8 @@ if ( ! class_exists('PP_Notifications')) {
         /**
          * Add a "Notify" link to supported post types Manage Posts view
          *
-         * @param array      $actions Any existing item actions
-         * @param int|object $post    Post id or object
+         * @param array $actions Any existing item actions
+         * @param int|object $post Post id or object
          *
          * @return array     $actions   The follow link has been appended
          * @since 0.8
@@ -373,19 +492,21 @@ if ( ! class_exists('PP_Notifications')) {
         {
             $post = get_post($post);
 
-            if ( ! in_array($post->post_type, $this->get_post_types_for_module($this->module))) {
+            if (! in_array($post->post_type, $this->get_post_types_for_module($this->module))) {
                 return $actions;
             }
 
-            if ( ! current_user_can($this->edit_post_subscriptions_cap) || ! current_user_can(
+            if (! current_user_can($this->edit_post_subscriptions_cap) && ! current_user_can(
                     'edit_post',
                     $post->ID
                 )) {
                 return $actions;
             }
 
-            $parts                     = $this->get_notify_action_parts($post);
-            $actions['pp_notify_link'] = '<a title="' . esc_attr($parts['title']) . '" href="' . esc_url($parts['link']) . '">' . $parts['text'] . '</a>';
+            $parts = $this->get_notify_action_parts($post);
+            $actions['pp_notify_link'] = '<a title="' . esc_attr($parts['title']) . '" href="' . esc_url(
+                    $parts['link']
+                ) . '">' . $parts['text'] . '</a>';
 
             return $actions;
         }
@@ -398,7 +519,7 @@ if ( ! class_exists('PP_Notifications')) {
         private function get_notify_action_parts($post)
         {
             $args = [
-                'action'  => 'pp_notifications_user_post_subscription',
+                'action' => 'pp_notifications_user_post_subscription',
                 'post_id' => $post->ID,
             ];
 
@@ -406,12 +527,12 @@ if ( ! class_exists('PP_Notifications')) {
 
             if (in_array(wp_get_current_user()->user_login, $user_to_notify)) {
                 $args['method'] = 'stop_notifying';
-                $title_text     = __('Click to stop being notified on updates for this post', 'publishpress');
-                $link_text      = __('Stop notifying me', 'publishpress');
+                $title_text = __('Click to stop being notified on updates for this post', 'publishpress');
+                $link_text = __('Stop notifying me', 'publishpress');
             } else {
                 $args['method'] = 'start_notifying';
-                $title_text     = __('Click to start being notified on updates for this post', 'publishpress');
-                $link_text      = __('Notify me', 'publishpress');
+                $title_text = __('Click to start being notified on updates for this post', 'publishpress');
+                $link_text = __('Notify me', 'publishpress');
             }
 
             // wp_nonce_url() has encoding issues: http://core.trac.wordpress.org/ticket/20771
@@ -419,8 +540,8 @@ if ( ! class_exists('PP_Notifications')) {
 
             return [
                 'title' => $title_text,
-                'text'  => $link_text,
-                'link'  => add_query_arg($args, admin_url('admin-ajax.php')),
+                'text' => $link_text,
+                'link' => add_query_arg($args, admin_url('admin-ajax.php')),
             ];
         }
 
@@ -429,11 +550,12 @@ if ( ! class_exists('PP_Notifications')) {
          */
         public function add_post_meta_box()
         {
-            if ( ! current_user_can($this->edit_post_subscriptions_cap)) {
+            if (! current_user_can($this->edit_post_subscriptions_cap)) {
                 return;
             }
 
             $role_post_types = $this->get_post_types_for_module($this->module);
+
             foreach ($role_post_types as $post_type) {
                 add_meta_box(
                     'publishpress-notifications',
@@ -461,64 +583,122 @@ if ( ! class_exists('PP_Notifications')) {
             global $post;
 
             $followersWorkflows = $this->get_workflows_related_to_followers();
-            $activeWorkflows    = $this->get_workflows_related_to_post($post);
+            $activeWorkflows = $this->get_workflows_related_to_post($post);
 
             $followersWorkflows = array_map([$this, 'getPostID'], $followersWorkflows);
 
             $postType = get_post_type_object($post->post_type);
 
+            $notify_me_style = empty($followersWorkflows) ? 'display: none;' : '';
             ?>
             <div id="pp_post_notify_box">
                 <a name="subscriptions"></a>
+                <div style="<?php echo esc_attr($notify_me_style); ?>">
+                    <p>
+                        <?php
+                        esc_html_e(
+                            'Enter users, roles, or email addresses that should receive notifications for this post.',
+                            'publishpress'
+                        ); ?><?php
+                        if (! empty($followersWorkflows)) : ?><a class="notification-followers" href="javascript:void(0);" title="<?php _e('Show active notifications', 'publishpress');?>">&sup1;</a><?php
+                        endif; ?>
+                    </p>
 
-                <p>
-                    <?php _e(
-                        'Enter any users, roles, or email address that should receive notifications from workflows.',
-                        'publishpress'
-                    ); ?><?php if ( ! empty($followersWorkflows)) : ?>&sup1;<?php endif; ?>
-                </p>
+                    <div id="pp_post_notify_users_box">
+                        <?php
+                        $users_to_notify = $this->get_users_to_notify($post->ID, 'id');
+                        $roles_to_notify = $this->get_roles_to_notify($post->ID, 'slugs');
+                        $groups_to_notify = $this->get_groups_to_notify($post->ID, 'slugs');
+                        $emails_to_notify = $this->get_emails_to_notify($post->ID);
 
-                <div id="pp_post_notify_users_box">
+                        $selected = array_merge($users_to_notify, $roles_to_notify, $groups_to_notify, $emails_to_notify);
+
+                        $select_form_args = [
+                            'list_class' => 'pp_post_notify_list',
+                        ];
+                        $this->users_select_form($selected, $select_form_args); ?>
+
+                    </div>
+
+                    <style>
+                        a.notification-followers, a.notification-followers:active, a.notification-followers:visited, a.notification-followers:link {
+                            text-decoration: none;
+                        }
+                    </style>
+
+                    <script type="text/javascript">
+                    /* <![CDATA[ */
+                    jQuery(document).ready(function ($) {
+                        $('#pp_post_notify_box a.notification-followers').on('click', function() {
+                            $('div.pp_post_notify_workflows').show();
+                        });
+                    });
+                    /* ]]> */
+                    </script>
+
                     <?php
-                    $users_to_notify  = $this->get_users_to_notify($post->ID, 'id');
-                    $roles_to_notify  = $this->get_roles_to_notify($post->ID, 'slugs');
-                    $emails_to_notify = $this->get_emails_to_notify($post->ID);
-
-                    $selected = array_merge($users_to_notify, $roles_to_notify, $emails_to_notify);
-
-                    $select_form_args = [
-                        'list_class' => 'pp_post_notify_list',
-                    ];
-                    $this->users_select_form($selected, $select_form_args); ?>
-
+                    if (empty($followersWorkflows)) : ?>
+                        <p class="no-workflows"><?php
+                            echo esc_html__(
+                                'This won\'t have any effect unless you have at least one workflow targeting the "Users who selected "Notify me" for the content" option.',
+                                'publishpress'
+                            ); ?></p>
+                    <?php
+                    endif; ?>
                 </div>
 
-                <?php if (empty($followersWorkflows)) : ?>
-                    <p class="no-workflows"><?php echo __('This won\'t have any effect unless you have at least one workflow targeting the "Notify me" box.',
-                            'publishpress'); ?></p>
-                <?php endif; ?>
-                <hr>
+                <?php
+                if (current_user_can('edit_pp_notif_workflows')) : ?>
+                    <div class="pp_post_notify_workflows" style="display: none">
+                        <?php
+                        if (! empty($activeWorkflows)) : ?>
+                            <h3><?php
+                                echo esc_html__('Active Notifications', 'publishpress'); ?></h3>
 
-                <div class="pp_post_notify_workflows">
-                    <?php if ( ! empty($activeWorkflows)) : ?>
-                        <h3><?php echo __('Active Notifications', 'publishpress'); ?></h3>
+                            <ul>
+                                <?php
+                                foreach ($activeWorkflows as $workflow) : ?>
+                                    <li>
+                                        <a href="<?php
+                                        echo esc_url(
+                                            admin_url(
+                                                'post.php?post=' . $workflow->workflow_post->ID . '&action=edit&classic-editor'
+                                            )
+                                        ); ?>"
+                                           target="_blank">
+                                            <?php
+                                            echo esc_html($workflow->workflow_post->post_title); ?><?php
+                                            if (in_array(
+                                                $workflow->workflow_post->ID,
+                                                $followersWorkflows
+                                            )): ?>&sup1;<?php
+                                            endif; ?>
+                                        </a>
+                                    </li>
+                                <?php
+                                endforeach; ?>
+                            </ul>
 
-                        <ul>
-                            <?php foreach ($activeWorkflows as $workflow) : ?>
-                                <li>
-                                    <a href="<?php echo admin_url('post.php?post=' . $workflow->workflow_post->ID . '&action=edit&classic-editor'); ?>"
-                                       target="_blank">
-                                        <?php echo $workflow->workflow_post->post_title; ?><?php if (in_array($workflow->workflow_post->ID,
-                                            $followersWorkflows)): ?>&sup1;<?php endif; ?>
-                                    </a>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php else: ?>
-                        <p class="no-workflows"><?php echo sprintf(__('No active notifications found for this %s.',
-                                'publishpress'), $postType->labels->singular_name); ?></p>
-                    <?php endif; ?>
-                </div>
+                            <?php if (!empty($followersWorkflows)):?>
+                            <p>
+                                &sup1; = <?php _e('Workflow has users enrolled', 'publishpress');?>
+                            </p>
+                            <?php endif;?>
+                        <?php
+                        else: ?>
+                            <p class="no-workflows"><?php
+                                echo sprintf(
+                                    esc_html__(
+                                        'No active notifications found for this %s.',
+                                        'publishpress'
+                                    ),
+                                    esc_html($postType->labels->singular_name)
+                                ); ?></p>
+                        <?php
+                        endif; ?>
+                    </div>
+                <?php
+                endif; ?>
 
                 <?php
                 /**
@@ -534,7 +714,8 @@ if ( ! class_exists('PP_Notifications')) {
                 ?>
                 <input type="hidden" name="pp_save_notify" value="1"/>
 
-                <?php wp_nonce_field('save_roles', 'pp_notifications_nonce', false); ?>
+                <?php
+                wp_nonce_field('save_roles', 'pp_notifications_nonce', false); ?>
             </div>
 
             <?php
@@ -552,8 +733,8 @@ if ( ! class_exists('PP_Notifications')) {
             $meta_query = [
                 'relation' => 'OR',
                 [
-                    'key'     => '_psppno_tofollower',
-                    'value'   => 1,
+                    'key' => '_psppno_tofollower',
+                    'value' => 1,
                     'compare' => '=',
                 ],
             ];
@@ -574,27 +755,27 @@ if ( ! class_exists('PP_Notifications')) {
          */
         protected function get_workflows_related_to_post($post)
         {
-            $publishpress = PublishPress();
+            $workflows_controller = $this->get_service('workflows_controller');
 
+            $post_status = apply_filters('publishpress_notifications_status', $post->post_status, $post);
 
-            $workflow_controller = $this->get_service('workflow_controller');
-
-            $args      = [
-                'action'       => '',
-                'post'         => $post,
-                'new_status'   => $post->post_status,
-                'old_status'   => $post->post_status,
-                'ignore_event' => true,
+            $args = [
+                'event' => '',
+                'params' => [
+                    'post_id' => $post->ID,
+                    'new_status' => $post_status,
+                    'old_status' => $post_status,
+                    'ignore_event' => true,
+                ],
             ];
-            $workflows = $workflow_controller->get_filtered_workflows($args);
 
-            return $workflows;
+            return apply_filters('publishpress_post_notification_get_workflows', $workflows_controller->get_filtered_workflows($args), $post);
         }
 
         public function action_save_post($postId)
         {
-            if ( ! isset($_POST['pp_notifications_nonce']) || ! wp_verify_nonce(
-                    $_POST['pp_notifications_nonce'],
+            if (! isset($_POST['pp_notifications_nonce']) || ! wp_verify_nonce(
+                    sanitize_text_field($_POST['pp_notifications_nonce']),
                     'save_roles'
                 )) {
                 return;
@@ -603,7 +784,7 @@ if ( ! class_exists('PP_Notifications')) {
             // Remove current users
             $terms = get_the_terms($postId, $this->notify_user_taxonomy);
             $users = [];
-            if ( ! empty($terms)) {
+            if (! empty($terms)) {
                 foreach ($terms as $term) {
                     $users[] = $term->term_id;
                 }
@@ -614,26 +795,45 @@ if ( ! class_exists('PP_Notifications')) {
             // Remove current roles
             $terms = get_the_terms($postId, $this->notify_role_taxonomy);
             $roles = [];
-            if ( ! empty($terms)) {
+            if (! empty($terms)) {
                 foreach ($terms as $term) {
                     $roles[] = $term->term_id;
                 }
             }
             wp_remove_object_terms($postId, $roles, $this->notify_role_taxonomy);
 
+            if (defined('PRESSPERMIT_VERSION')) {
+                // Remove current groups
+                $terms = get_the_terms($postId, $this->notify_group_taxonomy);
+                $groups = [];
+                if (! empty($terms)) {
+                    foreach ($terms as $term) {
+                        $groups[] = $term->term_id;
+                    }
+                }
+                wp_remove_object_terms($postId, $groups, $this->notify_group_taxonomy);
+            }
+
             // Remove current emails
-            $terms  = get_the_terms($postId, $this->notify_email_taxonomy);
+            $terms = get_the_terms($postId, $this->notify_email_taxonomy);
             $emails = [];
-            if ( ! empty($terms)) {
+            if (! empty($terms)) {
                 foreach ($terms as $term) {
                     $emails[] = $term->term_id;
                 }
             }
             wp_remove_object_terms($postId, $emails, $this->notify_email_taxonomy);
 
+            if (apply_filters('pp_notification_auto_subscribe_current_user', true)) {
+                if (! isset($_POST['to_notify'])) {
+                    $_POST['to_notify'] = [];
+                }
+                if (! array_search(get_current_user_id(), $_POST['to_notify'])) {
+                    $_POST['to_notify'][] = get_current_user_id();
+                }
+            }
+
             if (isset($_POST['to_notify'])) {
-
-
                 foreach ($_POST['to_notify'] as $id) {
                     if (is_numeric($id)) {
                         // User id
@@ -644,6 +844,9 @@ if ( ! class_exists('PP_Notifications')) {
                         // Is an email address?
                         if (strpos($id, '@') > 0) {
                             $this->post_set_emails_to_notify($postId, $id, true);
+
+                        } elseif (0 === strpos($id, 'group-')) {
+                            $this->post_set_groups_to_notify($postId, $id, true);
                         } else {
                             // Role name
                             $this->post_set_roles_to_notify($postId, $id, true);
@@ -660,17 +863,23 @@ if ( ! class_exists('PP_Notifications')) {
          */
         public function handle_user_post_subscription()
         {
-            if ( ! wp_verify_nonce($_GET['_wpnonce'], 'pp_notifications_user_post_subscription')) {
+            if (! isset($_GET['_wpnonce'])
+                || ! wp_verify_nonce(sanitize_key($_GET['_wpnonce']), 'pp_notifications_user_post_subscription')
+            ) {
                 $this->print_ajax_response('error', $this->module->messages['nonce-failed']);
             }
 
-            if ( ! current_user_can($this->edit_post_subscriptions_cap)) {
+            if (! isset($_GET['method']) || ! current_user_can($this->edit_post_subscriptions_cap)) {
                 $this->print_ajax_response('error', $this->module->messages['invalid-permissions']);
             }
 
-            $post = get_post(($post_id = $_GET['post_id']));
+            if (! isset($_GET['post_id']) || empty((int)$_GET['post_id'])) {
+                $this->print_ajax_response('error', $this->module->messages['missing-post']);
+            }
 
-            if ( ! $post) {
+            $post = get_post((int)$_GET['post_id']);
+
+            if (! $post) {
                 $this->print_ajax_response('error', $this->module->messages['missing-post']);
             }
 
@@ -695,73 +904,56 @@ if ( ! class_exists('PP_Notifications')) {
          */
         public function filter_pp_notification_auto_subscribe_post_author($default, $context)
         {
-            if ( ! isset($this->module->options->notify_author_by_default)) {
+            if (! isset($this->module->options->notify_author_by_default)) {
                 return $default;
             }
 
-            return (booL)$this->module->options->notify_author_by_default;
+            return (bool)$this->module->options->notify_author_by_default;
         }
 
         /**
          * @param $default
-         * @param $context
          *
          * @return bool
          */
-        public function filter_pp_notification_auto_subscribe_current_user($default, $context)
+        public function filter_pp_notification_auto_subscribe_current_user($default)
         {
-            if ( ! isset($this->module->options->notify_current_user_by_default)) {
+            if (! isset($this->module->options->notify_current_user_by_default)) {
                 return $default;
             }
 
-            return (booL)$this->module->options->notify_current_user_by_default;
+            return (bool)$this->module->options->notify_current_user_by_default;
         }
 
-        /**
-         * Sets users to be notified for the specified post
-         *
-         * @param int $post ID of the post
-         */
-        public function save_post_notify_users($post, $users = null)
+        public function filterCalendarGetPostData($postData, $post)
         {
-            if ( ! is_array($users)) {
-                $users = [];
+            if (! current_user_can($this->edit_post_subscriptions_cap)) {
+                return $postData;
             }
 
-            // Add current user to notify list
-            $user = wp_get_current_user();
-            if ($user && apply_filters(
-                    'pp_notification_auto_subscribe_current_user',
-                    true,
-                    'subscription_action'
-                )) {
-                $users[] = $user->ID;
+            $user_to_notify = $this->get_users_to_notify($post->ID);
+
+            if (in_array(wp_get_current_user()->user_login, $user_to_notify)) {
+                $link = [
+                    'args' => ['method' => 'stop_notifying'],
+                    'label' => __('Stop notifying me', 'publishpress'),
+                    'title' => __('Click to stop being notified on updates for this post', 'publishpress'),
+                ];
+            } else {
+                $link = [
+                    'args' => ['method' => 'start_notifying'],
+                    'label' => __('Notify me', 'publishpress'),
+                    'title' => __('Click to start being notified on updates for this post', 'publishpress'),
+                ];
             }
 
-            // Add post author to notify list
-            if (apply_filters('pp_notification_auto_subscribe_post_author', true, 'subscription_action')) {
-                $users[] = $post->post_author;
-            }
+            $link['action'] = 'pp_notifications_user_post_subscription';
+            $link['args']['_wpnonce'] = wp_create_nonce('pp_notifications_user_post_subscription');
+            $link['args']['post_id'] = $post->ID;
 
-            $users = array_unique(array_map('intval', $users));
+            $postData['links']['notify'] = $link;
 
-            $this->post_set_users_to_notify($post, $users, false);
-        }
-
-        /**
-         * Sets roles to be notified for the specified post
-         *
-         * @param int   $post  ID of the post
-         * @param array $roles Roles to be notified for posts
-         */
-        public function save_post_notify_roles($post, $roles = null)
-        {
-            if ( ! is_array($roles)) {
-                $roles = [];
-            }
-            $roles = array_map('intval', $roles);
-
-            $this->add_role_to_notify($post, $roles, false);
+            return $postData;
         }
 
         /**
@@ -773,7 +965,7 @@ if ( ! class_exists('PP_Notifications')) {
 
 
             // Kill switch for notification
-            if ( ! apply_filters(
+            if (! apply_filters(
                     'pp_notification_status_change',
                     $new_status,
                     $old_status,
@@ -788,7 +980,7 @@ if ( ! class_exists('PP_Notifications')) {
             }
 
             $supported_post_types = $this->get_post_types_for_module($this->module);
-            if ( ! in_array($post->post_type, $supported_post_types)) {
+            if (! in_array($post->post_type, $supported_post_types)) {
                 return;
             }
 
@@ -799,11 +991,11 @@ if ( ! class_exists('PP_Notifications')) {
                 $post->post_type
             );
 
-            if ( ! in_array($new_status, $ignored_statuses)) {
+            if (! in_array($new_status, $ignored_statuses)) {
                 $args = [
                     'new_status' => $new_status,
                     'old_status' => $old_status,
-                    'post'       => $post,
+                    'post' => $post,
                 ];
 
                 do_action('pp_send_notification_status_update', $args);
@@ -818,30 +1010,20 @@ if ( ! class_exists('PP_Notifications')) {
             $post = get_post($comment->comment_post_ID);
 
             $supported_post_types = $this->get_post_types_for_module($this->module);
-            if ( ! in_array($post->post_type, $supported_post_types)) {
+            if (! in_array($post->post_type, $supported_post_types)) {
                 return;
             }
 
             // Kill switch for notification
-            if ( ! apply_filters('pp_notification_editorial_comment', $comment, $post)) {
+            if (! apply_filters('pp_notification_editorial_comment', $comment, $post)) {
                 return false;
             }
 
-            $user         = get_userdata($post->post_author);
             $current_user = wp_get_current_user();
 
-            $post_id    = $post->ID;
-            $post_type  = get_post_type_object($post->post_type)->labels->singular_name;
+            $post_id = $post->ID;
+            $post_type = get_post_type_object($post->post_type)->labels->singular_name;
             $post_title = pp_draft_or_post_title($post_id);
-
-            // Check if this a reply
-            //$parent_ID = isset( $comment->comment_parent_ID ) ? $comment->comment_parent_ID : 0;
-            //if( $parent_ID ) $parent = get_comment( $parent_ID );
-
-            // Set user to be notified for a post, but make it filterable
-            if (apply_filters('pp_notification_auto_subscribe_current_user', true, 'comment')) {
-                $this->post_set_users_to_notify($post, (int )$current_user->ID);
-            }
 
             // Set the post author to be notified for the post but make it filterable
             if (apply_filters('pp_notification_auto_subscribe_post_author', true, 'comment')) {
@@ -852,19 +1034,19 @@ if ( ! class_exists('PP_Notifications')) {
 
             // Send the notification
             $args = [
-                'blogname'     => $blogname,
-                'post'         => $post,
-                'post_title'   => $post_title,
-                'post_id'      => $post_id,
-                'post_type'    => $post_type,
+                'blogname' => $blogname,
+                'post' => $post,
+                'post_title' => $post_title,
+                'post_id' => $post_id,
+                'post_type' => $post_type,
                 'current_user' => $current_user,
-                'comment'      => $comment,
+                'comment' => $comment,
             ];
 
             do_action('pp_send_notification_comment', $args);
         }
 
-        public function get_notification_footer($post)
+        private function get_notification_footer($post)
         {
             $body = "";
             $body .= "\r\n--------------------\r\n";
@@ -873,7 +1055,9 @@ if ( ! class_exists('PP_Notifications')) {
                 pp_draft_or_post_title($post->ID)
             );
             $body .= "\r\n";
+            // phpcs:disable WordPress.DateTime.RestrictedFunctions.date_date
             $body .= sprintf(__('This email was sent %s.', 'publishpress'), date('r'));
+            // phpcs:enable
             $body .= "\r\n \r\n";
             $body .= get_option('blogname') . " | " . get_bloginfo('url') . " | " . admin_url('/') . "\r\n";
 
@@ -885,7 +1069,7 @@ if ( ! class_exists('PP_Notifications')) {
          *
          * @return array
          */
-        public function send_email($action, $post, $subject, $message, $message_headers = '', $recipients = null)
+        public function send_email($action, $post, $subject, $message, $message_headers = '', $recipients = null, $attachments = [])
         {
             $deliveryResult = [];
 
@@ -898,8 +1082,8 @@ if ( ! class_exists('PP_Notifications')) {
                 $recipients = explode(',', $recipients);
             }
 
-            $subject         = apply_filters('pp_notification_send_email_subject', $subject, $action, $post);
-            $message         = apply_filters('pp_notification_send_email_message', $message, $action, $post);
+            $subject = apply_filters('pp_notification_send_email_subject', $subject, $action, $post);
+            $message = apply_filters('pp_notification_send_email_message', $message, $action, $post);
             $message_headers = apply_filters(
                 'pp_notification_send_email_message_headers',
                 $message_headers,
@@ -908,10 +1092,16 @@ if ( ! class_exists('PP_Notifications')) {
             );
 
             if (PP_NOTIFICATION_USE_CRON) {
-                $this->schedule_emails($recipients, $subject, $message, $message_headers);
-            } elseif ( ! empty($recipients)) {
+                $this->schedule_emails($recipients, $subject, $message, $message_headers, 1, $attachments);
+            } elseif (! empty($recipients)) {
                 foreach ($recipients as $recipient) {
-                    $deliveryResult[$recipient] = $this->send_single_email($recipient, $subject, $message, $message_headers);
+                    $deliveryResult[$recipient] = $this->send_single_email(
+                        $recipient,
+                        $subject,
+                        $message,
+                        $message_headers,
+                        $attachments
+                    );
                 }
             }
 
@@ -921,13 +1111,14 @@ if ( ! class_exists('PP_Notifications')) {
         /**
          * Schedules emails to be sent in succession
          *
-         * @param mixed  $recipients      Individual email or array of emails
-         * @param string $subject         Subject of the email
-         * @param string $message         Body of the email
+         * @param mixed $recipients Individual email or array of emails
+         * @param string $subject Subject of the email
+         * @param string $message Body of the email
          * @param string $message_headers . (optional ) Message headers
-         * @param int    $time_offset     (optional ) Delay in seconds per email
+         * @param int $time_offset (optional ) Delay in seconds per email
+         * @param array $attachments . (optional ) Message attachments
          */
-        public function schedule_emails($recipients, $subject, $message, $message_headers = '', $time_offset = 1)
+        private function schedule_emails($recipients, $subject, $message, $message_headers = '', $time_offset = 1, $attachments = [])
         {
             $recipients = (array)$recipients;
 
@@ -937,7 +1128,7 @@ if ( ! class_exists('PP_Notifications')) {
                 wp_schedule_single_event(
                     $send_time,
                     'pp_send_scheduled_notification',
-                    [$recipient, $subject, $message, $message_headers]
+                    [$recipient, $subject, $message, $message_headers, $attachments]
                 );
                 $send_time += $time_offset;
             }
@@ -946,16 +1137,17 @@ if ( ! class_exists('PP_Notifications')) {
         /**
          * Sends an individual email
          *
-         * @param mixed  $to              Email to send to
-         * @param string $subject         Subject of the email
-         * @param string $message         Body of the email
+         * @param mixed $to Email to send to
+         * @param string $subject Subject of the email
+         * @param string $message Body of the email
          * @param string $message_headers . (optional ) Message headers
+         * @param array $attachments . (optional ) Message attachments
          *
          * @return bool
          */
-        public function send_single_email($to, $subject, $message, $message_headers = '')
+        public function send_single_email($to, $subject, $message, $message_headers = '', $attachments = [])
         {
-            return wp_mail($to, $subject, $message, $message_headers);
+            return wp_mail($to, $subject, $message, $message_headers, $attachments);
         }
 
         /**
@@ -969,12 +1161,12 @@ if ( ! class_exists('PP_Notifications')) {
         private function _get_notification_recipients($post, $string = false)
         {
             $post_id = $post->ID;
-            if ( ! $post_id) {
+            if (! $post_id) {
                 return [];
             }
 
-            $authors    = [];
-            $admins     = [];
+            $authors = [];
+            $admins = [];
             $role_users = [];
 
             // Get users and roles to notify
@@ -986,7 +1178,7 @@ if ( ! class_exists('PP_Notifications')) {
                     ]
                 );
 
-                if ( ! empty($users)) {
+                if (! empty($users)) {
                     foreach ($users as $user) {
                         if (is_user_member_of_blog($user->ID)) {
                             $role_users[] = $user->user_email;
@@ -1030,20 +1222,20 @@ if ( ! class_exists('PP_Notifications')) {
         /**
          * Set a user or users to be notified for a post
          *
-         * @param int|object   $post   Post object or ID
-         * @param string|array $users  User or users to subscribe to post updates
-         * @param bool         $append Whether users should be added to pp_notify_user list or replace existing list
+         * @param int|object $post Post object or ID
+         * @param string|array $users User or users to subscribe to post updates
+         * @param bool $append Whether users should be added to pp_notify_user list or replace existing list
          *
          * @return true|WP_Error     $response  True on success, WP_Error on failure
          */
-        public function post_set_users_to_notify($post, $users, $append = true)
+        private function post_set_users_to_notify($post, $users, $append = true)
         {
             $post = get_post($post);
-            if ( ! $post) {
+            if (! $post) {
                 return new WP_Error('missing-post', $this->module->messages['missing-post']);
             }
 
-            if ( ! is_array($users)) {
+            if (! is_array($users)) {
                 $users = [$users];
             }
 
@@ -1056,7 +1248,7 @@ if ( ! class_exists('PP_Notifications')) {
                     $user = get_user_by('login', $user);
                 }
 
-                if ( ! is_object($user)) {
+                if (! is_object($user)) {
                     continue;
                 }
 
@@ -1065,7 +1257,7 @@ if ( ! class_exists('PP_Notifications')) {
                 // Add user as a term if they don't exist
                 $term = $this->add_term_if_not_exists($name, $this->notify_user_taxonomy);
 
-                if ( ! is_wp_error($term)) {
+                if (! is_wp_error($term)) {
                     $user_terms[] = $name;
                 }
             }
@@ -1082,20 +1274,20 @@ if ( ! class_exists('PP_Notifications')) {
         /**
          * Set a role or roles to be notified for a post
          *
-         * @param int|object   $post   Post object or ID
-         * @param string|array $roles  Role or roles to subscribe to post updates
-         * @param bool         $append Whether roles should be added to pp_notify_role list or replace existing list
+         * @param int|object $post Post object or ID
+         * @param string|array $roles Role or roles to subscribe to post updates
+         * @param bool $append Whether roles should be added to pp_notify_role list or replace existing list
          *
          * @return true|WP_Error     $response  True on success, WP_Error on failure
          */
-        public function post_set_roles_to_notify($post, $roles, $append = true)
+        private function post_set_roles_to_notify($post, $roles, $append = true)
         {
             $post = get_post($post);
-            if ( ! $post) {
+            if (! $post) {
                 return new WP_Error('missing-post', $this->module->messages['missing-post']);
             }
 
-            if ( ! is_array($roles)) {
+            if (! is_array($roles)) {
                 $roles = [$roles];
             }
 
@@ -1104,14 +1296,14 @@ if ( ! class_exists('PP_Notifications')) {
             foreach ($roles as $role) {
                 $role = get_role($role);
 
-                if ( ! is_object($role)) {
+                if (! is_object($role)) {
                     continue;
                 }
 
                 // Add user as a term if they don't exist
                 $term = $this->add_term_if_not_exists($role->name, $this->notify_role_taxonomy);
 
-                if ( ! is_wp_error($term)) {
+                if (! is_wp_error($term)) {
                     $role_terms[] = $role->name;
                 }
             }
@@ -1126,22 +1318,73 @@ if ( ! class_exists('PP_Notifications')) {
         }
 
         /**
-         * Set a non-user or non-users to be notified for a post
+         * Set a group or groups to be notified for a post
          *
-         * @param int|object   $post   Post object or ID
-         * @param string|array $emails Role or roles to subscribe to post updates
-         * @param bool         $append Whether roles should be added to pp_notify_role list or replace existing list
+         * @param int|object $post Post object or ID
+         * @param string|array $groups Group or groups to subscribe to post updates
+         * @param bool $append Whether groups should be added to pp_notify_role list or replace existing list
          *
          * @return true|WP_Error     $response  True on success, WP_Error on failure
          */
-        public function post_set_emails_to_notify($post, $emails, $append = true)
+        private function post_set_groups_to_notify($post, $groups, $append = true)
         {
             $post = get_post($post);
-            if ( ! $post) {
+            if (! $post) {
                 return new WP_Error('missing-post', $this->module->messages['missing-post']);
             }
 
-            if ( ! is_array($emails)) {
+            if (!class_exists('PublishPress\Permissions\API')) {
+                return;
+            }
+
+            if (! is_array($groups)) {
+                $groups = [$groups];
+            }
+
+            $role_terms = [];
+
+            foreach ($groups as $group_id) {
+                if (0 === strpos($group_id, 'group-')) {
+                    $group_id = str_replace('group-', '', $group_id);
+                }
+
+                if ($group = \PublishPress\Permissions\API::getGroup($group_id)) {
+                    // Add user as a term if they don't exist
+                    $slug = 'group-' . $group_id;
+                    $term = $this->add_term_if_not_exists($group->name, $this->notify_group_taxonomy, compact('slug'));
+
+                    if (! is_wp_error($term)) {
+                        $role_terms[] = $slug;
+                    }
+                }
+            }
+
+            $set = wp_set_object_terms($post->ID, $role_terms, $this->notify_group_taxonomy, $append);
+
+            if (is_wp_error($set)) {
+                return $set;
+            } else {
+                return true;
+            }
+        }
+
+        /**
+         * Set a non-user or non-users to be notified for a post
+         *
+         * @param int|object $post Post object or ID
+         * @param string|array $emails Role or roles to subscribe to post updates
+         * @param bool $append Whether roles should be added to pp_notify_role list or replace existing list
+         *
+         * @return true|WP_Error     $response  True on success, WP_Error on failure
+         */
+        private function post_set_emails_to_notify($post, $emails, $append = true)
+        {
+            $post = get_post($post);
+            if (! $post) {
+                return new WP_Error('missing-post', $this->module->messages['missing-post']);
+            }
+
+            if (! is_array($emails)) {
                 $emails = [$emails];
             }
 
@@ -1152,7 +1395,6 @@ if ( ! class_exists('PP_Notifications')) {
                 $separatorPos = strpos($string, '/');
                 if ($separatorPos > 0) {
                     $email = trim(substr($string, $separatorPos + 1, strlen($string)));
-
                 } else {
                     $email = $string;
                 }
@@ -1167,7 +1409,7 @@ if ( ! class_exists('PP_Notifications')) {
                 // Add the email as a term if they don't exist
                 $term = $this->add_term_if_not_exists($string, $this->notify_email_taxonomy);
 
-                if ( ! is_wp_error($term)) {
+                if (! is_wp_error($term)) {
                     $email_terms[] = $string;
                 }
             }
@@ -1185,19 +1427,19 @@ if ( ! class_exists('PP_Notifications')) {
          * Removes user from pp_notify_user taxonomy for the given Post,
          * so they no longer receive future notifications.
          *
-         * @param object           $post  Post object or ID
+         * @param object $post Post object or ID
          * @param int|string|array $users One or more users to stop being notified for the post
          *
          * @return true|WP_Error     $response  True on success, WP_Error on failure
          */
-        public function post_set_users_stop_notify($post, $users)
+        private function post_set_users_stop_notify($post, $users)
         {
             $post = get_post($post);
-            if ( ! $post) {
+            if (! $post) {
                 return new WP_Error('missing-post', $this->module->messages['missing-post']);
             }
 
-            if ( ! is_array($users)) {
+            if (! is_array($users)) {
                 $users = [$users];
             }
 
@@ -1214,7 +1456,7 @@ if ( ! class_exists('PP_Notifications')) {
                     $user = get_user_by('login', $user);
                 }
 
-                if ( ! is_object($user)) {
+                if (! is_object($user)) {
                     continue;
                 }
 
@@ -1233,34 +1475,13 @@ if ( ! class_exists('PP_Notifications')) {
         }
 
         /**
-         * add_role_to_notify()
-         *
-         */
-        public function add_role_to_notify($post, $roles = 0, $append = true)
-        {
-            $post_id = (is_int($post)) ? $post : $post->ID;
-            if ( ! is_array($roles)) {
-                $roles = [$roles];
-            }
-
-            // make sure each role id is an integer and not a number stored as a string
-            foreach ($roles as $key => $role) {
-                $roles[$key] = intval($role);
-            }
-
-            wp_set_object_terms($post_id, $roles, $this->notify_role_taxonomy, $append);
-
-            return;
-        }
-
-        /**
          * Removes users that are deleted from receiving future notifications (i.e. makes them out of notify list for posts FOREVER! )
          *
          * @param $id int ID of the user
          */
         public function delete_user_action($id)
         {
-            if ( ! $id) {
+            if (! $id) {
                 return;
             }
 
@@ -1286,10 +1507,12 @@ if ( ! class_exists('PP_Notifications')) {
          *
          * @return WP_error if insert fails, true otherwise
          */
-        public function add_term_if_not_exists($term, $taxonomy)
+        private function add_term_if_not_exists($term, $taxonomy, $args = [])
         {
-            if ( ! term_exists($term, $taxonomy)) {
-                $args = ['slug' => sanitize_title($term)];
+            if (! term_exists($term, $taxonomy)) {
+                if (empty($args)) {
+                    $args = ['slug' => sanitize_title($term)];
+                }
 
                 return wp_insert_term($term, $taxonomy, $args);
             }
@@ -1300,8 +1523,8 @@ if ( ! class_exists('PP_Notifications')) {
         /**
          * Gets a list of the users to be notified for the specified post
          *
-         * @param int    $post_id The ID of the post
-         * @param string $return  The field to return
+         * @param int $post_id The ID of the post
+         * @param string $return The field to return
          *
          * @return array $users Users to notify for the specified posts
          */
@@ -1311,7 +1534,7 @@ if ( ! class_exists('PP_Notifications')) {
             $users = wp_get_object_terms($post_id, $this->notify_user_taxonomy, ['fields' => 'names']);
 
             // Don't have any users to notify
-            if ( ! $users || is_wp_error($users)) {
+            if (! $users || is_wp_error($users)) {
                 return [];
             }
 
@@ -1333,7 +1556,7 @@ if ( ! class_exists('PP_Notifications')) {
                         break;
                 }
                 $new_user = get_user_by($search, $user);
-                if ( ! $new_user || ! is_user_member_of_blog($new_user->ID)) {
+                if (! $new_user || ! is_user_member_of_blog($new_user->ID)) {
                     unset($users[$key]);
                     continue;
                 }
@@ -1352,7 +1575,7 @@ if ( ! class_exists('PP_Notifications')) {
                         break;
                 }
             }
-            if ( ! $users || is_wp_error($users)) {
+            if (! $users || is_wp_error($users)) {
                 $users = [];
             }
 
@@ -1371,7 +1594,7 @@ if ( ! class_exists('PP_Notifications')) {
             $emails = wp_get_object_terms($post_id, $this->notify_email_taxonomy);
 
             $list = [];
-            if ( ! empty($emails)) {
+            if (! empty($emails)) {
                 foreach ($emails as $email) {
                     $list[] = $email->name;
                 }
@@ -1383,7 +1606,7 @@ if ( ! class_exists('PP_Notifications')) {
         /**
          * Gets a list of the roles that should be notified for the specified post
          *
-         * @param int    $post_id
+         * @param int $post_id
          * @param string $return
          *
          * @return array $roles All of the role slugs
@@ -1411,16 +1634,42 @@ if ( ! class_exists('PP_Notifications')) {
         }
 
         /**
+         * Gets a list of the groups that should be notified for the specified post
+         *
+         * @param int $post_id
+         * @param string $return
+         *
+         * @return array $groups All of the role slugs
+         */
+        public function get_groups_to_notify($post_id, $return = 'all')
+        {
+            // Workaround for the fact that get_object_terms doesn't return just slugs
+            $fields = ($return == 'slugs') ? 'all' : $return;
+
+            $group_terms = wp_get_object_terms($post_id, $this->notify_group_taxonomy, compact('fields'));
+
+            if (!is_array($group_terms)) {
+                $group_terms = [];
+            } else {
+                if ('slugs' == $return) {
+                    $group_terms = array_column($group_terms, 'slug');
+                }
+            }
+
+            return $group_terms;
+        }
+
+        /**
          * Gets a list of posts that a user is selected to be notified
          *
          * @param string|int $user user_login or id of user
-         * @param array      $args
+         * @param array $args
          *
          * @return array $posts Posts a user is selected to be notified
          */
         public function get_user_to_notify_posts($user = 0, $args = null)
         {
-            if ( ! $user) {
+            if (! $user) {
                 $user = (int )wp_get_current_user()->ID;
             }
 
@@ -1429,20 +1678,20 @@ if ( ! class_exists('PP_Notifications')) {
             }
 
             $post_args = [
-                'tax_query'      => [
+                'tax_query' => [
                     [
                         'taxonomy' => $this->notify_user_taxonomy,
-                        'field'    => 'slug',
-                        'terms'    => $user,
+                        'field' => 'slug',
+                        'terms' => $user,
                     ],
                 ],
                 'posts_per_page' => '10',
-                'orderby'        => 'modified',
-                'order'          => 'DESC',
-                'post_status'    => 'any',
+                'orderby' => 'modified',
+                'order' => 'DESC',
+                'post_status' => 'any',
             ];
             $post_args = apply_filters('pp_user_to_notify_posts_query_args', $post_args);
-            $posts     = get_posts($post_args);
+            $posts = get_posts($post_args);
 
             return $posts;
         }
@@ -1515,20 +1764,20 @@ if ( ! class_exists('PP_Notifications')) {
 
         public function get_email_from()
         {
-            if ( ! isset($this->module->options->email_from_name)) {
+            if (! isset($this->module->options->email_from_name)) {
                 $name = get_bloginfo('name');
             } else {
                 $name = $this->module->options->email_from_name;
             }
 
-            if ( ! isset($this->module->options->email_from)) {
+            if (! isset($this->module->options->email_from)) {
                 $email = get_bloginfo('admin_email');
             } else {
                 $email = $this->module->options->email_from;
             }
 
             return [
-                'name'  => $name,
+                'name' => $name,
                 'email' => $email,
             ];
         }
@@ -1541,21 +1790,21 @@ if ( ! class_exists('PP_Notifications')) {
             $email_from = $this->get_email_from();
 
             echo '<input
-                    id="' . $this->module->slug . '_email_from_name"
+                    id="' . esc_attr($this->module->slug) . '_email_from_name"
                     type="text"
                     style="min-width: 300px"
-                    placeholder="' . get_bloginfo('name') . '"
-                    name="' . $this->module->options_group_name . '[email_from_name]"
-                    value="' . $email_from['name'] . '" />
+                    placeholder="' . esc_attr(get_bloginfo('name')) . '"
+                    name="' . esc_attr($this->module->options_group_name) . '[email_from_name]"
+                    value="' . esc_attr($email_from['name']) . '" />
                 </label>';
             echo '<br />';
             echo '<input
-                    id="' . $this->module->slug . '_email_from"
+                    id="' . esc_attr($this->module->slug) . '_email_from"
                     type="email"
                     style="min-width: 300px"
-                    placeholder="' . get_bloginfo('admin_email') . '"
-                    name="' . $this->module->options_group_name . '[email_from]"
-                    value="' . $email_from['email'] . '" />
+                    placeholder="' . esc_attr(get_bloginfo('admin_email')) . '"
+                    name="' . esc_attr($this->module->options_group_name) . '[email_from]"
+                    value="' . esc_attr($email_from['email']) . '" />
                 </label>';
         }
 
@@ -1569,13 +1818,11 @@ if ( ! class_exists('PP_Notifications')) {
                 $checked = $this->module->options->notify_author_by_default;
             }
 
-            $checked = (bool)$checked ? 'checked="checked"' : '';
-
             echo '<input
-                    id="' . $this->module->slug . '_notify_author_by_default"
+                    id="' . esc_attr($this->module->slug) . '_notify_author_by_default"
                     type="checkbox"
-                    name="' . $this->module->options_group_name . '[notify_author_by_default]"
-                    value="1" ' . $checked . '/>';
+                    name="' . esc_attr($this->module->options_group_name) . '[notify_author_by_default]"
+                    value="1" ' . ((bool)$checked ? 'checked="checked"' : '') . '/>';
         }
 
         /**
@@ -1588,13 +1835,11 @@ if ( ! class_exists('PP_Notifications')) {
                 $checked = $this->module->options->notify_current_user_by_default;
             }
 
-            $checked = (bool)$checked ? 'checked="checked"' : '';
-
             echo '<input
-                    id="' . $this->module->slug . '_notify_current_user_by_default"
+                    id="' . esc_attr($this->module->slug) . '_notify_current_user_by_default"
                     type="checkbox"
-                    name="' . $this->module->options_group_name . '[notify_current_user_by_default]"
-                    value="1" ' . $checked . '/>';
+                    name="' . esc_attr($this->module->options_group_name) . '[notify_current_user_by_default]"
+                    value="1" ' . ((bool)$checked ? 'checked="checked"' : '') . '/>';
         }
 
         public function settings_blacklisted_taxonomies_option()
@@ -1605,17 +1850,24 @@ if ( ! class_exists('PP_Notifications')) {
             ?>
             <div style="max-width: 300px;">
                 <input
-                    type="text"
-                    id="<?php echo $this->module->slug; ?>_blacklisted_taxonomies"
-                    name="<?php echo $this->module->options_group_name; ?>[blacklisted_taxonomies]"
-                    value="<?php echo $blacklisted_taxonomies; ?>"
-                    placeholder="<?php _e('slug1,slug2', 'publishpress'); ?>"
-                    style="width: 100%;"
+                        type="text"
+                        id="<?php
+                        echo esc_attr($this->module->slug); ?>_blacklisted_taxonomies"
+                        name="<?php
+                        echo esc_attr($this->module->options_group_name); ?>[blacklisted_taxonomies]"
+                        value="<?php
+                        echo esc_attr($blacklisted_taxonomies); ?>"
+                        placeholder="<?php
+                        esc_html_e('slug1,slug2', 'publishpress'); ?>"
+                        style="width: 100%;"
                 />
 
                 <div style="margin-top: 5px;">
-                    <p><?php _e('Add a list of taxonomy-slugs separated by comma that should not be loaded by the Taxonomy content filter when adding a new Notification Workflow.',
-                            'publishpress'); ?></p>
+                    <p><?php
+                        esc_html_e(
+                            'Add a list of taxonomy-slugs separated by comma that should not be loaded by the Taxonomy content filter when adding a new Notification Workflow.',
+                            'publishpress'
+                        ); ?></p>
                 </div>
             </div>
             <?php
@@ -1628,9 +1880,8 @@ if ( ! class_exists('PP_Notifications')) {
          */
         public function settings_validate($new_options)
         {
-
             // Whitelist validation for the post type options
-            if ( ! isset($new_options['post_types'])) {
+            if (! isset($new_options['post_types'])) {
                 $new_options['post_types'] = [];
             }
             $new_options['post_types'] = $this->clean_post_type_options(
@@ -1640,7 +1891,7 @@ if ( ! class_exists('PP_Notifications')) {
 
             if (isset($new_options['email_from'])) {
                 $new_options['email_from_name'] = filter_var($new_options['email_from_name'], FILTER_SANITIZE_STRING);
-                $new_options['email_from']      = filter_var($new_options['email_from'], FILTER_SANITIZE_EMAIL);
+                $new_options['email_from'] = filter_var($new_options['email_from'], FILTER_SANITIZE_EMAIL);
             }
 
 
@@ -1667,8 +1918,41 @@ if ( ! class_exists('PP_Notifications')) {
          */
         public function print_configure_view()
         {
-            settings_fields($this->module->options_group_name);
-            do_settings_sections($this->module->options_group_name);
+            global $publishpress; ?>
+            <form class="basic-settings"
+                  action="<?php
+                  echo esc_url(menu_page_url($this->module->settings_slug, false)); ?>" method="post">
+                <?php
+                settings_fields($this->module->options_group_name); ?>
+                <?php
+                do_settings_sections($this->module->options_group_name); ?>
+
+                <?php
+                foreach ($publishpress->class_names as $slug => $class_name) {
+                    $mod_data = $publishpress->$slug->module;
+
+                    if ($mod_data->autoload
+                        || $mod_data->slug === $this->module->slug
+                        || ! isset($mod_data->notification_options)
+                        || $mod_data->options->enabled != 'on') {
+                        continue;
+                    }
+
+                    echo '<input name="publishpress_module_name[]" type="hidden" value="' . esc_attr(
+                            $mod_data->name
+                        ) . '" />';
+
+                    $publishpress->$slug->print_configure_view();
+                } ?>
+
+                <?php
+                echo '<input name="publishpress_module_name[]" type="hidden" value="' . esc_attr($this->module->name) . '" />'; ?>
+                <?php
+                wp_nonce_field('edit-publishpress-settings');
+
+                submit_button(null, 'primary', 'submit', false); ?>
+            </form>
+            <?php
         }
 
         /**
@@ -1692,30 +1976,32 @@ if ( ! class_exists('PP_Notifications')) {
 
         public function send_notification_status_update($args)
         {
-            $new_status = $args['new_status'];
-            $old_status = $args['old_status'];
-            $post       = $args['post'];
+            $post = $args['post'];
+            $new_status = apply_filters('publishpress_notifications_status', $args['new_status'], $post);
+            $old_status = apply_filters('publishpress_notifications_status', $args['old_status'], $post);
+
+            // Get current user
+            $current_user = wp_get_current_user();
 
             // Get current user
             $current_user = wp_get_current_user();
 
             $post_author = get_userdata($post->post_author);
-            //$duedate = $publishpress->post_metadata->get_post_meta( $post->ID, 'duedate', true );
 
             $blogname = get_option('blogname');
 
             $body = '';
 
-            $post_id    = $post->ID;
+            $post_id = $post->ID;
             $post_title = pp_draft_or_post_title($post_id);
-            $post_type  = get_post_type_object($post->post_type)->labels->singular_name;
+            $post_type = get_post_type_object($post->post_type)->labels->singular_name;
 
             if (0 != $current_user->ID) {
                 $current_user_display_name = $current_user->display_name;
-                $current_user_email        = sprintf('(%s )', $current_user->user_email);
+                $current_user_email = sprintf('(%s )', $current_user->user_email);
             } else {
                 $current_user_display_name = __('WordPress Scheduler', 'publishpress');
-                $current_user_email        = '';
+                $current_user_email = '';
             }
 
             // Email subject and first line of body
@@ -1730,13 +2016,13 @@ if ( ! class_exists('PP_Notifications')) {
                 );
                 /* translators: 1: post type, 2: post id, 3. post title, 4. user name, 5. user email */
                 $body .= sprintf(
-                             __('A new %1$s (#%2$s "%3$s" ) was created by %4$s %5$s', 'publishpress'),
-                             $post_type,
-                             $post_id,
-                             $post_title,
-                             $current_user->display_name,
-                             $current_user->user_email
-                         ) . "\r\n";
+                        __('A new %1$s (#%2$s "%3$s" ) was created by %4$s %5$s', 'publishpress'),
+                        $post_type,
+                        $post_id,
+                        $post_title,
+                        $current_user->display_name,
+                        $current_user->user_email
+                    ) . "\r\n";
             } elseif ($new_status == 'trash') {
                 /* translators: 1: site name, 2: post type, 3. post title */
                 $subject = sprintf(
@@ -1747,13 +2033,13 @@ if ( ! class_exists('PP_Notifications')) {
                 );
                 /* translators: 1: post type, 2: post id, 3. post title, 4. user name, 5. user email */
                 $body .= sprintf(
-                             __('%1$s #%2$s "%3$s" was moved to the trash by %4$s %5$s', 'publishpress'),
-                             $post_type,
-                             $post_id,
-                             $post_title,
-                             $current_user_display_name,
-                             $current_user_email
-                         ) . "\r\n";
+                        __('%1$s #%2$s "%3$s" was moved to the trash by %4$s %5$s', 'publishpress'),
+                        $post_type,
+                        $post_id,
+                        $post_title,
+                        $current_user_display_name,
+                        $current_user_email
+                    ) . "\r\n";
             } elseif ($old_status == 'trash') {
                 /* translators: 1: site name, 2: post type, 3. post title */
                 $subject = sprintf(
@@ -1764,26 +2050,26 @@ if ( ! class_exists('PP_Notifications')) {
                 );
                 /* translators: 1: post type, 2: post id, 3. post title, 4. user name, 5. user email */
                 $body .= sprintf(
-                             __('%1$s #%2$s "%3$s" was restored from trash by %4$s %5$s', 'publishpress'),
-                             $post_type,
-                             $post_id,
-                             $post_title,
-                             $current_user_display_name,
-                             $current_user_email
-                         ) . "\r\n";
+                        __('%1$s #%2$s "%3$s" was restored from trash by %4$s %5$s', 'publishpress'),
+                        $post_type,
+                        $post_id,
+                        $post_title,
+                        $current_user_display_name,
+                        $current_user_email
+                    ) . "\r\n";
             } elseif ($new_status == 'future') {
                 /* translators: 1: site name, 2: post type, 3. post title */
                 $subject = sprintf(__('[%1$s] %2$s Scheduled: "%3$s"'), $blogname, $post_type, $post_title);
                 /* translators: 1: post type, 2: post id, 3. post title, 4. user name, 5. user email 6. scheduled date  */
                 $body .= sprintf(
-                             __('%1$s #%2$s "%3$s" was scheduled by %4$s %5$s.  It will be published on %6$s'),
-                             $post_type,
-                             $post_id,
-                             $post_title,
-                             $current_user_display_name,
-                             $current_user_email,
-                             $this->get_scheduled_datetime($post)
-                         ) . "\r\n";
+                        __('%1$s #%2$s "%3$s" was scheduled by %4$s %5$s.  It will be published on %6$s'),
+                        $post_type,
+                        $post_id,
+                        $post_title,
+                        $current_user_display_name,
+                        $current_user_email,
+                        $this->get_scheduled_datetime($post)
+                    ) . "\r\n";
             } elseif ($new_status == 'publish') {
                 /* translators: 1: site name, 2: post type, 3. post title */
                 $subject = sprintf(
@@ -1794,13 +2080,13 @@ if ( ! class_exists('PP_Notifications')) {
                 );
                 /* translators: 1: post type, 2: post id, 3. post title, 4. user name, 5. user email */
                 $body .= sprintf(
-                             __('%1$s #%2$s "%3$s" was published by %4$s %5$s', 'publishpress'),
-                             $post_type,
-                             $post_id,
-                             $post_title,
-                             $current_user_display_name,
-                             $current_user_email
-                         ) . "\r\n";
+                        __('%1$s #%2$s "%3$s" was published by %4$s %5$s', 'publishpress'),
+                        $post_type,
+                        $post_id,
+                        $post_title,
+                        $current_user_display_name,
+                        $current_user_email
+                    ) . "\r\n";
             } elseif ($old_status == 'publish') {
                 /* translators: 1: site name, 2: post type, 3. post title */
                 $subject = sprintf(
@@ -1811,13 +2097,13 @@ if ( ! class_exists('PP_Notifications')) {
                 );
                 /* translators: 1: post type, 2: post id, 3. post title, 4. user name, 5. user email */
                 $body .= sprintf(
-                             __('%1$s #%2$s "%3$s" was unpublished by %4$s %5$s', 'publishpress'),
-                             $post_type,
-                             $post_id,
-                             $post_title,
-                             $current_user_display_name,
-                             $current_user_email
-                         ) . "\r\n";
+                        __('%1$s #%2$s "%3$s" was unpublished by %4$s %5$s', 'publishpress'),
+                        $post_type,
+                        $post_id,
+                        $post_title,
+                        $current_user_display_name,
+                        $current_user_email
+                    ) . "\r\n";
             } else {
                 /* translators: 1: site name, 2: post type, 3. post title */
                 $subject = sprintf(
@@ -1828,22 +2114,22 @@ if ( ! class_exists('PP_Notifications')) {
                 );
                 /* translators: 1: post type, 2: post id, 3. post title, 4. user name, 5. user email */
                 $body .= sprintf(
-                             __('Status was changed for %1$s #%2$s "%3$s" by %4$s %5$s', 'publishpress'),
-                             $post_type,
-                             $post_id,
-                             $post_title,
-                             $current_user_display_name,
-                             $current_user_email
-                         ) . "\r\n";
+                        __('Status was changed for %1$s #%2$s "%3$s" by %4$s %5$s', 'publishpress'),
+                        $post_type,
+                        $post_id,
+                        $post_title,
+                        $current_user_display_name,
+                        $current_user_email
+                    ) . "\r\n";
             }
 
             /* translators: 1: date, 2: time, 3: timezone */
             $body .= sprintf(
-                         __('This action was taken on %1$s at %2$s %3$s', 'publishpress'),
-                         date_i18n(get_option('date_format')),
-                         date_i18n(get_option('time_format')),
-                         get_option('timezone_string')
-                     ) . "\r\n";
+                    __('This action was taken on %1$s at %2$s %3$s', 'publishpress'),
+                    date_i18n(get_option('date_format')),
+                    date_i18n(get_option('time_format')),
+                    get_option('timezone_string')
+                ) . "\r\n";
 
             $old_status_friendly_name = $this->get_post_status_friendly_name($old_status);
             $new_status_friendly_name = $this->get_post_status_friendly_name($new_status);
@@ -1862,17 +2148,17 @@ if ( ! class_exists('PP_Notifications')) {
 
             $body .= sprintf(__('== %s Details ==', 'publishpress'), $post_type) . "\r\n";
             $body .= sprintf(__('Title: %s', 'publishpress'), $post_title) . "\r\n";
-            if ( ! empty($post_author)) {
+            if (! empty($post_author)) {
                 /* translators: 1: author name, 2: author email */
                 $body .= sprintf(
-                             __('Author: %1$s (%2$s )', 'publishpress'),
-                             $post_author->display_name,
-                             $post_author->user_email
-                         ) . "\r\n";
+                        __('Author: %1$s (%2$s )', 'publishpress'),
+                        $post_author->display_name,
+                        $post_author->user_email
+                    ) . "\r\n";
             }
 
             $admin_path = 'post.php?post=' . $post_id . '&action=edit';
-            $edit_link  = htmlspecialchars_decode(admin_url($admin_path));
+            $edit_link = htmlspecialchars_decode(admin_url($admin_path));
             if ($new_status != 'publish') {
                 $view_link = add_query_arg(['preview' => 'true'], wp_get_shortlink($post_id));
             } else {
@@ -1881,9 +2167,9 @@ if ( ! class_exists('PP_Notifications')) {
             $body .= "\r\n";
             $body .= __('== Actions ==', 'publishpress') . "\r\n";
             $body .= sprintf(
-                         __('Add editorial comment: %s', 'publishpress'),
-                         $edit_link . '#editorialcomments/add'
-                     ) . "\r\n";
+                    __('Add editorial comment: %s', 'publishpress'),
+                    $edit_link . '#editorialcomments/add'
+                ) . "\r\n";
             $body .= sprintf(__('Edit: %s', 'publishpress'), $edit_link) . "\r\n";
             $body .= sprintf(__('View: %s', 'publishpress'), $view_link) . "\r\n";
 
@@ -1903,19 +2189,19 @@ if ( ! class_exists('PP_Notifications')) {
 
             /* translators: 1: post id, 2: post title, 3. post type */
             $body = sprintf(
-                        __('A new editorial comment was added to %3$s #%1$s "%2$s"', 'publishpress'),
-                        $args['post_id'],
-                        $args['post_title'],
-                        $args['post_type']
-                    ) . "\r\n\r\n";
+                    __('A new editorial comment was added to %3$s #%1$s "%2$s"', 'publishpress'),
+                    $args['post_id'],
+                    $args['post_title'],
+                    $args['post_type']
+                ) . "\r\n\r\n";
             /* translators: 1: comment author, 2: author email, 3: date, 4: time */
             $body .= sprintf(
-                         __('%1$s (%2$s ) said on %3$s at %4$s:', 'publishpress'),
-                         $args['current_user']->display_name,
-                         $args['current_user']->user_email,
-                         mysql2date(get_option('date_format'), $args['comment']->comment_date),
-                         mysql2date(get_option('time_format'), $args['comment']->comment_date)
-                     ) . "\r\n";
+                    __('%1$s (%2$s ) said on %3$s at %4$s:', 'publishpress'),
+                    $args['current_user']->display_name,
+                    $args['current_user']->user_email,
+                    mysql2date(get_option('date_format'), $args['comment']->comment_date),
+                    mysql2date(get_option('time_format'), $args['comment']->comment_date)
+                ) . "\r\n";
             $body .= "\r\n" . $args['comment']->comment_content . "\r\n";
 
             // @TODO: mention if it was a reply
@@ -1928,19 +2214,19 @@ if ( ! class_exists('PP_Notifications')) {
             $body .= "\r\n--------------------\r\n";
 
             $admin_path = 'post.php?post=' . $args['post_id'] . '&action=edit';
-            $edit_link  = htmlspecialchars_decode(admin_url($admin_path));
-            $view_link  = htmlspecialchars_decode(get_permalink($args['post_id']));
+            $edit_link = htmlspecialchars_decode(admin_url($admin_path));
+            $view_link = htmlspecialchars_decode(get_permalink($args['post_id']));
 
             $body .= "\r\n";
             $body .= __('== Actions ==', 'publishpress') . "\r\n";
             $body .= sprintf(
-                         __('Reply: %s', 'publishpress'),
-                         $edit_link . '#editorialcomments/reply/' . $args['comment']->comment_ID
-                     ) . "\r\n";
+                    __('Reply: %s', 'publishpress'),
+                    $edit_link . '#editorialcomments/reply/' . $args['comment']->comment_ID
+                ) . "\r\n";
             $body .= sprintf(
-                         __('Add editorial comment: %s', 'publishpress'),
-                         $edit_link . '#editorialcomments/add'
-                     ) . "\r\n";
+                    __('Add editorial comment: %s', 'publishpress'),
+                    $edit_link . '#editorialcomments/add'
+                ) . "\r\n";
             $body .= sprintf(__('Edit: %s', 'publishpress'), $edit_link) . "\r\n";
             $body .= sprintf(__('View: %s', 'publishpress'), $view_link) . "\r\n";
 
@@ -1952,20 +2238,34 @@ if ( ! class_exists('PP_Notifications')) {
 
             $body .= $this->get_notification_footer($args['post']);
 
-            $this->send_email('comment', $args['post'], $subject, $body);
+            //attach files to email
+            $attachments = [];
+            $comment_files = get_comment_meta($args['comment']->comment_ID, '_pp_editorial_comment_files', true);
+            if (!empty($comment_files)) {
+                $comment_files = explode(" ", $comment_files);
+                $comment_files = array_filter($comment_files);
+                foreach ($comment_files as $comment_file_id) {
+                    $media_file = wp_get_attachment_url($comment_file_id);
+                    if (!is_wp_error($media_file) && !empty($media_file)) {
+                        $attachments[] = $media_file;
+                    }
+                }
+            }
+
+            $this->send_email('comment', $args['post'], $subject, $body, '', null, $attachments);
         }
 
         public static function getOption($option_name)
         {
             $is_module_enabled = PP_Module::isPublishPressModuleEnabled(self::MODULE_NAME);
-            if ( ! $is_module_enabled) {
+            if (! $is_module_enabled) {
                 return null;
             }
 
             global $publishpress;
 
             $module_options = $publishpress->{self::MODULE_NAME}->module->options;
-            if ( ! isset($module_options->{$option_name})) {
+            if (! isset($module_options->{$option_name})) {
                 return null;
             }
 

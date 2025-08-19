@@ -3,7 +3,7 @@
  * @package PublishPress
  * @author  PublishPress
  *
- * Copyright (c) 2018 PublishPress
+ * Copyright (c) 2022 PublishPress
  *
  * ------------------------------------------------------------------------------
  * Based on Edit Flow
@@ -29,8 +29,10 @@
  */
 
 use PublishPress\Notifications\Traits\Dependency_Injector;
+use PublishPress\Legacy\Util;
 
-if ( ! class_exists('PP_Settings')) {
+if (! class_exists('PP_Settings')) {
+    #[\AllowDynamicProperties]
     class PP_Settings extends PP_Module
     {
         use Dependency_Injector;
@@ -49,7 +51,7 @@ if ( ! class_exists('PP_Settings')) {
          */
         public function __construct()
         {
-            $this->twigPath = __DIR__ . '/twig';
+            $this->viewsPath = __DIR__ . '/views';
 
             parent::__construct();
 
@@ -78,15 +80,17 @@ if ( ! class_exists('PP_Settings')) {
          */
         public function init()
         {
-            add_action('admin_init', [$this, 'helper_settings_validate_and_save'], 100);
+            if (is_admin()) {
+                add_action('admin_init', [$this, 'helper_settings_validate_and_save'], 100);
 
-            add_filter('publishpress_admin_menu_slug', [$this, 'filter_admin_menu_slug'], 990);
-            add_action('publishpress_admin_menu_page', [$this, 'action_admin_menu_page'], 990);
-            add_action('publishpress_admin_submenu', [$this, 'action_admin_submenu'], 990);
+                add_filter('publishpress_admin_menu_slug', [$this, 'filter_admin_menu_slug'], 990);
+                add_action('publishpress_admin_menu_page', [$this, 'action_admin_menu_page'], 990);
+                add_action('publishpress_admin_submenu', [$this, 'action_admin_submenu'], 990);
 
-            add_action('admin_print_styles', [$this, 'action_admin_print_styles']);
-            add_action('admin_print_scripts', [$this, 'action_admin_print_scripts']);
-            add_action('admin_enqueue_scripts', [$this, 'action_admin_enqueue_scripts']);
+                add_action('admin_print_styles', [$this, 'action_admin_print_styles']);
+                add_action('admin_print_scripts', [$this, 'action_admin_print_scripts']);
+                add_action('admin_enqueue_scripts', [$this, 'action_admin_enqueue_scripts']);
+            }
         }
 
         /**
@@ -138,7 +142,8 @@ if ( ! class_exists('PP_Settings')) {
                 esc_html__('Settings', 'publishpress'),
                 apply_filters('pp_view_settings_cap', 'manage_options'),
                 self::MENU_SLUG,
-                [$this, 'options_page_controller']
+                [$this, 'options_page_controller'],
+                200
             );
         }
 
@@ -182,11 +187,11 @@ if ( ! class_exists('PP_Settings')) {
 
             // If there's been a message, let's display it
             if (isset($_GET['message'])) {
-                $message = $_GET['message'];
+                $message = sanitize_text_field($_GET['message']);
             } elseif (isset($_REQUEST['message'])) {
-                $message = $_REQUEST['message'];
+                $message = sanitize_text_field($_REQUEST['message']);
             } elseif (isset($_POST['message'])) {
-                $message = $_POST['message'];
+                $message = sanitize_text_field($_POST['message']);
             } else {
                 $message = false;
             }
@@ -197,11 +202,11 @@ if ( ! class_exists('PP_Settings')) {
 
             // If there's been an error, let's display it
             if (isset($_GET['error'])) {
-                $error = $_GET['error'];
+                $error = sanitize_text_field($_GET['error']);
             } elseif (isset($_REQUEST['error'])) {
-                $error = $_REQUEST['error'];
+                $error = sanitize_text_field($_REQUEST['error']);
             } elseif (isset($_POST['error'])) {
-                $error = $_POST['error'];
+                $error = sanitize_text_field($_POST['error']);
             } else {
                 $error = false;
             }
@@ -210,10 +215,8 @@ if ( ! class_exists('PP_Settings')) {
             }
             ?>
 
-			<div class="publishpress-admin pressshack-admin-wrapper wrap">
+			<div class="publishpress-admin pressshack-admin-wrapper wrap <?php echo esc_attr($current_module->slug); ?>">
 				<header>
-                    <img src="<?php echo PUBLISHPRESS_URL . 'common/img/publishpress-logo-icon.png';?>" alt="" class="logo-header" />
-
 					<h1 class="wp-heading-inline"><?php echo $current_module->title; ?></h1>
 
 					<?php echo !empty($display_text) ? $display_text : ''; ?>
@@ -255,32 +258,27 @@ if ( ! class_exists('PP_Settings')) {
          */
         public function print_default_footer($current_module, $echo = true)
         {
-            // If we have any license key set, we check if the branding is disabled.
-            if (PublishPress\Legacy\Util::hasAnyValidLicenseKeySet()) {
-                global $publishpress;
+            if (apply_filters('publishpress_show_footer', true)) {
+                $html = $this->view->render(
+                    'footer-base',
+                    [
+                        'current_module' => $current_module,
+                        'plugin_name'    => __('PublishPress Planner', 'publishpress'),
+                        'plugin_slug'    => 'publishpress',
+                        'plugin_url'     => PUBLISHPRESS_URL,
+                        'rating_message' => __('If you like %s please leave us a %s rating. Thank you!', 'publishpress'),
+                    ],
+                    $this->viewsPath
+                );
 
-                // Check if the branding is disabled.
-                if ($publishpress->modules->modules_settings->options->display_branding === 'off') {
-                    return;
+                if (! $echo) {
+                    return $html;
                 }
+
+                echo $html;
             }
 
-            $html = $this->twig->render(
-                'footer-base.twig',
-                [
-                    'current_module' => $current_module,
-                    'plugin_name'    => __('PublishPress', 'publishpress'),
-                    'plugin_slug'    => 'publishpress',
-                    'plugin_url'     => PUBLISHPRESS_URL,
-                    'rating_message' => __('If you like %s please leave us a %s rating. Thank you!', 'publishpress'),
-                ]
-            );
-
-            if (! $echo) {
-                return $html;
-            }
-
-            echo $html;
+            return '';
         }
 
         public function print_modules()
@@ -306,8 +304,8 @@ if ( ! class_exists('PP_Settings')) {
                             $url = $mod_data->page_link;
                         }
 
-                        echo $this->twig->render(
-                            'module.twig',
+                        echo $this->view->render(
+                            'module',
                             [
                                 'has_config_link' => isset($mod_data->configure_page_cb) && !empty($mod_data->configure_page_cb),
                                 'slug'            => $mod_data->slug,
@@ -316,7 +314,8 @@ if ( ! class_exists('PP_Settings')) {
                                 'title'           => $mod_data->title,
                                 'description'     => wp_kses($mod_data->short_description, 'a'),
                                 'url'             => $url,
-                            ]
+                            ],
+                            $this->viewsPath
                         );
                     }
                 }
@@ -358,7 +357,7 @@ if ( ! class_exists('PP_Settings')) {
                     'post' => __('Posts'),
                     'page' => __('Pages'),
                 ];
-                $custom_post_types = $this->get_supported_post_types_for_module();
+                $custom_post_types = $this->get_supported_post_types_for_module($module);
                 if (count($custom_post_types)) {
                     foreach ($custom_post_types as $custom_post_type => $args) {
                         $post_types[$custom_post_type] = $args->label;
@@ -401,7 +400,7 @@ if ( ! class_exists('PP_Settings')) {
                 return false;
             }
 
-            if (!current_user_can('manage_options') || !wp_verify_nonce($_POST['_wpnonce'], 'edit-publishpress-settings')) {
+            if (!current_user_can('manage_options') || !wp_verify_nonce(sanitize_key($_POST['_wpnonce']), 'edit-publishpress-settings')) {
                 wp_die(__('Cheatin&#8217; uh?'));
             }
 
@@ -446,17 +445,53 @@ if ( ! class_exists('PP_Settings')) {
         {
             global $publishpress;
 
-            $module_settings_slug = isset($_GET['module']) && !empty($_GET['module']) ? $_GET['module'] : PP_Modules_Settings::SETTINGS_SLUG . '-settings';
+            $default_module = '';
+
+
+            $all_modules = (array)$publishpress->modules;
+
+            foreach ($all_modules as $mod_name => $mod_data) {
+                // Set first module as default module
+                if (empty($default_module) && !empty($mod_data->options_page) && $mod_data->options->enabled === 'on') {
+                    $default_module = $mod_data->settings_slug;
+                }
+
+                //force notification tab if dependent tab is enabled
+                if ($mod_data->slug == 'async-notifications' && $mod_data->options->enabled === 'on') {
+                    $all_modules['notifications']->options->enabled = 'on';
+                }
+
+                if (isset($mod_data->notification_options)) {
+                    if ($all_modules['notifications']->options->enabled === 'on') {
+                        $all_modules['improved_notifications']->options->enabled = 'on';
+                        //$all_modules['async_notifications']->options->enabled = 'on';
+                        $all_modules['notifications']->options->enabled = 'on';
+                    } else {
+                        $all_modules['improved_notifications']->options->enabled = 'off';
+                        //$all_modules['async_notifications']->options->enabled = 'off';
+                        $all_modules['notifications']->options->enabled = 'off';
+                    }
+                    break;
+                }
+            }
+
+            $module_settings_slug = isset($_GET['settings_module']) && !empty($_GET['settings_module']) ? sanitize_text_field($_GET['settings_module']) : $default_module;
+
+            // Custom Statuses are no longer defined by a Planner module
+            if ('pp-custom-status-settings' == $module_settings_slug) {
+                $module_settings_slug = $default_module;
+            }
+
             $requested_module     = $publishpress->get_module_by('settings_slug', $module_settings_slug);
             $display_text         = '';
 
             // If there's been a message, let's display it
             if (isset($_GET['message'])) {
-                $message = $_GET['message'];
+                $message = sanitize_text_field($_GET['message']);
             } elseif (isset($_REQUEST['message'])) {
-                $message = $_REQUEST['message'];
+                $message = sanitize_text_field($_REQUEST['message']);
             } elseif (isset($_POST['message'])) {
-                $message = $_POST['message'];
+                $message = sanitize_text_field($_POST['message']);
             } else {
                 $message = false;
             }
@@ -466,11 +501,11 @@ if ( ! class_exists('PP_Settings')) {
 
             // If there's been an error, let's display it
             if (isset($_GET['error'])) {
-                $error = $_GET['error'];
+                $error = sanitize_text_field($_GET['error']);
             } elseif (isset($_REQUEST['error'])) {
-                $error = $_REQUEST['error'];
+                $error = sanitize_text_field($_REQUEST['error']);
             } elseif (isset($_POST['error'])) {
-                $error = $_POST['error'];
+                $error = sanitize_text_field($_POST['error']);
             } else {
                 $error = false;
             }
@@ -488,29 +523,20 @@ if ( ! class_exists('PP_Settings')) {
             $publishpress->$requested_module_name->$configure_callback();
             $module_output = ob_get_clean();
 
-            ob_start();
-            do_action('allex_upgrade_sidebar_ad', 'publishpress');
-            $sidebar_output = ob_get_clean();
-
-
-            /**
-             * Filter to return a boolean value to say if it should display or not a sidebar.
-             *
-             * @var bool
-             */
-            $show_sidebar = apply_filters('allex_upgrade_show_sidebar_ad', true, 'publishpress');
-
-            echo $this->twig->render(
-                'settings.twig',
+            echo $this->view->render(
+                'settings',
                 [
-                    'modules'        => (array)$publishpress->modules,
+                    'modules'        => $all_modules,
                     'settings_slug'  => $module_settings_slug,
                     'slug'           => PP_Modules_Settings::SETTINGS_SLUG,
                     'module_output'  => $module_output,
-                    'sidebar_output' => $sidebar_output,
+                    'sidebar_output' => '',
                     'text'           => $display_text,
-                    'show_sidebar'   => $show_sidebar,
-                ]
+                    'show_sidebar'   => false,
+                    'pro_active'     => Util::isPlannersProActive(),
+                    'pro_sidebar'    => Util::pp_pro_sidebar(false),
+                ],
+                $this->viewsPath
             );
 
             $this->print_default_footer($requested_module);

@@ -33,25 +33,31 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     echo "> Running once-only deployment tasks..."
 
     echo "> > Installing awslogs service..."
-    #sudo yum install -y awslogs
     sudo yum install -y amazon-cloudwatch-agent
     sudo systemctl enable amazon-cloudwatch-agent
 
     echo "> > chown'ing awslogs config files..."
     sudo chown root:root \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awscli.conf" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf"
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf" \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/logrotate.conf"
 
     echo "> > chmod'ing awslogs config files..."
     sudo chmod 640 \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awscli.conf" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf"
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf" \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf"
 
     echo "> > Movinging awslogs config files..."
     sudo mv -f \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awscli.conf" \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf" \
         /etc/awslogs/
+
+    echo "> > Moving log rotate config file..."
+    sudo mv -f \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf" \
+        /etc/logrotate.conf
 
     echo "> > Adding additional package repos..."
     sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm

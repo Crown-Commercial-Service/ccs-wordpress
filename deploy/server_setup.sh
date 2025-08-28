@@ -59,6 +59,15 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf" \
         /etc/logrotate.conf
 
+    echo "> > Moving cloudwatch rotate config file..."
+    sudo mv -f \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/cloudwatch.json" \
+        /opt/aws/amazon-cloudwatch-agent/etc/config.json
+
+    echo "> > Starting cloudwatch..."
+    sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/config.json
+    sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a status
+
     echo "> > Adding additional package repos..."
     sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     sudo yum install -y https://repo.ius.io/ius-release-el$(rpm -E '%{rhel}').rpm

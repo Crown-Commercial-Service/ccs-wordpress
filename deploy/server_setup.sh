@@ -76,10 +76,9 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
 
     echo "> > Setting journalctl to max 500mb..."
     sudo journalctl --vacuum-size=500M
-    
+
     echo "> > Installing common web packages..."
-    # sudo amazon-linux-extras disable php7.3
-    # sudo amazon-linux-extras enable php8.2
+
     sudo yum clean metadata
     sudo yum -y install \
         php8.2 \

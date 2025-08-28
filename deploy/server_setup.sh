@@ -74,6 +74,9 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     sudo yum install -y https://repo.ius.io/ius-release-el$(rpm -E '%{rhel}').rpm
 
+    echo "> > Setting journalctl to max 500mb..."
+    sudo journalctl --vacuum-size=500M
+    
     echo "> > Installing common web packages..."
     # sudo amazon-linux-extras disable php7.3
     # sudo amazon-linux-extras enable php8.2

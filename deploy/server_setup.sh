@@ -39,18 +39,22 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     echo "> > chown'ing awslogs config files..."
     sudo chown root:root \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/logrotate.conf"
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/logrotate.conf" \
 
     echo "> > chmod'ing awslogs config files..."
     sudo chmod 640 \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf"
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf" \
 
     echo "> > Moving log rotate config files..."
-    sudo mv -f \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf" /etc/logrotate.conf
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" /etc/logrotate.d/
+    sudo mv -f "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf" /etc/logrotate.conf
+    sudo mv -f "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" /etc/logrotate.d/
 
+    echo "> > Wordpress Activity Logging..."
+    sudo touch /var/log/httpd/user-activity-log.txt
+    sudo chown root:root /var/log/httpd/user-activity-log.txt
+    sudo chmod 666 /var/log/httpd/user-activity-log.txt
+        
     echo "> > Moving cloudwatch rotate config file..."
     sudo mv -f \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/cloudwatch.json" \

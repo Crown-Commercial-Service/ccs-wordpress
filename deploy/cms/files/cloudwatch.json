@@ -64,7 +64,7 @@
                 "timestamp_format": "%Y-%m-%d %H:%M:%S"
             },
             {
-                "file_path": "/var/log/cron",
+                "file_path": "/var/log/crony",
                 "log_group_name": "/ec2/cms/var/log/cron",
                 "log_stream_name": "{instance_id}",
                 "timestamp_format": "%Y-%m-%d %H:%M:%S"
@@ -84,12 +84,6 @@
             {
                 "file_path": "/var/log/dmesg",
                 "log_group_name": "/ec2/cms/var/log/dmesg",
-                "log_stream_name": "{instance_id}",
-                "timestamp_format": "%Y-%m-%d %H:%M:%S"
-            },
-            {
-                "file_path": "/var/log/dracut.log",
-                "log_group_name": "/ec2/cms/var/log/dracut.log",
                 "log_stream_name": "{instance_id}",
                 "timestamp_format": "%Y-%m-%d %H:%M:%S"
             },
@@ -114,12 +108,6 @@
             {
                 "file_path": "/var/log/httpd/error_log",
                 "log_group_name": "/ec2/cms/var/log/httpd/error_log",
-                "log_stream_name": "{instance_id}",
-                "timestamp_format": "%Y-%m-%d %H:%M:%S"
-            },
-            {
-                "file_path": "/var/www/var/log/symfony.log",
-                "log_group_name": "/ec2/cms/var/www/var/log/symfony.log",
                 "log_stream_name": "{instance_id}",
                 "timestamp_format": "%Y-%m-%d %H:%M:%S"
             }

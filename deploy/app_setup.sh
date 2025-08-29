@@ -60,7 +60,8 @@ echo "> Setting web deployment permissions..."
     sudo chown -R ec2-user:"$WEB_GROUPNAME" "$WEB_CURRENT/var/log" &&
     sudo chmod -R og+w "$WEB_CURRENT/var/log" &&
     sudo chmod 640 "$WEB_CURRENT/.env" &&
-    sudo chgrp apache "$WEB_CURRENT/.env"
+    sudo chgrp apache "$WEB_CURRENT/.env" &&
+    sudo chmod 666 "$WEB_CURRENT/public/wp-content/plugins/ccs-custom/library/user-activity-log.txt"
 ) || rollback
 
 echo "> Running cleanup..."

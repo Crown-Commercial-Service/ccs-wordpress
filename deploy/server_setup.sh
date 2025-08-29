@@ -39,7 +39,7 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     echo "> > chown'ing awslogs config files..."
     sudo chown root:root \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/logrotate.conf" \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf" \
 
     echo "> > chmod'ing awslogs config files..."
     sudo chmod 640 \
@@ -56,9 +56,7 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     sudo chmod 666 /var/log/httpd/user-activity-log.txt
         
     echo "> > Moving cloudwatch rotate config file..."
-    sudo mv -f \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/cloudwatch.json" \
-        /opt/aws/amazon-cloudwatch-agent/etc/config.json
+    sudo mv -f "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/cloudwatch.json" /opt/aws/amazon-cloudwatch-agent/etc/config.json
 
     echo "> > Starting cloudwatch..."
     sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/config.json

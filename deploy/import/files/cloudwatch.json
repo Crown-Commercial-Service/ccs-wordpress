@@ -14,6 +14,14 @@
             "pid_count",
             "cpu_usage"
         ]
+      },
+      {
+        "pid_file": "/home/ec2-user/wp_import_sh.pid",
+        "measurement": [
+            "cpu_usage",
+            "cpu_time",
+            "memory_rss"
+        ]
       }
       ],
       "cpu": {

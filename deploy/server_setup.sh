@@ -33,33 +33,42 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     echo "> Running once-only deployment tasks..."
 
     echo "> > Installing awslogs service..."
-    #sudo yum install -y awslogs
     sudo yum install -y amazon-cloudwatch-agent
     sudo systemctl enable amazon-cloudwatch-agent
 
     echo "> > chown'ing awslogs config files..."
     sudo chown root:root \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awscli.conf" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf"
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/logrotate.conf"
 
     echo "> > chmod'ing awslogs config files..."
     sudo chmod 640 \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awscli.conf" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf"
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf"
 
-    echo "> > Movinging awslogs config files..."
+    echo "> > Moving log rotate config files..."
     sudo mv -f \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awscli.conf" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf" \
-        /etc/awslogs/
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf" /etc/logrotate.conf
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" /etc/logrotate.d/
+
+    echo "> > Moving cloudwatch rotate config file..."
+    sudo mv -f \
+        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/cloudwatch.json" \
+        /opt/aws/amazon-cloudwatch-agent/etc/config.json
+
+    echo "> > Starting cloudwatch..."
+    sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/config.json
+    sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a status
 
     echo "> > Adding additional package repos..."
     sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     sudo yum install -y https://repo.ius.io/ius-release-el$(rpm -E '%{rhel}').rpm
 
+    echo "> > Setting journalctl to max 500mb..."
+    sudo journalctl --vacuum-size=500M
+
     echo "> > Installing common web packages..."
-    # sudo amazon-linux-extras disable php7.3
-    # sudo amazon-linux-extras enable php8.2
+
     sudo yum clean metadata
     sudo yum -y install \
         php8.2 \
@@ -90,17 +99,6 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     sudo curl -s -o wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
     sudo chmod +x wp
     sudo mv -f wp /usr/local/bin/
-
-    echo "> > chown'ing logrotate config files..."
-    sudo chown root:root "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs"
-
-    echo "> > chmod'ing logrotate config files..."
-    sudo chmod 644 "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs"
-
-    echo "> > Moving logrotate config files..."
-    sudo mv -f \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" \
-        /etc/logrotate.d/
 
     echo "> > chown'ing php config file..."
     sudo chown root:root \

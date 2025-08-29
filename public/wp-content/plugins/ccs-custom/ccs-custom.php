@@ -38,6 +38,7 @@ include('library/add-custom-metafields-to-rest-api-orderby-enumerator.php');
 
 
 
+include('library/logger.php');
 
 
 

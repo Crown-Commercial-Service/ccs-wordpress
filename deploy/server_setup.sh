@@ -38,23 +38,13 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
 
     echo "> > chown'ing awslogs config files..."
     sudo chown root:root \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awscli.conf" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf" \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/logrotate.conf"
 
     echo "> > chmod'ing awslogs config files..."
     sudo chmod 640 \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awscli.conf" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf" \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" \
         "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/logrotate.conf"
-
-    echo "> > Movinging awslogs config files..."
-    sudo mv -f \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awscli.conf" \
-        "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/awslogs.conf" \
-        /etc/awslogs/
 
     echo "> > Moving log rotate config files..."
     sudo mv -f \

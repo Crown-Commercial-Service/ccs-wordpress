@@ -46,3 +46,4 @@ public/wp-content/themes/twentytwentyone/package-lock.json
 .phplint-cache
 
 **/.DS_Store
+public/wp-content/plugins/ccs-custom/library/user-activity-log.txt

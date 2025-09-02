@@ -4,7 +4,11 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'LOG_FILE', plugin_dir_path( __FILE__ ) . 'user-activity-log.txt' );
+if ( file_exists('/var/log/') && is_writable('/var/log/') ) {
+    define( 'LOG_FILE', '/var/log/user-activity-log.txt' );
+} else {
+    define( 'LOG_FILE', __DIR__ . '/user-activity-log.txt' );
+}
 
 add_action('wp_login', 'user_login', 10, 2);
 add_action('user_register', 'user_created', 10, 2);

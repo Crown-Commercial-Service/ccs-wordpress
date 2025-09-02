@@ -51,9 +51,9 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
     sudo mv -f "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/applogs" /etc/logrotate.d/
 
     echo "> > Wordpress Activity Logging..."
-    sudo touch /var/log/httpd/user-activity-log.txt
-    sudo chown root:root /var/log/httpd/user-activity-log.txt
-    sudo chmod 666 /var/log/httpd/user-activity-log.txt
+    sudo touch /var/log/user-activity-log.txt
+    sudo chown root:root /var/log/user-activity-log.txt
+    sudo chmod 666 /var/log/user-activity-log.txt
         
     echo "> > Moving cloudwatch rotate config file..."
     sudo mv -f "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/cloudwatch.json" /opt/aws/amazon-cloudwatch-agent/etc/config.json

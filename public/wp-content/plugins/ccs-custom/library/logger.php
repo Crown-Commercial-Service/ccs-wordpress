@@ -4,8 +4,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-if ( file_exists('/var/log/') && is_writable('/var/log/') ) {
-    define( 'LOG_FILE', '/var/log/user-activity-log.txt' );
+$PATH_TO_LOG = '/var/log/user-activity-log.txt';
+
+if ( file_exists($PATH_TO_LOG) && is_writable($PATH_TO_LOG) ) {
+    define( 'LOG_FILE', $PATH_TO_LOG );
 } else {
     define( 'LOG_FILE', __DIR__ . '/user-activity-log.txt' );
 }

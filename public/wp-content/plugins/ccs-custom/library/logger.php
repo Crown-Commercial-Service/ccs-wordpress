@@ -62,6 +62,7 @@ add_action( 'admin_menu', 'ual_add_admin_menu' );
 
 
 function logEvent( $message ) {
+    date_default_timezone_set('Europe/London');
     $date = date( 'Y-m-d H:i:s' );
     file_put_contents( LOG_FILE, "[$date] $message\n", FILE_APPEND );
 }

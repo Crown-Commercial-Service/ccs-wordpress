@@ -712,8 +712,8 @@ function do_dashboard_widget()
 		printf(
 			'<li><a href="%s">%s</a> - %s</li>',
 			get_edit_post_link($post->ID),
-			get_the_title($post->ID),
-			get_the_author_meta('nicename', $post->post_author)
+			get_the_title($post->ID) != '' ? get_the_title($post->ID) : 'post #' . $post->ID,
+			get_the_author_meta('nicename', $post->post_author) != '' ? get_the_author_meta('nicename', $post->post_author) : 'unknown'
 		);
 	}
 

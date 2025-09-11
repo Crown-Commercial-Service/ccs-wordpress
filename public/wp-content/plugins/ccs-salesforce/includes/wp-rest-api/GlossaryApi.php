@@ -9,7 +9,8 @@ class GlossaryApi{
             while (have_rows('list_of_glossary', 'option')): the_row();
                 $results[] = [
                                 'term' => get_sub_field('term'),
-                                'meaning' => get_sub_field('meaning')
+                                'meaning' => get_sub_field('meaning'),
+                                'keyword' => get_sub_field('keyword')
                             ];
             endwhile;
         endif;

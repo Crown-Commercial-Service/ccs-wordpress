@@ -71,7 +71,7 @@ class fewbricks {
         require($fewbricks_lib_dir_path . 'acf/field-group.php');
         require($fewbricks_lib_dir_path . 'acf/layout.php');
 
-        spl_autoload_register(['self', 'autoload']);
+        spl_autoload_register([__CLASS__, 'autoload']);
 
         if (!helpers\use_acf_json() || $fewbricks_save_json === true) {
 

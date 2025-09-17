@@ -57,6 +57,7 @@ $fg10->add_field(new acf_fields\true_false('Hide from "View All"', 'Hide_from_Vi
     
 ]));
 
+$fg10->register();
 
 $field_group = (new fewacf\field_group('Post components', '202501031015a', $location, 50, [
     'position' => 'normal',

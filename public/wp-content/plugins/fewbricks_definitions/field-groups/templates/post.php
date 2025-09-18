@@ -57,6 +57,20 @@ $fg10->add_field(new acf_fields\true_false('Hide from "View All"', 'Hide_from_Vi
     
 ]));
 
+$fg10->register();
+
+$fg11 = ( new fewacf\field_group( 'Author Image', '202501261530a', $location, 6, [
+    'position' => 'acf_after_title',
+    'names_of_items_to_hide_on_screen' => [
+    ]
+] ));
+
+$fg11->add_field( new acf_fields\image( 'Author Image', 'author_image', '202501261530b', [
+    'instructions' => 'Optionally add author image: Upload a square portrait (aspect ratio 1:1). If your photo isn’t square, please crop it to a square before uploading',
+] ) );
+
+$fg11->register();
+
 
 $field_group = (new fewacf\field_group('Post components', '202501031015a', $location, 50, [
     'position' => 'normal',

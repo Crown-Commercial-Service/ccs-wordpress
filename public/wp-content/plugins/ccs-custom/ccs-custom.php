@@ -21,7 +21,6 @@ include('library/responsive-oembed-videos.php');
 include('library/image-sizes.php');
 include('library/headless-cms.php');
 include('library/options-page.php');
-include('library/custom-revisionise.php');
 include('library/admin-styles.php');
 //include('library/admin-scripts.php');
 include('library/custom-queries.php');

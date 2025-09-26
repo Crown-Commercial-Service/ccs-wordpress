@@ -679,47 +679,6 @@ function sort_by_modified($args, $request)
 }
 add_filter('rest_post_query', 'sort_by_modified', 10, 2);
 
-/**
- * Get pending review widget back. S3 uploads currently affecting this so this is a temporary fix until we can get a new revisonize replacement
- */
-function wpdocs_add_dashboard_widgets()
-{
-	wp_add_dashboard_widget('dashboard_widget', 'Revisonized Posts Need Reviewing', 'do_dashboard_widget');
-}
-
-add_action('wp_dashboard_setup', 'wpdocs_add_dashboard_widgets');
-
-function do_dashboard_widget()
-{
-	$posts = get_posts(array(
-		'post_type'   => 'any',
-		'post_status' => 'pending',
-		'meta_query'  => array(
-			array(
-				'key'     => '_post_revision_of',
-				'compare' => 'EXISTS',
-			)
-		)
-	));
-
-	if (empty($posts)) {
-		_e('No posts need reviewed at this time!', 'revisionize');
-	}
-
-	echo '<ul>';
-
-	foreach ($posts as $post) {
-		printf(
-			'<li><a href="%s">%s</a> - %s</li>',
-			get_edit_post_link($post->ID),
-			get_the_title($post->ID) != '' ? get_the_title($post->ID) : 'post #' . $post->ID,
-			get_the_author_meta('nicename', $post->post_author) != '' ? get_the_author_meta('nicename', $post->post_author) : 'unknown'
-		);
-	}
-
-	echo '</ul>';
-}
-
 // fix for files saved as google docs as bug in php 7 doesn't allow these file types on wordpress
 function filetype_fix_wp_check_filetype_and_ext($wp_check_filetype_and_ext, $file, $filename, $mimes, $real_mime)
 {

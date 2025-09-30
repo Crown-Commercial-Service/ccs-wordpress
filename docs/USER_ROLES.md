@@ -51,10 +51,7 @@ This role also has permissions to modify WordPress media, as frameworks can link
 Please note that Framework authors don't actually have permissions to publish changes to Frameworks. This is desired, as all changes made to a Framework should 
 be reviewed before being published.
 
-This review process is facilitated by using the [Revisionize](https://wordpress.org/plugins/revisionize/) WordPress plugin. This essentially allows users to "revisionize" 
-a Framework. Creating a copy of the published Framework which they can make modifications to. Once they've finished these modificaitons, they can request a user assigned the 
-`CCS Editor/ Administrator` or `CCS Super Admin` to publish the Framework for them. Once the "Reivionized" Framework has been published, it overrideds the previously published 
-Framework.
+This review process is facilitated by using the PublishPress Revisions workflow (replacing the Revisionize plugin). Framework Authors create a revision of a Framework, stored as a separate draft linked to the original post, allowing modifications without affecting the live content. Once the revision is ready, it is submitted for review and set to Pending Review to notify Editors/Administrators. After approval, a CCS Editor/Administrator or CCS Super Admin publishes the revision, which replaces the previously published Framework on the live site. The revision history remains available for audit and rollback.
 
 ### Marketing Team Member
 

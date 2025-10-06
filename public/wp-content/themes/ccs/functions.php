@@ -776,3 +776,15 @@ add_action('rest_api_init', function () {
         ]
     ]);
 });
+
+
+/**
+ * Register the /wp-json/acf/v3/posts endpoint so it will be cached.
+ */
+function wprc_add_acf_posts_endpoint( $allowed_endpoints ) {
+    if ( ! isset( $allowed_endpoints[ '/wp/v2/pages' ] ) || ! in_array( 'pages', $allowed_endpoints[ '/wp/v2/pages' ] ) ) {
+        $allowed_endpoints[ '/wp/v2/pages' ][] = 'pages';
+    }
+    return $allowed_endpoints;
+}
+add_filter( 'wp_rest_cache/allowed_endpoints', 'wprc_add_acf_posts_endpoint', 10, 1);

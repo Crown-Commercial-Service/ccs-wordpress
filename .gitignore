@@ -13,7 +13,8 @@ public/wp-content/uploads/
 # Account for the Revisionize plugin addons
 !public/wp-content/uploads/revisionize/addons/contributors_can.php
 
-public/wp-content/mu-plugins/
+public/wp-content/mu-plugins/*
+!public/wp-content/mu-plugins/wp-rest-cache.php
 public/wp-content/wp-cache-config.php
 public/wp-content/plugins/hello.php
 #public/wp-content/plugins/disable-emails

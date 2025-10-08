@@ -115,6 +115,12 @@
                 "log_group_name": "/ec2/cms/var/log/httpd/error_log",
                 "log_stream_name": "{instance_id}",
                 "timestamp_format": "%Y-%m-%d %H:%M:%S"
+            },
+            {
+                "file_path": "/var/log/user-activity-log.txt",
+                "log_group_name": "/ec2/cms/var/log/user-activity-log.txt",
+                "log_stream_name": "{instance_id}",
+                "timestamp_format": "%Y-%m-%d %H:%M:%S"
             }
         ]
       }

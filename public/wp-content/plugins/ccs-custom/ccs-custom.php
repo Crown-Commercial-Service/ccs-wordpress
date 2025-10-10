@@ -11,6 +11,7 @@ include('library/custom-pages-filtering.php');
 include('library/editor-customisation.php');
 include('library/custom-taxonomies.php');
 include('library/custom-post-types.php');
+include('library/custom-event-archived-status.php');
 include('library/fewbricks-settings.php');
 include('library/expose-lot-fields.php');
 include('library/user-roles-fix.php');

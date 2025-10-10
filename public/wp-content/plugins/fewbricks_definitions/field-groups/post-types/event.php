@@ -27,6 +27,7 @@ $fg1->add_field( new acf_fields\image( 'Event image', 'image', '202002061421a', 
 
 $fg1->add_field( new acf_fields\text( 'Summary', 'event_summary', '202505191545a', [
     'instructions' => 'A few short sentences - a maximum of 180 characters.',
+    'required' => 1,
     'maxlength' => 180
 ] ) );
 

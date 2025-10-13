@@ -81,7 +81,7 @@ function unPublishPastEvents() {
 	foreach ( $pastEventsFutureDate as $postId ) {
 		wp_update_post( array(
 			'ID'          => $postId,
-			'post_status' => 'draft'
+			'post_status' => 'archived'
 		) );
 	}
 }

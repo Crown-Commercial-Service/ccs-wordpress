@@ -207,12 +207,14 @@ class AIOWPSecurity_Admin_Init {
 	 */
 	public function aiowps_csv_download() {
 		global $aio_wp_security;
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- PCP warning. Nonce check in two lines.
 		if (isset($_POST['aiowps_export_404_event_logs_to_csv'])) {//Export 404 event logs
-			$nonce = $_REQUEST['_wpnonce'];
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- It IS the nonce, so...
+			$nonce = isset($_REQUEST['_wpnonce']) ? sanitize_key(wp_unslash($_REQUEST['_wpnonce'])) : '';
 			$result = AIOWPSecurity_Utility_Permissions::check_nonce_and_user_cap($nonce, 'aiowpsec-export-404-event-logs-to-csv-nonce');
 			if (is_wp_error($result)) {
 				$aio_wp_security->debug_logger->log_debug($result->get_error_message(), 4);
-				die($result->get_error_message());
+				die(esc_html($result->get_error_message()));
 			}
 			include_once 'wp-security-list-404.php'; //For rendering the AIOWPSecurity_List_Table in tab1
 			$event_list_404 = new AIOWPSecurity_List_404(); //For rendering the AIOWPSecurity_List_Table in tab1
@@ -226,7 +228,7 @@ class AIOWPSecurity_Admin_Init {
 				'created' => __('Date and time', 'all-in-one-wp-security-and-firewall'),
 				'status' => __('Lock Status', 'all-in-one-wp-security-and-firewall'),
 			);
-			$this->aiowps_output_csv($event_list_404->items, $export_keys, '404_event_logs.csv');
+			AIOWPSecurity_Utility::output_csv($event_list_404->items, $export_keys, '404_event_logs.csv');
 			exit();
 		}
 	}
@@ -241,7 +243,8 @@ class AIOWPSecurity_Admin_Init {
 			return $this->is_aiowps_admin_page;
 		}
 		global $pagenow;
-		$this->is_aiowps_admin_page = (AIOWPSecurity_Utility_Permissions::has_manage_cap() && 'admin.php' == $pagenow && isset($_GET['page']) && false !== strpos($_GET['page'], AIOWPSEC_MENU_SLUG_PREFIX));
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- PCP warning. No nonce on this _GET.
+		$this->is_aiowps_admin_page = (AIOWPSecurity_Utility_Permissions::has_manage_cap() && 'admin.php' == $pagenow && isset($_GET['page']) && false !== strpos(sanitize_title(wp_unslash($_GET['page'])), AIOWPSEC_MENU_SLUG_PREFIX));
 		return $this->is_aiowps_admin_page;
 	}
 
@@ -330,6 +333,8 @@ class AIOWPSecurity_Admin_Init {
 		wp_enqueue_script('dashboard');
 		wp_enqueue_script('thickbox');
 		wp_enqueue_script('media-upload');
+		wp_enqueue_script('chart-bundle', AIO_WP_SECURITY_URL . '/includes/chartjs/Chart.bundle.min.js', array(), AIO_WP_SECURITY_VERSION, true);
+		wp_enqueue_script('chartjs-gauge', AIO_WP_SECURITY_URL . '/includes/chartjs/chartjs-gauge.min.js', array(), AIO_WP_SECURITY_VERSION, true);
 		wp_register_script('jquery-blockui', AIO_WP_SECURITY_URL.'/includes/blockui/jquery.blockUI.js', array('jquery'), AIO_WP_SECURITY_VERSION, true);
 		wp_enqueue_script('jquery-blockui');
 		wp_register_script('aiowpsec-admin-js', AIO_WP_SECURITY_URL. '/js/wp-security-admin-script.js', array('jquery'), AIO_WP_SECURITY_VERSION, true);
@@ -348,7 +353,7 @@ class AIOWPSecurity_Admin_Init {
 				'no_import_file' => __('You have not yet selected a file to import.', 'all-in-one-wp-security-and-firewall'),
 				'processing' => __('Processing...', 'all-in-one-wp-security-and-firewall'),
 				'invalid_domain' => __('Please enter a valid IP address or domain name.', 'all-in-one-wp-security-and-firewall'),
-				'logo' => AIO_WP_SECURITY_URL.'/images/plugin-logos/aios-logo.png',
+				'logo' => AIO_WP_SECURITY_URL.'/images/plugin-logos/icon-aios-rgb.svg',
 				'saving' => __('Saving...', 'all-in-one-wp-security-and-firewall'),
 				'deleting' => __('Deleting...', 'all-in-one-wp-security-and-firewall'),
 				'blocking' => __('Blocking...', 'all-in-one-wp-security-and-firewall'),
@@ -368,9 +373,11 @@ class AIOWPSecurity_Admin_Init {
 				'disabling' => __('Disabling...', 'all-in-one-wp-security-and-firewall'),
 				'setting_up_firewall' => __('Setting up firewall...', 'all-in-one-wp-security-and-firewall'),
 				'downgrading_firewall' => __('Downgrading firewall...', 'all-in-one-wp-security-and-firewall'),
+				'maintenance_mode_enabled' => __('Maintenance mode is currently enabled.', 'all-in-one-wp-security-and-firewall') . ' ' . __('Remember to disable it when you are done.', 'all-in-one-wp-security-and-firewall'),
+				'maintenance_mode_disabled' => __('Maintenance mode is currently disabled.', 'all-in-one-wp-security-and-firewall'),
 			)
 		);
-		wp_register_script('aiowpsec-pw-tool-js', AIO_WP_SECURITY_URL. '/js/password-strength-tool.js', array('jquery')); // We will enqueue this in the user acct menu class
+		wp_register_script('aiowpsec-pw-tool-js', AIO_WP_SECURITY_URL. '/js/password-strength-tool.js', array('jquery'), AIO_WP_SECURITY_VERSION, true); // We will enqueue this in the user acct menu class
 		wp_localize_script('aiowpsec-pw-tool-js',
 			'aios_pwtool_trans',
 			array(
@@ -416,8 +423,9 @@ class AIOWPSecurity_Admin_Init {
 	 */
 	public function display_footer_review_message() {
 		$message = sprintf(
-			__('Enjoyed %s? Please leave us a %s rating on %s or %s', 'all-in-one-wp-security-and-firewall').' '.__('We really appreciate your support!', 'all-in-one-wp-security-and-firewall'),
-			'<b>' . htmlspecialchars('All In One WP Security & Firewall') . '</b>',
+			/* translators: 1: Product Name, 2: Rating, 3: Trustpilot URL, 4: G2 URL */
+			__('Enjoyed %1$s? Please leave us a %2$s rating on %3$s or %4$s', 'all-in-one-wp-security-and-firewall').' '.__('We really appreciate your support!', 'all-in-one-wp-security-and-firewall'),
+			'<b>' . htmlspecialchars('All In One Security') . '</b>',
 			'<span style="color:#2271b1">&starf;&starf;&starf;&starf;&starf;</span>',
 			'<a href="https://uk.trustpilot.com/review/aiosplugin.com" target="_blank">Trustpilot</a>',
 			'<a href="https://www.g2.com/products/all-in-one-wp-security-firewall/reviews" target="_blank">G2.com</a>'
@@ -460,7 +468,9 @@ class AIOWPSecurity_Admin_Init {
 				AIOWPSecurity_Utility::set_cookie_value($test_cookie_name, '1');
 			}
 		}
+
 		// For cookie test form submission case
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- PCP warning. No nonce on this _GET.
 		if (isset($_GET['page']) && AIOWPSEC_BRUTE_FORCE_MENU_SLUG == $_GET['page'] && isset($_GET['tab']) && 'cookie-based-brute-force-prevention' == $_GET['tab']) {
 			if (isset($_POST['aiowps_do_cookie_test_for_bfla'])) {
 				$random_suffix = AIOWPSecurity_Utility::generate_alpha_numeric_random_string(10);
@@ -470,14 +480,6 @@ class AIOWPSecurity_Admin_Init {
 				$cur_url = "admin.php?page=".AIOWPSEC_BRUTE_FORCE_MENU_SLUG."&tab=cookie-based-brute-force-prevention";
 				$redirect_url = AIOWPSecurity_Utility::add_query_data_to_url($cur_url, 'aiowps_cookie_test', "1");
 				AIOWPSecurity_Utility::redirect_to_url($redirect_url);
-			}
-
-			if (isset($_POST['aiowps_enable_brute_force_attack_prevention'])) { // Enabling the BFLA feature so drop the cookie again
-				$brute_force_feature_secret_word = sanitize_text_field($_POST['aiowps_brute_force_secret_word']);
-				if (empty($brute_force_feature_secret_word)) {
-					$brute_force_feature_secret_word = AIOS_DEFAULT_BRUTE_FORCE_FEATURE_SECRET_WORD;
-				}
-				AIOWPSecurity_Utility::set_cookie_value(AIOWPSecurity_Utility::get_brute_force_secret_cookie_name(), AIOS_Helper::get_hash($brute_force_feature_secret_word));
 			}
 
 			if (isset($_REQUEST['aiowps_cookie_test'])) {
@@ -499,8 +501,8 @@ class AIOWPSecurity_Admin_Init {
 	 * @return void
 	 */
 	public function create_admin_menus() {
-		$menu_icon_url = AIO_WP_SECURITY_URL.'/images/plugin-icon.png';
-		$this->main_menu_page = add_menu_page(__('WP Security', 'all-in-one-wp-security-and-firewall'), __('WP Security', 'all-in-one-wp-security-and-firewall'), apply_filters('aios_management_permission', 'manage_options'), AIOWPSEC_MAIN_MENU_SLUG, array($this, 'handle_dashboard_menu_rendering'), $menu_icon_url);
+		$menu_icon_url = AIO_WP_SECURITY_URL.'/images/aios-plugin-icon.svg';
+		$this->main_menu_page = add_menu_page(__('AIOS', 'all-in-one-wp-security-and-firewall'), __('AIOS', 'all-in-one-wp-security-and-firewall'), apply_filters('aios_management_permission', 'manage_options'), AIOWPSEC_MAIN_MENU_SLUG, array($this, 'handle_dashboard_menu_rendering'), $menu_icon_url);
 
 		foreach ($this->menu_items as $menu_item) {
 			add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, $menu_item['page_title'], $menu_item['menu_title'], apply_filters('aios_management_permission', 'manage_options'), $menu_item['menu_slug'], $menu_item['render_callback'], $menu_item['order']);

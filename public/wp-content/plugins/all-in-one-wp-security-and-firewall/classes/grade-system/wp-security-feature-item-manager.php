@@ -93,6 +93,15 @@ class AIOWPSecurity_Feature_Item_Manager {
 					'aiowps_enable_forced_logout'
 				)
 			),
+			'hibp' => array(
+				'name' => __('HIBP', 'all-in-one-wp-security-and-firewall'),
+				'points' => $this->feature_point_2,
+				'level' => $this->sec_level_inter,
+				'options' => array(
+					'aiowps_hibp_user_profile_update',
+					'aiowps_http_password_reset',
+				)
+			),
 			'disable-application-password' => array(
 				'name' => __('Disable application password', 'all-in-one-wp-security-and-firewall'),
 				'points' => $this->feature_point_2,
@@ -295,6 +304,14 @@ class AIOWPSecurity_Feature_Item_Manager {
 				'level' => $this->sec_level_basic,
 				'options' => array(
 					'aiowps_disable_rss_and_atom_feeds'
+				)
+			),
+			'upgrade-unsafe-http-calls' => array(
+				'name' => __('Upgrade unsafe HTTP calls', 'all-in-one-wp-security-and-firewall'),
+				'points' => $this->feature_point_2,
+				'level' => $this->sec_level_inter,
+				'options' => array(
+					'aiowps_upgrade_unsafe_http_calls'
 				)
 			),
 			// Brute Force menu features
@@ -502,6 +519,7 @@ class AIOWPSecurity_Feature_Item_Manager {
 				)
 			),
 			'contact-form-7-captcha' => array(
+				/* translators: %s: Plugin name */
 				'name' => sprintf(__('%s CAPTCHA', 'all-in-one-wp-security-and-firewall'), 'Contact Form 7'),
 				'points' => $this->feature_point_1,
 				'level' => $this->sec_level_basic,
@@ -509,6 +527,14 @@ class AIOWPSecurity_Feature_Item_Manager {
 					'aiowps_enable_contact_form_7_captcha'
 				),
 				'feature_condition_callback' => array('AIOWPSecurity_Utility', 'is_contact_form_7_plugin_active'),
+			),
+			'enforce-strong-password' => array(
+				'name' => __('Enforce use of strong passwords by users', 'all-in-one-wp-security-and-firewall'),
+				'points' => $this->feature_point_1,
+				'level' => $this->sec_level_basic,
+				'options' => array(
+					'aiowps_enforce_strong_password'
+				),
 			)
 		);
 
@@ -537,7 +563,7 @@ class AIOWPSecurity_Feature_Item_Manager {
 	 */
 	public function get_feature_item_by_id($feature_id) {
 		if (isset($this->feature_items[$feature_id])) return $this->feature_items[$feature_id];
-		error_log("Feature ID not found (coding error)");
+		error_log("AIOS Feature Manager - Feature ID not found (coding error): $feature_id");
 		return false;
 	}
 

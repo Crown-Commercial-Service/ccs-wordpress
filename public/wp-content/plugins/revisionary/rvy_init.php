@@ -6,6 +6,24 @@ require_once( dirname(__FILE__).'/rvy_init-functions.php');
 
 add_action('init', 'rvy_status_registrations', 40);
 
+add_filter(
+	'rank_math/excluded_post_types',
+	function ($types) {
+		if (function_exists('rvy_detect_post_id')) {
+			if (!empty($_POST) || rvy_get_option('revision_edit_disable_rank_math')) {
+				$post_id = rvy_detect_post_id();
+
+				if (function_exists('rvy_in_revision_workflow') && rvy_in_revision_workflow($post_id)) {
+					$types = [];
+				}
+			}
+		}
+
+		return $types;
+	}
+	, 50
+);
+
 if (did_action('wp_loaded')) {
 	rvy_ajax_handler();
 } else {
@@ -181,3 +199,4 @@ if (defined('WPSEO_VERSION')) {
 foreach(['revisions_per_page', 'revision_archive_per_page'] as $option_val) {
 	add_filter("set_screen_option_{$option_val}", function($screen_option, $option, $value ) {return $value;}, 99, 3);
 }
+

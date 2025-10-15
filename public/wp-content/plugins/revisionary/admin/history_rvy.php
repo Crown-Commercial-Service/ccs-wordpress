@@ -18,6 +18,8 @@ class RevisionaryHistory
         add_action('admin_head', [$this,'actRevisionDiffScripts']);
         add_action('admin_head', [$this, 'actPastRevisionDiffScripts'], 10, 1);
         add_action('admin_print_scripts', [$this, 'actCompareRevisionsTweakUI']);
+        add_action('admin_print_footer_scripts', [$this, 'actCopyButtons']);
+
         add_filter('wp_prepare_revision_for_js', [$this, 'fltPrepareRevisionsForJS'], 10, 3);
 
         add_filter('wp_get_revision_ui_diff', [$this, 'fltGetRevisionUIDiff'], 10, 3);
@@ -66,6 +68,84 @@ class RevisionaryHistory
                 endif;
             }
         }
+    }
+
+    function actCopyButtons() {
+        global $revisionary;
+
+        ?>
+        <script type="text/javascript">
+        /* <![CDATA[ */
+        jQuery(document).ready( function($) {
+            setTimeout(() => {
+                $('div.revisions-diff div.diff h2:nth(1)').css('display', 'inline-block').css('margin-right', '10px').after(
+                    '<div style="display:inline-block;width:45%"><button id="rvy_copy_new_content_top" class="rvy-copy">'
+                    + '<?php echo $revisionary->admin->tooltipText(__('Copy', 'revisionary'), __('Copy content to the clipboard.', 'revisionary'), false);?>'
+                    + '</button></div>'
+                ).after(
+                    '<div style="display:inline-block;width:45%"><button id="rvy_copy_old_content_top" class="rvy-copy">'
+                    + '<?php echo $revisionary->admin->tooltipText(__('Copy', 'revisionary'), __('Copy content to the clipboard.', 'revisionary'), false);?>'
+                    + '</button></div>'
+                );
+
+                $('div.revisions-diff div.diff').find('table.diff').siblings('table.diff:nth(0)').after(
+                    '<div class="rvy-copy"><button id="rvy_copy_old_content" class="rvy-copy">'
+                    + '<?php echo $revisionary->admin->tooltipText(__('Copy', 'revisionary'), __('Copy the above content to the clipboard.', 'revisionary'), false);?>'
+                    + '</button></div>'
+                    + '<div class="rvy-copy"><button id="rvy_copy_new_content" class="rvy-copy">'
+                    + '<?php echo $revisionary->admin->tooltipText(__('Copy', 'revisionary'), __('Copy the above content to the clipboard.', 'revisionary'), false);?>'
+                    + '</button></div>'
+                );
+            }, 500);
+
+            $(document).on('click', '#rvy_copy_old_content', function (e) {
+                var content = '';
+
+                $(this).closest('div.diff').find('table.diff:nth(1)').find('tbody tr').each(function() {
+                    var e = $(this).find('td:nth(0)').clone();
+                    $(e).find('span').remove();
+                    content = content + '\r\n\r\n' + $(e).html();
+                })
+                
+                navigator.clipboard.writeText(content);
+            });
+
+            $(document).on('click', '#rvy_copy_new_content', function (e) {
+                var content = '';
+
+                $(this).closest('div.diff').find('table.diff:nth(1)').find('tbody tr').each(function() {
+                    var e = $(this).find('td:nth(1)').clone();
+                    $(e).find('span').remove();
+                    content = content + '\r\n\r\n' + $(e).html();
+                })
+                
+                navigator.clipboard.writeText(content);
+            });
+
+            $(document).on('click', '#rvy_copy_old_content_top', function (e) {
+                $('#rvy_copy_old_content').trigger('click');
+            });
+
+            $(document).on('click', '#rvy_copy_new_content_top', function (e) {
+                $('#rvy_copy_new_content').trigger('click');
+            });
+        });
+        /* ]]> */
+        </script>
+
+        <style>
+        div.rvy-copy {
+            display: inline-block;
+            width: 50%;
+            margin-top: 15px;
+        }
+
+        button.rvy-copy {
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+        </style>
+        <?php
     }
 
     function actDisableProblemQueries(WP_Query $query) {
@@ -1116,10 +1196,10 @@ class RevisionaryHistory
 
         // For non-public types, force direct approval because preview is not available
         $direct_approval = (($type_obj && !is_post_type_viewable($type_obj)) || rvy_get_option('compare_revisions_direct_approval'))
-        && current_user_can('edit_post', rvy_post_id($post_id));
+        && current_user_can('approve_revision', $post_id);
 
         if ($post_id) {
-            $can_approve = current_user_can('edit_post', rvy_post_id($post_id));
+            $can_approve = current_user_can('approve_revision', $post_id);
         } else {
             $can_approve = isset($type_obj->cap->edit_published_posts) && current_user_can($type_obj->cap->edit_published_posts);
         }
@@ -1169,7 +1249,7 @@ class RevisionaryHistory
                             for (rkey = 0; rkey < _wpRevisionsSettings.revisionData.length; rkey++) {
                                 if (_wpRevisionsSettings.revisionData[rkey].id == rselected) {
                                     if (_wpRevisionsSettings.revisionData[rkey].editUrl) {
-                                        $('input.restore-revision').after('<a href="' + _wpRevisionsSettings.revisionData[rkey].editUrl + '"><input type="button" class="edit-revision button button-primary" style="float:right" value="<?php echo esc_attr('Edit');?>"></a>');
+                                        $('input.restore-revision').after('<a href="' + _wpRevisionsSettings.revisionData[rkey].editUrl + '"><input type="button" class="edit-revision button button-primary" style="float:right" value="<?php echo esc_attr__('Edit');?>"></a>');
                                     }
                                 }
                             }

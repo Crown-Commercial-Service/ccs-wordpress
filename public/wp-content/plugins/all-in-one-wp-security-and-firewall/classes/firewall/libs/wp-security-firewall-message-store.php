@@ -84,6 +84,7 @@ class Message_Store {
 					// If we can't get the table to check the DB, still check our internal store for the key
 					if (empty($table)) return isset($this->messages[$key]) ? $this->messages[$key] : array();
 
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- PCP error. Ignore.
 					$rows = $wpdb->get_results($wpdb->prepare("SELECT id, message_value FROM `{$table}` WHERE message_key = %s", $key));
 
 					if (!empty($rows)) {
@@ -99,14 +100,18 @@ class Message_Store {
 						$this->keys_loaded[] = $key;
 					}
 				} catch (\Exception $e) {
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- PCP warning. Necessary for AIOS error reporting system.
 					error_log("AIOS: Error getting database entries for key '{$key}': {$e->getMessage()}");
-				} catch (\Error $e) {
+
+				} catch (\Error $e) { // phpcs:ignore PHPCompatibility.Classes.NewClasses.errorFound -- this won't run on PHP 5.6 so we still want to catch it on other versions
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- PCP warning. Necessary for AIOS error reporting system.
 					error_log("AIOS: Error getting database entries for key '{$key}': {$e->getMessage()}");
 				} finally {
-					
+
 					//Delete IDs of loaded messages
 					if (!empty($to_delete)) {
 						$ids = implode(',', $to_delete);
+						// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- PCP error. Ignore.
 						$wpdb->query("DELETE FROM `{$table}` WHERE id IN ({$ids})");
 					}
 
@@ -125,7 +130,6 @@ class Message_Store {
 	 * @return void
 	 */
 	public function dump() {
-		
 		//No point saving if there are no messages
 		if (empty($this->messages)) return;
 		
@@ -142,12 +146,15 @@ class Message_Store {
 
 		foreach ($this->messages as $key => $value) {
 			$statement .= '(%s, %s, %s),';
+			$values[] = $table;
 			$values[] = $key;
-			$values[] = json_encode($value);
+			$values[] = json_encode($value); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- This method runs outside the WordPress environment and therefore cannot use WordPress functions.
 			$values[] = time();
 		}
 
 		$statement = rtrim($statement, ',');
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery -- PCP error. Prepared above.
 		$wpdb->query($wpdb->prepare($statement, $values));
 	}
 
@@ -162,6 +169,7 @@ class Message_Store {
 		if (!$wpdb) return '';
 
 		$table = $wpdb->get_blog_prefix(0).$this->table_name;
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- PCP error. Ignore.
 		if ($table != $wpdb->get_var("SHOW TABLES LIKE '{$table}'")) return '';
 
 		return $table;
@@ -183,7 +191,9 @@ class Message_Store {
 		}
 
 		//Check if the table has any rows
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- PCP warning. Direct query necessary. No caching necessary.
 		$row_exists = $wpdb->get_var(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- PCP error. Ignore.
 			$wpdb->prepare("SELECT EXISTS (SELECT 1 FROM `{$table}` LIMIT 1)")
 		);
 	
@@ -193,6 +203,7 @@ class Message_Store {
 		}
 
 		// Clear the table (delete all records)
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- PCP error. Ignore.
 		$wpdb->query($wpdb->prepare("DELETE FROM `{$table}`"));
 	}
 }

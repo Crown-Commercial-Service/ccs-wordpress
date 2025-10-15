@@ -55,6 +55,11 @@ class AIOWPSecurity_User_Security_Menu extends AIOWPSecurity_Admin_Menu {
 				'title' => __('HTTP authentication', 'all-in-one-wp-security-and-firewall'),
 				'render_callback' => array($this, 'render_http_authentication'),
 			),
+			'hibp' => array(
+				'title' => __('HIBP', 'all-in-one-wp-security-and-firewall'),
+				'render_callback' => array($this, 'render_hibp'),
+				'display_condition_callback' => array('AIOWPSecurity_Utility_Permissions', 'is_main_site_and_super_admin'),
+			),
 			'additional' => array(
 				'title' => __('Additional settings', 'all-in-one-wp-security-and-firewall'),
 				'render_callback' => array($this, 'render_additional'),
@@ -79,11 +84,7 @@ class AIOWPSecurity_User_Security_Menu extends AIOWPSecurity_Admin_Menu {
 			$user_accounts = $this->get_all_admin_accounts();
 		}
 		
-		$aio_wp_security->include_template('wp-admin/user-security/wp-username.php', false, array('aiowps_feature_mgr' => $aiowps_feature_mgr, 'user_accounts' => $user_accounts, 'AIOWPSecurity_User_Security_Menu' => $this));
-		
-		$aio_wp_security->include_template('wp-admin/user-security/display-name.php', false, array('aiowps_feature_mgr' => $aiowps_feature_mgr));
-
-		$aio_wp_security->include_template('wp-admin/user-security/user-enumeration.php', false, array());
+		$aio_wp_security->include_template('wp-admin/user-security/user-accounts.php', false, array('aiowps_feature_mgr' => $aiowps_feature_mgr, 'user_accounts' => $user_accounts, 'AIOWPSecurity_User_Security_Menu' => $this));
 	}
 
 	
@@ -265,6 +266,19 @@ class AIOWPSecurity_User_Security_Menu extends AIOWPSecurity_Admin_Menu {
 		wp_enqueue_script('aiowpsec-pw-tool-js');
 
 		$aio_wp_security->include_template('wp-admin/user-security/http-authentication.php');
+	}
+
+	/**
+	 * Renders the submenu's hibp tab.
+	 *
+	 * @global AIO_WP_Security $aio_wp_security
+	 *
+	 * @return void
+	 */
+	protected function render_hibp() {
+		global $aio_wp_security;
+
+		$aio_wp_security->include_template('wp-admin/user-security/hibp.php');
 	}
 
 	/**

@@ -5,7 +5,7 @@
  * Description: Maintain published content with teamwork and precision using the Revisions model to submit, approve and schedule changes.
  * Author: PublishPress
  * Author URI: https://publishpress.com
- * Version: 3.7.9
+ * Version: 3.7.18
  * Text Domain: revisionary
  * Domain Path: /languages/
  * Min WP Version: 5.5
@@ -34,12 +34,12 @@
  *
  **/
 
- if (!defined('ABSPATH')) exit; // Exit if accessed directly
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 // Temporary usage within this module only; avoids multiple instances of version string
 global $pp_revisions_version;
 
-$pp_revisions_version = '3.7.9';
+$pp_revisions_version = '3.7.18';
 
 global $wp_version;
 
@@ -270,7 +270,7 @@ if (!defined('REVISIONARY_FILE') && (!$revisionary_pro_active || $revisionary_lo
 
 		// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
 		add_action('init', 'rvy_init', 1);
-		
+
 		if (!defined('IFRAME_REQUEST')) {
 			add_action('init', 'rvy_add_revisor_custom_caps', 99);
 			add_action('wp_loaded', 'rvy_add_revisor_custom_caps', 99);

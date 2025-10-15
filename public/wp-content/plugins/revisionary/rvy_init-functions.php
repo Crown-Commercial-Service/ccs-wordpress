@@ -1017,6 +1017,11 @@ function rvy_get_option($option_basename, $sitewide = -1, $get_default = false, 
 		// allow explicit selection of sitewide / non-sitewide scope for better performance and update security
 		if ( -1 === $sitewide ) {
 			global $rvy_options_sitewide;
+
+			if (!isset($rvy_options_sitewide)) {
+				rvy_refresh_options_sitewide();
+			}
+
 			$sitewide = isset( $rvy_options_sitewide ) && ! empty( $rvy_options_sitewide[$option_basename] );
 		}
 	
@@ -1056,7 +1061,7 @@ function rvy_get_option($option_basename, $sitewide = -1, $get_default = false, 
 		
 		if ( ! empty($rvy_default_options) && ! empty( $rvy_default_options[$option_basename] ) )
 			$optval = $rvy_default_options[$option_basename];
-			
+
 		if ( ! isset($optval) )
 			return '';
 	}
@@ -1305,10 +1310,11 @@ function rvy_init() {
 		}
 	}
 
-	rvy_role_translation_support();
-
 	if ( is_admin() ) {
 		require_once(dirname(__FILE__).'/admin/admin-init_rvy.php');
+		rvy_load_textdomain();
+
+		rvy_role_translation_support();
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
 		if (defined('REVISIONARY_BULK_ACTION_EARLY_EXECUTION') || (!isset($_REQUEST['action2']) && (empty($_REQUEST['action']) || ('decline_revision' != $_REQUEST['action'])))) {
@@ -1374,7 +1380,7 @@ function rvy_init() {
 					wp_remote_post( $url, array('blocking' => false, 'sslverify' => apply_filters('https_local_ssl_verify', true)) );
 				} else {
 					// publish scheduled revision now
-					if ( ! defined('DOING_CRON') ) {
+					if ( ! defined('DOING_CRON') && defined('REVISONARY_SET_DOING_CRON') ) {
 						define( 'DOING_CRON', true );
 					}
 					require_once( dirname(__FILE__).'/admin/revision-action_rvy.php');
@@ -1406,10 +1412,12 @@ function rvy_is_full_editor($post, $args = []) {
 		return false;
 	}
 
-	$cap = (!empty($type_obj->cap->edit_others_posts)) ? $type_obj->cap->edit_others_posts : $type_obj->cap->edit_posts;
+	if ($post->post_author != $current_user->ID) {
+		$cap = (!empty($type_obj->cap->edit_others_posts)) ? $type_obj->cap->edit_others_posts : $type_obj->cap->edit_posts;
 
-	if (empty($current_user->allcaps[$cap])) {
-		return false;
+		if (empty($current_user->allcaps[$cap])) {
+			return false;
+		}
 	}
 
 	if (!empty($args['check_publish_caps'])) {
@@ -1494,6 +1502,23 @@ function rvy_preview_url($revision, $args = []) {
 			$id_arg = 'p';
 		}
 	} elseif (('revision_slug' == $link_type) || !$post_is_published) {
+		$use_revision_slug = true;
+	
+	} else { // 'published_slug'
+		$published_post_id = rvy_post_id($revision->ID);
+		
+		if (('page' === get_option('show_on_front')) && in_array(get_option('page_on_front'), [$published_post_id, $revision->ID]) && !defined('REVISIONARY_NORMAL_HOME_REVISION_PREVIEW')) {
+			$use_revision_slug = true;
+			$home_id_arg = 'page__id';
+		} else {
+			$id_arg = 'page_id';
+
+			// default to published post url, appended with 'preview' and page_id args
+			$preview_url = add_query_arg($preview_arg, true, get_permalink($published_post_id));
+		}
+	}
+
+	if (!empty($use_revision_slug)) {
 		// support using actual revision slug in case theme or plugins do not tolerate published post url
 		$preview_url = add_query_arg($preview_arg, true, get_permalink($revision));
 
@@ -1503,17 +1528,6 @@ function rvy_preview_url($revision, $args = []) {
 		} else {
 			$id_arg = 'p';
 		}
-	} else { // 'published_slug'
-		$published_post_id = rvy_post_id($revision->ID);
-		
-		if (('page' === get_option('show_on_front')) && in_array(get_option('page_on_front'), [$published_post_id, $revision->ID])) {
-			$id_arg = 'page__id';
-		} else {
-			$id_arg = 'page_id';
-		}
-
-		// default to published post url, appended with 'preview' and page_id args
-		$preview_url = add_query_arg($preview_arg, true, get_permalink($published_post_id));
 	}
 
 	if (strpos($preview_url, "{$id_arg}=")) {
@@ -1521,6 +1535,10 @@ function rvy_preview_url($revision, $args = []) {
 	}
 	
 	$preview_url = add_query_arg($id_arg, $revision->ID, $preview_url);
+
+	if (!empty($home_id_arg)) {
+		$preview_url = add_query_arg($home_id_arg, $revision->ID, $preview_url);
+	}
 
 	if (!strpos($preview_url, "post_type=")) {
 		$preview_url = add_query_arg('post_type', $post_type, $preview_url);
@@ -1624,4 +1642,10 @@ function pp_revisions_body_class() {
 	}
 
 	return $classes;
+}
+
+function rvy_create_revision($post_id, $revision_status, $args = [], $revision_data = []) {
+	require_once( dirname(REVISIONARY_FILE).'/revision-creation_rvy.php' );
+	$rvy_creation = new PublishPress\Revisions\RevisionCreation();
+	return $rvy_creation->createRevision($post_id, $revision_status, ['redirect_url' => false], $revision_data);
 }

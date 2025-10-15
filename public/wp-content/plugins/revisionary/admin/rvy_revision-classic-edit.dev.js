@@ -20,7 +20,7 @@ jQuery(document).ready( function($) {
 
 	var RvySubmissionUI = function() {
 		var refSelector = '.rvy-misc-actions';
-    
+
         if (!$(refSelector).length) {
             var refSelector = '#submitdiv div.misc-pub-section:last';
         }
@@ -257,8 +257,25 @@ jQuery(document).ready( function($) {
         }
     });
 
+    rvyObjEdit.saveLabel = '';
+
+    setTimeout (
+        function() {
+            rvyObjEdit.saveLabel = $('#save-post').val();
+        }, 500
+    );
+
     $(document).on('click', '#save-post', function() {
         rvySaveClicked = true;
+
         $('div.rvy-save-revision-tip').hide();
+
+        setTimeout (
+            function() {
+                if (rvyObjEdit.saveLabel) {
+                    $('#save-post').val(rvyObjEdit.saveLabel);
+                }
+            }, 50
+        );
     });
 });

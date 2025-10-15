@@ -7,7 +7,7 @@ Tags: revision, submit changes, duplicate post, approve changes, scheduled chang
 Requires at least: 5.5
 Requires PHP: 7.2.5
 Tested up to: 6.8
-Stable tag: 3.7.9
+Stable tag: 3.7.17
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -144,7 +144,7 @@ When you are on the "Products" screen, click the "New Revision" link. Inside the
 
 It is possible to schedule updates to WooCommerce products.
 
-- While updating an post or page created created with Elementor, click "Immediately" in the right sidebar.
+- While updating a post or page created with Elementor, click "Immediately" in the right sidebar.
 - Choose the new date for these changes to go live.
 - Click the "Update Revision" button.
 
@@ -166,7 +166,7 @@ Here's how to use PublishPress Revisions and Elementor together:
 
 It is possible to schedule content updates to Elementor posts.
 
-- While updating an post or page created created with Elementor, click "Immediately" in the right sidebar.
+- While updating a post or page created with Elementor, click "Immediately" in the right sidebar.
 - Choose the new date for these changes to go live.
 - Click the "Update Revision" button.
 
@@ -238,12 +238,83 @@ Divi is one of the most popular page-builders in WordPress, and it does integrat
 
 [Click here for more on duplicate posts with Divi](https://publishpress.com/knowledge-base/divi-theme/).
 
+= Where do I report security bugs found in this plugin? =
+
+Please report security bugs found in the source code of the PublishPress Revisions plugin through the [Patchstack Vulnerability Disclosure  Program](https://patchstack.com/database/vdp/9e5fc124-22df-404f-98e9-72d17ad6d47c). The Patchstack team will assist you with verification, CVE assignment, and notify the developers of this plugin.
+
+
 == Upgrade Notice ==
 
 = 3.5.16 =
 Fixed: Security issue. Please update.
 
 == Changelog ==
+
+= 3.7.18 - 9 Oct 2025 =
+* Fixed : Revision editor did not redisplay submit, approve buttons after update
+* Fixed : Submit Revision button did not work if Status, Schedule elements hidden by another plugin
+* Compat : Advanced Custom Fields - Custom post type revisions could not be updated under some configurations
+
+= 3.7.17 - 2 Oct 2025 =
+* Fixed : Submit / Approve Revision button was disabled until page reload under some revision editing conditions
+* Fixed : Classic Editor: Update Revision button changes to Save Draft after being clicked
+* Compat : Revisions of Custom Posts cannot be updated under some conditions
+* Compat : Rank Math SEO : Classic Editor - Update Revision button fails on first click
+* Change : Disable Rank Math SEO by default for revision edit (can enable by Revisions > Settings > Options)
+* Lang : ES, FR, IT translations
+
+= 3.7.16 - 25 Sep 2025 =
+* Fixed : Plugin defines DOING_CRON prior to publishing scheduled revisions
+* Fixed : Revision metaboxes on Post edit screen output duplicate column label for Actions
+* Fixed : Captioning of Approve / Schedule button based on time selection did not apply time zone offset correctly 
+* Change : PublishPress Planner link on settings screen pops up plugin info / install screen
+* Change : Use thickbox frame for PublishPress Planner install link on Settings screen
+* Compat : PublishPress Permissions - list, list_other capabilities caused non-functional edit links to be displayed in Posts listing under some conditions
+* Feature : Support manage_revision_queue capability
+* Feature : Copy button for content on Compare Revisions screen
+
+= 3.7.15 - 18 Sep 2025 =
+* Compat : PublishPress Permissions - Non-revisions were listed in Revision Queue under some configurations
+* Fixed : Edit link on Posts / Pages screen is suppressed on some sites
+* Fixed : Admin notice for disabled WP Cron had invalid plugin settings link
+* Change : Clarify admin notice text for disabled WP Cron
+* Change : Support link directly to sub-tab of Revisions > Settings > New Revisions
+* Fixed : Fatal error opening revision editor with WP versions older than 6.4
+* Fixed : Revision editor hid submit, approve buttons immediately on some installations
+* Feature : Support separate approval capabilities for Revisions
+* Compat : PublishPress Capabilities - Capability tab for Approve Revision (also requires Capabilities 2.20.1)
+* Fixed : Multisite - Error on Network Settings, Network Defaults screens
+* Fixed : Multisite - Revision Queue empty if Permissions Compat mode setting is controlled network-wide 
+* Fixed : Multisite - Compatibility Mode setting change left sub-site revisions with invalid post_status value
+* Fixed : Multisite - Plugin setting tabs were blank until a tab is clicked
+
+= 3.7.14 - 11 Sep 2025 =
+* Fixed : New Revision button in editor did not work unless configured to open a new tab
+
+= 3.7.13 - 9 Sep 2025 =
+* Feature : Option for New Revision in editor to open a new tab
+* Fixed : Misspelling in caption on Revisions > Settings
+* Compat : Rank Math panel was not displayed when editing a revision
+* Lang : Some plugin strings had wrong text domain
+
+= 3.7.12 - 3 Sep 2025 =
+* Fixed : Legacy Notifications could not be enabled if Revisions Pro is active without PublishPress Planner
+* Change : Clarify tool tip text for revisions submitted for a future publication date
+* Change : Re-order post type checkboxes in Revisions > Settings > Features
+
+= 3.7.11 - 2 Sep 2025 =
+* Fixed : Plugin checkboxes were all displayed as unchecked, and updating plugin settings caused unchecked selections to be stored
+
+= 3.7.10 - 28 Aug 2025 =
+* Compat : Rank Math SEO - Revision update failed under some conditions
+* Change : Display a spinner during revision creation when editing a post in Classic Editor
+* Change : Change Settings tab promos to text-based
+* Change : Adjust some capability descriptions
+* Change : Revision Edit - Ensure submit, approve buttons remain disabled after editor tab switch
+* Change : Default-disable legacy notifications for new installations
+* Change : Support extended Approve button captions in Post Editor
+* Change : Revision Queue - tool tip to clarify revisions submitted for a future publication date, but not yet scheduled
+* API : New function rvy_create_revision()
 
 = 3.7.9 - 14 Aug 2025 =
 * Compat : PublishPress Permissions - Permissions assigned directly to revisions were not applied (also requires Permissions 4.4.3)

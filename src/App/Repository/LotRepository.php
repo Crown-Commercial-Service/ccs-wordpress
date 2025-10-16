@@ -246,7 +246,7 @@ AND l.salesforce_id IS NOT NULL';
             JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
             WHERE f.rm_number = :rm_number
             AND l.salesforce_id IS NOT NULL';
-        
+
         return $this->findAllLots($sql, false, 20, 0, [":rm_number" => $id]);
     }
 

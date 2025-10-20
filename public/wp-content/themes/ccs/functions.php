@@ -788,3 +788,19 @@ function wprc_add_acf_posts_endpoint( $allowed_endpoints ) {
     return $allowed_endpoints;
 }
 add_filter( 'wp_rest_cache/allowed_endpoints', 'wprc_add_acf_posts_endpoint', 10, 1);
+
+
+add_action('admin_menu', function () {   
+  global $menu;
+  $menu[50] = ['', 'read', '' , '', 'wp-menu-separator',];
+});
+
+add_action('admin_head', function () {
+	echo '<style>
+        #adminmenu .wp-menu-separator {
+            pointer-events: none;
+			background-color: white;
+            font-style: italic;
+        }
+    </style>';
+});

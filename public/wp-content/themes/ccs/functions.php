@@ -798,9 +798,7 @@ add_action('admin_menu', function () {
 add_action('admin_head', function () {
 	echo '<style>
         #adminmenu .wp-menu-separator {
-            pointer-events: none;
 			background-color: white;
-            font-style: italic;
         }
     </style>';
 });

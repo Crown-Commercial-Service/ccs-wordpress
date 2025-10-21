@@ -789,7 +789,6 @@ function wprc_add_acf_posts_endpoint( $allowed_endpoints ) {
 }
 add_filter( 'wp_rest_cache/allowed_endpoints', 'wprc_add_acf_posts_endpoint', 10, 1);
 
-
 function removeMenuOptionForNonAdmins() {
 	if ( !current_user_can( 'administrator' ) ) {
 		remove_menu_page( 'tools.php' ); // Tools
@@ -802,3 +801,16 @@ function removeMenuOptionForNonAdmins() {
 }
 
 add_action( 'admin_menu', 'removeMenuOptionForNonAdmins', 99 );
+
+add_action('admin_menu', function () {   
+  global $menu;
+  $menu[50] = ['', 'read', '' , '', 'wp-menu-separator',];
+});
+
+add_action('admin_head', function () {
+	echo '<style>
+        #adminmenu .wp-menu-separator {
+			background-color: white;
+        }
+    </style>';
+});

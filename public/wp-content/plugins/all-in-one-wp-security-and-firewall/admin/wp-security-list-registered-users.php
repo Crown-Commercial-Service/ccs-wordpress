@@ -113,31 +113,31 @@ class AIOWPSecurity_List_Registered_Users extends AIOWPSecurity_List_Table {
 	 * @return void
 	 */
 	private function process_bulk_action() {
-		if (empty($_REQUEST['_wpnonce']) || !isset($_REQUEST['_wp_http_referer'])) return;
-		$result = AIOWPSecurity_Utility_Permissions::check_nonce_and_user_cap($_REQUEST['_wpnonce'], 'bulk-items');
+		if (empty($_REQUEST['_wpnonce']) || !isset($_REQUEST['_wp_http_referer'])) return; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- pcp check ingore this
+		$result = AIOWPSecurity_Utility_Permissions::check_nonce_and_user_cap(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'bulk-items'); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- pcp check ingore this
 		if (is_wp_error($result)) return;
 
 		if ('approve' == $this->current_action()) { //Process approve bulk actions
-			if (!isset($_REQUEST['item'])) {
+			if (!isset($_REQUEST['item'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- pcp check ingore this
 				AIOWPSecurity_Admin_Menu::show_msg_error_st(__('Please select some records using the checkboxes', 'all-in-one-wp-security-and-firewall'));
 			} else {
-				$this->approve_selected_accounts(($_REQUEST['item']));
+				$this->approve_selected_accounts(array_map('sanitize_text_field', wp_unslash($_REQUEST['item']))); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- pcp check ingore this
 			}
 		}
 		
 		if ('delete' == $this->current_action()) { //Process delete bulk actions
-			if (!isset($_REQUEST['item'])) {
+			if (!isset($_REQUEST['item'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- pcp check ingore this
 				AIOWPSecurity_Admin_Menu::show_msg_error_st(__('Please select some records using the checkboxes', 'all-in-one-wp-security-and-firewall'));
 			} else {
-				$this->delete_selected_accounts(($_REQUEST['item']));
+				$this->delete_selected_accounts(array_map('sanitize_text_field', wp_unslash($_REQUEST['item']))); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- pcp check ingore this
 			}
 		}
 
 		if ('block' == $this->current_action()) { //Process block bulk actions
-			if (!isset($_REQUEST['item'])) {
+			if (!isset($_REQUEST['item'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- pcp check ingore this
 				AIOWPSecurity_Admin_Menu::show_msg_error_st(__('Please select some records using the checkboxes', 'all-in-one-wp-security-and-firewall'));
 			} else {
-				$this->block_selected_ips(($_REQUEST['item']));
+				$this->block_selected_ips(array_map('sanitize_text_field', wp_unslash($_REQUEST['item']))); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- pcp check ingore this
 			}
 		}
 
@@ -201,6 +201,7 @@ class AIOWPSecurity_List_Registered_Users extends AIOWPSecurity_List_Table {
 		$to_email_address = $user->user_email;
 		$email_msg = '';
 		$subject = '['.network_site_url().'] '. __('Your account is now active', 'all-in-one-wp-security-and-firewall');
+		/* translators: %s: Username */
 		$email_msg .= sprintf(__('Your account with username: %s is now active', 'all-in-one-wp-security-and-firewall'), $user->user_login) . "\n";
 		$subject = apply_filters('aiowps_register_approval_email_subject', $subject);
 		$email_msg = apply_filters('aiowps_register_approval_email_msg', $email_msg, $user); //also pass the WP_User object
@@ -254,17 +255,24 @@ class AIOWPSecurity_List_Registered_Users extends AIOWPSecurity_List_Table {
 			}
 			$entries = array_map('esc_sql', $entries); // Escape every array element
 			//Let's go through each entry and block IP
+			$total_success = 0;
 			foreach ($entries as $id) {
 				$ip_address = get_user_meta($id, 'aiowps_registrant_ip', true);
 				$result = AIOWPSecurity_Blocking::add_ip_to_block_list($ip_address, 'registration_spam');
 				if (false === $result) {
+					if (AIOWPSecurity_Utility_IP::get_user_ip_address() == $ip_address) {
+						AIOWPSecurity_Admin_Menu::show_msg_error_st(__('You cannot block your own IP address:', 'all-in-one-wp-security-and-firewall') . ' ' . $ip_address);
+					}
 					$aio_wp_security->debug_logger->log_debug("AIOWPSecurity_List_Registered_Users::block_selected_ips() - could not block IP : $ip_address", 4);
+				} else {
+					$total_success++;
 				}
 			}
-
-			$msg = __('The selected IP addresses were successfully added to the permanent block list.', 'all-in-one-wp-security-and-firewall');
-			$msg .= ' <a href="admin.php?page='.AIOWPSEC_MAIN_MENU_SLUG.'&tab=permanent-block" target="_blank">'.__('View Blocked IPs', 'all-in-one-wp-security-and-firewall').'</a>';
-			AIOWPSecurity_Admin_Menu::show_msg_updated_st($msg);
+			if ($total_success > 0) {
+				$msg = __('The selected IP addresses were successfully added to the permanent block list.', 'all-in-one-wp-security-and-firewall');
+				$msg .= ' <a href="admin.php?page='.AIOWPSEC_MAIN_MENU_SLUG.'&tab=permanent-block" target="_blank">'.__('View Blocked IPs', 'all-in-one-wp-security-and-firewall').'</a>';
+				AIOWPSecurity_Admin_Menu::show_msg_updated_st($msg);
+			}
 		}
 	}
 
@@ -282,7 +290,7 @@ class AIOWPSecurity_List_Registered_Users extends AIOWPSecurity_List_Table {
 		$offset = ($current_page - 1) * $per_page;
 		$hidden = array();
 		$sortable = $this->get_sortable_columns();
-		$search = isset($_REQUEST['s']) ? sanitize_text_field($_REQUEST['s']) : '';
+		$search = isset($_REQUEST['s']) ? sanitize_text_field(wp_unslash($_REQUEST['s'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- pcp check ingore this
 
 		$this->_column_headers = array($columns, $hidden, $sortable);
 		
@@ -319,7 +327,7 @@ class AIOWPSecurity_List_Registered_Users extends AIOWPSecurity_List_Table {
 	 */
 	public function get_registered_user_data($status = '', $search = '', $per_page = null, $offset = 0) {
 		$user_fields = array( 'ID', 'user_login', 'user_email', 'user_registered');
-		$user_query = new WP_User_Query(array('meta_key' => 'aiowps_account_status', 'meta_value' => $status, 'fields' => $user_fields, 'number' => $per_page, 'offset' => $offset));
+		$user_query = new WP_User_Query(array('meta_key' => 'aiowps_account_status', 'meta_value' => $status, 'fields' => $user_fields, 'number' => $per_page, 'offset' => $offset)); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- ignore this
 		$user_results = $user_query->results;
 		$user_total = $user_query->get_total();
 

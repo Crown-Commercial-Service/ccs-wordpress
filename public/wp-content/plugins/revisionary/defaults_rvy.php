@@ -13,6 +13,7 @@ if (!empty($_SERVER['SCRIPT_FILENAME']) && basename(__FILE__) == basename(esc_ur
 // Setting scope: For Network installations, which Revisionary options should default to site-wide control?
 function rvy_default_options_sitewide() {
 	$def = array(
+		'revision_queue_capability' => true,
 		'manage_unsubmitted_capability' => true,
 		'copy_posts_capability' => true,
 		'revision_statuses_noun_labels' => true,
@@ -69,6 +70,10 @@ function rvy_default_options_sitewide() {
 		'extended_archive' => true,
 		'delete_settings_on_uninstall' => true,
 		'apply_post_exceptions' => true,
+		'legacy_notifications' => true,
+		'approve_button_verbose' => true,
+		'create_revision_direct_link' => true,
+		'revision_edit_disable_rank_math' => true,
 	);
 
 	if ( $other_options = array_diff_key( rvy_default_options(), $def ) ) {
@@ -81,6 +86,7 @@ function rvy_default_options_sitewide() {
 // Default values for Revisionary settings
 function rvy_default_options() {
 	$def = array(
+		'revision_queue_capability' => 0,
 		'manage_unsubmitted_capability' => 0,
 		'copy_posts_capability' => 0,
 		'revision_statuses_noun_labels' => 0,
@@ -137,6 +143,10 @@ function rvy_default_options() {
 		'extended_archive' => 0,
 		'delete_settings_on_uninstall' => 0,
 		'apply_post_exceptions' => 0,
+		'legacy_notifications' => 0,
+		'approve_button_verbose' => 0,
+		'create_revision_direct_link' => 0,
+		'revision_edit_disable_rank_math' => 1,
 	);
 
 	return $def;

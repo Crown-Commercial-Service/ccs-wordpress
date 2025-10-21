@@ -58,41 +58,47 @@ class RevisionaryAdmin
 			if (empty($post)) {
 				$post = get_post(rvy_detect_post_id());		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 			}
+			
+			add_action('wp_loaded', function() {
+				global $post;
 
-			if ($post && rvy_is_supported_post_type($post->post_type)) {
-				// only apply revisionary UI for currently published or scheduled posts
-				if (!rvy_in_revision_workflow($post) && (in_array($post->post_status, rvy_filtered_statuses()) || ('future' == $post->post_status))) {
-					require_once( dirname(__FILE__).'/filters-admin-ui-item_rvy.php' );
-					new RevisionaryPostEditorMetaboxes();
+				if (empty($post)) {
+					$post = get_post(rvy_detect_post_id());		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				}
 
-				} elseif (rvy_in_revision_workflow($post)) {
-					add_action('the_post', array($this, 'limitRevisionEditorUI'));
+				if ($post && rvy_is_supported_post_type($post->post_type)) {
+					// only apply revisionary UI for currently published or scheduled posts
+					if (!rvy_in_revision_workflow($post) && (in_array($post->post_status, rvy_filtered_statuses()) || ('future' == $post->post_status))) {
+						require_once( dirname(__FILE__).'/filters-admin-ui-item_rvy.php' );
+						new RevisionaryPostEditorMetaboxes();
 
-					require_once( dirname(__FILE__).'/edit-revision-ui_rvy.php' );
-					new RevisionaryEditRevisionUI();
+					} elseif (rvy_in_revision_workflow($post)) {
+						add_action('the_post', array($this, 'limitRevisionEditorUI'));
 
-					if (\PublishPress\Revisions\Utils::isBlockEditorActive($post->post_type)) {
-						require_once( dirname(__FILE__).'/edit-revision-block-ui_rvy.php' );
-						new RevisionaryEditRevisionBlockUI();
-					} else {
-						if (!rvy_status_revisions_active($post->post_type)) {
-							require_once( dirname(__FILE__).'/edit-revision-classic-ui_rvy.php' );
-							new RevisionaryEditRevisionClassicUI();
+						require_once( dirname(__FILE__).'/edit-revision-ui_rvy.php' );
+						new RevisionaryEditRevisionUI();
+
+						if (\PublishPress\Revisions\Utils::isBlockEditorActive($post->post_type)) {
+							require_once( dirname(__FILE__).'/edit-revision-block-ui_rvy.php' );
+							new RevisionaryEditRevisionBlockUI();
+						} else {
+							if (!rvy_status_revisions_active($post->post_type)) {
+								require_once( dirname(__FILE__).'/edit-revision-classic-ui_rvy.php' );
+								new RevisionaryEditRevisionClassicUI();
+							}
 						}
 					}
 				}
-			}
+			}, 100);
 		}
 
 		if ( ! ( defined( 'SCOPER_VERSION' ) || defined( 'PP_VERSION' ) || defined( 'PPCE_VERSION' ) ) || defined( 'USE_RVY_RIGHTNOW' ) ) {
 			add_filter('dashboard_glance_items', [$this, 'fltDashboardGlanceItems']);
 		}
 
-		if ( rvy_get_option( 'pending_revisions' ) || rvy_get_option( 'scheduled_revisions' ) ) {
-			if ('revision.php' == $pagenow) {
-				require_once( dirname(__FILE__).'/history_rvy.php' );
-				new RevisionaryHistory();
-			}
+		if ('revision.php' == $pagenow) {
+			require_once( dirname(__FILE__).'/history_rvy.php' );
+			new RevisionaryHistory();
 		}
 
 		if ( rvy_get_option( 'scheduled_revisions' ) ) {
@@ -124,8 +130,8 @@ class RevisionaryAdmin
 				) {
 					rvy_notice(
 						sprintf(
-							__('Scheduled Revisions are not available because WP-Cron is disabled on this site. See %sRevisions > Settings > Scheduled Revisions%s.', 'revisionary'),
-							'<a href="' . admin_url("admin.php?page=revisionary-settings&ppr_tab=scheduled_revisions") . '">',
+							__('Scheduled Revisions are unavailable because WP-Cron is disabled. If you are triggering WP-Cron externally, see %sRevisions > Settings > New Revisions > Scheduling%s.', 'revisionary'),
+							'<a href="' . admin_url("admin.php?page=revisionary-settings&ppr_tab=working_copy&ppr_subtab=revision-scheduling") . '">',
 							'</a>'
 						)
 					);
@@ -216,7 +222,7 @@ class RevisionaryAdmin
 		}
 		
 		if (defined('PUBLISHPRESS_REVISIONS_PRO_VERSION') && ('admin.php' == $pagenow) && !empty($_REQUEST['page']) && in_array($_REQUEST['page'], ['revisionary-settings', 'rvy-net_options', 'rvy-default_options']) ) {	//phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			wp_enqueue_style('revisionary-settings', plugins_url('', REVISIONARY_PRO_FILE) . '/includes-pro/settings-pro.css', [], PUBLISHPRESS_REVISIONS_VERSION);
+			wp_enqueue_style('revisionary-pro-settings', plugins_url('', REVISIONARY_PRO_FILE) . '/includes-pro/settings-pro.css', [], PUBLISHPRESS_REVISIONS_VERSION);
 		}
  	}
 
@@ -317,11 +323,15 @@ class RevisionaryAdmin
 		$can_edit_any = false;
 
 		if ($types || current_user_can('manage_options')) {
-			foreach ($types as $_post_type) {
-				if ($type_obj = get_post_type_object($_post_type)) {
-					if (!empty($current_user->allcaps[$type_obj->cap->edit_posts]) || (is_multisite() && is_super_admin())) {
-						$can_edit_any = true;
-						break;
+			if (rvy_get_option('revision_queue_capability')) {
+				$can_edit_any = current_user_can('manage_revision_queue') || is_content_administrator_rvy();
+			} else {
+				foreach ($types as $_post_type) {
+					if ($type_obj = get_post_type_object($_post_type)) {
+						if (!empty($current_user->allcaps[$type_obj->cap->edit_posts]) || (is_multisite() && is_super_admin())) {
+							$can_edit_any = true;
+							break;
+						}
 					}
 				}
 			}
@@ -435,12 +445,16 @@ class RevisionaryAdmin
 	}
 
 	public function fltPublishPressCapsSection($section_caps) {
-		$section_caps['PublishPress Revisions'] = ['edit_others_drafts', 'edit_others_revisions', 'list_others_revisions', 'manage_unsubmitted_revisions', 'preview_others_revisions', 'restore_revisions', 'view_revision_archive'];
+		$section_caps['PublishPress Revisions'] = ['edit_others_drafts', 'edit_others_revisions', 'list_others_revisions', 'manage_revision_queue', 'manage_unsubmitted_revisions', 'preview_others_revisions', 'restore_revisions', 'view_revision_archive'];
 
 		// @todo: check Revisions settings for other cap requirements
 
 		if (defined('PUBLISHPRESS_REVISIONS_PRO_VERSION') && rvy_get_option('revision_restore_require_cap')) {
 			$section_caps['PublishPress Revisions'] []= 'restore_revisions';
+		}
+
+		if (!rvy_get_option('revision_queue_capability')) {
+			$section_caps['PublishPress Revisions'] = array_diff($section_caps['PublishPress Revisions'], ['manage_revision_queue']);
 		}
 
 		if (!rvy_get_option('manage_unsubmitted_capability')) {
@@ -464,10 +478,11 @@ class RevisionaryAdmin
 
 	public function fltCapDescriptions($cap_descripts)
 	{
-		$cap_descripts['edit_others_drafts'] = esc_html__('Bypass Revisions setting "Prevent Revisors from editing other user\'s drafts."', 'revisionary');
-		$cap_descripts['edit_others_revisions'] = esc_html__('Satisfy Revisions setting "Editing others\' Revisions requires role capability."', 'revisionary');
-		$cap_descripts['list_others_revisions'] = esc_html__('Satisfy Revisions setting "Listing others\' Revisions requires role capability."', 'revisionary');
-		$cap_descripts['manage_unsubmitted_revisions'] = esc_html__('Satisfy Revisions setting "Managing Unsubmitted Revisions requires role capability."', 'revisionary');
+		$cap_descripts['edit_others_drafts'] = esc_html__('Can edit draft Posts from other users.', 'revisionary');
+		$cap_descripts['edit_others_revisions'] = esc_html__('Can edit Revisions from other users.', 'revisionary');
+		$cap_descripts['list_others_revisions'] = esc_html__('Can see Revisions from other users in Revision Queue.', 'revisionary');
+		$cap_descripts['manage_revision_queue'] = esc_html__('Can access Revision Queue.', 'revisionary');
+		$cap_descripts['manage_unsubmitted_revisions'] = esc_html__('Can manage Unsubmitted Revisions.', 'revisionary');
 		$cap_descripts['preview_others_revisions'] = esc_html__('Preview other user\'s Revisions (without needing editing access).', 'revisionary');
 		$cap_descripts['restore_revisions'] = esc_html__('Restore an archived Revision as the current revision.', 'revisionary');
 		$cap_descripts['view_revision_archive'] = esc_html__('View the Revision Archive, a list of past Revisions.', 'revisionary');
@@ -511,11 +526,11 @@ class RevisionaryAdmin
 		<hr>
 		<nav>
 		<ul>
-		<li><a href="https://publishpress.com/revisionary" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr('About PublishPress Revisions', 'revisionary');?>"><?php esc_html_e('About', 'revisionary');?>
+		<li><a href="https://publishpress.com/revisionary" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr__('About PublishPress Revisions', 'revisionary');?>"><?php esc_html_e('About', 'revisionary');?>
 		</a></li>
-		<li><a href="https://publishpress.com/documentation/revisions-start" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr('PublishPress Revisions Documentation', 'revisionary');?>"><?php esc_html_e('Documentation', 'revisionary');?>
+		<li><a href="https://publishpress.com/documentation/revisions-start" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr__('PublishPress Revisions Documentation', 'revisionary');?>"><?php esc_html_e('Documentation', 'revisionary');?>
 		</a></li>
-		<li><a href="https://publishpress.com/contact" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr('Contact the PublishPress team', 'revisionary');?>"><?php esc_html_e('Contact', 'revisionary');?>
+		<li><a href="https://publishpress.com/contact" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr__('Contact the PublishPress team', 'revisionary');?>"><?php esc_html_e('Contact', 'revisionary');?>
 		</a></li>
 		</ul>
 		</nav>
@@ -565,11 +580,7 @@ class RevisionaryAdmin
 		
 		if ($use_icon) :
 			ob_start();
-		?>
-			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 50 50" style="margin-left: 3px; vertical-align: baseline;">
-				<path d="M 25 2 C 12.264481 2 2 12.264481 2 25 C 2 37.735519 12.264481 48 25 48 C 37.735519 48 48 37.735519 48 25 C 48 12.264481 37.735519 2 25 2 z M 25 4 C 36.664481 4 46 13.335519 46 25 C 46 36.664481 36.664481 46 25 46 C 13.335519 46 4 36.664481 4 25 C 4 13.335519 13.335519 4 25 4 z M 25 11 A 3 3 0 0 0 25 17 A 3 3 0 0 0 25 11 z M 21 21 L 21 23 L 23 23 L 23 36 L 21 36 L 21 38 L 29 38 L 29 36 L 27 36 L 27 21 L 21 21 z"></path>
-			</svg>
-		<?php 
+		?><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 50 50" style="margin-left: 3px; vertical-align: baseline;"><path d="M 25 2 C 12.264481 2 2 12.264481 2 25 C 2 37.735519 12.264481 48 25 48 C 37.735519 48 48 37.735519 48 25 C 48 12.264481 37.735519 2 25 2 z M 25 4 C 36.664481 4 46 13.335519 46 25 C 46 36.664481 36.664481 46 25 46 C 13.335519 46 4 36.664481 4 25 C 4 13.335519 13.335519 4 25 4 z M 25 11 A 3 3 0 0 0 25 17 A 3 3 0 0 0 25 11 z M 21 21 L 21 23 L 23 23 L 23 36 L 21 36 L 21 38 L 29 38 L 29 36 L 27 36 L 27 21 L 21 21 z"></path></svg><?php 
 			$icon = ob_get_clean();
 		endif;
 		

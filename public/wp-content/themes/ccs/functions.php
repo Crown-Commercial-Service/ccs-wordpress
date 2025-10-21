@@ -789,6 +789,18 @@ function wprc_add_acf_posts_endpoint( $allowed_endpoints ) {
 }
 add_filter( 'wp_rest_cache/allowed_endpoints', 'wprc_add_acf_posts_endpoint', 10, 1);
 
+function removeMenuOptionForNonAdmins() {
+	if ( !current_user_can( 'administrator' ) ) {
+		remove_menu_page( 'tools.php' ); // Tools
+		remove_menu_page( 'edit.php?post_type=lot'); 
+		remove_menu_page( 'supplier.php' ); 
+		remove_menu_page( 'publishpress-statuses' ); 
+		remove_menu_page('pp-calendar');
+
+	}
+}
+
+add_action( 'admin_menu', 'removeMenuOptionForNonAdmins', 99 );
 
 add_action('admin_menu', function () {   
   global $menu;

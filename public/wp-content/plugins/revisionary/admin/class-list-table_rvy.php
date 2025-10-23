@@ -145,7 +145,7 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 	}
 
 	function do_query( $q = false ) {
-		if ( false === $q ) $q = $_GET;										//phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( false === $q ) $q = $_REQUEST;										//phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		// === first, query published posts that have any Revisionary revisions ===
 
@@ -292,7 +292,7 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 		
 		$status_col = ($permissions_compat_mode) ? 'post_status' : 'post_mime_type';
 
-		if ( isset($q['post_status']) && rvy_is_revision_status( $q['post_status'] ) ) {
+		if ( isset($q['post_status']) && rvy_is_revision_status( $q['post_status'] )) {
 			$qr[$status_col] = [$q['post_status']];
 		} else {
 			$qr[$status_col] = rvy_revision_statuses();
@@ -460,7 +460,7 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 
 	function revisions_where_filter($where, $args = []) {
 		global $wpdb, $current_user, $revisionary;
-		
+
 		$p = (!empty($args['alias'])) ? sanitize_text_field($args['alias']) : $wpdb->posts;
 
 		$is_count_query = empty($args['revision_query']);
@@ -668,9 +668,24 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 
 			$args = array_merge($defaults, (array)$args);
 
+			if (!empty($args['source_alias'])) {
+				$_append_clause = str_replace("$p.", "{$args['source_alias']}.", $where_append);
+			} else {
+				$_append_clause = $where_append;
+			}
 
 			foreach(array_keys($revisionary->enabled_post_types) as $_post_type) {
-				$where = \PublishPress\Permissions\DB\Permissions::addExceptionClauses($where, 'edit', $_post_type, $args);
+				if (false === strpos(trim($where), '(')) {
+					$where = "( $where )";
+				}
+				
+				if (false === strpos(trim($_append_clause), '(')) {
+					$_append_clause = "( $_append_clause )";
+				}
+				
+				$exc_where = \PublishPress\Permissions\DB\Permissions::addExceptionClauses('', 'edit', $_post_type, $args);
+			
+				$where = "$where OR ( $exc_where AND $_append_clause )";
 			}
 		}
 
@@ -737,6 +752,8 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 	}
 
 	function rvy_pending_custom_col( $column_name, $post_id ) {
+		global $revisionary;
+		
 		if ( ! $post = get_post( $post_id ) )
 			return;
 		
@@ -769,7 +786,7 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 		
 			case 'date_sched' :
 				if ( ('future-revision' === $post->post_mime_type ) || ( strtotime($post->post_date_gmt) > agp_time_gmt() ) ) {
-						$t_time = get_the_time( esc_html__( 'Y/m/d g:i:s a', 'revisionary' ) );
+						$t_time = get_the_time( esc_html__( 'Y/m/d, g:i:s a', 'revisionary' ) );
 						$m_time = $post->post_date;
 						
 						$time = get_post_time( 'G', true, $post );
@@ -788,8 +805,10 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 						if ('future-revision' == $post->post_mime_type) {
 							$t_time = sprintf(esc_html__('Scheduled publication: %s', 'revisionary'), $t_time);
 						} else {
-							$h_time = "<span class='rvy-requested-date'>[$h_time]</span>";
+							$h_time = "<div class='rvy-requested-date'>[$h_time]</div>";
 							$t_time = sprintf(esc_html__('Requested publication: %s', 'revisionary'), $t_time);
+
+							$t_time .= '<br><br>' . __('This revision is not scheduled yet. It must be approved.', 'revisionary');
 						}
 
 						if ( $time_diff > 0 ) {
@@ -800,7 +819,10 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 					/** This filter is documented in wp-admin/includes/class-wp-posts-list-table.php */
 					$mode = 'list';
 																	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					echo '<abbr title="' . esc_attr($t_time) . '">' . apply_filters( 'rvy_post_schedule_date_column_time', $h_time, $post, 'date', $mode ) . '</abbr>';
+					echo $revisionary->admin->tooltipText(
+						apply_filters( 'rvy_post_schedule_date_column_time', $h_time, $post, 'date', $mode ),
+						$t_time
+					);
 				}
 
 				break;
@@ -871,7 +893,7 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 					'<a href="%1$s" title="%2$s" aria-label="%2$s">%3$s</a>',
 					$edit_link,
 					/* translators: %s: post title */
-					esc_attr('Edit published post'),
+					esc_attr__( 'Edit published post', 'revisionary' ),
 					esc_html__( 'Edit' )
 				);
 			}
@@ -895,16 +917,14 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 				$actions['view'] = sprintf(
 					'<a href="%1$s" rel="bookmark" title="%2$s" aria-label="%2$s">%3$s</a>',
 					get_permalink( $post->ID ),
-					/* translators: %s: post title */
-					esc_attr( esc_html__( 'View published post', 'revisionary' ) ),
+					esc_attr__( 'View published post', 'revisionary' ),
 					esc_html__( 'View' )
 				);
 			} else {
 				$actions['view'] = sprintf(
 					'<a href="%1$s" rel="bookmark" title="%2$s" aria-label="%2$s">%3$s</a>',
 					get_preview_post_link( $post->ID ),
-					/* translators: %s: post title */
-					esc_attr( esc_html__( 'View published post', 'revisionary' ) ),
+					esc_attr__( 'View published post', 'revisionary' ),
 					esc_html__( 'Preview' )
 				);
 			}
@@ -929,8 +949,7 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 			$actions['history'] = sprintf(
 				'<a href="%1$s" title="%2$s" aria-label="%2$s" target="_revision_diff">%3$s</a>',
 				admin_url("revision.php?revision={$last_past_revision[$post->ID]}"),
-				/* translators: %s: post title */
-				esc_attr(esc_html__('Compare Past Revisions', 'revisionary')),
+				esc_attr__('Compare Past Revisions', 'revisionary'),
 				esc_html__( 'History', 'revisionary' )
 			);
 		}
@@ -1166,14 +1185,24 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 			) . '&nbsp;';
 		}
 
+		$revision_statuses = rvy_revision_statuses(['output' => 'object']);
+
 		$all_count = 0;
-		foreach($revision_statuses as $status) {
+		foreach($revision_statuses as $status_obj) {
+			$status = (!empty($status_obj->name)) ? $status_obj->name : '';
+			
+			if (empty($status)) {
+				continue;
+			}
+
 			if (!isset($num_posts->$status)) {
 				$num_posts->$status = 0;
 			}
 
 			if (!empty($num_posts->$status)) {
-				$status_obj = get_post_status_object($status);
+				if (!is_object($status_obj)) {
+					$status_obj = get_post_status_object($status);
+				}
 
 				$status_label = $status_obj ? sprintf(
 					translate_nooped_plural( $status_obj->label_count, $num_posts->$status ),
@@ -1212,6 +1241,100 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 		$links['all'] = "<a href='admin.php?page=revisionary-q&all=1'{$link_class}>" . sprintf( esc_html__('All %s', 'revisionary'), "<span class='count'>($all_count)</span>" ) . '</a>';
 		
 		return apply_filters('revisionary_queue_view_links', $links);
+	}
+
+	function bulk_actions( $which = '' ) {
+		global $revisionary;
+
+		if ( is_null( $this->_actions ) ) {
+			$this->_actions = $this->get_bulk_actions();
+
+			/**
+			 * Filters the items in the bulk actions menu of the list table.
+			 *
+			 * The dynamic portion of the hook name, `$this->screen->id`, refers
+			 * to the ID of the current screen.
+			 *
+			 * @since 3.1.0
+			 * @since 5.6.0 A bulk action can now contain an array of options in order to create an optgroup.
+			 *
+			 * @param array $actions An array of the available bulk actions.
+			 */
+			$this->_actions = apply_filters( "bulk_actions-{$this->screen->id}", $this->_actions ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+
+			$two = '';
+		} else {
+			$two = '2';
+		}
+
+		if ( empty( $this->_actions ) ) {
+			return;
+		}
+
+		echo '<label for="bulk-action-selector-' . esc_attr( $which ) . '" class="screen-reader-text">' .
+			/* translators: Hidden accessibility text. */
+			__( 'Select bulk action' ) .
+		'</label>';
+		echo '<select name="action' . $two . '" id="bulk-action-selector-' . esc_attr( $which ) . "\">\n";
+		echo '<option value="-1">' . __( 'Bulk actions' ) . "</option>\n";
+
+		foreach ( $this->_actions as $key => $value ) {
+			if ( is_array( $value ) ) {
+				echo "\t" . '<optgroup label="' . esc_attr( $key ) . '">' . "\n";
+
+				foreach ( $value as $name => $title ) {
+					$class = ( 'edit' === $name ) ? ' class="hide-if-no-js"' : '';
+
+					echo "\t\t" . '<option value="' . esc_attr( $name ) . '"' . $class . '>' . $title . "</option>\n";
+				}
+				echo "\t" . "</optgroup>\n";
+			} else {
+				$class = ( 'edit' === $key ) ? ' class="hide-if-no-js"' : '';
+
+				echo "\t" . '<option value="' . esc_attr( $key ) . '"' . $class . '>' . $value . "</option>\n";
+			}
+		}
+
+		echo "</select>\n";
+
+		submit_button( __( 'Apply' ), 'action', 'bulk_action', false, array( 'id' => "doaction$two" ) );
+		echo "\n";
+
+		echo '<select name="post_type' . $two . '" id="post_type" style="float:none">';
+		echo '<option value="">' . __( 'All Post Types' ) . "</option>";
+
+		foreach(array_keys($revisionary->enabled_post_types) as $post_type) {
+			if ($type_obj = get_post_type_object($post_type)) {
+				$selected = (!$two && (!empty($_REQUEST['post_type'])) && ($post_type == sanitize_key($_REQUEST['post_type']))) ? ' selected' : '';
+				echo "\t" . '<option value="' . esc_attr($post_type) . '"' . $selected . '>' . $type_obj->labels->singular_name . "</option>";
+			}
+		}
+
+		echo "</select>";
+
+		$revision_statuses = rvy_revision_statuses(['output' => 'object']);
+
+		echo '<select name="post_status' . $two . '" id="post_status" style="float:none">';
+		echo '<option value="">' . __( 'Select Post Status...' ) . "</option>\n";
+
+		foreach($revision_statuses as $k => $status_obj) {
+			if (!is_object($status_obj)) {
+				$status_obj = get_post_status_object($k);
+			}
+
+			if (!is_object($status_obj)) {
+				continue;
+			}
+
+			$selected = (!$two && (!empty($_REQUEST['post_status'])) && ($status_obj->name == sanitize_key($_REQUEST['post_status']))) ? ' selected' : '';
+			echo "\t" . '<option value="' . esc_attr($status_obj->name) . '"' . $selected . '>' . $status_obj->label . "</option>\n";
+		}
+
+		echo "</select>\n";
+
+		submit_button( __( 'Filter' ), '', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
+		
+		echo "\n";
 	}
 
 	/**
@@ -1494,7 +1617,7 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 					'<a href="%1$s" title="%2$s" aria-label="%2$s">%3$s</a>',
 					get_edit_post_link( $post->ID ),
 					/* translators: %s: post title */
-					esc_attr('Edit Revision'),
+					esc_attr__( 'Edit Revision', 'revisionary' ),
 					esc_html__( 'Edit' )
 				);
 			}
@@ -1545,8 +1668,7 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 					$actions['view'] = sprintf(
 						'<a href="%1$s" rel="bookmark" title="%2$s" aria-label="%2$s">%3$s</a>',
 						esc_url( $preview_link ),
-						/* translators: %s: post title */
-						esc_attr( esc_html__( 'Preview Revision', 'revisionary' ) ),
+						esc_attr__( 'Preview Revision', 'revisionary' ),
 						esc_html__( 'Preview' )
 					);
 
@@ -1560,8 +1682,7 @@ class Revisionary_List_Table extends WP_Posts_List_Table {
 			$actions['diff'] = sprintf(
 				'<a href="%1$s" class="" title="%2$s" aria-label="%2$s" target="_revision_diff">%3$s</a>',
 				admin_url("revision.php?revision=$post->ID"),
-				/* translators: %s: post title */
-				esc_attr( sprintf( esc_html__('Compare Changes', 'revisionary'), $title ) ),
+				esc_attr__('Compare Changes', 'revisionary'),
 				_x('Compare', 'revisions', 'revisionary')
 			);
 		}

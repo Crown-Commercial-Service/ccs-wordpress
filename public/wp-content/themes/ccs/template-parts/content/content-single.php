@@ -19,6 +19,14 @@
 	<?php endif; ?>
 
 	<div class="entry-content">
+
+	 	<?php if(!empty(get_field('post_lead_text'))): ?>
+			<div class="post-lead-text" id="post-lead-text">
+				<b><?= get_field('post_lead_text'); ?></b>
+			</div>
+			<hr/>
+        <?php endif; ?>
+
 		<?php
 		the_content(
 			sprintf(

@@ -20,14 +20,14 @@ acf_add_options_page( array(
     WARNING: if two menu items use the same position attribute, one of the items may be overwritten so that only one item displays!
     Risk of conflict can be reduced by using decimal instead of integer values, e.g. '63.3' instead of 63 (must use quotes).
     Defaults to bottom of utility menu items */
-    'position' => false,
+    'position' => 50,
 
     /* (string) The slug of another WP admin page. if set, this will become a child page. */
     'parent_slug' => '',
 
     /* (string) The icon class for this menu. Defaults to default WordPress gear.
     Read more about dashicons here: https://developer.wordpress.org/resource/dashicons/ */
-    'icon_url' => false,
+    'icon_url' => "dashicons-calendar",
 
     /* (boolean) If set to true, this options page will redirect to the first child page (if a child page exists).
     If set to false, this parent page will appear alongside any child pages. Defaults to true */
@@ -42,7 +42,7 @@ acf_add_options_page( array(
     'autoload' => true,
 
     /* (string) The update button text. Added in v5.3.7. */
-    'update_button'		=> __('Update', 'acf'),
+    'update_button'		=> __('Update training dates', 'acf'),
 
     /* (string) The message shown above the form on submit. Added in v5.6.0. */
     'updated_message'	=> __("Training Dates Updated", 'acf'),
@@ -69,7 +69,7 @@ acf_add_options_page( array(
     WARNING: if two menu items use the same position attribute, one of the items may be overwritten so that only one item displays!
     Risk of conflict can be reduced by using decimal instead of integer values, e.g. '63.3' instead of 63 (must use quotes).
     Defaults to bottom of utility menu items */
-    'position' => false,
+    'position' => 50.1,
 
     /* (string) The slug of another WP admin page. if set, this will become a child page. */
     'parent_slug' => '',
@@ -118,7 +118,7 @@ acf_add_options_page( array(
     WARNING: if two menu items use the same position attribute, one of the items may be overwritten so that only one item displays!
     Risk of conflict can be reduced by using decimal instead of integer values, e.g. '63.3' instead of 63 (must use quotes).
     Defaults to bottom of utility menu items */
-    'position' => false,
+    'position' => 50.2,
 
     /* (string) The slug of another WP admin page. if set, this will become a child page. */
     'parent_slug' => '',
@@ -167,7 +167,7 @@ acf_add_options_page( array(
     WARNING: if two menu items use the same position attribute, one of the items may be overwritten so that only one item displays!
     Risk of conflict can be reduced by using decimal instead of integer values, e.g. '63.3' instead of 63 (must use quotes).
     Defaults to bottom of utility menu items */
-    'position' => false,
+    'position' => 50.3,
 
     /* (string) The slug of another WP admin page. if set, this will become a child page. */
     'parent_slug' => '',
@@ -178,7 +178,7 @@ acf_add_options_page( array(
 
     /* (boolean) If set to true, this options page will redirect to the first child page (if a child page exists).
     If set to false, this parent page will appear alongside any child pages. Defaults to true */
-    'redirect' => true,
+    'redirect' => false,
 
     /* (int|string) The '$post_id' to save/load data to/from. Can be set to a numeric post ID (123), or a string ('user_2').
     Defaults to 'options'. Added in v5.2.7 */
@@ -196,10 +196,11 @@ acf_add_options_page( array(
 
 ) );
 
-$option_page = acf_add_options_page(array(
+acf_add_options_page(array(
     'page_title'    => __('Redirection'),
     'menu_title'    => __('Redirection'),
     'menu_slug'     => 'redirection',
+    'position'      => 51,
     'capability'    => 'edit_pages',
     'icon_url' => 'dashicons-external',
     'redirect'      => false,
@@ -207,10 +208,11 @@ $option_page = acf_add_options_page(array(
     'updated_message'	=> __("Redirection Saved", 'acf')
 ));
 
-$option_page = acf_add_options_page(array(
+acf_add_options_page(array(
     'page_title'    => __('Glossary'),
     'menu_title'    => __('Glossary'),
     'menu_slug'     => 'glossary',
+    'position'      => 52,
     'capability'    => 'edit_pages',
     'icon_url' => 'dashicons-tag',
     'redirect'      => false,
@@ -218,10 +220,11 @@ $option_page = acf_add_options_page(array(
     'updated_message'	=> __("Glossary Saved", 'acf')
 ));
 
-$option_page = acf_add_options_page(array(
+acf_add_options_page(array(
     'page_title'    => __('CSC Message'),
     'menu_title'    => __('CSC Message'),
     'menu_slug'     => 'CSC_Message',
+    'position'      => 53,
     'capability'    => 'edit_pages',
     'icon_url' => 'dashicons-calendar',
     'redirect'      => false,
@@ -229,13 +232,14 @@ $option_page = acf_add_options_page(array(
     'updated_message'	=> __("CSC message updated", 'acf')
 ));
 
-$option_page = acf_add_options_page(array(
-    'page_title'    => __('Message Banner'),
-    'menu_title'    => __('Message Banner Homepage'),
+acf_add_options_page(array(
+    'page_title'    => __('Homepage Banner'),
+    'menu_title'    => __('Homepage Banner'),
     'menu_slug'     => 'Message_Banner',
+    'parent_slug'   => 'homepage-components',
     'capability'    => 'edit_users',
-    'icon_url' => 'dashicons-tag',
+    'icon_url'      => 'dashicons-tag',
     'redirect'      => false,
-    'update_button'        => __('Save', 'acf'),
-    'updated_message'    => __("Message Banner Updated", 'acf')
+    'update_button' => __('Save', 'acf'),
+    'updated_message'   => __("Message Banner Updated", 'acf')
 ));

@@ -8,9 +8,9 @@ if (!class_exists('AIO_WP_Security')) {
 
 	class AIO_WP_Security {
 
-		public $version = '5.3.8';
+		public $version = '5.4.3';
 
-		public $db_version = '2.1.2';
+		public $db_version = '2.1.4';
 
 		public $firewall_version = '1.0.8';
 
@@ -42,6 +42,10 @@ if (!class_exists('AIO_WP_Security')) {
 		public $captcha_obj;
 				
 		public $cleanup_obj;
+
+		public $sender_obj;
+
+		public $debug_obj;
 
 		/**
 		 * Whether the page is admin dashboard page.
@@ -176,12 +180,16 @@ if (!class_exists('AIO_WP_Security')) {
 			$base_prefix = $this->get_table_prefix();
 			define('AIOWPSEC_TBL_AUDIT_LOG', $base_prefix . 'aiowps_audit_log');
 			define('AIOWPSEC_TBL_DEBUG_LOG', $base_prefix . 'aiowps_debug_log');
-			define('AIOWSPEC_TBL_LOGGED_IN_USERS', $base_prefix . 'aiowps_logged_in_users');
+			define('AIOWPSEC_TBL_LOGGED_IN_USERS', $base_prefix . 'aiowps_logged_in_users');
 			define('AIOWPSEC_TBL_MESSAGE_STORE', $base_prefix . 'aiowps_message_store');
 		}
 
+		/**
+		 * Includes required files.
+		 *
+		 * @return void
+		 */
 		public function includes() {
-
 			// Load firewall, if it has not yet been loaded by this point
 			if (!defined('AIOWPSEC_FIREWALL_DONE')) {
 				$this->load_aio_firewall();
@@ -228,6 +236,11 @@ if (!class_exists('AIO_WP_Security')) {
 			include_once(AIO_WP_SECURITY_PATH.'/classes/wp-security-block-userini.php');
 			include_once(AIO_WP_SECURITY_PATH.'/classes/wp-security-block-wpconfig.php');
 			include_once(AIO_WP_SECURITY_PATH.'/classes/wp-security-block-muplugin.php');
+			include_once(AIO_WP_SECURITY_PATH.'/classes/wp-security-hibp.php');
+
+			include_once(AIO_WP_SECURITY_PATH.'/classes/wp-security-reporting.php');
+			include_once(AIO_WP_SECURITY_PATH.'/classes/wp-security-debug.php');
+			include_once(AIO_WP_SECURITY_PATH.'/classes/wp-security-sender-service.php');
 
 			// At this time, sometimes is_admin() can't be populated, It gives the error PHP Fatal error:  Uncaught Error: Class 'AIOWPSecurity_Admin_Init' not found.
 			// so we should not use is_admin() condition.
@@ -334,7 +347,7 @@ if (!class_exists('AIO_WP_Security')) {
 			do_action('aio_wp_security_before_template', $path, $template_file, $return_instead_of_echo, $extract_these);
 
 			if (!file_exists($template_file)) {
-				error_log("All In One WP Security: template not found: $template_file");
+				error_log("All-In-One Security: template not found: $template_file");
 				echo __('Error:', 'all-in-one-wp-security-and-firewall').' '.__('template not found', 'all-in-one-wp-security-and-firewall')." ($template_file)";
 			} else {
 				extract($extract_these);
@@ -395,7 +408,6 @@ if (!class_exists('AIO_WP_Security')) {
 			if (get_option('aiowpsec_db_version') != AIO_WP_SECURITY_DB_VERSION) {
 				require_once(AIO_WP_SECURITY_PATH.'/classes/wp-security-installer.php');
 				AIOWPSecurity_Installer::run_installer();
-				AIOWPSecurity_Installer::set_cron_tasks_upon_activation();
 				AIOWPSecurity_Utility_Htaccess::write_to_htaccess(false);
 
 				/**
@@ -429,9 +441,6 @@ if (!class_exists('AIO_WP_Security')) {
 		 */
 		public function plugins_loaded_handler() {
 			//Runs when plugins_loaded action gets fired
-			// Add filter for 'cron_schedules' must be run before $this->db_upgrade_handler()
-			// so, AIOWPSecurity_Cronjob_Handler __construct runs this filter so the object should be initialized here.
-			$this->cron_handler = new AIOWPSecurity_Cronjob_Handler();
 			// DB upgrade handler - run outside admin interface
 			$this->db_upgrade_handler();
 			$this->firewall_upgrade_handler();
@@ -459,11 +468,15 @@ if (!class_exists('AIO_WP_Security')) {
 		 */
 		public function wp_security_plugin_init() {
 			//Actions, filters, shortcodes goes here
+			// AIOWPSecurity_Cronjob_Handler __construct runs filter 'cron_schedules' so the object should be initialized here because it uses translations.
+			$this->cron_handler = new AIOWPSecurity_Cronjob_Handler();
 			$this->user_login_obj = new AIOWPSecurity_User_Login();//Do the user login operation tasks
 			$this->user_registration_obj = new AIOWPSecurity_User_Registration();//Do the user login operation tasks
 			$this->captcha_obj = new AIOWPSecurity_Captcha(); // Do the CAPTCHA tasks
 			$this->cleanup_obj = new AIOWPSecurity_Cleanup(); // Object to handle cleanup tasks
 			$this->scan_obj = new AIOWPSecurity_Scan();//Object to handle scan tasks
+			$this->sender_obj = new AIOWPSecurity_Sender_Service();//Object to handle sending emails
+			$this->debug_obj =new AIOWPSecurity_Debug();//Object to handle debug tasks
 			add_action('wp_footer', array($this, 'aiowps_footer_content'));
 
 			add_action('wp_login', array('AIOWPSecurity_User_Login', 'wp_login_action_handler'), 10, 2);
@@ -474,6 +487,7 @@ if (!class_exists('AIO_WP_Security')) {
 
 			new AIOWPSecurity_General_Init_Tasks();
 			new AIOWPSecurity_Comment();
+			new AIOWPSecurity_Reporting();
 
 			$this->redirect_user_after_force_logout();
 		}
@@ -581,9 +595,9 @@ if (!class_exists('AIO_WP_Security')) {
 		}
 
 		/**
-		 * Check whether current admin page is All In One WP Security admin page or not.
+		 * Check whether current admin page is All-In-One Security admin page or not.
 		 *
-		 * @return boolean True if All In One WP Security admin page, Otherwise false.
+		 * @return boolean True if All-In-One Security admin page, Otherwise false.
 		 */
 		public function is_aiowps_admin_page() {
 			if (isset($this->is_aiowps_admin_page)) {

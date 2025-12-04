@@ -1406,12 +1406,9 @@ function _load_textdomain_just_in_time( $domain ) {
  */
 function get_translations_for_domain( $domain ) {
 	global $l10n;
-	add_action('init', function($domain) {
-
-		if ( isset( $l10n[ $domain ] ) || ( _load_textdomain_just_in_time( $domain ) && isset( $l10n[ $domain ] ) ) ) {
-			return $l10n[ $domain ];
-		}
-	});
+	if ( isset( $l10n[ $domain ] ) || ( _load_textdomain_just_in_time( $domain ) && isset( $l10n[ $domain ] ) ) ) {
+		return $l10n[ $domain ];
+	}
 
 	static $noop_translations = null;
 	if ( null === $noop_translations ) {

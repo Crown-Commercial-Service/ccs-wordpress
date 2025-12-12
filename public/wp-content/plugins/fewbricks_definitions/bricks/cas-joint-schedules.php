@@ -56,8 +56,8 @@ class cas_joint_schedules extends project_brick {
                     'id' => ''),
                 'choices' => array(
                     'read_only'	=> 'Read only',
-                    'enter_detail'	=> 'You will need to enter details in this document',
-                    'enter_detail_optional'	=> 'If you use this schedule, you will need to enter details in this document',
+                    'enter_detail'	=> 'You must complete the relevant sections in this document',
+                    'enter_detail_optional'	=> 'If you use this document, you must complete the relevant sections',
                 ),
                 'required' => 1,
             ] ) )

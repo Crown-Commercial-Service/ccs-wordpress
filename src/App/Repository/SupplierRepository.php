@@ -115,6 +115,18 @@ class SupplierRepository extends AbstractRepository
         return $query->execute();
     }
 
+    public function updateOnLiveField($searchField, $searchValue, bool $onLive)
+    {
+       
+        $sql = 'UPDATE ' . $this->tableName . ' SET `on_live_frameworks` = :on_live_frameworks WHERE ' . $searchField . ' = :searchValue';
+
+        $query = $this->connection->prepare($sql);
+        $query->bindParam(':searchValue', $searchValue, \PDO::PARAM_STR);
+        $query->bindParam(':on_live_frameworks', $onLive, \PDO::PARAM_BOOL);
+
+        return $query->execute();
+    }
+
 
     /**
      * Bind PDO Values
@@ -178,7 +190,7 @@ class SupplierRepository extends AbstractRepository
 
         if (isset($databaseBindings['on_live_frameworks'])) {
             $onLiveFrameworks = $supplier->isOnLiveFrameworks();
-            $query->bindParam(':on_live_frameworks', $onLiveFrameworks, \PDO::PARAM_STR);
+            $query->bindParam(':on_live_frameworks', $onLiveFrameworks, \PDO::PARAM_BOOL);
         }
 
         if (isset($databaseBindings['crp_url'])) {

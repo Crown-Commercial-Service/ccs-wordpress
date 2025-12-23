@@ -28,7 +28,6 @@ class Import extends \WP_CLI_Command
 {
     private LockFactory $lockFactory;
     private ImportLogger $logger;
-    private DateTime $timer;
     private array $importCount = ['frameworks' => 0, 'lots' => 0, 'suppliers' => 0];
     private array $errorCount = ['frameworks' => 0, 'lots' => 0, 'suppliers' => 0];
 
@@ -52,7 +51,6 @@ class Import extends \WP_CLI_Command
         
         // Initialise logger and timer
         $this->logger = new ImportLogger();
-        $this->timer = new DateTime("now", new DateTimeZone('Europe/London')); 
 
         // Initialise resources
         $this->mdmApi = new MdmApi();
@@ -66,23 +64,50 @@ class Import extends \WP_CLI_Command
         $this->supplierSearchClient = new SupplierSearchClient();
     }
 
-    public function importSingle(array $args): void 
-    {
-        $rmNumber = $args[0] ?? null; 
-        if (!$rmNumber) {
-            $this->addError('RM number is required');
-            return;
-        }
+    public function importSingle(array $args): void {
+        $start_time = microtime(true);
         
+        $lock = $this->lockFactory->createLock('ccs-mdm-import-single');
+
+        if (!$lock->acquire()) {
+            $this->addErrorAndExit('Lock file is currently in use by another process, quitting script');
+        }
+
+        if (empty($args) || !isset($args[0]) || empty($args[0])) {
+            $this->addError('RM number is required');
+            exit;
+        } else {
+            $rmNumber = $args[0];
+        }
+
         WP_CLI::line("Starting single import for RM number: $rmNumber");
 
-        try {
+         try {
             $this->wordpressFrameworks = $this->syncText->getFrameworksFromWordPress();
             $this->wordpressLots = $this->syncText->getLotsFromWordPress();
         } catch (\Exception $e) {
             $this->addErrorAndExit("Process cannot complete without WordPress data. Error: {$e->getMessage()}");
         }
 
+        $this->single($rmNumber);
+
+        WP_CLI::success(sprintf('Import took %s seconds to run', round(microtime(true) - $start_time, 2)));
+        WP_CLI::line("Starting post-import tasks...");
+
+        $this->checkAllSuppliersIfOnLiveFrameworks();
+        $this->dbManager->updateFrameworkTitleInWordpress();
+        $this->dbManager->updateLotTitleInWordpress();
+
+        $this->printSummary();
+
+        $lock->release();
+
+        WP_CLI::success("Import completed for $rmNumber.");
+    }
+
+
+    private function single(string $rmNumber): void 
+    {   
         try {
             $framework = $this->mdmApi->getAgreement($rmNumber);
 
@@ -143,13 +168,6 @@ class Import extends \WP_CLI_Command
             $this->addError("Something went wrong while importing $rmNumber: " . $e->getMessage());
             return;
         }
-        
-        $this->checkAllSuppliersIfOnLiveFrameworks();
-        $this->dbManager->updateFrameworkTitleInWordpress();
-        $this->dbManager->updateLotTitleInWordpress();
-
-        $this->printSummary();
-        WP_CLI::success("Import completed for $rmNumber.");
     }
 
     /**
@@ -166,7 +184,7 @@ class Import extends \WP_CLI_Command
         $wordpressId = wp_insert_post([
             'post_title' => $entity->getTitle() ?: "Untitled $type - " . $entity->getSalesforceId(),
             'post_type'  => $type,
-            'post_status' => 'publish'
+            'post_status' => 'draft',
         ]);
 
         if (is_wp_error($wordpressId) || $wordpressId === 0) {

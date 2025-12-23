@@ -48,3 +48,5 @@ public/wp-content/themes/twentytwentyone/package-lock.json
 
 **/.DS_Store
 public/wp-content/plugins/ccs-custom/library/user-activity-log.txt
+
+public/wp-content/plugins/ccs-mdm/vendor

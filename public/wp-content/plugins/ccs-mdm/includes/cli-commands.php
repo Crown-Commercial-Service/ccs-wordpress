@@ -1,56 +1,48 @@
 <?php
+declare(strict_types=1);
+
 namespace CCS\MDMImport;
-use \Datetime;
-use \DateTimeZone;
 
-// Composer
-require __DIR__ . '/../../../../../vendor/autoload.php';
-
+use DateTime;
+use DateTimeZone;
 use App\Model\Framework;
-use App\Search\FrameworkSearchClient;
-use App\Search\SupplierSearchClient;
-use App\Services\Database\DatabaseConnection;
-use App\Services\Logger\ImportLogger;
-use App\Search\AbstractSearchClient;
-use \WP_CLI;
-
+use App\Model\Lot;
 use App\Model\LotSupplier;
 use App\Model\Supplier;
 use App\Repository\FrameworkRepository;
 use App\Repository\LotRepository;
 use App\Repository\LotSupplierRepository;
 use App\Repository\SupplierRepository;
+use App\Services\Database\DatabaseConnection;
+use App\Services\Logger\ImportLogger;
 use App\Services\MDM\MdmApi;
-use App\Services\Salesforce\SalesforceApi;
-use App\Services\OpGenie\OpGenieLogger;
-
+use App\Search\FrameworkSearchClient;
+use App\Search\SupplierSearchClient;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
+use WP_CLI;
 
-
-WP_CLI::add_command('mdm-import', 'CCS\MDMImport\Import');
-
+WP_CLI::add_command('mdm-import', Import::class);
 
 class Import extends \WP_CLI_Command
 {
-    protected $lockFactory;
+    private LockFactory $lockFactory;
+    private ImportLogger $logger;
+    private DateTime $timer;
+    private array $importCount = ['frameworks' => 0, 'lots' => 0, 'suppliers' => 0];
+    private array $errorCount = ['frameworks' => 0, 'lots' => 0, 'suppliers' => 0];
 
-    protected $logger;
-    protected $timer;
-    protected $importCount;
-    protected $errorCount;
-
-    protected $mdmApi;
-    protected $dbManager;
-
-    protected $frameworkRepository;
-    protected $lotRepository;
-    protected $supplierRepository;
-    protected $lotSupplierRepository;
-    protected $wordpressFrameworks;
-    protected $wordpressLots;
-    protected $frameworkSearchClient;
-    protected $supplierSearchClient;
+    private MdmApi $mdmApi;
+    private dbManager $dbManager;
+    private SyncText $syncText;
+    private FrameworkRepository $frameworkRepository;
+    private LotRepository $lotRepository;
+    private SupplierRepository $supplierRepository;
+    private LotSupplierRepository $lotSupplierRepository;
+    private FrameworkSearchClient $frameworkSearchClient;
+    private SupplierSearchClient $supplierSearchClient;
+    private array $wordpressFrameworks = [];
+    private array $wordpressLots = [];
 
     public function __construct()
     {
@@ -61,19 +53,10 @@ class Import extends \WP_CLI_Command
         // Initialise logger and timer
         $this->logger = new ImportLogger();
         $this->timer = new DateTime("now", new DateTimeZone('Europe/London')); 
-        $this->importCount = [
-            'frameworks' => 0,
-            'lots'       => 0,
-            'suppliers'  => 0
-        ];
-        $this->errorCount = [
-            'frameworks' => 0,
-            'lots'       => 0,
-            'suppliers'  => 0
-        ];
 
         // Initialise resources
         $this->mdmApi = new MdmApi();
+        $this->syncText = new SyncText();
         $this->frameworkRepository = new FrameworkRepository();
         $this->dbManager = new dbManager(new DatabaseConnection());
         $this->lotRepository = new LotRepository();
@@ -83,50 +66,44 @@ class Import extends \WP_CLI_Command
         $this->supplierSearchClient = new SupplierSearchClient();
     }
 
-    
-    public function importSingle(array $args) {
-
-        $rm_number = $args[0] ?? null; 
-        if (!$rm_number) {
+    public function importSingle(array $args): void 
+    {
+        $rmNumber = $args[0] ?? null; 
+        if (!$rmNumber) {
             $this->addError('RM number is required');
+            return;
         }
         
-       print "Starting single import for RM number: $rm_number \n";
+        WP_CLI::line("Starting single import for RM number: $rmNumber");
 
         try {
-            $syncText = new SyncText();
-            $this->wordpressFrameworks = $syncText->getFrameworksFromWordPress();
-            $this->wordpressLots = $syncText->getLotsFromWordPress();
+            $this->wordpressFrameworks = $this->syncText->getFrameworksFromWordPress();
+            $this->wordpressLots = $this->syncText->getLotsFromWordPress();
         } catch (\Exception $e) {
-            $this->addError('Error fetching existing frameworks and lots from Wordpress. Error: ' . $e->getMessage());
-            $this->addError('Process can not complete without Framework and Lot data from Wordpress');
-            die('Process can not complete without Framework and Lot data from Wordpress');
+            $this->addErrorAndExit("Process cannot complete without WordPress data. Error: {$e->getMessage()}");
         }
 
-        $framework = null;
-
         try {
-            // Dealing with Agreement
-            $framework = $this->mdmApi->getAgreement($rm_number);
-            // print_r($framework);
+            $framework = $this->mdmApi->getAgreement($rmNumber);
+
+            if (!$framework?->getSalesforceId()) {
+                $this->addError("Framework data for $rmNumber is invalid or missing Salesforce ID.");
+                return;
+            }
 
             $this->frameworkRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $framework->getSalesforceId(), $framework);
             $framework = $this->frameworkRepository->findById($framework->getSalesforceId(), 'salesforce_id');
-            $this->createFrameworkInWordpressIfNeeded($framework);
+            $this->ensureWordPressPostExists($framework, 'framework');
 
-            // Dealing with Lots
             $lots = $this->mdmApi->getAgreementLots($framework->getSalesforceId());
             $this->checkAndDeleteLots($lots, $framework);
-            foreach ($lots as $lot) {
 
-                //wordpress id could be null 
+            foreach ($lots as $lot) {
                 $lot->setWordpressId($this->dbManager->getLotWordpressIdBySalesforceId($lot->getSalesforceId()));
                 $this->lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $lot->getSalesforceId(), $lot);
                 $lot = $this->lotRepository->findById($lot->getSalesforceId(), 'salesforce_id');
-                $this->createLotInWordpressIfNeeded($lot, $this->wordpressLots);
+                $this->ensureWordPressPostExists($lot, 'lot');
 
-
-                // Dealing with Lot Suppliers
                 if ($lot->isHideSuppliers()) {
                     $this->lotSupplierRepository->deleteById($lot->getSalesforceId(), 'lot_id');
                     continue;
@@ -136,20 +113,23 @@ class Import extends \WP_CLI_Command
                 $this->checkAndDeleteSuppliers($suppliers, $lot->getSalesforceId());
 
                 foreach ($suppliers as $supplier) {
+                    if (empty($supplier->getSalesforceId())) {
+                        $this->addError("Missing Salesforce ID for supplier on lot {$lot->getSalesforceId()}", 'suppliers');
+                        continue;
+                    }
+
                     $this->supplierRepository->createOrUpdateExcludingLiveFrameworkField('salesforce_id', $supplier->getSalesforceId(), $supplier);
                     
                     $lotSupplier = $this->lotSupplierRepository->findByLotIdAndSupplierId($lot->getSalesforceId(), $supplier->getSalesforceId());
 
-                    if (empty($lotSupplier)) {
-                        $lotSupplier = new LotSupplier([
+                    if (!$lotSupplier) {
+                        $this->lotSupplierRepository->create(new LotSupplier([
                             'lot_id'        => $lot->getSalesforceId(),
                             'supplier_id'   => $supplier->getSalesforceId(),
                             'contact_name'  => $supplier->getContactName(),
                             'contact_email' => $supplier->getContactEmail(),
                             'trading_name'  => $supplier->getTradingName(),
-                        ]);
-
-                        $this->lotSupplierRepository->create($lotSupplier);
+                        ]));
                     } else {
                         $lotSupplier->setContactName($supplier->getContactName())
                                     ->setContactEmail($supplier->getContactEmail())
@@ -157,201 +137,115 @@ class Import extends \WP_CLI_Command
                         
                         $this->lotSupplierRepository->update('id', $lotSupplier->getId(), $lotSupplier);
                     }
-
                 }
             }
         } catch (\Exception $e) {
-            $this->addError("Something went wrong while importing $rm_number" . $e->getMessage(), '');
+            $this->addError("Something went wrong while importing $rmNumber: " . $e->getMessage());
             return;
         }
         
-        // $this->updateFrameworkSearchIndexWithSingleFramework($framework);
         $this->checkAllSuppliersIfOnLiveFrameworks();
-        // $this->updateSupplierSearchIndex();
-        
         $this->dbManager->updateFrameworkTitleInWordpress();
         $this->dbManager->updateLotTitleInWordpress();
 
         $this->printSummary();
-        print "I am done bro\n";
+        WP_CLI::success("Import completed for $rmNumber.");
     }
 
-    private function createFrameworkInWordpressIfNeeded($framework){
-        if (empty($framework->getWordpressId())){
-            $wordpressId = wp_insert_post(array(
-                'post_title' => $framework->getTitle(),
-                'post_type' => 'framework'
-            ));
-
-            update_field('framework_id', $framework->getSalesforceId(), $wordpressId);
-
-            WP_CLI::success('Created Framework in Wordpress.');
-            $framework->setWordpressId($wordpressId);
-            $this->frameworkRepository->update('salesforce_id', $framework->getSalesforceId(), $framework, true);
+    /**
+     * Helper to handle WordPress post creation for both Frameworks and Lots.
+     */
+    private function ensureWordPressPostExists(object $entity, string $type): void
+    {
+        if ($entity->getWordpressId()) {
+            return;
         }
-    }
 
-    private function createLotInWordpressIfNeeded($lot){
-        if (empty($lot->getWordpressId())) {
-            $wordpressId = wp_insert_post(array(
-                'post_title' => $lot->getTitle(),
-                'post_type' => 'lot'
-            ));
-            update_field('lot_id', $lot->getSalesforceId(), $wordpressId);
+        $metaKey = $type === 'framework' ? 'framework_id' : 'lot_id';
+        
+        $wordpressId = wp_insert_post([
+            'post_title' => $entity->getTitle() ?: "Untitled $type - " . $entity->getSalesforceId(),
+            'post_type'  => $type,
+            'post_status' => 'publish'
+        ]);
 
-            WP_CLI::success('Created Lot in Wordpress.');
-            $lot->setWordpressId($wordpressId);
-            $this->lotRepository->update('salesforce_id', $lot->getSalesforceId(), $lot, true);
+        if (is_wp_error($wordpressId) || $wordpressId === 0) {
+            $this->addError("Failed to create WordPress post for $type: " . $entity->getSalesforceId());
+            return;
         }
+
+        update_field($metaKey, $entity->getSalesforceId(), $wordpressId);
+        $entity->setWordpressId($wordpressId);
+
+        $repository = $type === 'framework' ? $this->frameworkRepository : $this->lotRepository;
+        $repository->update('salesforce_id', $entity->getSalesforceId(), $entity, true);
+        
+        WP_CLI::success("Created $type in WordPress (ID: $wordpressId).");
     }
 
-    private function checkAndDeleteLots($lots, $framework) {
+    public function checkAndDeleteLots(array $lots, Framework $framework): void 
+    {
+        $lotIdsFromAPI = array_map(fn($lot) => $lot->getSalesforceId(), $lots);
+        $localLotIds = (array) $this->dbManager->getLotSalesforceIdByFrameworkId($framework->getSalesforceId());
 
-        $lotIdsFromAPI = array_map(fn($eachLot) => $eachLot->getSalesforceId(), $lots);
-        $localLotId = $this->dbManager->getLotSalesforceIdByFrameworkId($framework->getSalesforceId());
-
-        $lotsToDelete = array_diff( (array) $localLotId, $lotIdsFromAPI);
-
-        foreach ($lotsToDelete as $lotToDelete){
-
-            $this->logger->info("Deleting lot with SF ID: $lotToDelete from $framework->getRmNumber()");
-
+        foreach (array_diff($localLotIds, $lotIdsFromAPI) as $lotToDelete) {
+            $this->logger->info("Deleting lot: $lotToDelete from {$framework->getRmNumber()}");
             $this->lotRepository->delete($lotToDelete);
             $this->dbManager->deleteLotPostInWordpress($this->dbManager->getLotWordpressIdBySalesforceId($lotToDelete));
-            $this->addSuccess('Lot' . $lotToDelete . ' deleted.');
+            $this->addSuccess("Lot $lotToDelete deleted.");
         }
     }
 
-    private function checkAndDeleteSuppliers($suppliers, $lotId){
-        $supplierIdsFromAPI = array_map(fn($eachSupplier) => $eachSupplier->getSalesforceId(), $suppliers);
-        $localLotSuppliersId = $this->dbManager->getLotSuppliersSalesforceIdByLotId($lotId);
+    protected function checkAndDeleteSuppliers(array $suppliers, string $lotId): void
+    {
+        $supplierIdsFromAPI = array_map(fn($s) => $s->getSalesforceId(), $suppliers);
+        $localSuppliers = (array) $this->dbManager->getLotSuppliersSalesforceIdByLotId($lotId);
 
-        $suppliersToDelete = array_diff( (array) $localLotSuppliersId, $supplierIdsFromAPI);
-
-
-        foreach ($suppliersToDelete as $supplierToDelete){
+        foreach (array_diff($localSuppliers, $supplierIdsFromAPI) as $supplierToDelete) {
             $this->lotSupplierRepository->deleteByLotIdAndSupplierId($lotId, $supplierToDelete);
-            $this->addSuccess('Lot supplier ' . $supplierToDelete . ' deleted.');
+            $this->addSuccess("Lot supplier $supplierToDelete deleted.");
         }
     }
 
-    private function checkAllSuppliersIfOnLiveFrameworks() {
-        $suppliers = $this->supplierRepository->findAll();
-
-        foreach ($suppliers as $supplier) {
-            $liveFrameworksCount = $this->frameworkRepository->countAllSupplierLiveFrameworks($supplier->getSalesforceId());
-            $this->supplierRepository->updateOnLiveField('salesforce_id', $supplier->getSalesforceId(), $liveFrameworksCount > 0);
+    protected function checkAllSuppliersIfOnLiveFrameworks(): void 
+    {
+        foreach ($this->supplierRepository->findAll() as $supplier) {
+            $count = $this->frameworkRepository->countAllSupplierLiveFrameworks($supplier->getSalesforceId());
+            $this->supplierRepository->updateOnLiveField('salesforce_id', $supplier->getSalesforceId(), $count > 0);
         }
-
-        return;
     }
 
-    private function updateFrameworkSearchIndexWithSingleFramework($framework) {
-        $lots = $this->lotRepository->findAllById($framework->getSalesforceId(), 'framework_id') ?? [];
-        $this->frameworkSearchClient->createOrUpdateDocument($framework, $lots);
-    }
-
-    public function updateSupplierSearchIndex() {
-
-        $suppliers = $this->supplierRepository->findAll();
-        $count = 0;
-
-        foreach ($suppliers as $supplier) {
-
-            $liveFrameworks = $this->frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
-            $dpsFrameworkCount = 0;
-            $totalFrameworkCount = 0;
-
-            if (!empty($liveFrameworks)) {
-                $totalFrameworkCount = count($liveFrameworks);
-
-                foreach ($liveFrameworks as $liveFramework) {
-                    $lots = $this->lotRepository->findAllByFrameworkIdSupplierId($liveFramework->getSalesforceId(), $supplier->getSalesforceId());
-                    $liveFramework->setLots($lots);
-
-                    if ($liveFramework->getTerms() == 'DPS' || $liveFramework->getType() == 'Dynamic purchasing system' ){
-                        $dpsFrameworkCount++;
-                    }
-                }
-            }
-
-            $lotSuppliers = $this->lotSupplierRepository->findAllById($supplier->getSalesforceId(), 'supplier_id');
-            $alternativeTradingNames = [];
-
-            if (!empty($lotSuppliers)) {
-                foreach ($lotSuppliers as $lotSupplier) {
-                    if (!empty($lotSupplier->getTradingName())) {
-                        $alternativeTradingNames[] = $lotSupplier->getTradingName();
-                    }
-                }
-
-                if (!empty($supplier->getTradingName())) {
-                    $alternativeTradingNames[] = $supplier->getTradingName();
-                }
-
-                $supplier->setAlternativeTradingNames($alternativeTradingNames);
-            }
-
-
-            if (!$liveFrameworks || $dpsFrameworkCount == $totalFrameworkCount ) {
-                $this->supplierSearchClient->removeDocument($supplier);
-            } else {
-                $this->supplierSearchClient->createOrUpdateDocument($supplier, $liveFrameworks);
-            }
-
-            $count++;
-
-            if ($count % 50 == 0) {
-                WP_CLI::success($count . ' Suppliers imported...');
-            }
-
-        }
-
-        WP_CLI::success('Operation completed successfully.');
-
-        return;
-    }
-
-    private function addError($message, $type = null) {
+    private function addError(string $message, ?string $type = null): void 
+    {
         $this->logger->error($message);
-        print "$message \n";
-
+        WP_CLI::line("Error: $message");
         if ($type) {
             $this->errorCount[$type]++;
         }
     }
 
-    private function addErrorAndExit($message) {
+    private function addErrorAndExit(string $message): void 
+    {
         $this->logger->error($message);
-
-        // Passing true to WP_CLI::error exits the script
         WP_CLI::error($message, true);
     }
 
-    private function addSuccess($message, $type = null, $log = false, $break = null) {
-        $break ? WP_CLI::line(): null;
-
-        // WP_CLI::success($message . ' Estimated time remaining: ' . $this->timeRemaining . ' minutes.');
-
+    private function addSuccess(string $message, ?string $type = null, bool $log = false): void 
+    {
         if ($log) {
             $this->logger->info($message);
         }
-
-
         if ($type) {
             $this->importCount[$type]++;
         }
-
     }
 
-    private function printSummary(){
-        echo "=====Summary=====\n";
+    private function printSummary(): void
+    {
+        WP_CLI::line("===== Summary =====");
         $this->frameworkRepository->printImportCount();
         $this->lotRepository->printImportCount();
         $this->lotSupplierRepository->printImportCount();
-        echo "=================\n";
-
+        WP_CLI::line("===================");
     }
 }
-
-

@@ -62,11 +62,14 @@ class ImportTest extends TestCase
     protected $loggerMock;
     protected $frameworkSearchClientMock;
     protected $supplierSearchClientMock;
+    protected $lockFactoryMock;
+    protected $lockMock;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        // 1. Initialize all mocks
         $this->mdmApiMock = Mockery::mock('App\Services\MDM\MdmApi');
         $this->frameworkRepoMock = Mockery::mock('App\Repository\FrameworkRepository');
         $this->lotRepoMock = Mockery::mock('App\Repository\LotRepository');
@@ -77,12 +80,14 @@ class ImportTest extends TestCase
         $this->loggerMock = Mockery::mock('App\Services\Logger\ImportLogger');
         $this->frameworkSearchClientMock = Mockery::mock('App\Search\FrameworkSearchClient');
         $this->supplierSearchClientMock = Mockery::mock('App\Search\SupplierSearchClient');
+        $this->lockFactoryMock = Mockery::mock('Symfony\Component\Lock\LockFactory');
+        $this->lockMock = Mockery::mock('Symfony\Component\Lock\LockInterface');
 
-        // Instantiate Import without constructor to avoid real dependencies
+        // 2. Instantiate without constructor to avoid the "FlockStore" error
         $reflection = new ReflectionClass(Import::class);
         $this->import = $reflection->newInstanceWithoutConstructor();
 
-        // Inject mocks
+        // 3. Inject ALL properties (only once)
         $this->setProtectedProperty('mdmApi', $this->mdmApiMock);
         $this->setProtectedProperty('frameworkRepository', $this->frameworkRepoMock);
         $this->setProtectedProperty('lotRepository', $this->lotRepoMock);
@@ -93,9 +98,15 @@ class ImportTest extends TestCase
         $this->setProtectedProperty('logger', $this->loggerMock);
         $this->setProtectedProperty('frameworkSearchClient', $this->frameworkSearchClientMock);
         $this->setProtectedProperty('supplierSearchClient', $this->supplierSearchClientMock);
+        $this->setProtectedProperty('lockFactory', $this->lockFactoryMock);
         
         $this->setProtectedProperty('importCount', ['frameworks' => 0, 'lots' => 0, 'suppliers' => 0]);
         $this->setProtectedProperty('errorCount', ['frameworks' => 0, 'lots' => 0, 'suppliers' => 0]);
+
+        // 4. Set up default Lock behavior
+        $this->lockFactoryMock->shouldReceive('createLock')->andReturn($this->lockMock);
+        $this->lockMock->shouldReceive('acquire')->andReturn(true);
+        $this->lockMock->shouldReceive('release')->byDefault();
     }
 
     protected function tearDown(): void
@@ -382,14 +393,26 @@ class ImportTest extends TestCase
             ->with(Mockery::pattern('/Something went wrong while importing RM-FAIL/'))
             ->once();
 
+        //These are called during the post-import cleanup tasks
+        $this->supplierRepoMock->shouldReceive('findAll')->andReturn([]);
+        $this->dbManagerMock->shouldReceive('updateFrameworkTitleInWordpress');
+        $this->dbManagerMock->shouldReceive('updateLotTitleInWordpress');
+        $this->frameworkRepoMock->shouldReceive('printImportCount');
+        $this->lotRepoMock->shouldReceive('printImportCount');
+        $this->lotSupplierRepoMock->shouldReceive('printImportCount');
+
         ob_start();
-        $this->import->importSingle([$rmNumber]);
-        ob_end_clean();
+        try {
+            $this->import->importSingle([$rmNumber]);
+        } finally {
+            // This ensures the buffer is closed even if Mockery throws an exception
+            ob_end_clean();
+        }
 
         $this->assertTrue(true);
     }
 
-    public function testImportSingleFailsOnInvalidFrameworkData()
+   public function testImportSingleFailsOnInvalidFrameworkData()
     {
         $rmNumber = 'RM_INVALID';
         
@@ -404,9 +427,20 @@ class ImportTest extends TestCase
         $this->syncTextMock->shouldReceive('getFrameworksFromWordPress')->andReturn([]);
         $this->syncTextMock->shouldReceive('getLotsFromWordPress')->andReturn([]);
 
+        //Expectations for cleanup tasks
+        $this->supplierRepoMock->shouldReceive('findAll')->andReturn([]);
+        $this->dbManagerMock->shouldReceive('updateFrameworkTitleInWordpress');
+        $this->dbManagerMock->shouldReceive('updateLotTitleInWordpress');
+        $this->frameworkRepoMock->shouldReceive('printImportCount');
+        $this->lotRepoMock->shouldReceive('printImportCount');
+        $this->lotSupplierRepoMock->shouldReceive('printImportCount');
+
         ob_start();
-        $this->import->importSingle([$rmNumber]);
-        ob_end_clean();
+        try {
+            $this->import->importSingle([$rmNumber]);
+        } finally {
+            ob_end_clean();
+        }
 
         $this->assertTrue(true);
     }

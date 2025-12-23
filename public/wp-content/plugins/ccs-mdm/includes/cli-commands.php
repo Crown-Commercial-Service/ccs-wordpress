@@ -45,11 +45,23 @@ class Import extends \WP_CLI_Command
 
     public function __construct()
     {
+        $this->initializeResources();
+    }
+
+    /**
+    * Logic separated so it can be called explicitly if __construct is bypassed
+    */
+    private function initializeResources(): void
+    {
+        if (isset($this->lockFactory)) {
+            return;
+        }
+
         // Initialise lock
         $store = new FlockStore(sys_get_temp_dir());
         $this->lockFactory = new LockFactory($store);
         
-        // Initialise logger and timer
+        // Initialise logger
         $this->logger = new ImportLogger();
 
         // Initialise resources
@@ -65,6 +77,7 @@ class Import extends \WP_CLI_Command
     }
 
     public function importSingle(array $args): void {
+        $this->initializeResources(); // Safety check for tests
         $start_time = microtime(true);
         
         $lock = $this->lockFactory->createLock('ccs-mdm-import-single');
@@ -73,11 +86,10 @@ class Import extends \WP_CLI_Command
             $this->addErrorAndExit('Lock file is currently in use by another process, quitting script');
         }
 
-        if (empty($args) || !isset($args[0]) || empty($args[0])) {
-            $this->addError('RM number is required');
-            exit;
-        } else {
-            $rmNumber = $args[0];
+        $rmNumber = $args[0] ?? null;
+        if (empty($rmNumber)) {
+            WP_CLI::error('RM number is required');
+            return; 
         }
 
         WP_CLI::line("Starting single import for RM number: $rmNumber");

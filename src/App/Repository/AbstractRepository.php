@@ -176,7 +176,7 @@ abstract class AbstractRepository implements RepositoryInterface
      *
      * @param string $fieldName
      * @param $id
-     * @return \App\Model\Framnework|\App\Model\Lot|\App\Model\Supplier|bool
+     * @return \App\Model\Framework|\App\Model\Lot|\App\Model\Supplier|bool
      */
     public function findById($id, $fieldName = 'id')
     {

@@ -428,7 +428,8 @@ class Supplier extends AbstractModel
         ];
     }
 
-    public function setData($data) {
+    public function setData($data)
+    {
         $mappings = YamlLoader::loadMappings('MDM_supplier');
 
         foreach ($mappings as $property => $apiField) {

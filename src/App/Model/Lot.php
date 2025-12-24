@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Model;
-use App\Utils\YamlLoader;
-use \Datetime;
 
+use App\Utils\YamlLoader;
+use Datetime;
 use App\Traits\SalesforceMappingTrait;
 
 class Lot extends AbstractModel
@@ -206,7 +206,7 @@ class Lot extends AbstractModel
             return null;
         }
 
-        return is_string($this->expiryDate)? new DateTime($this->expiryDate) : $this->expiryDate;
+        return is_string($this->expiryDate) ? new DateTime($this->expiryDate) : $this->expiryDate;
     }
 
     /**

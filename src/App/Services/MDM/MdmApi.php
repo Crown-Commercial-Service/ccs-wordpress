@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\MDM;
@@ -19,9 +20,9 @@ class MdmApi
         $this->baseURL = getenv('MDM_API_URL');
         $this->client = new \GuzzleHttp\Client([]);
     }
-    
+
     // public function getAgreements(){
-        
+
     //     $url =  "https://prod-43.uksouth.logic.azure.com/workflows/7559aad54efd4b8fa422d811359ae08f/triggers/manual/paths/invoke/[web].[vw_Framework]/?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=$this->apiKey&filter=CreateDraftWebPage%20eq%20%271%27%20and%20(status%20eq%20%27Expired%20-%20Data%20Still%20Received%27%20or%20status%20eq%20%27Live%27)";
 
     //     $this->response = $this->client->request('GET', $url);
@@ -32,7 +33,8 @@ class MdmApi
     //     return $framework;
     // }
 
-    public function getAgreement(string $agreementNumber){
+    public function getAgreement(string $agreementNumber)
+    {
 
         $filter = "FrameworkNumber eq '$agreementNumber'";
         $response = $this->requestResource('[vw_Framework]', ['filter' => $filter]);
@@ -43,7 +45,8 @@ class MdmApi
         return $framework;
     }
 
-    public function getAgreementLots(string $salesforceAgreementId){
+    public function getAgreementLots(string $salesforceAgreementId)
+    {
         $filter = "FrameworkSalesforceID eq '$salesforceAgreementId'";
         $response = $this->requestResource('[vw_FrameworkLots]', ['filter' => $filter]);
 
@@ -58,7 +61,8 @@ class MdmApi
         return $lots;
     }
 
-    public function getLotSuppliers(string $salesforceLotId){
+    public function getLotSuppliers(string $salesforceLotId)
+    {
         $filter = "FrameworkLotSalesforceID eq '$salesforceLotId'";
         $response = $this->requestResource('[vw_FrameworkLotSupplierContacts]', ['filter' => $filter]);
 
@@ -74,17 +78,17 @@ class MdmApi
     }
 
     private function requestResource(string $resourcePath, array $extraQuery = [])
-        {
-            $defaultQuery = [
-                'api-version' => '2016-10-01',
-                'sp'          => '/triggers/manual/run',
-                'sv'          => '1.0',
-                'sig'         => $this->apiKey,
-            ];
+    {
+        $defaultQuery = [
+            'api-version' => '2016-10-01',
+            'sp'          => '/triggers/manual/run',
+            'sv'          => '1.0',
+            'sig'         => $this->apiKey,
+        ];
 
-            $resourcePath = trim($resourcePath, '/') . '/';
-            $query = array_merge($defaultQuery, $extraQuery);
-            $url = rtrim($this->baseURL, '/') . $resourcePath . '?' . http_build_query($query);
+        $resourcePath = trim($resourcePath, '/') . '/';
+        $query = array_merge($defaultQuery, $extraQuery);
+        $url = rtrim($this->baseURL, '/') . $resourcePath . '?' . http_build_query($query);
 
         try {
             $response = $this->client->request('GET', $url);
@@ -97,12 +101,12 @@ class MdmApi
         }
 
 
-            if ($response->getStatusCode() != 200) {
-                throw new \Exception('Response has no content. Response status code: ' . $response->getStatusCode() . ' Response Error Message: ' . $response->getReasonPhrase());
-            }
-
-            $contents = $response->getBody()->getContents();
-
-            return json_decode($contents, true);
+        if ($response->getStatusCode() != 200) {
+            throw new \Exception('Response has no content. Response status code: ' . $response->getStatusCode() . ' Response Error Message: ' . $response->getReasonPhrase());
         }
+
+        $contents = $response->getBody()->getContents();
+
+        return json_decode($contents, true);
+    }
 }

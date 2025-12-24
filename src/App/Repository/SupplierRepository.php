@@ -117,7 +117,7 @@ class SupplierRepository extends AbstractRepository
 
     public function updateOnLiveField($searchField, $searchValue, bool $onLive)
     {
-       
+
         $sql = 'UPDATE ' . $this->tableName . ' SET `on_live_frameworks` = :on_live_frameworks WHERE ' . $searchField . ' = :searchValue';
 
         $query = $this->connection->prepare($sql);

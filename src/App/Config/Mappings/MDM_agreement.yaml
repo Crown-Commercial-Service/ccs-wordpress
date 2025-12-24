@@ -1,0 +1,20 @@
+
+
+rmNumber: FrameworkNumber
+salesforceId: SalesforceID
+title: FrameworkName
+terms: FrameworkTerms
+pillar: CategoryGroup
+category: Category
+status: Status
+regulation: RegulationUsed
+regulationType: AgreementType
+startDate: FrameworkStartDate
+endDate: FrameworkEndDate
+tendersOpenDate: TendersOpenDate
+tendersCloseDate: TenderClosingDate
+expectedLiveDate: FrameworkLiveTargetDate
+expectedAwardDate: AwardTargetDate
+publishOnWebsite: DontPublishFrameworkOnWebsite
+createDraftPage: CreateDraftWebPage
+policyCompliance: tempPolicyCompliance

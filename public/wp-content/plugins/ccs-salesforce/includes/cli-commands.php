@@ -551,18 +551,18 @@ class Import
                     $lotSupplier->setTradingName($tradingName);
                 }
 
-                if ($guarantorId = $this->salesforceApi->getLotSuppliersGuarantor($lotSalesforceId,$supplier->getSalesforceId())){
-                    $this->addSuccess('Framework supplier Guarantor found.');
-                    $lotSupplier->setGuarantorId($guarantorId);
+                // if ($guarantorId = $this->salesforceApi->getLotSuppliersGuarantor($lotSalesforceId,$supplier->getSalesforceId())){
+                //     $this->addSuccess('Framework supplier Guarantor found.');
+                //     $lotSupplier->setGuarantorId($guarantorId);
 
-                    $guarantorSupplier = $this->salesforceApi->getSupplier($lotSupplier->getGuarantorId());
+                //     $guarantorSupplier = $this->salesforceApi->getSupplier($lotSupplier->getGuarantorId());
 
-                    if (!$this->supplierRepository->createOrUpdateExcludingLiveFrameworkField('salesforce_id', $guarantorSupplier->getSalesforceId(), $guarantorSupplier)) {
-                        $this->addError('Guarantor Supplier ' . $guarantorSupplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
-                    }else{
-                        $this->addSuccess('Guarantor Supplier imported.');
-                    }
-                }
+                //     if (!$this->supplierRepository->createOrUpdateExcludingLiveFrameworkField('salesforce_id', $guarantorSupplier->getSalesforceId(), $guarantorSupplier)) {
+                //         $this->addError('Guarantor Supplier ' . $guarantorSupplier->getSalesforceId() . ' not imported. An error occurred running the createOrUpdateExcludingLiveFrameworkField method', 'suppliers');
+                //     }else{
+                //         $this->addSuccess('Guarantor Supplier imported.');
+                //     }
+                // }
 
                 $this->addSuccess('Searching for contact details for Lot: ' . $lotSupplier->getLotId() . ' and Supplier: ' . $lotSupplier->getSupplierId());
 

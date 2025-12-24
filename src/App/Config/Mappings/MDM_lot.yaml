@@ -1,0 +1,8 @@
+salesforceId: SalesforceID
+frameworkId: FrameworkSalesforceID
+lotNumber: LotNumber
+title: Title
+status: Status
+expiryDate: ExpiryDate
+hideSuppliers: HideLotSuppliersFromWebsite
+hideLot: HideThisLotFromWebsite

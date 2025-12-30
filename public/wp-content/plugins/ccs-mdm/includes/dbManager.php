@@ -21,7 +21,7 @@ class dbManager {
         $sqlData = $query->fetch(\PDO::FETCH_ASSOC);
 
         if(!empty($sqlData['wordpress_id'])) {
-            $lotWordpressId = $sqlData['wordpress_id'];
+            $lotWordpressId = (string) $sqlData['wordpress_id'];
         }
 
         return $lotWordpressId;

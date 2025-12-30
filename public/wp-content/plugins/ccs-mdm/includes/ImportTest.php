@@ -5,7 +5,7 @@ namespace CCS\MDMImport;
 // Mock functions in the namespace of the class under test
 if (!function_exists('CCS\MDMImport\wp_insert_post')) {
     function wp_insert_post($args) {
-        return 12345;
+        return '12345';
     }
 }
 
@@ -138,7 +138,7 @@ class ImportTest extends TestCase
     $framework->shouldReceive('getSalesforceId')->andReturn($sfId);
     $framework->shouldReceive('getTitle')->andReturn('Test Framework');
     $framework->shouldReceive('getWordpressId')->andReturn(null);
-    $framework->shouldReceive('setWordpressId')->with(12345);
+    $framework->shouldReceive('setWordpressId')->with('12345');
 
     $this->mdmApiMock->shouldReceive('getAgreement')->with($rmNumber)->once()->andReturn($framework);
 
@@ -328,7 +328,7 @@ class ImportTest extends TestCase
 
         $framework = Mockery::mock(Framework::class);
         $framework->shouldReceive('getSalesforceId')->andReturn($sfId);
-        $framework->shouldReceive('getWordpressId')->andReturn(100);
+        $framework->shouldReceive('getWordpressId')->andReturn('100');
         $framework->shouldReceive('getTitle')->andReturn('Test Framework');
         
         $this->mdmApiMock->shouldReceive('getAgreement')->with($rmNumber)->andReturn($framework);
@@ -349,7 +349,7 @@ class ImportTest extends TestCase
         
         // 3. Repository and DB Expectations
         $this->dbManagerMock->shouldReceive('getLotSalesforceIdByFrameworkId')->andReturn([]);
-        $this->dbManagerMock->shouldReceive('getLotWordpressIdBySalesforceId')->andReturn(200);
+        $this->dbManagerMock->shouldReceive('getLotWordpressIdBySalesforceId')->andReturn('200');
         $this->lotRepoMock->shouldReceive('createOrUpdateExcludingWordpressFields')->once();
         $this->lotRepoMock->shouldReceive('findById')->andReturn($lot);
 

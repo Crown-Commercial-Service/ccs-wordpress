@@ -762,7 +762,7 @@ class Import
         WP_CLI::success('Created Framework in Wordpress.');
 
         //Update the Framework model with the new Wordpress ID
-        $framework->setWordpressId($wordpressId);
+        $framework->setWordpressId((string) $wordpressId);
 
         // Save the Framework back into the custom database.
         $this->frameworkRepository->update('salesforce_id', $framework->getSalesforceId(), $framework, true);
@@ -785,7 +785,7 @@ class Import
         WP_CLI::success('Created Lot in Wordpress.');
 
         //Update the Lot model with the new Wordpress ID
-        $lot->setWordpressId($wordpressId);
+        $lot->setWordpressId((string) $wordpressId);
 
         // Save the Lot back into the custom database.
         $this->lotRepository->update('salesforce_id', $lot->getSalesforceId(), $lot, true);
@@ -1089,7 +1089,7 @@ class Import
         $sqlData = $query->fetch(\PDO::FETCH_ASSOC);
 
         if(!empty($sqlData['wordpress_id'])) {
-            $lotWordpressId = $sqlData['wordpress_id'];
+            $lotWordpressId = (string) $sqlData['wordpress_id'];
         }
 
         return $lotWordpressId;

@@ -205,7 +205,7 @@ class Import extends \WP_CLI_Command
         }
 
         update_field($metaKey, $entity->getSalesforceId(), $wordpressId);
-        $entity->setWordpressId($wordpressId);
+        $entity->setWordpressId((string) $wordpressId);
 
         $repository = $type === 'framework' ? $this->frameworkRepository : $this->lotRepository;
         $repository->update('salesforce_id', $entity->getSalesforceId(), $entity, true);

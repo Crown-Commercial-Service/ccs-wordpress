@@ -21,17 +21,18 @@ class MdmApi
         $this->client = new \GuzzleHttp\Client([]);
     }
 
-    // public function getAgreements(){
+    public function getAgreementsRmNumbers()
+    {
+        $filter = "CreateDraftWebPage eq '1' and (status eq 'Expired - Data Still Received' or status eq 'Live')";
+        $response = $this->requestResource('[vw_Framework]', ['filter' => $filter]);
 
-    //     $url =  "https://prod-43.uksouth.logic.azure.com/workflows/7559aad54efd4b8fa422d811359ae08f/triggers/manual/paths/invoke/[web].[vw_Framework]/?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=$this->apiKey&filter=CreateDraftWebPage%20eq%20%271%27%20and%20(status%20eq%20%27Expired%20-%20Data%20Still%20Received%27%20or%20status%20eq%20%27Live%27)";
+        $rmNumbers = [];
+        foreach ($response as $apiRecord) {
+            $rmNumbers[] = $apiRecord["FrameworkNumber"];
+        }
 
-    //     $this->response = $this->client->request('GET', $url);
-
-    //     $framework = new Framework();
-    //     $framework->setData($this->getResponseContent()[0]);
-
-    //     return $framework;
-    // }
+        return $rmNumbers;
+    }
 
     public function getAgreement(string $agreementNumber)
     {

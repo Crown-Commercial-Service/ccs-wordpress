@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 namespace CCS\MDMImport;
 
-use DateTime;
-use DateTimeZone;
+
 use App\Model\Framework;
 use App\Model\Lot;
 use App\Model\LotSupplier;
@@ -18,6 +17,7 @@ use App\Services\Logger\ImportLogger;
 use App\Services\MDM\MdmApi;
 use App\Search\FrameworkSearchClient;
 use App\Search\SupplierSearchClient;
+use App\Services\OpGenie\OpGenieLogger;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
 use WP_CLI;
@@ -76,6 +76,56 @@ class Import extends \WP_CLI_Command
         $this->supplierSearchClient = new SupplierSearchClient();
     }
 
+    public function importAll(): void {
+
+        $this->initializeResources(); // Safety check for tests
+        $start_time = microtime(true);
+
+        $lock = $this->lockFactory->createLock('ccs-mdm-import-all');
+
+        if (!$lock->acquire()) {
+            $this->addErrorAndExit('Lock file is currently in use by another process, quitting script');
+        }
+
+        try {
+            $this->wordpressFrameworks = $this->syncText->getFrameworksFromWordPress();
+            $this->wordpressLots = $this->syncText->getLotsFromWordPress();
+        } catch (\Exception $e) {
+            $this->addErrorAndExit("Process cannot complete without WordPress data. Error: {$e->getMessage()}");
+        }
+
+        WP_CLI::line("Starting import all frameworks");
+
+        try {
+            $frameworkRmNumbers = $this->mdmApi->getAgreementsRmNumbers();
+        } catch (\Exception $e) {
+            $this->addErrorAndExit("Failed to retrieve frameworks from MDM: " . $e->getMessage());
+        }
+
+        $this->addSuccess(count($frameworkRmNumbers) . " frameworks returned from MDM.", null, true);
+
+        $importCounter = 0;
+
+        foreach ($frameworkRmNumbers as $rmNumber) {
+            $this->single($rmNumber);
+            $importCounter++;
+
+            if ($importCounter % 25 === 0) {
+                WP_CLI::line("{$importCounter} frameworks imported so far");
+            }
+        }
+
+        $this->addSuccess(sprintf('Import took %s seconds to run', round(microtime(true) - $start_time, 2)), null, true);
+
+        $this->printSummary();
+
+        WP_CLI::line("Starting post-import tasks...");
+
+        $this->postImportTask();
+
+        WP_CLI::success("Import process completed.");
+
+    }
     public function importSingle(array $args): void {
         $this->initializeResources(); // Safety check for tests
         $start_time = microtime(true);
@@ -94,7 +144,7 @@ class Import extends \WP_CLI_Command
 
         WP_CLI::line("Starting single import for RM number: $rmNumber");
 
-         try {
+        try {
             $this->wordpressFrameworks = $this->syncText->getFrameworksFromWordPress();
             $this->wordpressLots = $this->syncText->getLotsFromWordPress();
         } catch (\Exception $e) {
@@ -104,13 +154,12 @@ class Import extends \WP_CLI_Command
         $this->single($rmNumber);
 
         WP_CLI::success(sprintf('Import took %s seconds to run', round(microtime(true) - $start_time, 2)));
-        WP_CLI::line("Starting post-import tasks...");
-
-        $this->checkAllSuppliersIfOnLiveFrameworks();
-        $this->dbManager->updateFrameworkTitleInWordpress();
-        $this->dbManager->updateLotTitleInWordpress();
 
         $this->printSummary();
+
+        WP_CLI::line("Starting post-import tasks...");
+
+        $this->postImportTask();
 
         $lock->release();
 
@@ -245,6 +294,158 @@ class Import extends \WP_CLI_Command
         }
     }
 
+    public function checkEventCron() {
+        $cron_jobs = get_option('cron');
+        
+        $check_event_dates = false;
+        foreach ((array) $cron_jobs as $cron_job) {
+            if (array_key_exists("check_event_dates", (array) $cron_job)){
+                $check_event_dates = true;
+                $this->addSuccess('"check_event_dates" cron job exist');
+
+                break;
+            }
+        }
+
+        if ($check_event_dates == false && getenv('CCS_FRONTEND_APP_ENV') == 'prod'){
+            $OpGenieLogger = new OpGenieLogger();
+
+            $OpGenieLogger->sendToOPGenie([  
+                'priority' => 'P2',
+                'message' => 'Website - Event Cron job disappear',
+                'description' => 'The check_event_dates cron job has disappear, please start the "S24 Event Unpublisher" plugin on Wordpress.',
+                'impactedServices' => [getenv('websiteProjectIDOnOPGenie')],
+                'tags' => [strtoupper(getenv('CCS_FRONTEND_APP_ENV'))]
+                ]);
+        }
+    }
+
+    public function updateFrameworkSearchIndex()
+    {
+        WP_CLI::success('Beginning Search index update on Frameworks.');
+
+        $frameworks = $this->frameworkRepository->findAll();
+
+        WP_CLI::success(count($frameworks) . ' Frameworks found');
+
+        $indexStatus = array('Live', 'Expired - Data Still Received', 'Future (Pipeline)', 'Planned (Pipeline)', 'Underway (Pipeline)', 'Awarded (Pipeline)');
+
+        foreach ($frameworks as $framework)
+        {
+            if (in_array($framework->getStatus(), $indexStatus)) {
+                $this->updateFrameworkSearchIndexWithSingleFramework($framework);
+            }else{
+                $this->frameworkSearchClient->removeDocument($framework);
+            }
+        }
+
+        WP_CLI::success('updateFrameworkSearchIndex operation completed successfully.');
+
+        return;
+    }
+
+    protected function updateFrameworkSearchIndexWithSingleFramework(Framework $framework) {
+        WP_CLI::success('Updating Framework index for: ' . $framework->getRmNumber());
+
+        $lots = $this->lotRepository->findAllById($framework->getSalesforceId(), 'framework_id');
+
+        if (!$lots) {
+            $lots = [];
+        }
+
+        $this->frameworkSearchClient->createOrUpdateDocument($framework, $lots);
+    }
+
+    public function updateSupplierSearchIndex()
+    {
+        WP_CLI::success('Beginning Search index update on Suppliers.');
+
+        $suppliers = $this->supplierRepository->findAll();
+
+        WP_CLI::success(count($suppliers) . ' Suppliers found');
+
+        $count = 0;
+
+        foreach ($suppliers as $supplier) {
+
+            $liveFrameworks = $this->frameworkRepository->findSupplierLiveFrameworks($supplier->getSalesforceId());
+            $dpsFrameworkCount = 0;
+            $totalFrameworkCount = 0;
+
+            if (!empty($liveFrameworks))
+            {
+                $totalFrameworkCount = count($liveFrameworks);
+
+                foreach ($liveFrameworks as $liveFramework)
+                {
+                    $lots = $this->lotRepository->findAllByFrameworkIdSupplierId($liveFramework->getSalesforceId(), $supplier->getSalesforceId());
+                    $liveFramework->setLots($lots);
+
+                    if ($liveFramework->getTerms() == 'DPS' || $liveFramework->getType() == 'Dynamic purchasing system' ){
+                        $dpsFrameworkCount++;
+                    }
+                }
+            }
+
+            $alternativeTradingNames = [];
+            $lotSuppliers = $this->lotSupplierRepository->findAllById($supplier->getSalesforceId(), 'supplier_id');
+
+            if (!empty($lotSuppliers))
+            {
+
+                foreach ($lotSuppliers as $lotSupplier)
+                {
+                    if (!empty($lotSupplier->getTradingName())) {
+                        $alternativeTradingNames[$lotSupplier->getTradingName()] = $lotSupplier->getTradingName();
+                    }
+                }
+
+                if (!empty($supplier->getTradingName())) {
+                    $alternativeTradingNames[$supplier->getTradingName()] = $supplier->getTradingName();
+                }
+
+                $supplier->setAlternativeTradingNames(array_values($alternativeTradingNames));
+            }
+
+
+            if (!$liveFrameworks || $dpsFrameworkCount == $totalFrameworkCount ) {
+                $this->supplierSearchClient->removeDocument($supplier);
+            } else {
+                $this->supplierSearchClient->createOrUpdateDocument($supplier, $liveFrameworks);
+            }
+
+            $count++;
+
+            if ($count % 50 == 0) {
+                WP_CLI::success($count . ' Suppliers imported...');
+            }
+
+        }
+
+        WP_CLI::success('updateSupplierSearchIndex operation completed successfully.');
+
+        return;
+    }
+    private function postImportTask(): void
+    {
+        // Check the event cron job exists
+        $this->checkEventCron();
+
+        //Mark whether a supplier has any live frameworks
+        $this->checkAllSuppliersIfOnLiveFrameworks();
+
+        //Update framework titles in WordPress to include the RM number
+        $this->dbManager->updateFrameworkTitleInWordpress();
+
+        //Update lot titles in WordPress to include the RM number and the lot number
+        $this->dbManager->updateLotTitleInWordpress();
+
+        // Update elasticsearch indexes
+        // TODO
+        // $this->updateFrameworkSearchIndex();
+        // $this->updateSupplierSearchIndex();
+    }
+
     private function addError(string $message, ?string $type = null): void 
     {
         $this->logger->error($message);
@@ -264,6 +465,7 @@ class Import extends \WP_CLI_Command
     {
         if ($log) {
             $this->logger->info($message);
+            WP_CLI::line($message);
         }
         if ($type) {
             $this->importCount[$type]++;
@@ -279,3 +481,7 @@ class Import extends \WP_CLI_Command
         WP_CLI::line("===================");
     }
 }
+
+// Usage:
+// wp mdm-import importSingle RM526
+// wp mdm-import importAll

@@ -23,7 +23,14 @@ class MdmApi
 
     public function getAgreementsRmNumbers()
     {
-        $filter = "CreateDraftWebPage eq '1' and (status eq 'Expired - Data Still Received' or status eq 'Live')";
+        $filter = "CreateDraftWebPage eq '1' and (
+            status eq 'Live' or 
+            status eq 'Expired - Data Still Received' or 
+            status eq 'Future (Pipeline)' or 
+            status eq 'Planned (Pipeline)' or 
+            status eq 'Underway (Pipeline)' or 
+            status eq 'Awarded (Pipeline)'
+            )";
         $response = $this->requestResource('[vw_Framework]', ['filter' => $filter]);
 
         $rmNumbers = [];

@@ -185,6 +185,11 @@ class Import extends \WP_CLI_Command
             $this->checkAndDeleteLots($lots, $framework);
 
             foreach ($lots as $lot) {
+                //we are skipping non-live frameworks and non-live lots
+                if ($framework->getStatus() != "Live" || $lot->getStatus() != "Live") { 
+                    return;
+                }
+
                 $lot->setWordpressId($this->dbManager->getLotWordpressIdBySalesforceId($lot->getSalesforceId()));
                 $this->lotRepository->createOrUpdateExcludingWordpressFields('salesforce_id', $lot->getSalesforceId(), $lot);
                 $lot = $this->lotRepository->findById($lot->getSalesforceId(), 'salesforce_id');

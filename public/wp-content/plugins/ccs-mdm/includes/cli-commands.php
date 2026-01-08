@@ -123,10 +123,13 @@ class Import extends \WP_CLI_Command
 
         $this->postImportTask();
 
-        WP_CLI::success("Import process completed.");
+        $this->addSuccess(sprintf('Import + post-import tasks took %s seconds to run', round(microtime(true) - $start_time, 2)), null, true);
+
+        $this->addSuccess("Whole import process completed.", null, true);
 
     }
-    public function importSingle(array $args): void {
+
+    public function importSingle(array $args, array $assoc_args = []): void {
         $this->initializeResources(); // Safety check for tests
         $start_time = microtime(true);
         
@@ -159,7 +162,7 @@ class Import extends \WP_CLI_Command
 
         WP_CLI::line("Starting post-import tasks...");
 
-        $this->postImportTask();
+        $this->postImportTask(isset($assoc_args['skip']));
 
         $lock->release();
 
@@ -431,7 +434,7 @@ class Import extends \WP_CLI_Command
 
         return;
     }
-    private function postImportTask(): void
+    private function postImportTask(bool $skipOpenSearchIndex = false): void
     {
         // Check the event cron job exists
         $this->checkEventCron();
@@ -445,10 +448,11 @@ class Import extends \WP_CLI_Command
         //Update lot titles in WordPress to include the RM number and the lot number
         $this->dbManager->updateLotTitleInWordpress();
 
-        // Update elasticsearch indexes
-        // TODO
-        // $this->updateFrameworkSearchIndex();
-        // $this->updateSupplierSearchIndex();
+        if (!$skipOpenSearchIndex) {
+            // Update elasticsearch indexes
+            $this->updateFrameworkSearchIndex();
+            $this->updateSupplierSearchIndex();
+        }
     }
 
     private function addError(string $message, ?string $type = null): void 
@@ -489,4 +493,5 @@ class Import extends \WP_CLI_Command
 
 // Usage:
 // wp mdm-import importSingle RM526
+// wp mdm-import importSingle RM526 --skip
 // wp mdm-import importAll

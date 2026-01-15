@@ -96,6 +96,7 @@ class CustomLotApi
                         'supplier_website' => $supplier->getWebsite(),
                         'supplier_crp_url' => $supplier->getCrpUrl(),
                         'supplier_contact_name' => $supplier->getContactName(),
+                        'supplier_trading_name' => $supplier->getTradingName(),
                         'supplier_contact_email' => $supplier->getContactEmail(),
                         'supplier_have_guarantor' => $supplier->getHaveGuarantor(),
                         'live_frameworks' => $liveFrameworks

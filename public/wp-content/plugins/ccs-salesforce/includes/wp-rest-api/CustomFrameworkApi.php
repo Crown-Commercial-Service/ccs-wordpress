@@ -388,15 +388,13 @@ class CustomFrameworkApi
                     $documentsArray[$key][$typeOfSchedules . '_document'] = $attachment['url'];
                 }
 
-                if($typeOfSchedules != "framework_schedule"){
-                    switch ($eachEntry[$typeOfSchedules . '_document_type']) {
-                        case 'essential':
-                            $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Essential document';
-                            break;
-                        case 'optional':
-                            $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Optional document';
-                            break;
-                    }
+                switch ($eachEntry[$typeOfSchedules . '_document_type']) {
+                    case 'essential':
+                        $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Essential';
+                        break;
+                    case 'optional':
+                        $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Optional';
+                        break;
                 }
 
                 switch ($eachEntry[$typeOfSchedules . '_document_usage']) {

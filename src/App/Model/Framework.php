@@ -3,6 +3,8 @@
 namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
+use App\Utils\YamlLoader;
+use Datetime;
 
 class Framework extends AbstractModel
 {
@@ -535,7 +537,8 @@ class Framework extends AbstractModel
         if (!$this->startDate) {
             return null;
         }
-        return $this->startDate;
+
+        return is_string($this->startDate) ? new DateTime($this->startDate) : $this->startDate;
     }
 
     /**
@@ -568,7 +571,8 @@ class Framework extends AbstractModel
         if (!$this->endDate) {
             return null;
         }
-        return $this->endDate;
+
+        return is_string($this->endDate) ? new DateTime($this->endDate) : $this->endDate;
     }
 
     /**
@@ -601,7 +605,8 @@ class Framework extends AbstractModel
         if (!$this->tendersOpenDate) {
             return null;
         }
-        return $this->tendersOpenDate;
+
+        return is_string($this->tendersOpenDate) ? new DateTime($this->tendersOpenDate) : $this->tendersOpenDate;
     }
 
     /**
@@ -634,7 +639,8 @@ class Framework extends AbstractModel
         if (!$this->tendersCloseDate) {
             return null;
         }
-        return $this->tendersCloseDate;
+
+        return is_string($this->tendersCloseDate) ? new DateTime($this->tendersCloseDate) : $this->tendersCloseDate;
     }
 
     /**
@@ -667,7 +673,8 @@ class Framework extends AbstractModel
         if (!$this->expectedLiveDate) {
             return null;
         }
-        return $this->expectedLiveDate;
+
+        return is_string($this->expectedLiveDate) ? new DateTime($this->expectedLiveDate) : $this->expectedLiveDate;
     }
 
     /**
@@ -699,7 +706,8 @@ class Framework extends AbstractModel
         if (!$this->expectedAwardDate) {
             return null;
         }
-        return $this->expectedAwardDate;
+
+        return is_string($this->expectedAwardDate) ? new DateTime($this->expectedAwardDate) : $this->expectedAwardDate;
     }
 
     /**
@@ -937,5 +945,16 @@ class Framework extends AbstractModel
           'upcoming_deal_details'   => $this->getUpcomingDealDetails(),
           'upcoming_deal_summary'   => $this->getUpcomingDealSummary(),
         ];
+    }
+
+    public function setData($data)
+    {
+        $mappings = YamlLoader::loadMappings('MDM_agreement');
+
+        foreach ($mappings as $property => $apiField) {
+            if (array_key_exists($apiField, $data) && property_exists($this, $property)) {
+                $this->$property = $data[$apiField];
+            }
+        }
     }
 }

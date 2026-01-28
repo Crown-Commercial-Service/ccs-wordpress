@@ -112,6 +112,17 @@ if (isset($_GET['terms'])) {
     $filters['terms'] = filtering("terms");
 }
 
+// http://ccs-agreements.cabinetoffice.localhost/search-api/frameworks?&status[]=Live&category[]=Financial%20Services&per_page=20&start_date=2020-01-09
+if (isset($_GET['start_date'])) {
+    $startDate = filter_var($_GET['start_date'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $filters['start_date'] = [
+        'field'     => 'start_date',
+        'condition' => 'AND',
+        'value'     => $startDate,
+        'range'     => 'gte'  // greater than or equal
+    ];
+}
+
 function get_upcoming_deals()
 {
     $frameworkRepository = new FrameworkRepository();

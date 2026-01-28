@@ -183,6 +183,10 @@ class AbstractSearchClient extends \Elastica\Client
      */
     protected function addSimpleSearchFilter(Query\BoolQuery $boolQuery, $filter): Query\BoolQuery
     {
+        // Handle range queries (e.g., date filters)
+        if (isset($filter['range'])) {
+            return $this->addRangeSearchFilter($boolQuery, $filter);
+        }
 
         if (is_array($filter['value'])) {
             $newBoolQuery = new Query\BoolQuery();
@@ -196,6 +200,20 @@ class AbstractSearchClient extends \Elastica\Client
             $boolQuery->addMust($newBoolQuery);
         }
 
+        return $boolQuery;
+    }
+
+    /**
+     * Add a range search filter (for date/numeric ranges)
+     *
+     * @param \Elastica\Query\BoolQuery $boolQuery
+     * @param $filter
+     * @return \Elastica\Query\BoolQuery
+     */
+    protected function addRangeSearchFilter(Query\BoolQuery $boolQuery, $filter): Query\BoolQuery
+    {
+        $rangeQuery = new Query\Range($filter['field'], [$filter['range'] => $filter['value']]);
+        $boolQuery->addMust($rangeQuery);
         return $boolQuery;
     }
 

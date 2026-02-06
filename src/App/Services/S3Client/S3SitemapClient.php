@@ -9,7 +9,6 @@ use Aws\Exception\AwsException;
 
 class S3SitemapClient
 {
-
     protected $bucket;
     protected $key;
 
@@ -67,7 +66,6 @@ class S3SitemapClient
     public function getS3Sitemap()
     {
         try {
-
             $result = $this->getS3Client()->getObject([
                 'Bucket' => $this->bucket,
                 'Key'    => $this->key . '/' . 'sitemap.xml',
@@ -78,7 +76,7 @@ class S3SitemapClient
         return $result;
     }
 
-    public function uploadUserXmlToS3($filePath,$fileName)
+    public function uploadUserXmlToS3($filePath, $fileName)
     {
         $s3Client = $this->getS3Client();
 

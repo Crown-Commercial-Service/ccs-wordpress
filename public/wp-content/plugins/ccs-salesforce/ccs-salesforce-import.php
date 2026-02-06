@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name:     CCS Salesforce Importer
  * Plugin URI:      http://www.studio24.net/
@@ -7,7 +8,7 @@
  * Author URI:      http://www.studio24.net/
  * Text Domain:     ccs-salesforce-import
  * Version:         0.1.0
-*/
+ */
 
 // If this file is called directly, abort.
 use CCS\SFI\Import;
@@ -45,6 +46,8 @@ require __DIR__ . '/includes/wp-rest-api/CustomHomepageComponentsApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/CustomRedirectionApi.php';
 
+require __DIR__ . '/includes/wp-rest-api/CustomSitemapApi.php';
+
 require __DIR__ . '/includes/wp-rest-api/GlossaryApi.php';
 
 require __DIR__ . '/includes/wp-rest-api/cscMessageApi.php';
@@ -77,6 +80,7 @@ function run_plugin()
     $homepageComponentsApi = new CustomHomepageComponentsApi();
     $redirectionApi = new CustomRedirectionApi();
     $glossaryApi = new GlossaryApi();
+    $sitemapApi = new CustomSitemapApi();
     $cscMessageApi = new cscMessageApi();
     $messageBannerApi = new MessageBannerApi();
     $newsApi = new customNewsApi();
@@ -98,8 +102,8 @@ function run_plugin()
         ));
     });
 
-     //Get an individual lot
-     add_action('rest_api_init', function () use ($frameworkApi) {
+    //Get an individual lot
+    add_action('rest_api_init', function () use ($frameworkApi) {
         register_rest_route('ccs/v1', '/frameworks/(?P<rm_number>[a-zA-Z0-9-.]+)/lot/(?P<lot_number>[a-zA-Z0-9-.]+)', array(
             'methods' => 'GET',
             'callback' => [$frameworkApi, 'get_individual_lot']
@@ -162,8 +166,8 @@ function run_plugin()
     add_action('acf/save_post', 'updated_post_meta', 20, 1);
 
 
-     //Get the option cards data required for all pages
-     add_action('rest_api_init', function () use ($optionCardsApi) {
+    //Get the option cards data required for all pages
+    add_action('rest_api_init', function () use ($optionCardsApi) {
         register_rest_route('ccs/v1', '/option-cards/0', array(
             'methods' => 'GET',
             'callback' => [$optionCardsApi, 'get_option_cards']
@@ -178,8 +182,8 @@ function run_plugin()
         ));
     });
 
-     //Get the homepage components data required for homepage
-     add_action('rest_api_init', function () use ($homepageComponentsApi) {
+    //Get the homepage components data required for homepage
+    add_action('rest_api_init', function () use ($homepageComponentsApi) {
         register_rest_route('ccs/v1', '/homepage-components/0', array(
             'methods' => 'GET',
             'callback' => [$homepageComponentsApi, 'get_homepage_components']
@@ -191,7 +195,6 @@ function run_plugin()
             'methods' => 'GET',
             'callback' => [$redirectionApi, 'getListOfRedirections']
         ));
-    
     });
 
     add_action('rest_api_init', function () use ($glossaryApi) {
@@ -199,7 +202,13 @@ function run_plugin()
             'methods' => 'GET',
             'callback' => [$glossaryApi, 'getListOfGlossary']
         ));
-    
+    });
+
+    add_action('rest_api_init', function () use ($sitemapApi) {
+        register_rest_route('ccs/v1', '/sitemap', array(
+            'methods' => 'GET',
+            'callback' => [$sitemapApi, 'getSitemap']
+        ));
     });
 
     add_action('rest_api_init', function () use ($cscMessageApi) {
@@ -207,7 +216,6 @@ function run_plugin()
             'methods' => 'GET',
             'callback' => [$cscMessageApi, 'getMessage']
         ));
-    
     });
 
     add_action('rest_api_init', function () use ($messageBannerApi) {
@@ -232,9 +240,3 @@ function import_all()
 }
 
 run_plugin();
-
-
-
-
-
-

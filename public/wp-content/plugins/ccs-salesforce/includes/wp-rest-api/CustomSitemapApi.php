@@ -10,14 +10,14 @@ class CustomSitemapApi
     {
 
         $S3_Client = new S3SitemapClient();
-        $s3_data = $S3_Client->get_s3_sitemap_metadata();
+        $s3_data = $S3_Client->getS3SitemapMetadata();
 
         if (!$s3_data['exists']) {
             return new WP_Error('no_sitemap', 'Sitemap file not found on S3', array('status' => 404));
         }
 
         try {
-            $result = $S3_Client->get_s3_sitemap();
+            $result = $S3_Client->getS3Sitemap();
 
             $content = (string) $result['Body'];
 

@@ -14,14 +14,14 @@ class S3SitemapClient
     protected $key;
 
 
-    public function __construct()
+    public function Construct()
     {
         $this->bucket = 'ccs-dev-wp-config';
         $this->key = 'sitemap';
     }
 
 
-    public function get_s3_client()
+    public function getS3Client()
     {
         $args = [
             'version' => 'latest',
@@ -38,9 +38,9 @@ class S3SitemapClient
         return new \Aws\S3\S3Client($args);
     }
 
-    public function get_s3_sitemap_metadata()
+    public function getS3SitemapMetadata()
     {
-        $s3Client = $this->get_s3_client();
+        $s3Client = $this->getS3Client();
 
         try {
             $metadata = $s3Client->headObject([
@@ -64,11 +64,11 @@ class S3SitemapClient
         }
     }
 
-    public function get_s3_sitemap()
+    public function getS3Sitemap()
     {
         try {
 
-            $result = $this->get_s3_client()->getObject([
+            $result = $this->getS3Client()->getObject([
                 'Bucket' => $this->bucket,
                 'Key'    => $this->key . '/' . 'sitemap.xml',
             ]);
@@ -78,15 +78,15 @@ class S3SitemapClient
         return $result;
     }
 
-    public function upload_user_xml_to_s3($file_path, $file_name)
+    public function uploadUserXmlToS3($filePath,$fileName)
     {
-        $s3Client = $this->get_s3_client();
+        $s3Client = $this->getS3Client();
 
         try {
             $result = $s3Client->putObject([
                 'Bucket' => $this->bucket,
-                'Key'    => $this->key . '/' . $file_name,
-                'SourceFile' => $file_path,
+                'Key'    => $this->key . '/' . $fileName,
+                'SourceFile' => $filePath,
                 'ContentType' => 'application/xml',
             ]);
             return $result['ObjectURL'];

@@ -18,7 +18,7 @@ function render_sitemap_uploader()
 
     if (isset($_FILES['sitemap_file'])) {
         $file = $_FILES['sitemap_file'];
-        $upload_result = $S3_Client->upload_user_xml_to_s3($file['tmp_name'], 'sitemap.xml');
+        $upload_result = $S3_Client->uploadUserXmlToS3($file['tmp_name'], 'sitemap.xml');
 
         if ($upload_result) {
             echo '<div class="updated"><p>Sitemap synced to S3 successfully!</p></div>';
@@ -27,7 +27,7 @@ function render_sitemap_uploader()
         }
     }
 
-    $s3_data = $S3_Client->get_s3_sitemap_metadata();
+    $s3_data = $S3_Client->getS3SitemapMetadata();
     $last_modified = $s3_data['exists'] ? date("F d, Y @ H:i:s", $s3_data['last_modified']) : 'No file found';
     $file_size = $s3_data['exists'] ? size_format($s3_data['size']) : '0 KB';
 

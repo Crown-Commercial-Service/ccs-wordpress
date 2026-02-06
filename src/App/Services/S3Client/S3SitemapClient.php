@@ -14,7 +14,7 @@ class S3SitemapClient
     protected $key;
 
 
-    public function Construct()
+    public function __construct()
     {
         $this->bucket = 'ccs-dev-wp-config';
         $this->key = 'sitemap';

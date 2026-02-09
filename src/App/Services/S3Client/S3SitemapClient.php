@@ -36,10 +36,10 @@ class S3SitemapClient
                 'key'    => $key,
                 'secret' => $secret,
             ];
-    }
+        }
 
-    return new \Aws\S3\S3Client($args);
-}
+        return new \Aws\S3\S3Client($args);
+    }
 
     public function getS3SitemapMetadata()
     {

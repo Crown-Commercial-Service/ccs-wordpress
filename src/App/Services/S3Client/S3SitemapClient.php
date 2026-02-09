@@ -27,10 +27,14 @@ class S3SitemapClient
             'region'  => 'eu-west-1',
         ];
 
-        if (defined(getenv('AWS_ACCESS_KEY_ID')) && defined(getenv('AWS_SECRET_ACCESS_KEY'))) {
+        $key = getenv('AWS_ACCESS_KEY_ID');
+        $secret = getenv('AWS_SECRET_ACCESS_KEY');
+
+        // This is for local development. In production, the IAM Role attached to the EC2 instance will handle authentication, so we don't want to provide credentials.
+        if (!empty($key) && !empty($secret)) {
             $args['credentials'] = [
-                'key'    => getenv('AWS_ACCESS_KEY_ID'),
-                'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
+                'key'    => $key,
+                'secret' => $secret,
             ];
         }
 

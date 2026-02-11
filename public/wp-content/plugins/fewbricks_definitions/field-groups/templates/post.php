@@ -80,3 +80,25 @@ $field_group = (new fewacf\field_group('Post components', '202501031015a', $loca
 $field_group->add_brick((new bricks\group_post_content_default('post_components', '202501031015b')));
 
 $field_group->register();
+
+/**
+ * Define the field group
+ *
+ * Field groups with a lower menu_order will appear first on the edit screens (change by 10,20,30 increments to give yourself space to add)
+ */
+$field_group = ( new fewacf\field_group( 'CCS to GCA Migration', '1770677504J', $location, 70, [
+	'position' => 'normal',
+]));
+
+/**
+ * Define the fields
+ */
+
+$field_group->add_field(new acf_fields\true_false('Display Banner', 'display_banner', '1770677534P', [
+	'default_value' => ['value' => '1'],
+]));
+
+	/*
+	* Register the field group
+ */
+$field_group->register();

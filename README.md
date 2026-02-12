@@ -1,6 +1,6 @@
 # Government Commercial Agency WordPress CMS 
 
-WordPress CMS to manage the Government Commercial Agency public website at https://www.crowncommercial.gov.uk/
+WordPress CMS to manage the Government Commercial Agency public website at https://www.gca.gov.uk/
 
 Please see [further web documentation](https://github.com/Crown-Commercial-Service/ccsweb-docs/tree/master/web) (this is a private repo).
 

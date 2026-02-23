@@ -11,11 +11,18 @@ class S3SitemapClient
 {
     protected $bucket;
     protected $key;
+    protected $env;
 
 
     public function __construct()
     {
-        $this->bucket = 'ccs-dev-wp-config';
+        $this->env = getenv('CCS_FRONTEND_APP_ENV');
+        $this->bucket = 'ccs-' . $this->env . '-wp-config' ?: 'ccs-dev-wp-config';
+
+        if ($this->env === 'local') {
+            $this->bucket = 'ccs-dev-wp-config';
+        }
+
         $this->key = 'sitemap';
     }
 
@@ -24,13 +31,17 @@ class S3SitemapClient
     {
         $args = [
             'version' => 'latest',
-            'region'  => 'eu-west-1',
+            'region'  => ($this->env === 'dev' || $this->env === 'local') ? 'eu-west-1' : 'eu-west-2',
         ];
 
-        if (defined(getenv('AWS_ACCESS_KEY_ID')) && defined(getenv('AWS_SECRET_ACCESS_KEY'))) {
+        $key = getenv('AWS_ACCESS_KEY_ID');
+        $secret = getenv('AWS_SECRET_ACCESS_KEY');
+
+        // This is for local development. In production, the IAM Role attached to the EC2 instance will handle authentication, so we don't want to provide credentials.
+        if (!empty($key) && !empty($secret)) {
             $args['credentials'] = [
-                'key'    => getenv('AWS_ACCESS_KEY_ID'),
-                'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
+                'key'    => $key,
+                'secret' => $secret,
             ];
         }
 

@@ -32,7 +32,7 @@ echo -n $$ > "$PID_FILE"
 chmod 600 "$PID_FILE"
 
 cd "$WEB_PATH"
-/usr/local/bin/wp --no-color salesforce import all 2>&1
+/usr/local/bin/wp mdm-import importAll 2>&1
 echo "Import complete."
 
 rm -f "$PID_FILE"

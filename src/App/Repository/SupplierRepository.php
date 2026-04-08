@@ -216,7 +216,7 @@ class SupplierRepository extends AbstractRepository
             FROM `ccs_suppliers` s
             JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
             WHERE ls.lot_id IN (\'' . $lotIds . '\')
-            ORDER BY order_name';
+            ORDER BY s.name';
 
         return $this->findAllSuppliers($sql, $paginate, $limit, $page);
     }

@@ -249,7 +249,7 @@ class CustomFrameworkApi
         $supplierRepository = new SupplierRepository();
         $suppliersCount = $supplierRepository->countAllSuppliers($lotIds);
         //Retrieve all suppliers for specific lots, based on their salesforce id
-        $suppliers = $supplierRepository->findLotSuppliers($lotIds, true, $limit, $page, true);
+        $suppliers = $supplierRepository->findLotSuppliers($lotIds, true, $limit, $page);
 
         $suppliersData = [];
 

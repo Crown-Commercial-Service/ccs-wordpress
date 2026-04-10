@@ -272,7 +272,9 @@ class Import extends \WP_CLI_Command
 
     public function checkAndDeleteLots(array $lots, Framework $framework): void 
     {
-        $lotIdsFromAPI = array_map(fn($lot) => $lot->getSalesforceId(), $lots);
+        $visibleLots = array_filter($lots, fn($lot) => !$lot->isHideLot());
+        $lotIdsFromAPI = array_map(fn($lot) => $lot->getSalesforceId(), $visibleLots);
+
         $localLotIds = (array) $this->dbManager->getLotSalesforceIdByFrameworkId($framework->getSalesforceId());
 
         foreach (array_diff($localLotIds, $lotIdsFromAPI) as $lotToDelete) {

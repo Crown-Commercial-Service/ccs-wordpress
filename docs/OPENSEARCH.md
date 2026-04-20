@@ -1,35 +1,30 @@
-# CCS ElasticSearch Documentation
+# GCA OpenSearch Documentation
 
-This document aims to outline the core functionality the CCS website has with regards to search and Elasticseach
+This document outlines the core functionality of the GCA website regarding search and OpenSearch integration.
 
 ## Packages
 
-[Elastica](https://github.com/ruflin/Elastica) - This package is used to bridge the gap between ElasticSearch and PHP.
+[OpenSearch PHP](https://github.com/opensearch-project/opensearch-php) - This is the official low-level client for OpenSearch in PHP.
+(Note: If you are still using [Elastica](https://github.com/ruflin/Elastica), ensure it is configured to be compatible with OpenSearch, as they share the same underlying API structure.)
 
 ## Indexing
-All framework and supplier data is imported into Wordpress from Salesforce. 
+All agreements and suppliers data is imported into Wordpress from MDM. 
 
-Suppliers are indexed after everything has been imported and saved, towards the end of a successful import run.
+- Frameworks are indexed individually as each Framework record is imported or updated.
+- Suppliers are indexed after all data has been imported and saved, typically at the end of a successful import run.
 
-Frameworks are indexed one by one, after each Framework has been imported/updated.
-
-Indexing is applied by Elasticsearch. 
+Indexing is handled by the OpenSearch engine.
 
 ## Manually indexing
 
-Please note that you will need the [WP CLI](https://wp-cli.org/) installed on your machine for these indexing commands to work.
+Please note that you will need the [WP CLI](https://wp-cli.org/) installed on your machine for these indexing commands to work. Note: The following import commands must be executed from within the /public folder.
 
-Supplier data can be manually indexed via the following CLI command (please run this from the `public` directory):
 
-```
-wp salesforce import updateSupplierSearchIndex
-```
+- Framework data can be manually indexed via the following CLI command: `wp mdm-import updateFrameworkSearchIndex`
 
-Framework data can be manually indexed via the following CLI command (please run this from the `public` directory):
+- Supplier data can be manually indexed via the following CLI command: `wp mdm-import updateFrameworkSearchIndex`
 
-```
-wp salesforce import updateFrameworkSearchIndex
-```
+
 
 ## Faceted search
 
@@ -47,9 +42,7 @@ Lots: No Lots are returned
 
 **Framework filtered search query:**  
 Frameworks: All Frameworks are returned  
-Lots: All lots are returned for the filtered framework﻿  
-
-﻿
+Lots: All lots are returned for the filtered framework
 
 ## Applying filters
 
@@ -101,7 +94,7 @@ $filters[] = [
 
 ## Implementation Wordpress
 
-The code for the Elastic Search endpoints in Wordpress can be found here:
+The code for OpenSearch endpoints in Wordpress can be found here:
 
 ```public/search-api```
 
@@ -212,7 +205,7 @@ The **queryByKeyword** method contains a method **sortQuery** which determines h
 
 By default the query will use the **_score** field to sort the data. The **_score** field is based on relevancy when a query for a keyword is run.
 
-If the query has no keyword, the data will be ordered by default by the class property **$defaultSortField** ﻿
+If the query has no keyword, the data will be ordered by default by the class property **$defaultSortField** 
 
 
 ## Reindexing

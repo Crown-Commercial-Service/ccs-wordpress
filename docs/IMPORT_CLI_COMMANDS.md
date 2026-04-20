@@ -1,17 +1,25 @@
-# Data Import
+# Data Import - CLI Commands
 
-## CLI Commands
+Note: The following import commands must be executed from within the /public folder.
 
-### wp salesforce import single
+## Importing single agreement
 
-You can import a single Framework, and any attached lots, and suppliers by running the following command:
+You can import a single agreement—along with any attached lots and suppliers—by running the following command:
 
-`wp salesforce import single a04b000000XUJxmAAH` where `a04b000000XUJxmAAH` is the Salesforce Framework ID.
+`wp mdm-import importSingle RM6200`
 
-### wp salesforce import all
+In this example, `RM6200` represents the RM number for the agreement. By default, this command will also re-index your database for all agreements and suppliers. To bypass the indexing process, include the `--skip` flag.
 
-The import can be run with the command `wp salesforce import all` when in the `/public` folder.
+Example: `wp mdm-import importSingle RM526 --skip`
+
+
+## Importing all agreements
+`wp mdm-import importAll` 
+
+This command imports all agreements and their associated lots and suppliers, providing the latest data available.
+
 
 ## Further technical information
 
-Location of function which this command runs: ***public function all*** `public/wp-content/plugins/ccs-salesforce/includes/cli-commands.php`
+The logic for these commands is located here:
+`public/wp-content/plugins/ccs-mdm/includes/cli-commands.php`

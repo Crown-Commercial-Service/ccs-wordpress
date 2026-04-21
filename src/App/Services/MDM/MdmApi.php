@@ -10,8 +10,6 @@ use App\Model\Supplier;
 use App\Services\Logger\ImportLogger;
 use WP_CLI;
 
-WP_CLI::add_command('mdm-import', MdmApi::class);
-
 class MdmApi
 {
     protected $client;
@@ -128,7 +126,6 @@ class MdmApi
 
     private function requestResource(string $resourcePath, array $extraQuery = [])
     {
-        WP_CLI::line("dada");
         $resourcePath = trim($resourcePath, '/') . '/';
         $url = rtrim($this->baseURL, '/') . $resourcePath . '?' . http_build_query($extraQuery);
 

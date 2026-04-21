@@ -7,6 +7,8 @@ namespace App\Services\MDM;
 use App\Model\Framework;
 use App\Model\Lot;
 use App\Model\Supplier;
+use App\Services\Logger\ImportLogger;
+use WP_CLI;
 
 class MdmApi
 {
@@ -18,6 +20,7 @@ class MdmApi
     protected $scope;
     protected $accessToken;
     protected $tokenExpiry;
+    private ImportLogger $logger;
 
     public function __construct()
     {
@@ -29,6 +32,7 @@ class MdmApi
         $this->client = new \GuzzleHttp\Client([]);
         $this->accessToken = null;
         $this->tokenExpiry = null;
+        $this->logger = new ImportLogger();
     }
 
     public function getAgreementsRmNumbers()
@@ -127,26 +131,48 @@ class MdmApi
 
         $bearerToken = $this->getBearerToken();
 
-        try {
-            $response = $this->client->request('GET', $url, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $bearerToken,
-                ],
-            ]);
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            $resp = $e->getResponse();
-            if ($resp && $resp->getStatusCode() === 400) {
-                return [];
+        $maxRetries = 3;
+        $attempt = 0;
+        $lastException = null;
+
+        while ($attempt < $maxRetries) {
+            if ($attempt > 0) {
+                WP_CLI::line("Retrying request to MDM API. Attempt $attempt of $maxRetries. URL: $url");
+                $this->logger->warning("Retrying request to MDM API. Attempt $attempt of $maxRetries. URL: $url");
             }
-            throw $e;
+            try {
+                $response = $this->client->request('GET', $url, [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $bearerToken,
+                    ],
+                ]);
+
+                if ($response->getStatusCode() != 200) {
+                    throw new \Exception('Response has no content. Response status code: ' . $response->getStatusCode() . ' Response Error Message: ' . $response->getReasonPhrase());
+                }
+
+                $contents = $response->getBody()->getContents();
+
+                return json_decode($contents, true);
+            } catch (\GuzzleHttp\Exception\ClientException $e) {
+                $resp = $e->getResponse();
+                if ($resp && $resp->getStatusCode() === 400) {
+                    return [];
+                }
+                $lastException = $e;
+            } catch (\GuzzleHttp\Exception\ConnectException $e) {
+                $lastException = $e;
+            } catch (\GuzzleHttp\Exception\ServerException $e) {
+                $lastException = $e;
+            }
+
+            $attempt++;
+            if ($attempt < $maxRetries) {
+                // Exponential backoff: wait 1s, 2s, 4s, etc.
+                sleep(pow(2, $attempt - 1));
+            }
         }
 
-        if ($response->getStatusCode() != 200) {
-            throw new \Exception('Response has no content. Response status code: ' . $response->getStatusCode() . ' Response Error Message: ' . $response->getReasonPhrase());
-        }
-
-        $contents = $response->getBody()->getContents();
-
-        return json_decode($contents, true);
+        throw $lastException;
     }
 }

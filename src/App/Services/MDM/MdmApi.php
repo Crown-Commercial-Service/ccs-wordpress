@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\MDM;
@@ -127,6 +128,7 @@ class MdmApi
 
     private function requestResource(string $resourcePath, array $extraQuery = [])
     {
+        WP_CLI::line("dada");
         $resourcePath = trim($resourcePath, '/') . '/';
         $url = rtrim($this->baseURL, '/') . $resourcePath . '?' . http_build_query($extraQuery);
 
@@ -177,4 +179,3 @@ class MdmApi
         throw $lastException;
     }
 }
-

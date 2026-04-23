@@ -17,4 +17,4 @@ expectedLiveDate: FrameworkLiveTargetDate
 expectedAwardDate: AwardTargetDate
 publishOnWebsite: DontPublishFrameworkOnWebsite
 createDraftPage: CreateDraftWebPage
-policyCompliance: tempPolicyCompliance
+policyCompliance: PolicyComplianceStatement

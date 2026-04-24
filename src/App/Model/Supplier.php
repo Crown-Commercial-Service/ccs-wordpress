@@ -434,6 +434,7 @@ class Supplier extends AbstractModel
 
         foreach ($mappings as $property => $apiField) {
             if (array_key_exists($apiField, $data) && property_exists($this, $property)) {
+                $data[$apiField] = $data[$apiField] === "" ? null : $data[$apiField];
                 $this->$property = $data[$apiField];
             }
         }

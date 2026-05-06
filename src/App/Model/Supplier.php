@@ -81,6 +81,10 @@ class Supplier extends AbstractModel
      * @var bool
      */
     protected $haveGuarantor = false;
+    /**
+     * @var bool
+     */
+    protected $websiteContact;
 
     /**
      * @return string
@@ -403,6 +407,14 @@ class Supplier extends AbstractModel
         $this->alternativeTradingNames = $alternativeTradingNames;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isWebsiteContact(): bool
+    {
+        return filter_var($this->websiteContact, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**

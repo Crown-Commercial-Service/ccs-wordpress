@@ -223,11 +223,13 @@ class Import extends \WP_CLI_Command
                             'contact_name'  => $supplier->getContactName(),
                             'contact_email' => $supplier->getContactEmail(),
                             'trading_name'  => $supplier->getTradingName(),
+                            'website_contact' => $supplier->isWebsiteContact(),
                         ]));
                     } else {
                         $lotSupplier->setContactName($supplier->getContactName())
                                     ->setContactEmail($supplier->getContactEmail())
-                                    ->setTradingName($supplier->getTradingName());
+                                    ->setTradingName($supplier->getTradingName())
+                                    ->setWebsiteContact($supplier->isWebsiteContact());
                         
                         $this->lotSupplierRepository->update('id', $lotSupplier->getId(), $lotSupplier);
                     }

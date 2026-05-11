@@ -102,10 +102,6 @@ class CustomLotApi
                         'live_frameworks' => $liveFrameworks
                     ];
 
-                //If the trading name exists, show this as the supplier name
-                if(!empty($supplier->getTradingName())) {
-                    $suppliersData[$index]['supplier_name'] = $supplier->getTradingName();
-                }
             }
         }
 

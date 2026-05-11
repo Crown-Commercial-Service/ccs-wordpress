@@ -81,6 +81,10 @@ class Supplier extends AbstractModel
      * @var bool
      */
     protected $haveGuarantor = false;
+    /**
+     * @var bool
+     */
+    protected $websiteContact;
 
     /**
      * @return string
@@ -406,6 +410,14 @@ class Supplier extends AbstractModel
     }
 
     /**
+     * @return bool
+     */
+    public function isWebsiteContact(): bool
+    {
+        return filter_var($this->websiteContact, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
      * Returns a simple text array representing the object
      *
      * @return array
@@ -434,6 +446,7 @@ class Supplier extends AbstractModel
 
         foreach ($mappings as $property => $apiField) {
             if (array_key_exists($apiField, $data) && property_exists($this, $property)) {
+                $data[$apiField] = $data[$apiField] === "" ? null : $data[$apiField];
                 $this->$property = $data[$apiField];
             }
         }

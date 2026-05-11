@@ -953,6 +953,9 @@ class Framework extends AbstractModel
 
         foreach ($mappings as $property => $apiField) {
             if (array_key_exists($apiField, $data) && property_exists($this, $property)) {
+                if ($data[$apiField] === "N/A" || $data[$apiField] === "") {
+                    $data[$apiField] = null;
+                }
                 $this->$property = $data[$apiField];
             }
         }

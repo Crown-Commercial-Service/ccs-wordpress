@@ -85,7 +85,7 @@ class MdmApi
     public function getLotSuppliers(string $salesforceLotId)
     {
         $filter = "FrameworkLotSalesforceID eq '$salesforceLotId'";
-        $response = $this->requestResource('[vw_FrameworkLotSupplierContacts]', ['filter' => $filter]);
+        $response = $this->requestResource('[FrameworkLotSupplierContacts]', ['filter' => $filter]);
 
         $suppliers = [];
 

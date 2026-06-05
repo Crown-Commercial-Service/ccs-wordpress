@@ -320,15 +320,22 @@ class Import extends \WP_CLI_Command
         }
 
         if ($check_event_dates == false && getenv('CCS_FRONTEND_APP_ENV') == 'prod'){
-            $OpGenieLogger = new OpGenieLogger();
+            try {
 
-            $OpGenieLogger->sendToOPGenie([  
-                'priority' => 'P2',
-                'message' => 'Website - Event Cron job disappear',
-                'description' => 'The check_event_dates cron job has disappear, please start the "S24 Event Unpublisher" plugin on Wordpress.',
-                'impactedServices' => [getenv('websiteProjectIDOnOPGenie')],
-                'tags' => [strtoupper(getenv('CCS_FRONTEND_APP_ENV'))]
-                ]);
+                $OpGenieLogger = new OpGenieLogger();
+
+                $OpGenieLogger->sendToOPGenie([  
+                    'priority' => 'P2',
+                    'message' => 'Website - Event Cron job disappear',
+                    'description' => 'The check_event_dates cron job has disappear, please start the "S24 Event Unpublisher" plugin on Wordpress.',
+                    'impactedServices' => [getenv('websiteProjectIDOnOPGenie')],
+                    'tags' => [strtoupper(getenv('CCS_FRONTEND_APP_ENV'))]
+                    ]);
+
+            } catch(\Exception $e) {
+                $this->addError('Opsgenie Incident Creation Failed: ' . $e->getMessage());
+            }
+        
         }
     }
 

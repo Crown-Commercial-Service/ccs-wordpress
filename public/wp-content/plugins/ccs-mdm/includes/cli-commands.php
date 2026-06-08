@@ -187,10 +187,15 @@ class Import extends \WP_CLI_Command
             $lots = $this->mdmApi->getAgreementLots($framework->getSalesforceId());
             $this->checkAndDeleteLots($lots, $framework);
 
-            foreach ($lots as $lot) {
-                //we are skipping non-live frameworks and non-live lots
-                if ($framework->getStatus() != "Live" || $lot->getStatus() != "Live") { 
+            if ($framework->getStatus() != "Live") {
                     return;
+            }
+
+            foreach ($lots as $lot) {
+                //we are skipping non-live lots
+                
+                if ($lot->getStatus() != "Live") {
+                    continue;
                 }
 
                 $lot->setWordpressId($this->dbManager->getLotWordpressIdBySalesforceId($lot->getSalesforceId()));

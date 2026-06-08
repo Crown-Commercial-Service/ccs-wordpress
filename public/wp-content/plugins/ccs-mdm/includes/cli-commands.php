@@ -187,10 +187,15 @@ class Import extends \WP_CLI_Command
             $lots = $this->mdmApi->getAgreementLots($framework->getSalesforceId());
             $this->checkAndDeleteLots($lots, $framework);
 
-            foreach ($lots as $lot) {
-                //we are skipping non-live frameworks and non-live lots
-                if ($framework->getStatus() != "Live" || $lot->getStatus() != "Live") { 
+            if ($framework->getStatus() != "Live") {
                     return;
+            }
+
+            foreach ($lots as $lot) {
+                //we are skipping non-live lots
+                
+                if ($lot->getStatus() != "Live") {
+                    continue;
                 }
 
                 $lot->setWordpressId($this->dbManager->getLotWordpressIdBySalesforceId($lot->getSalesforceId()));
@@ -320,15 +325,22 @@ class Import extends \WP_CLI_Command
         }
 
         if ($check_event_dates == false && getenv('CCS_FRONTEND_APP_ENV') == 'prod'){
-            $OpGenieLogger = new OpGenieLogger();
+            try {
 
-            $OpGenieLogger->sendToOPGenie([  
-                'priority' => 'P2',
-                'message' => 'Website - Event Cron job disappear',
-                'description' => 'The check_event_dates cron job has disappear, please start the "S24 Event Unpublisher" plugin on Wordpress.',
-                'impactedServices' => [getenv('websiteProjectIDOnOPGenie')],
-                'tags' => [strtoupper(getenv('CCS_FRONTEND_APP_ENV'))]
-                ]);
+                $OpGenieLogger = new OpGenieLogger();
+
+                $OpGenieLogger->sendToOPGenie([  
+                    'priority' => 'P2',
+                    'message' => 'Website - Event Cron job disappear',
+                    'description' => 'The check_event_dates cron job has disappear, please start the "S24 Event Unpublisher" plugin on Wordpress.',
+                    'impactedServices' => [getenv('websiteProjectIDOnOPGenie')],
+                    'tags' => [strtoupper(getenv('CCS_FRONTEND_APP_ENV'))]
+                    ]);
+
+            } catch(\Exception $e) {
+                $this->addError('Opsgenie Incident Creation Failed: ' . $e->getMessage());
+            }
+        
         }
     }
 

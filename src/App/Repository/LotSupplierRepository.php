@@ -172,7 +172,7 @@ class LotSupplierRepository extends AbstractRepository
      *
      * @param $lotId
      * @param $supplierId
-     * @return bool
+     * @return bool|LotSupplier
      */
     public function findByLotIdAndSupplierId($lotId, $supplierId)
     {

@@ -57,6 +57,20 @@ $fg10->add_field(new acf_fields\true_false('Hide from "View All"', 'Hide_from_Vi
     
 ]));
 
+$fg10->register();
+
+$fg11 = ( new fewacf\field_group( 'Author Image', '202501261530a', $location, 6, [
+    'position' => 'acf_after_title',
+    'names_of_items_to_hide_on_screen' => [
+    ]
+] ));
+
+$fg11->add_field( new acf_fields\image( 'Author Image', 'author_image', '202501261530b', [
+    'instructions' => 'Optionally add author image: Upload a square portrait (aspect ratio 1:1). If your photo isn’t square, please crop it to a square before uploading',
+] ) );
+
+$fg11->register();
+
 
 $field_group = (new fewacf\field_group('Post components', '202501031015a', $location, 50, [
     'position' => 'normal',
@@ -65,4 +79,26 @@ $field_group = (new fewacf\field_group('Post components', '202501031015a', $loca
 // Use the new post-specific brick instead of group_page_content_default
 $field_group->add_brick((new bricks\group_post_content_default('post_components', '202501031015b')));
 
+$field_group->register();
+
+/**
+ * Define the field group
+ *
+ * Field groups with a lower menu_order will appear first on the edit screens (change by 10,20,30 increments to give yourself space to add)
+ */
+$field_group = ( new fewacf\field_group( 'CCS to GCA Migration', '1770677504J', $location, 70, [
+	'position' => 'normal',
+]));
+
+/**
+ * Define the fields
+ */
+
+$field_group->add_field(new acf_fields\true_false('Display Banner', 'display_banner', '1770677534P', [
+	'default_value' => ['value' => '1'],
+]));
+
+	/*
+	* Register the field group
+ */
 $field_group->register();

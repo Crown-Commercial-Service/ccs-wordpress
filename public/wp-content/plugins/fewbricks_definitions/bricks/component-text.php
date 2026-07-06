@@ -23,7 +23,10 @@ class component_text extends project_brick
 	 */
 	public function set_fields()
 	{
-		$this->add_field(new acf_fields\wysiwyg( 'Content' , 'text' , '202001031024a' ));
+		$this->add_field(new acf_fields\text( 'Content' , 'text' , '202001031024a', [
+			'instructions' => 'Keep the summary text concise and under 350 characters (including spaces).',
+			'maxlength' => 350
+		] )); 
 	}
 
 	/**

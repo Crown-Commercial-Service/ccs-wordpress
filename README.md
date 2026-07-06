@@ -1,6 +1,6 @@
-# Crown Commercial Service WordPress CMS 
+# Government Commercial Agency WordPress CMS 
 
-WordPress CMS to manage the Crown Commercial public website at https://www.crowncommercial.gov.uk/
+WordPress CMS to manage the Government Commercial Agency public website at https://www.gca.gov.uk/
 
 Please see [further web documentation](https://github.com/Crown-Commercial-Service/ccsweb-docs/tree/master/web) (this is a private repo).
 
@@ -27,7 +27,7 @@ See details on [Environments](https://github.com/Crown-Commercial-Service/ccsweb
 Post launch, we will have a number of deployment checks before merging new code into production, notably:
 
 * Code must pass static code analysis tests & automated tests (Travis).
-* Manual review by CCS TechOps to approve Pull Request.
+* Manual review by GCA TechOps to approve Pull Request.
 
 ## Installation
 

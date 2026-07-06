@@ -16,6 +16,10 @@ $location = [
     ]
 ];
 
+$temp0 = ( new fewacf\field_group( 'Documents - Updates', '202613021031a', $location, 30 ));
+$temp0->add_field( new acf_fields\wysiwyg( 'Documents - Updates', 'framework_documents_updates', '201902051044a', ) );
+$temp0->register();
+
 $temp1 = ( new fewacf\field_group( 'Documents - Buyer Guide', '202206011031a', $location, 30 ));
 $temp1->add_field( new acf_fields\wysiwyg( 'Documents - Buyer Guide', 'framework_customer_guide', '202206011031b' ) );
 $temp1->register();

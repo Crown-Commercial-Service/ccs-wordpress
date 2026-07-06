@@ -115,6 +115,18 @@ class SupplierRepository extends AbstractRepository
         return $query->execute();
     }
 
+    public function updateOnLiveField($searchField, $searchValue, bool $onLive)
+    {
+
+        $sql = 'UPDATE ' . $this->tableName . ' SET `on_live_frameworks` = :on_live_frameworks WHERE ' . $searchField . ' = :searchValue';
+
+        $query = $this->connection->prepare($sql);
+        $query->bindParam(':searchValue', $searchValue, \PDO::PARAM_STR);
+        $query->bindParam(':on_live_frameworks', $onLive, \PDO::PARAM_BOOL);
+
+        return $query->execute();
+    }
+
 
     /**
      * Bind PDO Values
@@ -178,7 +190,7 @@ class SupplierRepository extends AbstractRepository
 
         if (isset($databaseBindings['on_live_frameworks'])) {
             $onLiveFrameworks = $supplier->isOnLiveFrameworks();
-            $query->bindParam(':on_live_frameworks', $onLiveFrameworks, \PDO::PARAM_STR);
+            $query->bindParam(':on_live_frameworks', $onLiveFrameworks, \PDO::PARAM_BOOL);
         }
 
         if (isset($databaseBindings['crp_url'])) {
@@ -201,16 +213,17 @@ class SupplierRepository extends AbstractRepository
     public function findLotSuppliers($lotIds, $paginate = false, $limit = 20, $page = 0, $unique = false)
     {
         if ($unique) {
-            $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, ls.trading_name, s.phone_number, s.street, s.city, s.postcode, s.website, s.crp_url, s.country, ls.trading_name, IFNULL(ls.trading_name, s.name) as order_name FROM `ccs_suppliers` s
-JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
-WHERE ls.lot_id IN (\'' . $lotIds . '\')
-ORDER BY order_name';
+            $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, ls.trading_name, s.phone_number, s.street, s.city, s.postcode, s.website, s.crp_url, s.country, ls.trading_name, IFNULL(NULLIF(ls.trading_name, \'\'), s.name) as order_name 
+                FROM `ccs_suppliers` s
+                JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
+                WHERE ls.lot_id IN (\'' . $lotIds . '\')
+                ORDER BY order_name';
         } else {
-            $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, ls.trading_name, s.phone_number, s.street, s.city, s.postcode, s.website, s.crp_url, s.country, ls.contact_name, ls.contact_email, ls.trading_name, IFNULL(ls.trading_name, s.name) as order_name, IF(ISNULL(ls.guarantor_id), false, true) as haveGuarantor
-            FROM `ccs_suppliers` s
-JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
-WHERE ls.lot_id IN (\'' . $lotIds . '\')
-ORDER BY order_name';
+            $sql = 'SELECT DISTINCT s.id, s.salesforce_id, s.name, ls.trading_name, s.phone_number, s.street, s.city, s.postcode, s.website, s.crp_url, s.country, ls.contact_name, ls.contact_email, ls.trading_name, IFNULL(NULLIF(ls.trading_name, \'\'), s.name) as order_name, IF(ISNULL(ls.guarantor_id), false, true) as haveGuarantor
+                FROM `ccs_suppliers` s
+                JOIN `ccs_lot_supplier` ls ON ls.supplier_id=s.salesforce_id
+                WHERE ls.lot_id IN (\'' . $lotIds . '\')
+                ORDER BY order_name';
         }
 
         return $this->findAllSuppliers($sql, $paginate, $limit, $page);

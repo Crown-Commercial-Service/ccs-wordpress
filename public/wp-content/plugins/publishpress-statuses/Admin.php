@@ -52,7 +52,21 @@ class Admin
 
         do_action('publishpress_statuses_version_check');
 
-        if (get_option('publishpress_statuses_version') != PUBLISHPRESS_STATUSES_VERSION) {
+        $last_statuses_version = get_option('publishpress_statuses_version');
+
+        if ($last_statuses_version != PUBLISHPRESS_STATUSES_VERSION) {
+            if ('1.1.7-beta' == $last_statuses_version) {
+                // work around beta bug
+                delete_option('publishpress_status_positions');
+            }
+
+            if (!$last_statuses_version || version_compare($last_statuses_version, '1.1.7', '<')) {
+                // Ensure Visibility Statuses are enabled by default
+                if (null === get_option('presspermit_privacy_statuses_enabled', null)) {
+                    update_option('presspermit_privacy_statuses_enabled', 1);
+                }
+            }
+
             update_option('publishpress_statuses_version', PUBLISHPRESS_STATUSES_VERSION);
         }
     }
@@ -548,7 +562,7 @@ class Admin
 
         unset($moderation_statuses['future']);
 
-        $default_by_sequence = \PublishPress_Statuses::instance()->options->moderation_statuses_default_by_sequence;
+        $default_by_sequence = \PublishPress_Statuses::instance()->workflow_by_sequence;
 
         if ($post && $is_administrator && $default_by_sequence 
         && empty($post_status_obj->public) && empty($post_status_obj->private) && ('future' != $post_status) 
@@ -795,7 +809,7 @@ class Admin
         if ($force_planner_import || (
         $auto_import                     // Statuses < 1.0.3.2 updated archive array without performing import, and earlier versions did not save import version
         && ($queued_term_descriptions || empty($import_run_version) || version_compare($import_run_version, '1.0.3.2', '<')) 
-        && (!defined('PUBLISHPRESS_STATUSES_NO_AUTO_IMPORT')) && (!defined('PUBLISHPRESS_STATUSES_NO_PLANNER_IMPORT'))
+        && defined('PUBLISHPRESS_STATUSES_PLANNER_AUTO_IMPORT') && !defined('PUBLISHPRESS_STATUSES_NO_PLANNER_IMPORT')
         )) {
             // Failsafe mechanism will disable auto-import if this option is not deleted by the Planner import function.
             update_option('publishpress_statuses_planner_import_gmt', gmdate("Y-m-d H:i:s"));

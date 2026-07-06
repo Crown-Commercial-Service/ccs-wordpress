@@ -23,10 +23,6 @@ $fg1 = (new fewacf\field_group('Downloadable Resources Details', '202203293819a'
     ]
 ]));
 
-$fg1->add_field(new acf_fields\text('Link text', 'link_text', '202203294610a', [
-    'instructions' => 'Optionally add link text to display underneath the Downloadable Resources when listing it on the accordion component.'
-]));
-
 $fg1->add_field(new acf_fields\text('Downloadable Resource Type', 'downloadable_type', '202202255670a', [
     'default_value' => 'Downloadable Resource',
     'instructions' => 'This text appears above the main title on the gated form and specifies the type of downloadable resource. Default is Downloadable Resource.'

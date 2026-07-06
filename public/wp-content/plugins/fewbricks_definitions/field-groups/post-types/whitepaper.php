@@ -30,10 +30,6 @@ $fg1->add_field( new acf_fields\wysiwyg( 'Whitepaper Form Introduction', 'form_i
     'instructions' => 'Optional text to display above the form when requesting access to the Whitepaper'
 ] ) );
 
-$fg1->add_field( new acf_fields\text( 'Link text', 'link_text', '202001311744a', [
-    'instructions' => 'Optionally add link text to display underneath the Whitepaper when listing it.'
-] ) );
-
 $fg1->add_field( new acf_fields\text( 'Description', 'description', '202002050905a', [
     'instructions' => 'This hidden description is sent to Salesforce when the form is submitted.'
 ] ) );

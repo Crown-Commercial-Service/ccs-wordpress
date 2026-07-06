@@ -31,21 +31,33 @@ class cas_framework_schedules extends project_brick {
         
             ->add_sub_field( new acf_fields\file( 'Document', 'document', '202205171625c', [
                 'wrapper' => array (
-                    'width' => '50',
+                    'width' => '33',
                     'class' => '',
                     'id' => ''),
+                'required' => 1,
+            ] ) )
+
+            ->add_sub_field( new acf_fields\radio( 'Document type', 'document_type', '202512221008d', [
+                'wrapper' => array (
+                    'width' => '33',
+                    'class' => '',
+                    'id' => ''),
+                'choices' => array(
+                    'essential'	=> 'Essential document',
+                    'optional'	=> 'Optional document',
+                ),
                 'required' => 1,
             ] ) )
         
             ->add_sub_field( new acf_fields\radio( 'Document Usage', 'document_usage', '202205171625e', [
                 'wrapper' => array (
-                    'width' => '50',
+                    'width' => '33',
                     'class' => '',
                     'id' => ''),
                 'choices' => array(
                     'read_only'	=> 'Read only',
-                    'enter_detail'	=> 'You will need to enter details in this document',
-                    'enter_detail_optional'	=> 'If you use this schedule, you will need to enter details in this document',
+                    'enter_detail'	=> 'You must complete the relevant sections in this document',
+                    'enter_detail_optional'	=> 'If you use this document, you must complete the relevant sections',
                 ),
                 'required' => 1,
             ] ) )

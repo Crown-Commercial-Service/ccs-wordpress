@@ -47,6 +47,8 @@ class AIOWPSecurity_General_Init_Tasks {
 		if ('1' == $aio_wp_security->configs->get_value('aiowps_enable_rename_login_page')) {
 			add_action('widgets_init', array($this, 'remove_standard_wp_meta_widget'));
 			add_filter('retrieve_password_message', array($this, 'decode_reset_pw_msg'), 10, 4); //Fix for non decoded html entities in password reset link
+			// Gravity form preview exposed renamed login page when called auth_redirect
+			add_filter('login_url', array($this, 'login_url_reauth_redirect'), 10, 3);
 		}
 
 		if (AIOWPSecurity_Utility_Permissions::has_manage_cap() && is_admin()) {
@@ -225,7 +227,7 @@ class AIOWPSecurity_General_Init_Tasks {
 				add_filter('wp_die_handler', function () {
 					return function ($message, $title, $args) {
 						if ('Application passwords are not available.' == $message) {
-							$message = htmlspecialchars(__('Application passwords have been disabled by All In One WP Security & Firewall plugin.', 'all-in-one-wp-security-and-firewall'));
+							$message = htmlspecialchars(__('Application passwords have been disabled by All-In-One Security plugin.', 'all-in-one-wp-security-and-firewall'));
 						}
 						_default_wp_die_handler($message, $title, $args);
 					};
@@ -325,10 +327,30 @@ class AIOWPSecurity_General_Init_Tasks {
 
 		// filter php firewall templates array
 		add_filter('aiowps_modify_php_firewall_rules_template', array($this, 'filter_templates'), 10, 1);
-		
+
 		// For HTTP authentication.
 		if ('1' == $aio_wp_security->configs->get_value('aiowps_http_authentication_admin') || '1' == $aio_wp_security->configs->get_value('aiowps_http_authentication_frontend')) {
 			$this->http_authentication();
+		}
+
+		// for enforcing strong passwords
+		if ('1' == $aio_wp_security->configs->get_value('aiowps_enforce_strong_password')) {
+			wp_register_script('remove-weak-pw', AIO_WP_SECURITY_URL.'/js/remove-weak-pw.js', array('jquery'), AIO_WP_SECURITY_VERSION, true);
+			wp_enqueue_script('remove-weak-pw');
+		}
+		
+		// For HIBP.
+		if ('1' == $aio_wp_security->configs->get_site_value('aiowps_hibp_user_profile_update')) {
+			add_action('user_profile_update_errors', 'AIOS_HIBP::user_profile_update_check', 1, 3);
+		}
+
+		if ('1' == $aio_wp_security->configs->get_site_value('aiowps_http_password_reset')) {
+			add_action('validate_password_reset', 'AIOS_HIBP::password_reset_check', 1, 2);
+		}
+
+		// For Upgrade unsafe HTTP calls.
+		if ('1' == $aio_wp_security->configs->get_site_value('aiowps_upgrade_unsafe_http_calls')) {
+			add_filter('http_request_reject_unsafe_urls', array($this, 'http_request_reject_unsafe_urls'), 10, 2);
 		}
 
 		// Add more tasks that need to be executed at init time
@@ -532,11 +554,10 @@ class AIOWPSecurity_General_Init_Tasks {
 			$disabled_message .= '<tbody>';
 			$disabled_message .= '<tr id="disable-password">';
 			$disabled_message .= '<th>'.__('Disabled', 'all-in-one-wp-security-and-firewall').'</th>';
-			$disabled_message .= '<td>'.htmlspecialchars(__('Application passwords have been disabled by All In One WP Security & Firewall plugin.', 'all-in-one-wp-security-and-firewall'));
+			$disabled_message .= '<td>'.htmlspecialchars(__('Application passwords have been disabled by All-In-One Security plugin.', 'all-in-one-wp-security-and-firewall'));
 			if (AIOWPSecurity_Utility_Permissions::has_manage_cap()) {
-				$aiowps_additional_setting_url = 'admin.php?page=aiowpsec_userlogin&tab=additional';
-				$change_setting_url = is_multisite() ? network_admin_url($aiowps_additional_setting_url) : admin_url($aiowps_additional_setting_url);
-				$disabled_message .= '<p><a href="'.$change_setting_url.'"  class="button">'.__('Change setting', 'all-in-one-wp-security-and-firewall').'</a></p>';
+				$change_setting_url = admin_url('admin.php?page=aiowpsec_usersec&tab=additional');
+				$disabled_message .= '<p><a href="'.esc_url($change_setting_url).'"  class="button">'.__('Change setting', 'all-in-one-wp-security-and-firewall').'</a></p>';
 			} else {
 				$disabled_message .= ' '.__('Site admin can only change this setting.', 'all-in-one-wp-security-and-firewall');
 			}
@@ -630,12 +651,12 @@ class AIOWPSecurity_General_Init_Tasks {
 	 */
 	private function http_authentication() {
 		global $aio_wp_security;
-		
+
 		if (defined('AIOS_DISABLE_HTTP_AUTHENTICATION') && AIOS_DISABLE_HTTP_AUTHENTICATION) return;
 
-		$request_uri = parse_url(urldecode($_SERVER['REQUEST_URI']));
+		$request_uri = isset($_SERVER['REQUEST_URI']) ? wp_parse_url(urldecode($_SERVER['REQUEST_URI'])) : '';
 
-		$request_path = $request_uri['path'];
+		$request_path = isset($request_uri['path']) ? $request_uri['path'] : '';
 		$request_query = isset($request_uri['query']) ? $request_uri['query'] : '';
 
 		$non_logged_in_admin_ajax_request = !is_user_logged_in() && defined('DOING_AJAX') && DOING_AJAX;
@@ -674,6 +695,56 @@ class AIOWPSecurity_General_Init_Tasks {
 			echo $aiowps_failure_message_raw;
 			exit;
 		}
+	}
+
+	/**
+	 * Filters whether to pass URLs through wp_http_validate_url() in an HTTP request based on whether the url is in the url exceptions config.
+	 *
+	 * @global AIO_WP_Security $aio_wp_security
+	 *
+	 * @param bool   $pass_url Whether to pass URLs through wp_http_validate_url(). Default false.
+	 * @param string $url      The request URL.
+	 *
+	 * @return bool
+	 */
+	public function http_request_reject_unsafe_urls($pass_url, $url) {
+		global $aio_wp_security;
+
+		if ($pass_url) {
+			return true;
+		}
+
+		$parsed_url = parse_url($url); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Using the same function as WordPress in order to not preclude URLs that would be allowed by WordPress.
+
+		if (empty($parsed_url['scheme'])) { // The same weak sanity check used by the WordPress wp_remote_* functions.
+			return false;
+		}
+
+		if (empty($parsed_url['host']) || in_array($parsed_url['host'], array('localhost', '127.0.0.1', '[::1]'))) {
+			return false;
+		}
+
+		$upgrade_unsafe_http_calls_url_exceptions = $aio_wp_security->configs->get_site_value('aiowps_upgrade_unsafe_http_calls_url_exceptions');
+
+		if (!empty($upgrade_unsafe_http_calls_url_exceptions)) {
+			foreach (preg_split('/\R/', $upgrade_unsafe_http_calls_url_exceptions) as $exempt_url) {
+				$exempt_url = sanitize_url($exempt_url);
+
+				if (empty($exempt_url)) {
+					continue;
+				}
+
+				if (0 === strpos($exempt_url, '#')) {
+					continue;
+				}
+
+				if ($url === $exempt_url) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	public function buddy_press_signup_validate_captcha() {
@@ -715,6 +786,7 @@ class AIOWPSecurity_General_Init_Tasks {
 		global $aio_wp_security;
 		$locked = $aio_wp_security->user_login_obj->check_locked_user();
 		if (!empty($locked)) {
+			/* translators: %s: Error notification with strong HTML tag. */
 			$errors->add('authentication_failed', sprintf(__('%s: Your IP address is currently locked.', 'all-in-one-wp-security-and-firewall') . ' ' . __('Please contact the administrator.', 'all-in-one-wp-security-and-firewall'), '<strong>' . __('ERROR', 'all-in-one-wp-security-and-firewall') . '</strong>'));
 			return $errors;
 		}
@@ -722,6 +794,7 @@ class AIOWPSecurity_General_Init_Tasks {
 		$verify_captcha = $aio_wp_security->captcha_obj->verify_captcha_submit();
 		if (false === $verify_captcha) {
 			// wrong answer was entered
+			/* translators: %s: Error notification with strong HTML tag. */
 			$errors->add('authentication_failed', sprintf(__('%s: Your answer was incorrect - please try again.', 'all-in-one-wp-security-and-firewall'), '<strong>' . __('ERROR', 'all-in-one-wp-security-and-firewall') . '</strong>'));
 		}
 		return $errors;
@@ -782,17 +855,36 @@ class AIOWPSecurity_General_Init_Tasks {
 	}
 
 	/**
-	 * Re-wrote code which checks for REST API requests
+	 * Checks for REST API requests
 	 * Below uses the "rest_api_init" action hook to check for REST requests.
-	 * The code will block "unauthorized" requests whilst allowing genuine requests.
-	 * (P. Petreski June 2018)
+	 * It will block "unauthorized" requests whilst allowing genuine requests.
+	 * REST route will not be blocked if route is whitelisted or user is logged in and user role is allowed.
 	 *
 	 * @return void
 	 */
 	public function check_rest_api_requests() {
+		global $aio_wp_security;
+		
+		$is_whitelisted_route = false;
+		$rest_route = AIOWPSecurity_Utility::get_rest_route();
+		
+		if (empty($rest_route)) return; //rest_api_init is called getting rest server for non rest endpoint. example /wp-admin/post-new.php. WordPress 6.5.0 has wp_is_serving_rest_request we can not use.
+		
+		$aios_whitelisted_rest_routes = apply_filters('aios_whitelisted_rest_routes', $aio_wp_security->configs->get_value('aios_whitelisted_rest_routes'));
+		foreach ($aios_whitelisted_rest_routes as $whitelisted_rest_route) {
+			$whitelisted_rest_route = preg_quote($whitelisted_rest_route, '/');
+			// The 'wc/' rest route to match for white listed 'wc' not the 'wc-admin/' or other having wc
+			if (preg_match('/^'.$whitelisted_rest_route.'\//i', $rest_route)) {
+				$is_whitelisted_route = true;
+			}
+		}
+		
 		$rest_user = wp_get_current_user();
-		if (empty($rest_user->ID)) {
+		$is_disallowed_role = !empty($rest_user->roles) && !empty(array_intersect($rest_user->roles, $aio_wp_security->configs->get_value('aios_roles_disallowed_rest_requests'))) ? true : false;
+		 
+		if (!$is_whitelisted_route && (empty($rest_user->ID) || $is_disallowed_role)) {
 			$error_message = apply_filters('aiowps_rest_api_error_message', __('You are not authorized to perform this action.', 'all-in-one-wp-security-and-firewall'));
+			$aio_wp_security->debug_logger->log_debug('REST API request '.$rest_route.' was blocked, If this was unintentional whitelist "' . explode('/', $rest_route)[0] . '" the REST route.', 4);
 			wp_die($error_message, '', 403);
 		}
 	}
@@ -821,7 +913,7 @@ class AIOWPSecurity_General_Init_Tasks {
 		$rest_route = trim($rest_route, '/');
 		if ('' != $rest_route && !current_user_can('edit_others_posts')) {
 			if (preg_match('/wp\/v2\/users$/i', $rest_route)) {
-				$error = new WP_Error('aios_user_lists_forbidden', __('Listing users is forbidden.', 'all-in-one-wp-security-and-firewall'));
+				$error = new WP_Error('aios_user_lists_forbidden', __('Listing users is forbidden.', 'all-in-one-wp-security-and-firewall'), array('status' => 403));
 				$response = rest_ensure_response($error);
 			} elseif (preg_match('/wp\/v2\/users\/+(\d+)$/i', $rest_route, $matches)) {
 				$id = empty($matches) ? 0 : (int) $matches[1];
@@ -905,5 +997,29 @@ class AIOWPSecurity_General_Init_Tasks {
 		return array_filter($templates, function ($template) {
 			return AIOWPSecurity_Utility::apply_callback_filter($template, 'display_condition_callback');
 		});
+	}
+	
+	/**
+	 * This filter stops exposed renamed login URL using auth_redirect
+	 *
+	 * @param string|null $login_url    The login URL. Not HTML-encoded.
+	 * @param string      $redirect     The path to redirect to on login, if supplied.
+	 * @param bool        $force_reauth Whether to force reauthorization, even if a cookie is present.
+	 *
+	 * @return string The filtered login URL.
+	 */
+	public function login_url_reauth_redirect($login_url, $redirect, $force_reauth) {
+		// Ensure $login_url is a string to avoid deprecation warnings.
+		$login_url = isset($login_url) ? $login_url : '';
+
+		if (true === $force_reauth && !empty($redirect)) {
+			wp_die(
+				esc_html__('You do not have permission to access this page.', 'all-in-one-wp-security-and-firewall') . ' ' .
+				esc_html__('Please log in and try again.', 'all-in-one-wp-security-and-firewall'),
+				403
+			);
+		}
+
+		return $login_url;
 	}
 }

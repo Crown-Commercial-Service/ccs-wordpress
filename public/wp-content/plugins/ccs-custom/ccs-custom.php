@@ -11,6 +11,7 @@ include('library/custom-pages-filtering.php');
 include('library/editor-customisation.php');
 include('library/custom-taxonomies.php');
 include('library/custom-post-types.php');
+include('library/custom-event-archived-status.php');
 include('library/fewbricks-settings.php');
 include('library/expose-lot-fields.php');
 include('library/user-roles-fix.php');
@@ -21,7 +22,6 @@ include('library/responsive-oembed-videos.php');
 include('library/image-sizes.php');
 include('library/headless-cms.php');
 include('library/options-page.php');
-include('library/custom-revisionise.php');
 include('library/admin-styles.php');
 //include('library/admin-scripts.php');
 include('library/custom-queries.php');
@@ -39,6 +39,7 @@ include('library/add-custom-metafields-to-rest-api-orderby-enumerator.php');
 
 
 include('library/logger.php');
+include('library/sitemap.php');
 
 
 

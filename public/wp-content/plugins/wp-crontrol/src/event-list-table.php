@@ -5,7 +5,10 @@
 
 namespace Crontrol\Event;
 
+use DateTimeImmutable;
 use stdClass;
+
+use function Crontrol\php_cron_events_enabled;
 
 require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 
@@ -26,6 +29,13 @@ class Table extends \WP_List_Table {
 	 * @var bool Whether the user can create or edit PHP cron events.
 	 */
 	protected static $can_manage_php_crons;
+
+	/**
+	 * Whether PHP cron events are allowed.
+	 *
+	 * @var bool Whether PHP cron events are allowed.
+	 */
+	protected static $php_crons_enabled;
 
 	/**
 	 * Array of the count of each hook.
@@ -61,6 +71,7 @@ class Table extends \WP_List_Table {
 	public function prepare_items() {
 		self::$persistent_core_hooks = \Crontrol\get_persistent_core_hooks();
 		self::$can_manage_php_crons  = current_user_can( 'edit_files' );
+		self::$php_crons_enabled     = php_cron_events_enabled();
 		self::$count_by_hook         = count_by_hook();
 
 		$events = get();
@@ -104,18 +115,6 @@ class Table extends \WP_List_Table {
 						esc_html__( 'One or more of your cron events needs to be checked for integrity. These events will not run until you check and re-save them.', 'wp-crontrol' ),
 						'https://wp-crontrol.com/help/check-cron-events/',
 						esc_html__( 'Read what to do', 'wp-crontrol' )
-					);
-				}
-			);
-		} elseif ( $has_late && empty( $_GET['crontrol_action'] ) ) {
-			add_action(
-				'admin_notices',
-				function () {
-					printf(
-						'<div id="crontrol-late-message" class="notice notice-warning"><p>%1$s</p><p><a href="%2$s">%3$s</a></p></div>',
-						esc_html__( 'One or more cron events have missed their schedule.', 'wp-crontrol' ),
-						'https://wp-crontrol.com/help/missed-cron-events/',
-						esc_html__( 'More information', 'wp-crontrol' )
 					);
 				}
 			);
@@ -211,11 +210,11 @@ class Table extends \WP_List_Table {
 				sprintf(
 					/* translators: %s: UTC offset */
 					__( 'Next Run (%s)', 'wp-crontrol' ),
-					\Crontrol\get_utc_offset()
+					\Crontrol\get_timezone_location()
 				),
 			),
+			'crontrol_schedule'   => esc_html_x( 'Schedule', 'noun', 'wp-crontrol' ),
 			'crontrol_actions'    => esc_html__( 'Action', 'wp-crontrol' ),
-			'crontrol_schedule' => esc_html_x( 'Schedule', 'noun', 'wp-crontrol' ),
 		);
 	}
 
@@ -355,11 +354,7 @@ class Table extends \WP_List_Table {
 	public function single_row( $event ) {
 		$classes = array();
 
-		if ( ( 'crontrol_cron_job' === $event->hook ) && isset( $event->args[0]['syntax_error_message'] ) ) {
-			$classes[] = 'crontrol-error';
-		}
-
-		if ( integrity_failed( $event ) ) {
+		if ( self::row_has_error( $event ) ) {
 			$classes[] = 'crontrol-error';
 		}
 
@@ -390,6 +385,10 @@ class Table extends \WP_List_Table {
 			$classes[] = 'crontrol-paused';
 		}
 
+		if ( 'crontrol_cron_job' === $event->hook && ! php_cron_events_enabled() ) {
+			$classes[] = 'crontrol-inactive';
+		}
+
 		printf(
 			'<tr class="%s">',
 			esc_attr( implode( ' ', $classes ) )
@@ -414,7 +413,29 @@ class Table extends \WP_List_Table {
 
 		$links = array();
 
-		if ( ( 'crontrol_cron_job' !== $event->hook ) || self::$can_manage_php_crons ) {
+		if ( $event->timestamp === 1 ) {
+			// This is an event that is scheduled to run immediately. These only appear when there's a problem with
+			// the event runner, so the only link we need to show is the "Delete" link.
+			$link = array(
+				'page'                  => 'wp-crontrol',
+				'crontrol_action'       => 'delete-cron',
+				'crontrol_id'           => rawurlencode( $event->hook ),
+				'crontrol_sig'          => rawurlencode( $event->sig ),
+				'crontrol_next_run_utc' => '1',
+			);
+			$link = add_query_arg( $link, admin_url( 'tools.php' ) );
+			$link = wp_nonce_url( $link, "crontrol-delete-cron_{$event->hook}_{$event->sig}_{$event->timestamp}" );
+
+			$links[] = "<span class='delete'><a href='" . esc_url( $link ) . "'>" . esc_html__( 'Delete', 'wp-crontrol' ) . '</a></span>';
+
+			return $this->row_actions( $links );
+		}
+
+		// PHP cron events can be edited as long as they are enabled and the user has permission.
+		$can_edit = ( 'crontrol_cron_job' !== $event->hook ) || ( self::$can_manage_php_crons && self::$php_crons_enabled );
+		$has_error = self::row_has_error( $event );
+
+		if ( $can_edit ) {
 			$link = array(
 				'page'                  => 'wp-crontrol',
 				'crontrol_action'       => 'edit-cron',
@@ -437,7 +458,10 @@ class Table extends \WP_List_Table {
 			);
 		}
 
-		if ( ! is_paused( $event ) && ! integrity_failed( $event ) ) {
+		// PHP cron events can be run as long as they are enabled.
+		$can_run = ( ( 'crontrol_cron_job' !== $event->hook ) || self::$php_crons_enabled ) && ! $has_error;
+
+		if ( ! is_paused( $event ) && $can_run ) {
 			$link = array(
 				'page'                  => 'wp-crontrol',
 				'crontrol_action'       => 'run-cron',
@@ -475,6 +499,9 @@ class Table extends \WP_List_Table {
 			$links[] = "<a href='" . esc_url( $link ) . "'>" . esc_html__( 'Pause this hook', 'wp-crontrol' ) . '</a>';
 		}
 
+		$links = apply_filters( 'crontrol/event-actions', $links, $event );
+
+		// PHP cron events can be deleted even if they're disallowed, as long as the user has permission.
 		if ( ! in_array( $event->hook, self::$persistent_core_hooks, true ) && ( ( 'crontrol_cron_job' !== $event->hook ) || self::$can_manage_php_crons ) ) {
 			$link = array(
 				'page'                  => 'wp-crontrol',
@@ -486,7 +513,7 @@ class Table extends \WP_List_Table {
 			$link = add_query_arg( $link, admin_url( 'tools.php' ) );
 			$link = wp_nonce_url( $link, "crontrol-delete-cron_{$event->hook}_{$event->sig}_{$event->timestamp}" );
 
-			$links[] = "<span class='delete'><a href='" . esc_url( $link ) . "'>" . esc_html__( 'Delete', 'wp-crontrol' ) . '</a></span>';
+			$links[] = "<span class='delete'><a href='" . esc_url( $link ) . "' data-crontrol-delete-event>" . esc_html__( 'Delete', 'wp-crontrol' ) . '</a></span>';
 		}
 
 		if ( 'crontrol_cron_job' !== $event->hook && 'crontrol_url_cron_job' !== $event->hook ) {
@@ -511,7 +538,7 @@ class Table extends \WP_List_Table {
 				);
 
 				$links[] = sprintf(
-					'<span class="delete"><a href="%1$s">%2$s</a></span>',
+					'<span class="delete"><a href="%1$s" data-crontrol-delete-hook>%2$s</a></span>',
 					esc_url( $link ),
 					esc_html( $text )
 				);
@@ -519,6 +546,21 @@ class Table extends \WP_List_Table {
 		}
 
 		return $this->row_actions( $links );
+	}
+
+	/**
+	 * @param stdClass $event The cron event for the current row.
+	 */
+	private static function row_has_error( $event ): bool {
+		if ( 'crontrol_cron_job' === $event->hook && isset( $event->args[0]['syntax_error_message'] ) ) {
+			return true;
+		}
+
+		if ( 'crontrol_url_cron_job' === $event->hook && isset( $event->args[0]['url_error_message'] ) ) {
+			return true;
+		}
+
+		return integrity_failed( $event );
 	}
 
 	/**
@@ -583,9 +625,15 @@ class Table extends \WP_List_Table {
 				$output = esc_html__( 'PHP cron event', 'wp-crontrol' );
 			}
 
-			if ( integrity_failed( $event ) ) {
+			if ( ! php_cron_events_enabled() ) {
 				$output .= sprintf(
-					' &mdash; <strong class="status-crontrol-check post-state"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %s</strong>',
+					' &mdash; <strong class="status-crontrol-inactive post-state"><span class="dashicons dashicons-controls-pause" aria-hidden="true"></span> %s</strong>',
+					/* translators: State of a cron event, adjective */
+					esc_html__( 'Inactive', 'wp-crontrol' )
+				);
+			} elseif ( integrity_failed( $event ) ) {
+				$output .= sprintf(
+					' &mdash; <strong class="status-crontrol-inactive post-state"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %s</strong>',
 					esc_html__( 'Needs checking', 'wp-crontrol' )
 				);
 			}
@@ -620,6 +668,12 @@ class Table extends \WP_List_Table {
 				$output = esc_html__( 'URL cron event', 'wp-crontrol' );
 			}
 
+			if ( isset( $event->args[0]['url_error_message'] ) ) {
+				$output .= '<br><span class="status-crontrol-error"><span class="dashicons dashicons-warning" aria-hidden="true"></span> ';
+				$output .= esc_html( $event->args[0]['url_error_message'] );
+				$output .= '</span>';
+			}
+
 			return $output;
 		}
 
@@ -627,7 +681,7 @@ class Table extends \WP_List_Table {
 
 		if ( is_paused( $event ) ) {
 			$output .= sprintf(
-				' &mdash; <strong class="status-crontrol-paused post-state"><span class="dashicons dashicons-controls-pause" aria-hidden="true"></span> %s</strong>',
+				' &mdash; <strong class="status-crontrol-inactive post-state"><span class="dashicons dashicons-controls-pause" aria-hidden="true"></span> %s</strong>',
 				/* translators: State of a cron event, adjective */
 				esc_html__( 'Paused', 'wp-crontrol' )
 			);
@@ -650,6 +704,13 @@ class Table extends \WP_List_Table {
 	 * @return string The cell output.
 	 */
 	protected function column_crontrol_actions( $event ) {
+		if ( 'crontrol_cron_job' === $event->hook && ! php_cron_events_enabled() ) {
+			return sprintf(
+				'<span class="status-crontrol-warning"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %s</span>',
+				esc_html__( 'PHP cron events are disabled.', 'wp-crontrol' )
+			);
+		}
+
 		$hook_callbacks = \Crontrol\get_hook_callbacks( $event->hook );
 
 		if ( 'crontrol_cron_job' === $event->hook || 'crontrol_url_cron_job' === $event->hook ) {
@@ -661,11 +722,26 @@ class Table extends \WP_List_Table {
 				$callbacks[] = \Crontrol\output_callback( $callback );
 			}
 
+			if ( $event->hook === 'action_scheduler_run_queue' ) {
+				$callbacks[] = '';
+				$callbacks[] = sprintf(
+					'<span class="status-crontrol-info"><span class="dashicons dashicons-info" aria-hidden="true"></span> <a href="%s">%s</a></span>',
+					admin_url( 'tools.php?page=action-scheduler' ),
+					esc_html__( 'View the scheduled actions here &raquo;', 'wp-crontrol' )
+				);
+			}
+
 			return implode( '<br>', $callbacks ); // WPCS:: XSS ok.
 		} else {
+			$help = sprintf(
+				'<a href="%s">%s</a>',
+				'https://wp-crontrol.com/help/no-action-cron-events/',
+				esc_html__( 'Help', 'wp-crontrol' )
+			);
 			return sprintf(
-				'<span class="status-crontrol-warning"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %s</span>',
-				esc_html__( 'None', 'wp-crontrol' )
+				'<span class="status-crontrol-warning"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %1$s</span> (%2$s)',
+				esc_html__( 'None', 'wp-crontrol' ),
+				$help,
 			);
 		}
 	}
@@ -677,22 +753,61 @@ class Table extends \WP_List_Table {
 	 * @return string The cell output.
 	 */
 	protected function column_crontrol_next( $event ) {
-		$date_local_format = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
-		$offset_site = get_date_from_gmt( 'now', 'P' );
-		$offset_event = get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $event->timestamp ), 'P' );
-
-		// If the timezone of the date of the event is different from the site timezone, add a marker.
-		if ( $offset_site !== $offset_event ) {
-			$date_local_format .= ' (P)';
+		if ( $event->timestamp === 1 ) {
+			return sprintf(
+				'<span class="status-crontrol-warning"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %s</span>',
+				esc_html__( 'Immediately', 'wp-crontrol' ),
+			);
 		}
 
-		$date_utc   = gmdate( 'c', $event->timestamp );
-		$date_local = get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $event->timestamp ), $date_local_format );
+		$time_format = 'g:i a';
+
+		$event_datetime_utc = gmdate( 'Y-m-d H:i:s', $event->timestamp );
+
+		$timezone_local  = wp_timezone();
+		$event_local     = get_date_from_gmt( $event_datetime_utc, 'Y-m-d' );
+		$today_local     = ( new DateTimeImmutable( 'now', $timezone_local ) )->format( 'Y-m-d' );
+		$tomorrow_local  = ( new DateTimeImmutable( 'tomorrow', $timezone_local ) )->format( 'Y-m-d' );
+		$yesterday_local = ( new DateTimeImmutable( 'yesterday', $timezone_local ) )->format( 'Y-m-d' );
+
+		// If the offset of the date of the event is different from the offset of the site, add a marker.
+		if ( get_date_from_gmt( $event_datetime_utc, 'P' ) !== get_date_from_gmt( 'now', 'P' ) ) {
+			$time_format .= ' (P)';
+		}
+
+		$event_time_local = get_date_from_gmt( $event_datetime_utc, $time_format );
+
+		if ( $event_local === $today_local ) {
+			$date = sprintf(
+				/* translators: %s: Time */
+				__( 'Today at %s', 'wp-crontrol' ),
+				$event_time_local,
+			);
+		} elseif ( $event_local === $tomorrow_local ) {
+			$date = sprintf(
+				/* translators: %s: Time */
+				__( 'Tomorrow at %s', 'wp-crontrol' ),
+				$event_time_local,
+			);
+		} elseif ( $event_local === $yesterday_local ) {
+			$date = sprintf(
+				/* translators: %s: Time */
+				__( 'Yesterday at %s', 'wp-crontrol' ),
+				$event_time_local,
+			);
+		} else {
+			$date = sprintf(
+				/* translators: 1: Date, 2: Time */
+				__( '%1$s at %2$s', 'wp-crontrol' ),
+				get_date_from_gmt( $event_datetime_utc, 'F jS' ),
+				$event_time_local,
+			);
+		}
 
 		$time = sprintf(
 			'<time datetime="%1$s">%2$s</time>',
-			esc_attr( $date_utc ),
-			esc_html( $date_local )
+			esc_attr( gmdate( 'c', $event->timestamp ) ),
+			esc_html( $date )
 		);
 
 		$until = $event->timestamp - time();
@@ -705,17 +820,33 @@ class Table extends \WP_List_Table {
 				__( '%s ago', 'wp-crontrol' ),
 				\Crontrol\interval( abs( $until ) )
 			);
+			$help = sprintf(
+				'<a href="%s">%s</a>',
+				'https://wp-crontrol.com/help/missed-cron-events/',
+				esc_html__( 'Help', 'wp-crontrol' )
+			);
 			return sprintf(
-				'%s<br><span class="status-crontrol-warning"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %s</span>',
+				'<span class="status-crontrol-warning"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %s</span> (%s)<br>%s',
+				esc_html( $ago ),
+				$help,
 				$time,
-				esc_html( $ago )
+			);
+		}
+
+		if ( $until <= 0 ) {
+			$in = __( 'Now', 'wp-crontrol' );
+		} else {
+			$in = sprintf(
+				/* translators: %s: Time period, for example "8 minutes" */
+				__( 'In %s', 'wp-crontrol' ),
+				\Crontrol\interval( $until ),
 			);
 		}
 
 		return sprintf(
 			'%s<br>%s',
+			esc_html( $in ),
 			$time,
-			esc_html( \Crontrol\interval( $until ) )
 		);
 	}
 

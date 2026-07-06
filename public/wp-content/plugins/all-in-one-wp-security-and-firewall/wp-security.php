@@ -1,12 +1,12 @@
 <?php
 // @codingStandardsIgnoreStart
 /*
-Plugin Name: All In One WP Security
-Version: 5.3.8
+Plugin Name: All-In-One Security (AIOS)
+Version: 5.4.3
 Plugin URI: https://wordpress.org/plugins/all-in-one-wp-security-and-firewall/
 Update URI: https://wordpress.org/plugins/all-in-one-wp-security-and-firewall/
 Author: TeamUpdraft, DavidAnderson
-Author URI: https://aiosplugin.com/
+Author URI: https://teamupdraft.com/all-in-one-security/?utm_source=aios-plugin&utm_medium=referral&utm_campaign=paac&utm_content=plugin-author-info&utm_creative_format=text
 Description: All round best WordPress security plugin!
 Text Domain: all-in-one-wp-security-and-firewall
 Domain Path: /languages
@@ -40,10 +40,12 @@ function aiowps_php_version_notice() {
 
 	?>
 	<div class="notice notice-error is-dismissible">
-		<p><strong><?php _e('All In One WP Security and Firewall', 'all-in-one-wp-security-and-firewall'); ?></strong></p>
-		<p><?php _e('All In One WP Security and Firewall plugin has been deactivated.', 'all-in-one-wp-security-and-firewall');?></p>
-		<p><?php printf(htmlspecialchars(__('This plugin requires PHP version %s.', 'all-in-one-wp-security-and-firewall')), '<strong>5.6+</strong>'); ?></p>
-		<p><?php printf(htmlspecialchars(__('Your current PHP version is %s.', 'all-in-one-wp-security-and-firewall')), '<strong>'.phpversion().'</strong>'); ?></p>
+		<p><strong><?php esc_html_e('All In One WP Security', 'all-in-one-wp-security-and-firewall'); ?></strong></p>
+		<p><?php esc_html_e('All In One WP Security plugin has been deactivated.', 'all-in-one-wp-security-and-firewall');?></p>
+		<?php /* translators: %s: Required PHP version */ ?>
+		<p><?php printf(esc_html__('This plugin requires PHP version %s.', 'all-in-one-wp-security-and-firewall'), '<strong>5.6+</strong>'); ?></p>
+		<?php /* translators: %s: PHP version */ ?>
+		<p><?php printf(esc_html__('Your current PHP version is %s.', 'all-in-one-wp-security-and-firewall'), '<strong>'.phpversion().'</strong>'); ?></p>
 		<p><?php _e('You will need to ask your web hosting company to upgrade.', 'all-in-one-wp-security-and-firewall'); ?></p>
 	</div>
 	<?php

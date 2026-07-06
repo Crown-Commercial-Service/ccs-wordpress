@@ -243,11 +243,11 @@ AND l.salesforce_id IS NOT NULL';
     {
 
         $sql = 'SELECT l.* FROM `ccs_frameworks` f
-JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
-WHERE f.rm_number = \'' . $id  . '\'
-AND l.salesforce_id IS NOT NULL';
+            JOIN `ccs_lots` l ON f.salesforce_id = l.framework_id
+            WHERE f.rm_number = :rm_number
+            AND l.salesforce_id IS NOT NULL';
 
-        return $this->findAllLots($sql);
+        return $this->findAllLots($sql, false, 20, 0, [":rm_number" => $id]);
     }
 
     /**
@@ -300,13 +300,20 @@ EOD;
      * @param int $page
      * @return mixed
      */
-    public function findAllLots($sql = null, $paginate = false, $limit = 20, $page = 0)
+    public function findAllLots($sql = null, $paginate = false, $limit = 20, $page = 0, $binding = [])
     {
         if ($paginate) {
             $sql = $this->addPaginationQuery($sql, $limit, $page);
         }
         try {
             $query = $this->connection->prepare($sql);
+
+            //manually binding params to prevent SQL injection
+            if (!empty($binding)) {
+                foreach ($binding as $key => $value) {
+                    $query->bindParam($key, $value, \PDO::PARAM_STR);
+                }
+            }
 
             $query->execute();
 

@@ -32,6 +32,14 @@ if (!function_exists('modify_featured_news')) {
                 $productsServices = processApiTaxonomyList($component['feature_news_feature_news_products_and_services']);
                 $sectors          = processApiTaxonomyList($component['feature_news_feature_news_sectors']);
 
+                $urlLink = '/news';
+                $params = []; 
+                $newsTypes ? $params['categories'] = implode(',', $newsTypes) : null;
+                $productsServices ? $params['products_services'] = implode(',', $productsServices) : null;
+                $sectors ? $params['sectors'] = implode(',', $sectors) : null;
+
+                $response->data['acf'][$component_type][$iteration]['feature_news_link'] = !empty($params) ? $urlLink .= '?' . http_build_query($params) : $urlLink;;
+
                 if($numQueryArticles > 0 && (!empty($productsServices) || !empty($sectors))) {
                     // Get query parameters (defined by the user in the CMS
 

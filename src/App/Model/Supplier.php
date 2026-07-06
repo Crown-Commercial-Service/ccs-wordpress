@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use App\Traits\SalesforceMappingTrait;
+use App\Utils\YamlLoader;
 
 class Supplier extends AbstractModel
 {
@@ -80,10 +81,10 @@ class Supplier extends AbstractModel
      * @var bool
      */
     protected $haveGuarantor = false;
-
-
-    protected $lastModifiedDate;
-
+    /**
+     * @var bool
+     */
+    protected $websiteContact;
 
     /**
      * @return string
@@ -408,15 +409,12 @@ class Supplier extends AbstractModel
         return $this;
     }
 
-
-    public function getLastModifiedDate()
+    /**
+     * @return bool
+     */
+    public function isWebsiteContact(): bool
     {
-        return $this->lastModifiedDate;
-    }
-
-    public function setLastModifiedDate($lastModifiedDate)
-    {
-        $this->lastModifiedDate = $lastModifiedDate;
+        return filter_var($this->websiteContact, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
@@ -439,7 +437,18 @@ class Supplier extends AbstractModel
             'website'             => $this->getWebsite(),
             'crp_url'             => $this->getCrpUrl(),
             'trading_name'        => $this->getTradingName(),
-
         ];
+    }
+
+    public function setData($data)
+    {
+        $mappings = YamlLoader::loadMappings('MDM_supplier');
+
+        foreach ($mappings as $property => $apiField) {
+            if (array_key_exists($apiField, $data) && property_exists($this, $property)) {
+                $data[$apiField] = $data[$apiField] === "" ? null : $data[$apiField];
+                $this->$property = $data[$apiField];
+            }
+        }
     }
 }

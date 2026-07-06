@@ -40,25 +40,10 @@ add_action("add_meta_boxes", function(){
         // URLs are correct in WordPress for the following post types
         $correctUrls = ['post', 'page'];
 
-        if (in_array($type, $correctUrls)) {
-
-            echo <<<EOD
-
-<p><a href="$link">View page on front-end website</a></p>
-
-<p>Environment: <strong style="padding: 0.3em 0.6em; background-color: $colour">$env</strong></span></p>
-
-EOD;
-
-        } else {
-
-            echo <<<EOD
-
-<p>Environment: <strong style="padding: 0.3em 0.6em; background-color: $colour">$env</strong></span></p>
-
-EOD;
-
-        }
+    if (in_array($type, $correctUrls)) {
+        echo '<p><a href="' . esc_url($link) . '">View page on front-end website</a></p>';
+    }
+    echo '<p>Environment: <strong style="padding: 0.3em 0.6em; background-color: ' . esc_attr($colour) . '">' . esc_html($env) . '</strong></p>';
 
     }, null, "side", "high", null);
 });

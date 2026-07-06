@@ -3,6 +3,7 @@ namespace Aws;
 
 use Aws\Exception\AwsException;
 use GuzzleHttp\Promise\Coroutine;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\PromisorInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 
@@ -84,12 +85,16 @@ class Waiter implements PromisorInterface
                 'The provided "before" callback is not callable.'
             );
         }
+        MetricsBuilder::appendMetricsCaptureMiddleware(
+            $this->client->getHandlerList(),
+            MetricsBuilder::WAITER
+        );
     }
 
     /**
      * @return Coroutine
      */
-    public function promise()
+    public function promise(): PromiseInterface
     {
         return Coroutine::of(function () {
             $name = $this->config['operation'];
@@ -255,6 +260,12 @@ class Waiter implements PromisorInterface
      */
     private function matchesError($result, array $acceptor)
     {
+        // If expected is true then the $result should be an instance of
+        // AwsException, otherwise it should not.
+        if (isset($acceptor['expected']) && is_bool($acceptor['expected'])) {
+            return $acceptor['expected'] === ($result instanceof AwsException);
+        }
+
         if ($result instanceof AwsException) {
             return $result->isConnectionError()
                 || $result->getAwsErrorCode() == $acceptor['expected'];

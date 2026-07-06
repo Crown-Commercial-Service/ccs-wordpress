@@ -2,6 +2,8 @@
 
 namespace App\Model;
 
+use App\Utils\YamlLoader;
+use Datetime;
 use App\Traits\SalesforceMappingTrait;
 
 class Lot extends AbstractModel
@@ -48,6 +50,8 @@ class Lot extends AbstractModel
      * @var bool
      */
     protected $hideSuppliers = false;
+
+    protected $hideLot = false;
 
     /**
      * @return string
@@ -201,7 +205,8 @@ class Lot extends AbstractModel
         if (!$this->expiryDate) {
             return null;
         }
-        return $this->expiryDate;
+
+        return is_string($this->expiryDate) ? new DateTime($this->expiryDate) : $this->expiryDate;
     }
 
     /**
@@ -239,6 +244,22 @@ class Lot extends AbstractModel
     }
 
     /**
+     * @return bool
+     */
+    public function isHideLot(): bool
+    {
+        return $this->hideLot;
+    }
+
+    /**
+     * @param bool $hideLot
+     */
+    public function setHideLot(bool $hideLot): void
+    {
+        $this->hideLot = $hideLot;
+    }
+
+    /**
      * Returns a simple text array representing the object
      *
      * @return array
@@ -257,5 +278,16 @@ class Lot extends AbstractModel
           'expiry_date'     => !empty($this->getExpiryDate()) ? $this->getExpiryDate()->format('Y-m-d') : null,
           'suppliers'       => null,
         ];
+    }
+
+    public function setData($data)
+    {
+        $mappings = YamlLoader::loadMappings('MDM_lot');
+
+        foreach ($mappings as $property => $apiField) {
+            if (array_key_exists($apiField, $data) && property_exists($this, $property)) {
+                $this->$property = $data[$apiField];
+            }
+        }
     }
 }

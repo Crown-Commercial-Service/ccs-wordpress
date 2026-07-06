@@ -54,7 +54,7 @@ class AIO_WP_Security_Simba_Two_Factor_Authentication_Plugin extends Simba_Two_F
 		
 		$this->set_plugin_translate_url('https://translate.wordpress.org/projects/wp-plugins/all-in-one-wp-security-and-firewall/');
 		$this->set_site_wide_administration_url(admin_url('admin.php?page=aiowpsec_settings&tab=two-factor-authentication'));
-		$this->set_premium_version_url('https://aiosplugin.com');
+		$this->set_premium_version_url('https://teamupdraft.com/all-in-one-security/pricing/?utm_source=aios-plugin&utm_medium=referral&utm_campaign=paac&utm_content=emergency-codes-feature&utm_creative_format=text');
 		$this->set_faq_url('https://wordpress.org/plugins/all-in-one-wp-security-and-firewall/#faq');
 		parent::__construct();
 	}
@@ -117,8 +117,8 @@ class AIO_WP_Security_Simba_Two_Factor_Authentication_Plugin extends Simba_Two_F
 		global $current_user;
 		if ($this->is_activated_for_user($current_user->ID)) {
 			if (!AIOWPSecurity_Utility_Permissions::has_manage_cap()) {
-				$menu_icon_url = AIO_WP_SECURITY_URL . '/images/plugin-icon.png';
-				add_menu_page(__('WP Security', 'all-in-one-wp-security-and-firewall'), __('WP Security', 'all-in-one-wp-security-and-firewall'), apply_filters('aios_management_permission', 'manage_options'), AIOWPSEC_MAIN_MENU_SLUG, '', $menu_icon_url);
+				$menu_icon_url = AIO_WP_SECURITY_URL . '/images/aios-plugin-icon.svg';
+				add_menu_page(__('AIOS', 'all-in-one-wp-security-and-firewall'), __('AIOS', 'all-in-one-wp-security-and-firewall'), apply_filters('aios_management_permission', 'manage_options'), AIOWPSEC_MAIN_MENU_SLUG, '', $menu_icon_url);
 			}
 			add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Two Factor Auth', 'all-in-one-wp-security-and-firewall'),  __('Two Factor Auth', 'all-in-one-wp-security-and-firewall'), 'read', AIOWPSEC_TWO_FACTOR_AUTH_MENU_SLUG, array($this, 'show_dashboard_user_settings_page'));
 		}
@@ -192,7 +192,7 @@ class AIO_WP_Security_Simba_Two_Factor_Authentication_Plugin extends Simba_Two_F
 	 * Runs conditionally on the WP action all_admin_notices.
 	 */
 	public function admin_notice_missing_mcrypt_and_openssl() {
-		$this->show_admin_warning('<strong>'.__('PHP OpenSSL or mcrypt module required', 'all-in-one-wp-security-and-firewall').'</strong><br> '.__('The All In One WP Security plugin\'s Two Factor Authentication module requires either the PHP openssl (preferred) or mcrypt module to be installed.', 'all-in-one-wp-security-and-firewall') . ' ' . __('Please ask your web hosting company to install one of them.', 'all-in-one-wp-security-and-firewall'), 'error');
+		$this->show_admin_warning('<strong>'.__('PHP OpenSSL or mcrypt module required', 'all-in-one-wp-security-and-firewall').'</strong><br> '.__('The All-In-One Security plugin\'s Two Factor Authentication module requires either the PHP openssl (preferred) or mcrypt module to be installed.', 'all-in-one-wp-security-and-firewall') . ' ' . __('Please ask your web hosting company to install one of them.', 'all-in-one-wp-security-and-firewall'), 'error');
 	}
 }
 

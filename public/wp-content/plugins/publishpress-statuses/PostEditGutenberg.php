@@ -36,10 +36,12 @@ class PostEditGutenberg
             return;
         }
 
-        // Gutenberg Block Editor support for workflow status progression guidance / limitation
-        require_once(__DIR__ . '/PostEditGutenbergStatuses.php');
-        PostEditGutenbergStatuses::loadBlockEditorStatusGuidance();
-
+        if (!\PublishPress_Statuses::instance()->workflow_disabled) {
+            // Gutenberg Block Editor support for workflow status progression guidance / limitation
+            require_once(__DIR__ . '/PostEditGutenbergStatuses.php');
+            PostEditGutenbergStatuses::loadBlockEditorStatusGuidance();
+        }
+        
         $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '.dev' : '';
 
         $filename = 
@@ -161,8 +163,11 @@ class PostEditGutenberg
         if (!empty($args['moderation'])) {
 	        $draft_obj = get_post_status_object('draft');
 	
+
+            $icon = (isset($draft_obj->icon)) ? $draft_obj->icon : '';
+
 	        $ordered_statuses = array_merge(
-	            ['draft' => (object)['name' => 'draft', 'label' => esc_html(\PublishPress_Statuses::__wp('Draft')), 'icon' => $draft_obj->icon, 'color' => $draft_obj->color]],
+	            ['draft' => (object)['name' => 'draft', 'label' => esc_html(\PublishPress_Statuses::__wp('Draft')), 'icon' => $icon, 'color' => $draft_obj->color]],
 	
 	            array_diff_key(
 	                    \PublishPress_Statuses::getPostStati($args, 'object'),

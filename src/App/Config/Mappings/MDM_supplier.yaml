@@ -1,0 +1,15 @@
+salesforceId: SupplierSalesforceID
+dunsNumber: DUNS
+name: SupplierName
+phoneNumber: ContactPhone
+street: Street
+city: City
+postcode: PostCode
+country: Country
+website: Website
+tradingName: TradingName
+crpUrl: crpURL
+crpStatus: crpStatus
+contactName: ContactName
+contactEmail: ContactEmail
+websiteContact: WebsiteContact

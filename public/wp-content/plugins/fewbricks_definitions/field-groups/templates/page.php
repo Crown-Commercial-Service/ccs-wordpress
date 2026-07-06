@@ -148,5 +148,14 @@ $field_group->register();
 
 
 
+$contact_field_group = ( new fewacf\field_group( 'Contact Form', '202509161424a', $location, 70, [
+    'position' => 'acf_after_title',
+    'names_of_items_to_hide_on_screen' => [
+        'excerpt',
+        'the_content'
+    ]
+]));
 
+$contact_field_group->add_brick((new bricks\inline_contact_form('contact_form', '202509161424b')));
 
+$contact_field_group->register();

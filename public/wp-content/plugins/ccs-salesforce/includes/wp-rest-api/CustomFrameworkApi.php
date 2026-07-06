@@ -388,15 +388,13 @@ class CustomFrameworkApi
                     $documentsArray[$key][$typeOfSchedules . '_document'] = $attachment['url'];
                 }
 
-                if($typeOfSchedules != "framework_schedule"){
-                    switch ($eachEntry[$typeOfSchedules . '_document_type']) {
-                        case 'essential':
-                            $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Essential document';
-                            break;
-                        case 'optional':
-                            $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Optional document';
-                            break;
-                    }
+                switch ($eachEntry[$typeOfSchedules . '_document_type']) {
+                    case 'essential':
+                        $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Essential';
+                        break;
+                    case 'optional':
+                        $documentsArray[$key][$typeOfSchedules . '_document_type'] = 'Optional';
+                        break;
                 }
 
                 switch ($eachEntry[$typeOfSchedules . '_document_usage']) {
@@ -404,10 +402,10 @@ class CustomFrameworkApi
                         $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'Read only';
                         break;
                     case 'enter_detail':
-                        $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'You will need to enter details in this document';
+                        $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'You must complete the relevant sections in this document';
                         break;
                     case 'enter_detail_optional':
-                        $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'If you use this schedule, you will need to enter details in this document';
+                        $documentsArray[$key][$typeOfSchedules . '_document_usage'] = 'If you use this document, you must complete the relevant sections';
                         break;
                 }
                 $documentsArray[$key][$typeOfSchedules . '_file_size'] = $attachment["filesize"];

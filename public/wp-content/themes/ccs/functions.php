@@ -679,47 +679,6 @@ function sort_by_modified($args, $request)
 }
 add_filter('rest_post_query', 'sort_by_modified', 10, 2);
 
-/**
- * Get pending review widget back. S3 uploads currently affecting this so this is a temporary fix until we can get a new revisonize replacement
- */
-function wpdocs_add_dashboard_widgets()
-{
-	wp_add_dashboard_widget('dashboard_widget', 'Revisonized Posts Need Reviewing', 'do_dashboard_widget');
-}
-
-add_action('wp_dashboard_setup', 'wpdocs_add_dashboard_widgets');
-
-function do_dashboard_widget()
-{
-	$posts = get_posts(array(
-		'post_type'   => 'any',
-		'post_status' => 'pending',
-		'meta_query'  => array(
-			array(
-				'key'     => '_post_revision_of',
-				'compare' => 'EXISTS',
-			)
-		)
-	));
-
-	if (empty($posts)) {
-		_e('No posts need reviewed at this time!', 'revisionize');
-	}
-
-	echo '<ul>';
-
-	foreach ($posts as $post) {
-		printf(
-			'<li><a href="%s">%s</a> - %s</li>',
-			get_edit_post_link($post->ID),
-			get_the_title($post->ID),
-			get_the_author_meta('nicename', $post->post_author)
-		);
-	}
-
-	echo '</ul>';
-}
-
 // fix for files saved as google docs as bug in php 7 doesn't allow these file types on wordpress
 function filetype_fix_wp_check_filetype_and_ext($wp_check_filetype_and_ext, $file, $filename, $mimes, $real_mime)
 {
@@ -801,4 +760,57 @@ function enqueue_jquery_modal_for_new_posts()
 
 add_action('admin_enqueue_scripts', 'enqueue_jquery_modal_for_new_posts');
 
+add_action('rest_api_init', function () {
+    register_rest_field('post', 'author_image_url', [
+        'get_callback' => function($post) {
+            $image_id = get_field('author_image', $post['id']);
+            if ($image_id) {
+                $image_url = wp_get_attachment_image_url($image_id, 'full');
+                return $image_url ? $image_url : null;
+            }
+            return null;
+        },
+        'schema' => [
+            'description' => 'Author Image URL',
+            'type' => 'string'
+        ]
+    ]);
+});
 
+
+/**
+ * Register the /wp-json/acf/v3/posts endpoint so it will be cached.
+ */
+function wprc_add_acf_posts_endpoint( $allowed_endpoints ) {
+    if ( ! isset( $allowed_endpoints[ '/wp/v2/pages' ] ) || ! in_array( 'pages', $allowed_endpoints[ '/wp/v2/pages' ] ) ) {
+        $allowed_endpoints[ '/wp/v2/pages' ][] = 'pages';
+    }
+    return $allowed_endpoints;
+}
+add_filter( 'wp_rest_cache/allowed_endpoints', 'wprc_add_acf_posts_endpoint', 10, 1);
+
+function removeMenuOptionForNonAdmins() {
+	if ( !current_user_can( 'administrator' ) ) {
+		remove_menu_page( 'tools.php' ); // Tools
+		remove_menu_page( 'edit.php?post_type=lot'); 
+		remove_menu_page( 'supplier.php' ); 
+		remove_menu_page( 'publishpress-statuses' ); 
+		remove_menu_page('pp-calendar');
+
+	}
+}
+
+add_action( 'admin_menu', 'removeMenuOptionForNonAdmins', 99 );
+
+add_action('admin_menu', function () {   
+  global $menu;
+  $menu[50] = ['', 'read', '' , '', 'wp-menu-separator',];
+});
+
+add_action('admin_head', function () {
+	echo '<style>
+        #adminmenu .wp-menu-separator {
+			background-color: white;
+        }
+    </style>';
+});

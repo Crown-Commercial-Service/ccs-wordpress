@@ -10,16 +10,16 @@ https://github.com/Crown-Commercial-Service/ccs-frontend/blob/development/config
 **DEV -> PREPROD(UAT) -> PROD**
 
 ### Backend 
-* DEV = https://webdev-cms.crowncommercial.gov.uk/
-* UAT = https://webuat-cms.crowncommercial.gov.uk/
-* PROD = https://webprod-cms.crowncommercial.gov.uk/
+* DEV = https://webdev-cms.gca.gov.uk/
+* UAT = https://webuat-cms.gca.gov.uk/
+* PROD = https://webprod-cms.gca.gov.uk/
 
 In the following section, those value will be shorthanded as `[cms-url]`
 
 ### Frontend 
-* DEV = https://webdev.crowncommercial.gov.uk/
-* UAT = https://webuat.crowncommercial.gov.uk/
-* PROD = https://webprod.crowncommercial.gov.uk/ or https://www.crowncommercial.gov.uk/
+* DEV = https://webdev.gca.gov.uk/
+* UAT = https://webuat.gca.gov.uk/
+* PROD = https://webprod.gca.gov.uk/ or https://www.gca.gov.uk/
 
 In the following section, those value will be shorthanded as `[front-url]`
 
@@ -28,7 +28,7 @@ In the following section, those value will be shorthanded as `[front-url]`
 ## Mapping between Wordpress and Frontend
 
 ### **Posts == News**
-On Wordpress CMS, you can see posts on the left side of the panel and those are represent as news on the frontend. See here https://www.crowncommercial.gov.uk/news
+On Wordpress CMS, you can see posts on the left side of the panel and those are represent as news on the frontend. See here https://www.gca.gov.uk/news
 
 * To access a list of posts: `[cms-url]wp-json/wp/v2/posts`
 * To access a specific posts: `[cms-url]wp-json/wp/v2/posts/[post_id]`
@@ -66,7 +66,7 @@ The search functionality on frontend uses elasticsearch which is another endpoin
 
 The search functionality on frontend uses elasticsearch which is another endpoint `[cms-url]search-api/frameworks`. You can also define the filter here with `?status[]=Live`
 
-For example, endpoint will return the same result as if the user were using the search on frontend in DEV and have filter their result as expired framework only. https://webdev-cms.crowncommercial.gov.uk/search-api/frameworks?status[]=EXPIRED
+For example, endpoint will return the same result as if the user were using the search on frontend in DEV and have filter their result as expired framework only. https://webdev-cms.gca.gov.uk/search-api/frameworks?status[]=EXPIRED
 
 
 * Lot: This is an object type belonging to framework and cannot be view from the frontend on it own.

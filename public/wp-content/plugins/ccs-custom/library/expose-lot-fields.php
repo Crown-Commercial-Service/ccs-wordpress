@@ -45,7 +45,7 @@ function ccs_expose_lots_for_framework() {
             }
         }
 
-        $lots_query = new WP_Query(array('post__in' => $lot_post_ids, 'post_type' => 'lot', 'orderby' => 'ID', 'order' => 'ASC'));
+        $lots_query = new WP_Query(array('post__in' => $lot_post_ids, 'post_type' => 'lot', 'orderby' => 'ID', 'order' => 'ASC', 'posts_per_page' => -1));
 
         
 

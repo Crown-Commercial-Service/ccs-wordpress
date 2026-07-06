@@ -79,6 +79,7 @@ class AIOWPSecurity_Configure_Settings {
 		$aio_wp_security->configs->set_value('aiowps_enable_manual_registration_approval', '');//Checkbox
 		$aio_wp_security->configs->set_value('aiowps_enable_registration_page_captcha', '');//Checkbox
 		$aio_wp_security->configs->set_value('aiowps_enable_registration_honeypot', '');//Checkbox
+		$aio_wp_security->configs->set_value('aiowps_enforce_strong_password', '');//Checkbox
 
 		//DB Security feature
 		//$aio_wp_security->configs->set_value('aiowps_new_manual_db_pefix', ''); //text field
@@ -109,6 +110,10 @@ class AIOWPSecurity_Configure_Settings {
 		$aio_wp_security->configs->set_value('aiowps_enable_custom_rules', '');//Checkbox
 		$aio_wp_security->configs->set_value('aiowps_place_custom_rules_at_top', '');//Checkbox
 		$aio_wp_security->configs->set_value('aiowps_custom_rules', '');
+
+		// Upgrade unsafe HTTP calls
+		$aio_wp_security->configs->set_value('aiowps_upgrade_unsafe_http_calls', ''); // Checkbox
+		$aio_wp_security->configs->set_value('aiowps_upgrade_unsafe_http_calls_url_exceptions', '');
 
 		//404 detection
 		$aio_wp_security->configs->set_value('aiowps_enable_404_logging', '');//Checkbox
@@ -166,6 +171,8 @@ class AIOWPSecurity_Configure_Settings {
 
 		//REST API Security
 		$aio_wp_security->configs->set_value('aiowps_disallow_unauthorized_rest_requests', '');//Checkbox
+		$aio_wp_security->configs->set_value('aios_roles_disallowed_rest_requests', array());
+		$aio_wp_security->configs->set_value('aios_whitelisted_rest_routes', array());
 
 		// IP retrieval setting
 		$aio_wp_security->configs->set_value('aiowps_ip_retrieve_method', '0'); // Default is $_SERVER['REMOTE_ADDR']
@@ -182,6 +189,9 @@ class AIOWPSecurity_Configure_Settings {
 		// Deactivation Handler
 		$aio_wp_security->configs->set_value('aiowps_on_uninstall_delete_db_tables', '1'); //Checkbox
 		$aio_wp_security->configs->set_value('aiowps_on_uninstall_delete_configs', '1'); //Checkbox
+
+		// Reset the PHP 5.6 end of support notice
+		$aio_wp_security->configs->delete_value('php_56_eol_dismiss_forever');
 
 		//TODO - keep adding default options for any fields that require it
 
@@ -279,6 +289,7 @@ class AIOWPSecurity_Configure_Settings {
 		$aio_wp_security->configs->add_value('aiowps_enable_manual_registration_approval', '');//Checkbox
 		$aio_wp_security->configs->add_value('aiowps_enable_registration_page_captcha', '');//Checkbox
 		$aio_wp_security->configs->add_value('aiowps_enable_registration_honeypot', ''); // Checkbox
+		$aio_wp_security->configs->add_value('aiowps_enforce_strong_password', ''); // Checkbox
 
 		//DB Security feature
 		//$aio_wp_security->configs->add_value('aiowps_new_manual_db_pefix', ''); //text field
@@ -307,6 +318,10 @@ class AIOWPSecurity_Configure_Settings {
 		$aio_wp_security->configs->add_value('aiowps_enable_custom_rules', '');//Checkbox
 		$aio_wp_security->configs->add_value('aiowps_place_custom_rules_at_top', '');//Checkbox
 		$aio_wp_security->configs->add_value('aiowps_custom_rules', '');
+
+		// Upgrade unsafe HTTP calls
+		$aio_wp_security->configs->add_value('aiowps_upgrade_unsafe_http_calls', ''); // Checkbox
+		$aio_wp_security->configs->add_value('aiowps_upgrade_unsafe_http_calls_url_exceptions', '');
 
 		//404 detection
 		$aio_wp_security->configs->add_value('aiowps_enable_404_logging', '');//Checkbox
@@ -363,6 +378,8 @@ class AIOWPSecurity_Configure_Settings {
 
 		//REST API Security
 		$aio_wp_security->configs->add_value('aiowps_disallow_unauthorized_rest_requests', '');//Checkbox
+		$aio_wp_security->configs->add_value('aios_roles_disallowed_rest_requests', array());
+		$aio_wp_security->configs->add_value('aios_whitelisted_rest_routes', array());
 
 		// IP retrieval setting
 		// Commented the below code line because the IP retrieve method will be configured when the AIOS plugin is activated for the first time.
@@ -436,6 +453,13 @@ class AIOWPSecurity_Configure_Settings {
 		if (version_compare(get_option('aiowpsec_db_version'), '2.1.1', '<')) {
 			AIOWPSecurity_Comment::generate_antibot_keys(true);
 		}
+		
+		// Add ContactForm7 related authentication scheme for salt postfix
+		if (version_compare(get_option('aiowpsec_db_version'), '2.1.4', '<') && '1' == $aio_wp_security->configs->get_value('aiowps_enable_salt_postfix')) {
+			$salt_postfixes = $aio_wp_security->configs->get_value('aiowps_salt_postfixes');
+			$salt_postfixes['wpcf7_submission'] = wp_generate_password(64, true, true);
+			$aio_wp_security->configs->set_value('aiowps_salt_postfixes', $salt_postfixes, true);
+		}
 	}
 
 	/**
@@ -477,7 +501,7 @@ class AIOWPSecurity_Configure_Settings {
 		}
 
 		if (!empty($active)) {
-			$aio_wp_security->configs->set_value('aiowps_firewall_active_upgrade', json_encode($active));
+			$aio_wp_security->configs->set_value('aiowps_firewall_active_upgrade', wp_json_encode($active));
 			$aio_wp_security->configs->save_config();
 			self::send_basic_firewall_upgrade_email();
 		}
@@ -493,6 +517,7 @@ class AIOWPSecurity_Configure_Settings {
 		$dashboard_link = 'admin.php?page=aiowpsec';
 		$dashboard_link = is_multisite() ? network_admin_url($dashboard_link) : admin_url($dashboard_link);
 		$subject = __('Basic firewall settings disabled', 'all-in-one-wp-security-and-firewall');
+		/* translators: %s: Dashboard link. */
 		$email_msg = __('Our basic firewall rules have been upgraded and to prevent any unexpected site issues we have disabled the features.', 'all-in-one-wp-security-and-firewall') . "\n\n" . __('You can enable the features again by logging into your WordPress dashboard.', 'all-in-one-wp-security-and-firewall') . "\n\n" .sprintf(__('Go to dashboard: %s', 'all-in-one-wp-security-and-firewall'), $dashboard_link) . "\n\n" . __('Once logged in you will see a notification where you can decide on which course of action you wish to take.', 'all-in-one-wp-security-and-firewall') . "\n";
 		$email = get_bloginfo('admin_email');
 		if (false === wp_mail($email, $subject, $email_msg)) {
@@ -510,6 +535,7 @@ class AIOWPSecurity_Configure_Settings {
 		$dashboard_link = 'admin.php?page=aiowpsec';
 		$dashboard_link = is_multisite() ? network_admin_url($dashboard_link) : admin_url($dashboard_link);
 		$subject = '['. get_option('siteurl'). '] '. __('Blacklist manager disabled notification', 'all-in-one-wp-security-and-firewall');
+		/* translators: %s: Dashboard link */
 		$email_msg = __('The blacklist manager feature has been updated and to prevent any unexpected site lockouts we have disabled the feature.', 'all-in-one-wp-security-and-firewall') . "\n\n" . __('You can enable the feature again by logging into your WordPress dashboard.', 'all-in-one-wp-security-and-firewall') . "\n\n" .sprintf(__('Go to dashboard: %s', 'all-in-one-wp-security-and-firewall'), $dashboard_link) . "\n\n" . __('Once logged in before turning the blacklist manger on please double check your settings to ensure you have not entered your own details.', 'all-in-one-wp-security-and-firewall') . "\n";
 		$email = get_bloginfo('admin_email');
 		$mail_sent = wp_mail($email, $subject, $email_msg);

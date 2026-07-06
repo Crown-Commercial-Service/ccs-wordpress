@@ -150,24 +150,6 @@ if [ ! -e "$FIRST_RUN_PATH" ]; then
             "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/wp_import" \
             /etc/cron.d/
 
-        echo "> Installing Dead Mans Snitch field agent..."
-        sudo curl -O https://releases.deadmanssnitch.com/field-agent/1.0.8/dms_1.0.8_linux_amd64.tar.gz
-        sudo tar zxvf dms_1.0.8_linux_amd64.tar.gz -C /usr/local/bin
-
-echo "> Installing import-specific wp_import cron script..."
-
-        echo "> > chown'ing wp_import_dms.sh..."
-        sudo chown ec2-user:ec2-user "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/wp_import_dms.sh"
-
-        echo "> > chmod'ing wp_import_dms.sh..."
-        sudo chmod 700 "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/wp_import_dms.sh"
-
-        echo "> > Moving wp_import_dms.sh..."
-        sudo mv -f \
-            "$SCRIPTDIR/$DEPLOYMENT_TYPE/files/wp_import_dms.sh" \
-            ~ec2-user/
-
-
     else
         echo "> Moving cms-specific httpd.conf..."
         sudo mv -f \

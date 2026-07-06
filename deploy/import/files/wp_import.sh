@@ -4,6 +4,7 @@
 PID_FILE="/home/ec2-user/wp_import_sh.pid"
 WEB_PATH="/var/www/public"
 ALERT_MINS=1440
+IMPORT_TIME="${1:-MANUAL}"
 
 # Get SNS Topic from SSM
 IMDS_TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
@@ -24,11 +25,11 @@ send_sns_alert() {
     local json_payload
     json_payload=$(cat <<EOF
 {
-  "AlarmName": "Import-Failure",
+  "AlarmName": "Import-Failure-${IMPORT_TIME}",
   "AlarmDescription": "${description}",
   "NewStateValue": "${state}",
   "NewStateReason": "Status triggered from EC2 bash script.",
-  "Region": "eu-west-2"
+  "Region": "$AWS_REGION"
 }
 EOF
 )
@@ -36,8 +37,9 @@ EOF
     echo "Publishing alert state [${state}] to SNS..."
     aws sns publish \
         --topic-arn "$SNS_TOPIC_ARN" \
-        --subject "CloudWatch Alarm: Import-Failure - State: ${state}" \
-        --message "$json_payload" > /dev/null
+        --subject "CloudWatch Alarm: Import-Failure-${IMPORT_TIME} - State: ${state}" \
+        --message "$json_payload" \
+        --region "$AWS_REGION" > /dev/null
 }
 
 # Check we have a deployed server

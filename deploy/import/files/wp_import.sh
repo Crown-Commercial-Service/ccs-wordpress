@@ -25,8 +25,8 @@ send_sns_alert() {
     local json_payload
     json_payload=$(cat <<EOF
 {
-  "AlarmName": "Import-Failure-${IMPORT_TIME}",
-  "AlarmDescription": "${description}",
+  "AlarmName": "CorpWeb-Import",
+  "AlarmDescription": "${IMPORT_TIME} Import - ${description}",
   "NewStateValue": "${state}",
   "NewStateReason": "Status triggered from EC2 bash script.",
   "Region": "$AWS_REGION"
@@ -37,7 +37,7 @@ EOF
     echo "Publishing alert state [${state}] to SNS..."
     aws sns publish \
         --topic-arn "$SNS_TOPIC_ARN" \
-        --subject "CloudWatch Alarm: Import-Failure-${IMPORT_TIME} - State: ${state}" \
+        --subject "CloudWatch Alarm: CorpWeb-Import - State: ${state}" \
         --message "$json_payload" \
         --region "$AWS_REGION" > /dev/null
 }

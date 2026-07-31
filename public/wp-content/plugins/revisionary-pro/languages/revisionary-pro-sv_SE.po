@@ -1,0 +1,487 @@
+# Copyright (C) 2026 PublishPress
+# This file is distributed under the same license as the PublishPress Revisions Pro plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: PublishPress Revisions Pro 3.8.0-rc3\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/project\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-04-16T21:47:06+00:00\n"
+"PO-Revision-Date: 2026-07-27 19:03+0000\n"
+"X-Generator: WP-CLI 2.13.0-alpha\n"
+"X-Domain: revisionary-pro\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: sv-SE\n"
+
+#: revisionary-pro.php:3
+#. Plugin Name of the plugin
+msgid "PublishPress Revisions Pro"
+msgstr "PublishPress Revisions Pro"
+
+#: revisionary-pro.php:4, fuzzy
+#. Plugin URI of the plugin
+msgid "https://publishpress.com/revisionary/"
+msgstr "https://publishpress.com/revisionary/"
+
+#: revisionary-pro.php:5
+#. Description of the plugin
+msgid ""
+"Maintain published content with teamwork and precision using the Revisions "
+"model to submit, approve and schedule changes."
+msgstr ""
+"Underhåll publicerat innehåll med teamwork och precision genom att använda "
+"Revisionsmodellen för att skicka, godkänna och schemalägga ändringar."
+
+#: revisionary-pro.php:6
+#. Author of the plugin
+msgid "PublishPress"
+msgstr "PublishPress"
+
+#: revisionary-pro.php:7, fuzzy
+#. Author URI of the plugin
+msgid "https://publishpress.com"
+msgstr "https://publishpress.com"
+
+#: includes-pro/admin-load.php:71
+msgid "Current Post"
+msgstr "Aktuellt Inlägg"
+
+#: includes-pro/compat.php:411
+msgid "Featured Image"
+msgstr "Utvald Bild"
+
+#: includes-pro/compat.php:587
+msgid "Requested Slug"
+msgstr "Begärd Slug"
+
+#: includes-pro/compat.php:590, fuzzy
+msgid "Beaver Builder Data"
+msgstr "Beaver Builder Data"
+
+#: includes-pro/compat.php:591
+msgid "Beaver Builder Settings"
+msgstr "Beaver Builder Inställningar"
+
+#: includes-pro/compat.php:595
+msgid "Author(s)"
+msgstr "Författare"
+
+#: includes-pro/compat/beaver-builder.php:121
+#: includes-pro/compat/divi.php:106
+#: includes-pro/compat/divi.php:107
+#: includes-pro/compat/elementor.php:1054
+msgid "Approve"
+msgstr "Godkänn"
+
+#: includes-pro/compat/beaver-builder.php:212, fuzzy
+msgid "Beaver Builder"
+msgstr "Beaver Builder"
+
+#: includes-pro/compat/divi.php:211
+#: includes-pro/compat/divi.php:212, fuzzy
+msgid "Divi"
+msgstr "Divi"
+
+#: includes-pro/compat/elementor.php:599
+msgid "Generate CSS file for revision if needed"
+msgstr "Generera CSS-fil för revision om det behövs"
+
+#: includes-pro/compat/elementor.php:600
+msgid "Also generate CSS for published pages"
+msgstr "Generera även CSS för publicerade sidor"
+
+#: includes-pro/compat/elementor.php:601
+msgid "Auto-submit Template Revisions"
+msgstr "Auto-skicka Mallrevisioner"
+
+#: includes-pro/compat/elementor.php:602
+msgid "Send notifications for auto-submitted Template Revisions"
+msgstr "Skicka meddelanden för auto-skickade Mallrevisioner"
+
+#: includes-pro/compat/elementor.php:603
+msgid "Send notifications when a Template Revision is updated"
+msgstr "Skicka meddelanden när en Mallrevision uppdateras"
+
+#: includes-pro/compat/elementor.php:604
+msgid "Redirect to preview after editing a revision"
+msgstr "Omdirigera till förhandsvisning efter redigering av en revision"
+
+#: includes-pro/compat/elementor.php:605
+msgid "Generate CSS file for revision templates"
+msgstr "Generera CSS-fil för revisionsmallar"
+
+#: includes-pro/compat/elementor.php:606
+msgid "Fully clear Elementor cache at revision publication"
+msgstr "Rensa Elementor-cache helt vid publicering av revision"
+
+#: includes-pro/compat/elementor.php:625
+#: includes-pro/compat/elementor.php:648, fuzzy
+msgid "Elementor:"
+msgstr "Elementor:"
+
+#: includes-pro/compat/elementor.php:635
+msgid ""
+"NOTE: You will also need to enable Elementor > Settings > Advanced > CSS "
+"Print Method > External."
+msgstr ""
+"OBS: Du måste också aktivera Elementor > Inställningar > Avancerat > CSS "
+"Utskriftsmetod > Extern."
+
+#: includes-pro/compat/elementor.php:637
+msgid "Disable this setting if there is any problem with front end styling."
+msgstr ""
+"Inaktivera denna inställning om det finns några problem med "
+"frontend-styling."
+
+#: includes-pro/compat/elementor.php:643
+msgid "Leave this disabled for better performance if possible."
+msgstr "Lämna detta inaktiverat för bättre prestanda om möjligt."
+
+#: includes-pro/compat/elementor.php:658
+msgid ""
+"Redirect to preview if the revision is updated at least 15 seconds after "
+"loading the Elementor editor. This redirect relies on detection of UI "
+"messaging elements. Disable it here if it is triggered improperly"
+msgstr ""
+"Omdirigera till förhandsgranskning om revisionen uppdateras minst 15 "
+"sekunder efter att Elementor-redigeraren har laddats. Denna omdirigering är "
+"beroende av upptäckten av UI-meddelandeelement. Inaktivera den här om den "
+"utlöses felaktigt"
+
+#: includes-pro/compat/elementor.php:996
+msgid "Approval done."
+msgstr "Godkännande gjort."
+
+#: includes-pro/compat/elementor.php:998
+msgid "Revision updated."
+msgstr "Revision uppdaterad."
+
+#: includes-pro/compat/elementor.php:1027
+#: includes-pro/compat/elementor.php:1028, fuzzy
+msgid "Elementor"
+msgstr "Elementor"
+
+#: includes-pro/compat/elementor.php:1044
+msgid "Submit"
+msgstr "Skicka in"
+
+#: includes-pro/compat/elementor.php:1046
+#: includes-pro/compat/elementor.php:1056
+#: includes-pro/compat/elementor.php:1062
+#: includes-pro/compat/elementor.php:1066
+msgid "Update"
+msgstr "Uppdatera"
+
+#: includes-pro/compat/elementor.php:1054
+msgid "Publish"
+msgstr "Publicera"
+
+#: includes-pro/compat/wpml-translation-management.php:121
+#, php-format
+msgid "WPML Translation Management: %s translation flagged."
+msgid_plural "WPML Translation Management: %s translations flagged."
+msgstr[0] "WPML Översättningshantering: %s översättning markerad."
+msgstr[1] "WPML Översättningshantering: %s översättningar markerade."
+
+#: includes-pro/compat/wpml-translation-management.php:123
+msgid "WPML Translation Management: Flags already synchronized"
+msgstr "WPML Översättningshantering: Flaggor redan synkroniserade"
+
+#: includes-pro/NotificationDefaults.php:298
+msgid "New Revision created"
+msgstr "Ny revision skapad"
+
+#: includes-pro/NotificationDefaults.php:344
+msgid "Revision submitted"
+msgstr "Revision inskickad"
+
+#: includes-pro/NotificationDefaults.php:396
+msgid "Revision deferred or rejected"
+msgstr "Revision uppskjuten eller avvisad"
+
+#: includes-pro/NotificationDefaults.php:455
+msgid "Revision scheduled"
+msgstr "Revision schemalagd"
+
+#: includes-pro/NotificationDefaults.php:506
+msgid "Revision published"
+msgstr "Revision publicerad"
+
+#: includes-pro/NotificationDefaults.php:558
+msgid "Revision applied"
+msgstr "Revisions tillämpad"
+
+#: includes-pro/NotificationDefaults.php:610
+msgid "Scheduled Revision published"
+msgstr "Schemalagd revision publicerad"
+
+#: includes-pro/NotificationDefaults.php:656
+msgid "Revision status changed"
+msgstr "Revisionens status ändrad"
+
+#: includes-pro/pro-load.php:132
+#, php-format
+msgid ""
+"To control revision editing and deletion, please set %1$sRevisions > Post "
+"Types > Compatibility Mode%2$s to \"Enhanced Revision access control\""
+msgstr ""
+"För att kontrollera redigering och radering av revisioner, vänligen ställ "
+"in %1$sRevisions > Inläggstyper > Kompatibilitetsläge%2$s till \"Förbättrad "
+"åtkomstkontroll för revisioner\""
+
+#: includes-pro/pro-load.php:400
+#, php-format
+msgid "%sCompare%s%sView Current Draft%s"
+msgstr "%sJämför%s%sVisa nuvarande utkast%s"
+
+#: includes-pro/pro-load.php:413
+#, php-format
+msgid "%sView Current Draft%s"
+msgstr "%sVisa nuvarande utkast%s"
+
+#: includes-pro/SettingsLicense.php:60
+#, php-format
+msgid ""
+"Your license key has expired. For continued priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr ""
+"Din licensnyckel har gått ut. För fortsatt prioriterad support, <a "
+"href=\"%s\">vänligen förnya</a>."
+
+#: includes-pro/SettingsLicense.php:71
+#, php-format
+msgid ""
+"Your license key will expire today. For updates and priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr ""
+"Din licensnyckel går ut idag. För uppdateringar och prioriterad support, <a "
+"href=\"%s\">vänligen förnya</a>."
+
+#: includes-pro/SettingsLicense.php:77
+#, php-format
+msgid ""
+"Your license key (for plugin updates) will expire in %d days. For updates "
+"and priority support, <a href=\"%s\">please renew</a>."
+msgstr ""
+"Din licensnyckel (för pluginuppdateringar) kommer att gå ut om %d dagar. "
+"För uppdateringar och prioriterad support, <a href=\"%s\">vänligen "
+"förnya</a>."
+
+#: includes-pro/SettingsLicense.php:90
+#, php-format
+msgid ""
+"For updates to PublishPress Revisions Pro, activate your %sPublishPress "
+"license key%s."
+msgstr ""
+"För uppdateringar till PublishPress Revisions Pro, aktivera din "
+"%sPublishPress licensnyckel%s."
+
+#: includes-pro/SettingsLicense.php:103
+msgid "Key Expired"
+msgstr "Nyckeln har gått ut"
+
+#: includes-pro/SettingsLicense.php:106
+#: includes-pro/SettingsLicense.php:117
+#: includes-pro/SettingsLicense.php:226
+msgid "Deactivate Key"
+msgstr "Deaktivera nyckel"
+
+#: includes-pro/SettingsLicense.php:109
+msgid "Key Activated"
+msgstr "Nyckel aktiverad"
+
+#: includes-pro/SettingsLicense.php:110
+#: includes-pro/SettingsProUI.php:18
+msgid "License Key"
+msgstr "Licensnyckel"
+
+#: includes-pro/SettingsLicense.php:117
+#: includes-pro/SettingsLicense.php:225
+msgid "Activate Key"
+msgstr "Aktivera nyckel"
+
+#: includes-pro/SettingsLicense.php:125
+msgid "review your account info"
+msgstr "granska din kontoinformation"
+
+#: includes-pro/SettingsLicense.php:132
+msgid ""
+"note: Renewal does not require deactivation. If you do deactivate, re-entry "
+"of the license key will be required."
+msgstr ""
+"notera: Förnyelse kräver inte deaktivering. Om du deaktiverar, krävs ny "
+"inmatning av licensnyckeln."
+
+#: includes-pro/SettingsLicense.php:136
+msgid ""
+"note: If you deactive, re-entry of the license key will be required for "
+"re-activation."
+msgstr ""
+"notera: Om du deaktiverar, krävs ny inmatning av licensnyckeln för "
+"reaktivering."
+
+#: includes-pro/SettingsLicense.php:193
+#, fuzzy, php-format
+msgid "%1$s PublishPress Revisions Pro %2$s %3$s"
+msgstr "%1$s PublishPress Revisions Pro %2$s %3$s"
+
+#: includes-pro/SettingsLicense.php:194
+#, php-format
+msgid "%1$sInstalled Version:%2$s"
+msgstr "%1$sInstallerad version:%2$s"
+
+#: includes-pro/SettingsLicense.php:201
+#, php-format
+msgid "view %s&nbsp;details"
+msgstr "visa %s&nbsp;detaljer"
+
+#: includes-pro/SettingsLicense.php:211
+msgid "update check / install"
+msgstr "uppdatera kontroll / installera"
+
+#: includes-pro/SettingsLicense.php:227
+msgid "Connecting to publishpress.com server..."
+msgstr "Ansluter till PublishPress-servern..."
+
+#: includes-pro/SettingsLicense.php:228
+msgid "The request could not be processed due to a connection failure."
+msgstr "Begäran kunde inte behandlas på grund av en anslutningsfel."
+
+#: includes-pro/SettingsLicense.php:229
+msgid "Please enter the license key shown on your order receipt."
+msgstr "Vänligen ange licensnyckeln som visas på din beställningskvittot."
+
+#: includes-pro/SettingsLicense.php:230
+msgid "An unidentified error occurred."
+msgstr "Ett oidentifierat fel inträffade."
+
+#: includes-pro/SettingsLicense.php:232
+msgid "The key has been deactivated."
+msgstr "Nyckeln har avaktiverats."
+
+#: includes-pro/SettingsLicense.php:233
+msgid "The key has been activated."
+msgstr "Nyckeln har aktiverats."
+
+#: includes-pro/SettingsLicense.php:234
+msgid "The key has expired."
+msgstr "Nyckeln har löpt ut."
+
+#: includes-pro/SettingsLicense.php:235
+msgid "The key is invalid."
+msgstr "Nyckeln är ogiltig."
+
+#: includes-pro/SettingsLicense.php:236
+msgid "An unknown activation error occurred."
+msgstr "Ett okänt aktiveringsfel inträffade."
+
+#: includes-pro/SettingsLicense.php:237
+msgid "The key provided is not valid. Please double-check your entry."
+msgstr "Den angivna nyckeln är inte giltig. Vänligen kontrollera din inmatning."
+
+#: includes-pro/SettingsLicense.php:238
+msgid "This site is not valid to activate the key."
+msgstr "Denna webbplats är inte giltig för att aktivera nyckeln."
+
+#: includes-pro/SettingsLicense.php:239
+#: includes-pro/SettingsLicense.php:245
+msgid "The key provided could not be validated by publishpress.com."
+msgstr "Den angivna nyckeln kunde inte valideras av publishpress.com."
+
+#: includes-pro/SettingsLicense.php:240
+msgid "The key provided is already active on another site."
+msgstr "Den angivna nyckeln är redan aktiv på en annan webbplats."
+
+#: includes-pro/SettingsLicense.php:241
+msgid "The key has already been activated on the allowed number of sites."
+msgstr "Nyckeln har redan aktiverats på det tillåtna antalet webbplatser."
+
+#: includes-pro/SettingsLicense.php:242
+msgid "An unknown deactivation error occurred."
+msgstr "Ett okänt avaktiveringsfel inträffade."
+
+#: includes-pro/SettingsLicense.php:243
+msgid "Unable to deactivate because the provided key is not valid."
+msgstr "Kan inte avaktivera eftersom den angivna nyckeln är ogiltig."
+
+#: includes-pro/SettingsLicense.php:244
+msgid "This site is not valid to deactivate the key."
+msgstr "Denna webbplats är inte giltig för att avaktivera nyckeln."
+
+#: includes-pro/SettingsLicense.php:246
+msgid "The key provided is not active on the specified site."
+msgstr "Den angivna nyckeln är inte aktiv på den angivna webbplatsen."
+
+#: includes-pro/SettingsLicense.php:251
+#, php-format
+msgid "If this is incorrect, <a href=\"%s\">request activation help</a>."
+msgstr "Om detta är felaktigt, <a href=\"%s\">begära hjälp med aktivering</a>."
+
+#: includes-pro/SettingsLicense.php:252
+msgid "Please save settings before uploading site configuration."
+msgstr "Vänligen spara inställningar innan du laddar upp webbplatskonfigurationen."
+
+#: includes-pro/SettingsProUI.php:16
+msgid "Use unfiltered preview links"
+msgstr "Använd ofiltrerade förhandsgranskningslänkar"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Change Requests for Unpublished Posts"
+msgstr "Ändringsförfrågningar för opublicerade inlägg"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Revision Submission for Unpublished Posts"
+msgstr "Revisionsinlämning för opublicerade inlägg"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Change Request"
+msgstr "Publicera via ändringsförfrågan"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Revision"
+msgstr "Publicera via revision"
+
+#: includes-pro/SettingsProUI.php:28
+msgid "Prevent Redundant Revisions"
+msgstr "Förhindra överflödiga revisioner"
+
+#: includes-pro/SettingsProUI.php:52
+msgid ""
+"Approval of a Change Request to an unpublished post causes it to be "
+"published."
+msgstr ""
+"Godkännande av en ändringsförfrågan till ett opublicerat inlägg gör att det "
+"publiceras."
+
+#: includes-pro/SettingsProUI.php:53
+msgid "Approval of a Revision to an unpublished post causes it to be published."
+msgstr ""
+"Godkännande av en revision till ett opublicerat inlägg gör att det "
+"publiceras."
+
+#: includes-pro/SettingsProUI.php:75
+msgid ""
+"Some third party plugins (including WPML with language subdomains) may "
+"require this for compatibility."
+msgstr ""
+"Vissa tredjepartsplugins (inklusive WPML med språkunderdomäner) kan kräva "
+"detta för kompatibilitet."
+
+#: includes-pro/SettingsProUI.php:83
+msgid ""
+"Prevent REST requests from generating revisions (which may be stored "
+"without ACF fields)."
+msgstr ""
+"Förhindra att REST-förfrågningar genererar revisioner (som kan lagras utan "
+"ACF-fält)."
+
+#: includes-pro/SettingsProUI.php:91
+msgid ""
+"Revisors can request the deletion of a published post. The Deletion Queue "
+"is not shown until a deletion request exists."
+msgstr ""
+"Revisorer kan begära att ett publicerat inlägg tas bort. Borttagningskön "
+"visas inte förrän en borttagningsbegäran finns."

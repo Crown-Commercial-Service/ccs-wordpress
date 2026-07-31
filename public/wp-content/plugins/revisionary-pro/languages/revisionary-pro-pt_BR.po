@@ -1,0 +1,499 @@
+# Copyright (C) 2026 PublishPress
+# This file is distributed under the same license as the PublishPress Revisions Pro plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: PublishPress Revisions Pro\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/project\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Portuguese (Brazil) "
+"<https://weblate.publishpress.com/projects/publishpress-revisions-pro/"
+"revisionary-pro/pt_BR/>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-06-28 01:40-0300\n"
+"PO-Revision-Date: 2026-07-27 19:03+0000\n"
+"X-Generator: Weblate 2026.6.1\n"
+"X-Domain: revisionary-pro\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"Language: pt-BR\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: revisionary-pro.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: "
+"__;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;esc_attr_e;esc_attr_x:1,"
+"2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__"
+"ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.min.js\n"
+
+#: revisionary-pro.php:3
+#. Plugin Name of the plugin
+msgid "PublishPress Revisions Pro"
+msgstr "PublishPress Revisions Pro"
+
+#: revisionary-pro.php:4, fuzzy
+#. Plugin URI of the plugin
+msgid "https://publishpress.com/revisionary/"
+msgstr "https://publishpress.com/revisionary/"
+
+#: revisionary-pro.php:5
+#. Description of the plugin
+msgid ""
+"Maintain published content with teamwork and precision using the Revisions "
+"model to submit, approve and schedule changes."
+msgstr ""
+"Mantenha o conteúdo publicado com trabalho em equipe e precisão, usando o "
+"modelo do Revisions para enviar, aprovar e agendar alterações."
+
+#: revisionary-pro.php:6
+#. Author of the plugin
+msgid "PublishPress"
+msgstr "PublishPress"
+
+#: revisionary-pro.php:7, fuzzy
+#. Author URI of the plugin
+msgid "https://publishpress.com"
+msgstr "https://publishpress.com"
+
+#: includes-pro/admin-load.php:71
+msgid "Current Post"
+msgstr "Post atual"
+
+#: includes-pro/compat.php:411
+msgid "Featured Image"
+msgstr "Imagem destacada"
+
+#: includes-pro/compat.php:587
+msgid "Requested Slug"
+msgstr "Slug solicitado"
+
+#: includes-pro/compat.php:590
+msgid "Beaver Builder Data"
+msgstr "Dados do Beaver Builder"
+
+#: includes-pro/compat.php:591
+msgid "Beaver Builder Settings"
+msgstr "Configurações do Beaver Builder"
+
+#: includes-pro/compat.php:595
+msgid "Author(s)"
+msgstr "Autores"
+
+#: includes-pro/compat/beaver-builder.php:121
+#: includes-pro/compat/divi.php:106
+#: includes-pro/compat/divi.php:107
+#: includes-pro/compat/elementor.php:1054
+msgid "Approve"
+msgstr "Aprovar"
+
+#: includes-pro/compat/beaver-builder.php:212, fuzzy
+msgid "Beaver Builder"
+msgstr "Beaver Builder"
+
+#: includes-pro/compat/divi.php:211
+#: includes-pro/compat/divi.php:212, fuzzy
+msgid "Divi"
+msgstr "Divi"
+
+#: includes-pro/compat/elementor.php:599
+msgid "Generate CSS file for revision if needed"
+msgstr "Gerar arquivo CSS para revisão, se for preciso"
+
+#: includes-pro/compat/elementor.php:600
+msgid "Also generate CSS for published pages"
+msgstr "Gerar também CSS para páginas publicadas"
+
+#: includes-pro/compat/elementor.php:601
+msgid "Auto-submit Template Revisions"
+msgstr "Enviar automaticamente as revisões do modelo"
+
+#: includes-pro/compat/elementor.php:602
+msgid "Send notifications for auto-submitted Template Revisions"
+msgstr "Enviar notificações para revisões de modelos enviadas automaticamente"
+
+#: includes-pro/compat/elementor.php:603
+msgid "Send notifications when a Template Revision is updated"
+msgstr "Enviar notificações quando uma revisão de modelo for atualizada"
+
+#: includes-pro/compat/elementor.php:604
+msgid "Redirect to preview after editing a revision"
+msgstr "Redirecionar para a pré-visualização após a edição de uma revisão"
+
+#: includes-pro/compat/elementor.php:605
+msgid "Generate CSS file for revision templates"
+msgstr "Gerar arquivo CSS para modelos de revisão"
+
+#: includes-pro/compat/elementor.php:606
+msgid "Fully clear Elementor cache at revision publication"
+msgstr "Limpar completamente o cache do Elementor ao publicar a revisão"
+
+#: includes-pro/compat/elementor.php:625
+#: includes-pro/compat/elementor.php:648, fuzzy
+msgid "Elementor:"
+msgstr "Elementor:"
+
+#: includes-pro/compat/elementor.php:635
+msgid ""
+"NOTE: You will also need to enable Elementor > Settings > Advanced > CSS "
+"Print Method > External."
+msgstr ""
+"OBSERVAÇÃO: Você também precisa ativar o Elementor > Configurações > "
+"Avançado > Método de impressão CSS > Externo."
+
+#: includes-pro/compat/elementor.php:637
+msgid "Disable this setting if there is any problem with front end styling."
+msgstr ""
+"Desative esta configuração se houver algum problema com o estilo da "
+"interface."
+
+#: includes-pro/compat/elementor.php:643
+msgid "Leave this disabled for better performance if possible."
+msgstr "Deixe esta opção desativada para melhorar o desempenho, se possível."
+
+#: includes-pro/compat/elementor.php:658
+msgid ""
+"Redirect to preview if the revision is updated at least 15 seconds after "
+"loading the Elementor editor. This redirect relies on detection of UI "
+"messaging elements. Disable it here if it is triggered improperly"
+msgstr ""
+"Redirecione para a pré-visualização, se a revisão for atualizada pelo menos "
+"15 segundos após o carregamento do editor do Elementor. Este "
+"redirecionamento depende da detecção de elementos de mensagens da interface "
+"do usuário. Desative-o aqui se ele for acionado incorretamente"
+
+#: includes-pro/compat/elementor.php:996
+msgid "Approval done."
+msgstr "Aprovação concluída."
+
+#: includes-pro/compat/elementor.php:998
+msgid "Revision updated."
+msgstr "Revisão atualizada."
+
+#: includes-pro/compat/elementor.php:1027
+#: includes-pro/compat/elementor.php:1028, fuzzy
+msgid "Elementor"
+msgstr "Elementor"
+
+#: includes-pro/compat/elementor.php:1044
+msgid "Submit"
+msgstr "Enviar"
+
+#: includes-pro/compat/elementor.php:1046
+#: includes-pro/compat/elementor.php:1056
+#: includes-pro/compat/elementor.php:1062
+#: includes-pro/compat/elementor.php:1066
+msgid "Update"
+msgstr "Atualizar"
+
+#: includes-pro/compat/elementor.php:1054
+msgid "Publish"
+msgstr "Publicar"
+
+#: includes-pro/compat/wpml-translation-management.php:121
+#, php-format
+msgid "WPML Translation Management: %s translation flagged."
+msgid_plural "WPML Translation Management: %s translations flagged."
+msgstr[0] "Gerenciamento de traduções do WPML: %s tradução sinalizada."
+msgstr[1] "Gerenciamento de traduções do WPML: %s traduções sinalizadas."
+
+#: includes-pro/compat/wpml-translation-management.php:123
+msgid "WPML Translation Management: Flags already synchronized"
+msgstr "Gerenciamento de traduções do WPML: Sinalizadores já sincronizados"
+
+#: includes-pro/NotificationDefaults.php:298
+msgid "New Revision created"
+msgstr "Nova revisão criada"
+
+#: includes-pro/NotificationDefaults.php:344
+msgid "Revision submitted"
+msgstr "Revisão enviada"
+
+#: includes-pro/NotificationDefaults.php:396
+msgid "Revision deferred or rejected"
+msgstr "Revisão adiada ou rejeitada"
+
+#: includes-pro/NotificationDefaults.php:455
+msgid "Revision scheduled"
+msgstr "Revisão agendada"
+
+#: includes-pro/NotificationDefaults.php:506
+msgid "Revision published"
+msgstr "Revisão publicada"
+
+#: includes-pro/NotificationDefaults.php:558
+msgid "Revision applied"
+msgstr "Revisão aplicada"
+
+#: includes-pro/NotificationDefaults.php:610
+msgid "Scheduled Revision published"
+msgstr "Revisão agendada publicada"
+
+#: includes-pro/NotificationDefaults.php:656
+msgid "Revision status changed"
+msgstr "Status da revisão alterado"
+
+#: includes-pro/pro-load.php:132
+#, php-format
+msgid ""
+"To control revision editing and deletion, please set %1$sRevisions > Post "
+"Types > Compatibility Mode%2$s to \"Enhanced Revision access control\""
+msgstr ""
+"Para controlar a edição e a exclusão de revisões, defina %1$sRevisões > "
+"Tipos de post > Modo de compatibilidade%2$s como “Controle de acesso de "
+"revisão melhorado”"
+
+#: includes-pro/pro-load.php:400
+#, php-format
+msgid "%sCompare%s%sView Current Draft%s"
+msgstr "%sComparar%s%sVer rascunho atual%s"
+
+#: includes-pro/pro-load.php:413
+#, php-format
+msgid "%sView Current Draft%s"
+msgstr "%sVer rascunho atual%s"
+
+#: includes-pro/SettingsLicense.php:60
+#, php-format
+msgid ""
+"Your license key has expired. For continued priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr ""
+"Sua chave de licença expirou. Para continuar recebendo suporte prioritário, "
+"<a href=\"%s\">renove</a>."
+
+#: includes-pro/SettingsLicense.php:71
+#, php-format
+msgid ""
+"Your license key will expire today. For updates and priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr ""
+"Sua chave de licença expira hoje. Para receber atualizações e suporte "
+"prioritário, <a href=\"%s\">renove</a>."
+
+#: includes-pro/SettingsLicense.php:77
+#, php-format
+msgid ""
+"Your license key (for plugin updates) will expire in %d days. For updates "
+"and priority support, <a href=\"%s\">please renew</a>."
+msgstr ""
+"Sua chave de licença (para atualizações de plugins) expirará em %d dias. "
+"Para atualizações e suporte prioritário, <a href=\"%s\">renove, por "
+"favor</a>."
+
+#: includes-pro/SettingsLicense.php:90
+#, php-format
+msgid ""
+"For updates to PublishPress Revisions Pro, activate your %sPublishPress "
+"license key%s."
+msgstr ""
+"Para atualizações do PublishPress Revisions Pro, ative sua chave de licença "
+"do %sPublishPress%s."
+
+#: includes-pro/SettingsLicense.php:103
+msgid "Key Expired"
+msgstr "Chave expirada"
+
+#: includes-pro/SettingsLicense.php:106
+#: includes-pro/SettingsLicense.php:117
+#: includes-pro/SettingsLicense.php:226
+msgid "Deactivate Key"
+msgstr "Desativar chave"
+
+#: includes-pro/SettingsLicense.php:109
+msgid "Key Activated"
+msgstr "Chave ativada"
+
+#: includes-pro/SettingsLicense.php:110
+#: includes-pro/SettingsProUI.php:18
+msgid "License Key"
+msgstr "Chave de licença"
+
+#: includes-pro/SettingsLicense.php:117
+#: includes-pro/SettingsLicense.php:225
+msgid "Activate Key"
+msgstr "Ativar chave"
+
+#: includes-pro/SettingsLicense.php:125
+msgid "review your account info"
+msgstr "revisar as informações da sua conta"
+
+#: includes-pro/SettingsLicense.php:132
+msgid ""
+"note: Renewal does not require deactivation. If you do deactivate, re-entry "
+"of the license key will be required."
+msgstr ""
+"Observação: A renovação não exige a desativação. Se você desativar, será "
+"preciso reinserir a chave de licença."
+
+#: includes-pro/SettingsLicense.php:136
+msgid ""
+"note: If you deactive, re-entry of the license key will be required for "
+"re-activation."
+msgstr ""
+"Observação: Se você desativar a licença, será necessário reinserir a chave "
+"de licença para a reativação."
+
+#: includes-pro/SettingsLicense.php:193
+#, fuzzy, php-format
+msgid "%1$s PublishPress Revisions Pro %2$s %3$s"
+msgstr "%1$s PublishPress Revisions Pro %2$s %3$s"
+
+#: includes-pro/SettingsLicense.php:194
+#, php-format
+msgid "%1$sInstalled Version:%2$s"
+msgstr "%1$sVersão instalada:%2$s"
+
+#: includes-pro/SettingsLicense.php:201
+#, php-format
+msgid "view %s&nbsp;details"
+msgstr "ver detalhes de %s"
+
+#: includes-pro/SettingsLicense.php:211
+msgid "update check / install"
+msgstr "verificação de atualização/instalação"
+
+#: includes-pro/SettingsLicense.php:227
+msgid "Connecting to publishpress.com server..."
+msgstr "Conectando ao servidor do publishpress.com..."
+
+#: includes-pro/SettingsLicense.php:228
+msgid "The request could not be processed due to a connection failure."
+msgstr "A solicitação não pôde ser processada devido a uma falha na conexão."
+
+#: includes-pro/SettingsLicense.php:229
+msgid "Please enter the license key shown on your order receipt."
+msgstr "Digite a chave de licença exibida no seu recibo do pedido."
+
+#: includes-pro/SettingsLicense.php:230
+msgid "An unidentified error occurred."
+msgstr "Ocorreu um erro desconhecido."
+
+#: includes-pro/SettingsLicense.php:232
+msgid "The key has been deactivated."
+msgstr "A chave foi desativada."
+
+#: includes-pro/SettingsLicense.php:233
+msgid "The key has been activated."
+msgstr "A chave foi ativada."
+
+#: includes-pro/SettingsLicense.php:234
+msgid "The key has expired."
+msgstr "A chave expirou."
+
+#: includes-pro/SettingsLicense.php:235
+msgid "The key is invalid."
+msgstr "A chave é inválida."
+
+#: includes-pro/SettingsLicense.php:236
+msgid "An unknown activation error occurred."
+msgstr "Ocorreu um erro desconhecido na ativação."
+
+#: includes-pro/SettingsLicense.php:237
+msgid "The key provided is not valid. Please double-check your entry."
+msgstr "A chave fornecida não é válida. Verifique novamente sua entrada."
+
+#: includes-pro/SettingsLicense.php:238
+msgid "This site is not valid to activate the key."
+msgstr "Este site não é válido para ativar a chave."
+
+#: includes-pro/SettingsLicense.php:239
+#: includes-pro/SettingsLicense.php:245
+msgid "The key provided could not be validated by publishpress.com."
+msgstr "A chave fornecida não pôde ser confirmada pelo publishpress.com."
+
+#: includes-pro/SettingsLicense.php:240
+msgid "The key provided is already active on another site."
+msgstr "A chave fornecida já está ativa em outro site."
+
+#: includes-pro/SettingsLicense.php:241
+msgid "The key has already been activated on the allowed number of sites."
+msgstr "A chave já foi ativada no número permitido de sites."
+
+#: includes-pro/SettingsLicense.php:242
+msgid "An unknown deactivation error occurred."
+msgstr "Ocorreu um erro desconhecido na desativação."
+
+#: includes-pro/SettingsLicense.php:243
+msgid "Unable to deactivate because the provided key is not valid."
+msgstr "Não é possível desativar porque a chave fornecida não é válida."
+
+#: includes-pro/SettingsLicense.php:244
+msgid "This site is not valid to deactivate the key."
+msgstr "Este site não é válido para desativar a chave."
+
+#: includes-pro/SettingsLicense.php:246
+msgid "The key provided is not active on the specified site."
+msgstr "A chave fornecida não está ativa no site especificado."
+
+#: includes-pro/SettingsLicense.php:251
+#, php-format
+msgid "If this is incorrect, <a href=\"%s\">request activation help</a>."
+msgstr "Se isso estiver incorreto, <a href=\"%s\">solicite ajuda na ativação</a>."
+
+#: includes-pro/SettingsLicense.php:252
+msgid "Please save settings before uploading site configuration."
+msgstr "Salve as configurações antes de enviar a configuração do site."
+
+#: includes-pro/SettingsProUI.php:16
+msgid "Use unfiltered preview links"
+msgstr "Usar links de pré-visualização não filtrados"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Change Requests for Unpublished Posts"
+msgstr "Solicitações de alteração para posts não publicados"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Revision Submission for Unpublished Posts"
+msgstr "Envio de revisão para posts não publicados"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Change Request"
+msgstr "Publicar por solicitação de alteração"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Revision"
+msgstr "Publicar por revisão"
+
+#: includes-pro/SettingsProUI.php:28
+msgid "Prevent Redundant Revisions"
+msgstr "Evitar revisões redundantes"
+
+#: includes-pro/SettingsProUI.php:52
+msgid ""
+"Approval of a Change Request to an unpublished post causes it to be "
+"published."
+msgstr ""
+"A aprovação de uma solicitação de alteração de um post não publicado faz "
+"com que ele seja publicado."
+
+#: includes-pro/SettingsProUI.php:53
+msgid "Approval of a Revision to an unpublished post causes it to be published."
+msgstr ""
+"A aprovação de uma revisão de um post não publicado faz com que ele seja "
+"publicado."
+
+#: includes-pro/SettingsProUI.php:75
+msgid ""
+"Some third party plugins (including WPML with language subdomains) may "
+"require this for compatibility."
+msgstr ""
+"Alguns plugins de terceiros (incluindo o WPML com subdomínios de idiomas) "
+"podem exigir isso para garantir a compatibilidade."
+
+#: includes-pro/SettingsProUI.php:83
+msgid ""
+"Prevent REST requests from generating revisions (which may be stored "
+"without ACF fields)."
+msgstr ""
+"Impeça que as solicitações REST gerem revisões (que podem ser armazenadas "
+"sem campos ACF)."
+
+#: includes-pro/SettingsProUI.php:91
+msgid ""
+"Revisors can request the deletion of a published post. The Deletion Queue "
+"is not shown until a deletion request exists."
+msgstr ""
+"Os revisores podem solicitar a exclusão de um post publicado. A fila de "
+"exclusão não é exibida até que haja uma solicitação de exclusão."

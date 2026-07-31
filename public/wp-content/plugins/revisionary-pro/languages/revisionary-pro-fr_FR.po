@@ -1,0 +1,2148 @@
+# Translation of Plugins - PublishPress Revisions: Duplicate Posts, Submit, Approve and Schedule Content Changes - Stable (latest release) in French (France)
+# This file is distributed under the same license as the Plugins - PublishPress Revisions: Duplicate Posts, Submit, Approve and Schedule Content Changes - Stable (latest release) package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Plugins - PublishPress Revisions: Duplicate Posts, "
+"Submit, Approve and Schedule Content Changes - Stable (latest release)\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/project\n"
+"POT-Creation-Date: 2026-01-08T21:04:11+00:00\n"
+"PO-Revision-Date: 2026-04-16 10:16+0000\n"
+"Last-Translator: Angelo Giammarresi <info@wocmultimedia.biz>\n"
+"Language-Team: French <https://weblate.publishpress.com/projects/"
+"publishpress-revisions-pro/revisionary-pro/fr/>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 5.14.3\n"
+
+#. Plugin Name of the plugin
+#: revisionary-pro.php
+msgid "PublishPress Revisions Pro"
+msgstr "PublishPress Revisions Pro"
+
+#. Plugin URI of the plugin
+#: revisionary-pro.php
+msgid "https://publishpress.com/revisionary/"
+msgstr "https://publishpress.com/revisionary/"
+
+#. Description of the plugin
+#: revisionary-pro.php
+msgid ""
+"Maintain published content with teamwork and precision using the Revisions "
+"model to submit, approve and schedule changes."
+msgstr ""
+"Maintenez le contenu publié avec un travail d’équipe et de précision en "
+"utilisant le modèle de révisions pour envoyer, approuver et planifier les "
+"modifications."
+
+#. Author of the plugin
+#: revisionary-pro.php
+msgid "PublishPress"
+msgstr "PublishPress"
+
+#. Author URI of the plugin
+#: revisionary-pro.php
+msgid "https://publishpress.com"
+msgstr "https://publishpress.com"
+
+#: includes-pro/admin-load.php:71
+msgid "Current Post"
+msgstr "Publication actuelle"
+
+#: includes-pro/compat.php:415
+msgid "Featured Image"
+msgstr "Image mise en avant"
+
+#: includes-pro/compat.php:587
+msgid "Requested Slug"
+msgstr "Slug demandé"
+
+#: includes-pro/compat.php:590
+msgid "Beaver Builder Data"
+msgstr "Données de Beaver Builder"
+
+#: includes-pro/compat.php:591
+msgid "Beaver Builder Settings"
+msgstr "Réglages de Beaver Builder"
+
+#: includes-pro/compat.php:595
+msgid "Author(s)"
+msgstr "Auteur/autrice(s)"
+
+#: includes-pro/compat/beaver-builder.php:93 includes-pro/compat/divi.php:106
+#: includes-pro/compat/divi.php:107 includes-pro/compat/elementor.php:1025
+msgid "Approve"
+msgstr "Approuver"
+
+#: includes-pro/compat/beaver-builder.php:184
+msgid "Beaver Builder"
+msgstr "Beaver Builder"
+
+#: includes-pro/compat/divi.php:211 includes-pro/compat/divi.php:212
+msgid "Divi"
+msgstr "Divi"
+
+#: includes-pro/compat/elementor.php:603
+msgid "Generate CSS file for revision if needed"
+msgstr "Générer un fichier CSS pour la révision si nécessaire"
+
+#: includes-pro/compat/elementor.php:604
+msgid "Also generate CSS for published pages"
+msgstr "Générer également le CSS pour les pages publiées"
+
+#: includes-pro/compat/elementor.php:605
+msgid "Auto-submit Template Revisions"
+msgstr "Envoyer automatiquement les révisions de modèles"
+
+#: includes-pro/compat/elementor.php:606
+msgid "Send notifications for auto-submitted Template Revisions"
+msgstr ""
+"Envoyer des notifications pour les révisions de modèles envoyées "
+"automatiquement"
+
+#: includes-pro/compat/elementor.php:607
+msgid "Send notifications when a Template Revision is updated"
+msgstr ""
+"Envoyer des notifications lorsqu’une révision de modèle est mise à jour"
+
+#: includes-pro/compat/elementor.php:608
+msgid "Redirect to preview after editing a revision"
+msgstr "Rediriger vers l’aperçu après la modification d’une révision"
+
+#: includes-pro/compat/elementor.php:609
+msgid "Generate CSS file for revision templates"
+msgstr "Générer un fichier CSS pour les modèles de révision"
+
+#: includes-pro/compat/elementor.php:610
+msgid "Fully clear Elementor cache at revision publication"
+msgstr ""
+"Vider complètement le cache Elementor lors de la publication de la révision"
+
+#: includes-pro/compat/elementor.php:629 includes-pro/compat/elementor.php:652
+msgid "Elementor:"
+msgstr "Elementor :"
+
+#: includes-pro/compat/elementor.php:639
+msgid ""
+"NOTE: You will also need to enable Elementor > Settings > Advanced > CSS "
+"Print Method > External."
+msgstr ""
+"NOTE : vous devez aussi activer Elementor > Réglages > Avancés > Méthode "
+"d’impression CSS > Externe."
+
+#: includes-pro/compat/elementor.php:641
+msgid "Disable this setting if there is any problem with front end styling."
+msgstr ""
+"Désactiver ce réglage si vous rencontrez des problèmes sur l’interface "
+"publique."
+
+#: includes-pro/compat/elementor.php:647
+msgid "Leave this disabled for better performance if possible."
+msgstr ""
+"Si possible, laisser cette option désactivée pour améliorer les performances."
+
+#: includes-pro/compat/elementor.php:662
+msgid ""
+"Redirect to preview if the revision is updated at least 15 seconds after "
+"loading the Elementor editor. This redirect relies on detection of UI "
+"messaging elements. Disable it here if it is triggered improperly"
+msgstr ""
+"Rediriger vers l’aperçu si la révision est mise à jour au moins 15 secondes "
+"après le chargement de l’éditeur Elementor. Cette redirection repose sur la "
+"détection des éléments de messagerie de l’IU. La désactiver ici si elle est "
+"déclenchée de manière inappropriée"
+
+#: includes-pro/compat/elementor.php:967
+msgid "Approval done."
+msgstr "Approbation faite."
+
+#: includes-pro/compat/elementor.php:969
+msgid "Revision updated."
+msgstr "Révision mise à jour."
+
+#: includes-pro/compat/elementor.php:998 includes-pro/compat/elementor.php:999
+msgid "Elementor"
+msgstr "Elementor"
+
+#: includes-pro/compat/elementor.php:1015
+msgid "Submit"
+msgstr "Envoyer"
+
+#: includes-pro/compat/elementor.php:1017
+#: includes-pro/compat/elementor.php:1027
+#: includes-pro/compat/elementor.php:1033
+#: includes-pro/compat/elementor.php:1037
+msgid "Update"
+msgstr "Mettre à jour"
+
+#: includes-pro/compat/elementor.php:1025
+msgid "Publish"
+msgstr "Publier"
+
+#: includes-pro/compat/wpml-translation-management.php:121
+#, php-format
+msgid "WPML Translation Management: %s translation flagged."
+msgid_plural "WPML Translation Management: %s translations flagged."
+msgstr[0] "Gestion des traductions WPML : %s traduction marquée."
+msgstr[1] "Gestion des traductions WPML : %s traductions marquées."
+
+#: includes-pro/compat/wpml-translation-management.php:123
+msgid "WPML Translation Management: Flags already synchronized"
+msgstr "Gestion des traductions WPML : Marques déjà synchronisées"
+
+#: includes-pro/NotificationDefaults.php:298
+msgid "New Revision created"
+msgstr "Nouvelle révision créée"
+
+#: includes-pro/NotificationDefaults.php:344
+msgid "Revision submitted"
+msgstr "Révision envoyée"
+
+#: includes-pro/NotificationDefaults.php:396
+msgid "Revision deferred or rejected"
+msgstr "Révision différée ou rejetée"
+
+#: includes-pro/NotificationDefaults.php:455
+msgid "Revision scheduled"
+msgstr "Révision planifiée"
+
+#: includes-pro/NotificationDefaults.php:506
+msgid "Revision published"
+msgstr "Révision publiée"
+
+#: includes-pro/NotificationDefaults.php:558
+msgid "Revision applied"
+msgstr "Révision appliquée"
+
+#: includes-pro/NotificationDefaults.php:610
+msgid "Scheduled Revision published"
+msgstr "Révision planifiée publiée"
+
+#: includes-pro/NotificationDefaults.php:656
+msgid "Revision status changed"
+msgstr "État de la révision modifié"
+
+#: includes-pro/pro-load.php:132
+#, php-format
+msgid ""
+"To control revision editing and deletion, please set %1$sRevisions > Post "
+"Types > Compatibility Mode%2$s to \"Enhanced Revision access control\""
+msgstr ""
+"Pour contrôler la modification et la suppression des révisions, veuillez "
+"régler %1$sRévisions > Types de publication > Mode de compatibilité%2$s sur «"
+" Contrôle d’accès amélioré aux révisions »"
+
+#: includes-pro/pro-load.php:376
+#, php-format
+msgid "%sCompare%s%sView Current Draft%s"
+msgstr "%sComparer%s%sVoir le brouillon actuel%s"
+
+#: includes-pro/pro-load.php:389
+#, php-format
+msgid "%sView Current Draft%s"
+msgstr "%sVoir le brouillon actuel%s"
+
+#: includes-pro/SettingsLicense.php:60
+#, php-format
+msgid ""
+"Your license key has expired. For continued priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr ""
+"Votre clé de licence a expiré. Pour continuer à bénéficier du support "
+"prioritaire, <a href=\"%s\">vous pouvez renouveler votre licence</a>."
+
+#: includes-pro/SettingsLicense.php:71
+#, php-format
+msgid ""
+"Your license key will expire today. For updates and priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr ""
+"Votre clé de licence expire aujourd’hui. Pour des mises à jour et un support "
+"prioritaire, <a href=\"%s\">vous pouvez renouveler votre licence</a>."
+
+#: includes-pro/SettingsLicense.php:77
+#, php-format
+msgid ""
+"Your license key will expire in %d day. For updates and priority support, <a "
+"href=\"%s\">please renew</a>."
+msgid_plural ""
+"Your license key (for plugin updates) will expire in %d days. For updates "
+"and priority support, <a href=\"%s\">please renew</a>."
+msgstr[0] ""
+"Votre clé de licence expirera dans %d jours. Pour des mises à jour et un "
+"support prioritaire, <a href=\"%s\">vous pouvez renouveler votre licence</a>."
+msgstr[1] ""
+"Vos clés de licence expireront dans %d jours. Pour des mises à jour et un "
+"support prioritaire, <a href=\"%s\">vous pouvez renouveler vos licences</a>."
+
+#: includes-pro/SettingsLicense.php:92
+#, php-format
+msgid ""
+"For updates to PublishPress Revisions Pro, activate your %sPublishPress "
+"license key%s."
+msgstr ""
+"Pour les mises à jour de PublishPress Revisions Pro, activez votre %sclé de "
+"licence PublishPress%s."
+
+#: includes-pro/SettingsLicense.php:105
+msgid "Key Expired"
+msgstr "Clé expirée"
+
+#: includes-pro/SettingsLicense.php:108 includes-pro/SettingsLicense.php:119
+#: includes-pro/SettingsLicense.php:228
+msgid "Deactivate Key"
+msgstr "Désactiver la clé"
+
+#: includes-pro/SettingsLicense.php:111
+msgid "Key Activated"
+msgstr "Clé activée"
+
+#: includes-pro/SettingsLicense.php:112 includes-pro/SettingsProUI.php:18
+msgid "License Key"
+msgstr "Clé de licence"
+
+#: includes-pro/SettingsLicense.php:119 includes-pro/SettingsLicense.php:227
+msgid "Activate Key"
+msgstr "Activer la clé"
+
+#: includes-pro/SettingsLicense.php:127
+msgid "review your account info"
+msgstr "vérifier les informations relatives à votre compte"
+
+#: includes-pro/SettingsLicense.php:134
+msgid ""
+"note: Renewal does not require deactivation. If you do deactivate, re-entry "
+"of the license key will be required."
+msgstr ""
+"note : Le renouvellement ne nécessite pas de désactivation. En cas de "
+"désactivation, la clé de licence devra être saisie à nouveau."
+
+#: includes-pro/SettingsLicense.php:138
+msgid ""
+"note: If you deactive, re-entry of the license key will be required for re-"
+"activation."
+msgstr ""
+"note : Si vous désactivez votre licence, vous devrez saisir à nouveau la clé "
+"de licence pour la réactiver."
+
+#: includes-pro/SettingsLicense.php:195
+#, php-format
+msgid "%1$s PublishPress Revisions Pro %2$s %3$s"
+msgstr "%1$s PublishPress Revisions Pro %2$s %3$s"
+
+#: includes-pro/SettingsLicense.php:196
+#, php-format
+msgid "%1$sInstalled Version:%2$s"
+msgstr "%1$sVersion installée : %2$s"
+
+#: includes-pro/SettingsLicense.php:203
+#, php-format
+msgid "view %s&nbsp;details"
+msgstr "voir %s&nbsp;détails"
+
+#: includes-pro/SettingsLicense.php:214
+msgid "update check / install"
+msgstr "vérification de la mise à jour / installation"
+
+#: includes-pro/SettingsLicense.php:229
+msgid "Connecting to publishpress.com server..."
+msgstr "Connexion au serveur publishpress.com…"
+
+#: includes-pro/SettingsLicense.php:230
+msgid "The request could not be processed due to a connection failure."
+msgstr "La demande n’a pas pu être traitée en raison d’un échec de connexion."
+
+#: includes-pro/SettingsLicense.php:231
+msgid "Please enter the license key shown on your order receipt."
+msgstr "Veuillez saisir la clé de licence figurant sur votre reçu de commande."
+
+#: includes-pro/SettingsLicense.php:232
+msgid "An unidentified error occurred."
+msgstr "Une erreur non identifiée s’est produite."
+
+#: includes-pro/SettingsLicense.php:234
+msgid "The key has been deactivated."
+msgstr "La clé a bien été désactivée."
+
+#: includes-pro/SettingsLicense.php:235
+msgid "The key has been activated."
+msgstr "La clé a bien été activée."
+
+#: includes-pro/SettingsLicense.php:236
+msgid "The key has expired."
+msgstr "La clé a expirée."
+
+#: includes-pro/SettingsLicense.php:237
+msgid "The key is invalid."
+msgstr "La clé est invalide."
+
+#: includes-pro/SettingsLicense.php:238
+msgid "An unknown activation error occurred."
+msgstr "Une erreur d’activation inconnue s’est produite."
+
+#: includes-pro/SettingsLicense.php:239
+msgid "The key provided is not valid. Please double-check your entry."
+msgstr "La clé fournie n’est pas valide. Veuillez revérifier votre entrée."
+
+#: includes-pro/SettingsLicense.php:240
+msgid "This site is not valid to activate the key."
+msgstr "Ce site n’est pas valide pour activer la clé."
+
+#: includes-pro/SettingsLicense.php:241 includes-pro/SettingsLicense.php:247
+msgid "The key provided could not be validated by publishpress.com."
+msgstr "La clé fournie n’a pas pu être validée par publishpress.com."
+
+#: includes-pro/SettingsLicense.php:242
+msgid "The key provided is already active on another site."
+msgstr "La clé fournie n’a pas pu être validée par publishpress.com."
+
+#: includes-pro/SettingsLicense.php:243
+msgid "The key has already been activated on the allowed number of sites."
+msgstr "La clé a déjà été activée sur le nombre de sites autorisés."
+
+#: includes-pro/SettingsLicense.php:244
+msgid "An unknown deactivation error occurred."
+msgstr "Une erreur de désactivation inconnue s’est produite."
+
+#: includes-pro/SettingsLicense.php:245
+msgid "Unable to deactivate because the provided key is not valid."
+msgstr "Impossible de désactiver car la clé fournie n’est pas valide."
+
+#: includes-pro/SettingsLicense.php:246
+msgid "This site is not valid to deactivate the key."
+msgstr "Ce site n’est pas valide pour désactiver la clé."
+
+#: includes-pro/SettingsLicense.php:248
+msgid "The key provided is not active on the specified site."
+msgstr "La clé fournie n’est pas active sur le site spécifié."
+
+#: includes-pro/SettingsLicense.php:253
+#, php-format
+msgid "If this is incorrect, <a href=\"%s\">request activation help</a>."
+msgstr ""
+"Si cela est incorrect, <a href=\"%s\">demandez de l’aide à l’activation</a>."
+
+#: includes-pro/SettingsLicense.php:254
+msgid "Please save settings before uploading site configuration."
+msgstr ""
+"Veuillez enregistrer les réglages avant de télécharger la configuration du "
+"site."
+
+#: includes-pro/SettingsProUI.php:16
+msgid "Use unfiltered preview links"
+msgstr "Utiliser des liens d’aperçu non filtrés"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Change Requests for Unpublished Posts"
+msgstr "Demandes de modification pour les publications non publiées"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Revision Submission for Unpublished Posts"
+msgstr "Envoi de révisions pour les publications non publiées"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Change Request"
+msgstr "Publier par demande de modification"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Revision"
+msgstr "Publier par révision"
+
+#: includes-pro/SettingsProUI.php:28
+msgid "Prevent Redundant Revisions"
+msgstr "Empêcher les révisions redondantes"
+
+#: includes-pro/SettingsProUI.php:52
+msgid ""
+"Approval of a Change Request to an unpublished post causes it to be "
+"published."
+msgstr ""
+"L’approbation d’une demande de modification d’une publication non publiée "
+"entraîne sa publication."
+
+#: includes-pro/SettingsProUI.php:53
+msgid ""
+"Approval of a Revision to an unpublished post causes it to be published."
+msgstr ""
+"L’approbation d’une révision d’une publication non publiée entraîne sa "
+"publication."
+
+#: includes-pro/SettingsProUI.php:75
+msgid ""
+"Some third party plugins (including WPML with language subdomains) may "
+"require this for compatibility."
+msgstr ""
+"Certains extensions tierces (y compris WPML avec les sous-domaines "
+"linguistiques) peuvent nécessiter cela pour la prise en charge."
+
+#: includes-pro/SettingsProUI.php:83
+msgid ""
+"Prevent REST requests from generating revisions (which may be stored without "
+"ACF fields)."
+msgstr ""
+"Empêcher les requêtes REST de générer des révisions (qui peuvent être "
+"stockées sans champs ACF)."
+
+#: includes-pro/SettingsProUI.php:91
+msgid ""
+"Revisors can request the deletion of a published post. The Deletion Queue is "
+"not shown until a deletion request exists."
+msgstr ""
+"Les relecteurs/relectrices pourront demander la suppression d’une "
+"publication publiée. La file d’attente de suppression n’est pas affichée "
+"tant qu’une demande de suppression n’existe pas."
+
+#~ msgid "Display PublishPress Branding in Admin"
+#~ msgstr "Afficher la marque PublishPress dans le panneau d’administration"
+
+#~ msgid "Branding"
+#~ msgstr "Marque"
+
+#~ msgid "M j, Y @ g:i a"
+#~ msgstr "M j, Y @ g : i a"
+
+#, php-format
+#~ msgid "%sView Queue%s"
+#~ msgstr "%sVoir la file d’attente des révisions%s"
+
+#, php-format
+#~ msgid "%sCompare%s%sView Published Post%s"
+#~ msgstr "%sComparer%s%sVoir la publication publiée%s"
+
+#, php-format
+#~ msgid "%sView Published Post%s"
+#~ msgstr "%sVoir la publication publiée%s"
+
+#~ msgid "Edit"
+#~ msgstr "Modifier"
+
+#~ msgid "Publish now"
+#~ msgstr "Publier maintenant"
+
+#, php-format
+#~ msgid "This is a %s. %s %s %s"
+#~ msgstr "Ceci est une %s. %s %s %s"
+
+#, php-format
+#~ msgid "This is a %s (requested publish date: %s). %s %s %s"
+#~ msgstr "Ceci est une %s (date de publication demandée : %s). %s %s %s"
+
+#, php-format
+#~ msgid "This is a %s (for publication on %s). %s %s %s"
+#~ msgstr "Ceci est une %s (pour publication sur %s). %s %s %s"
+
+#, php-format
+#~ msgid "This is the Current Revision. %s"
+#~ msgstr "Il s’agit de la révision en cours. %s"
+
+#~ msgid "Restore"
+#~ msgstr "Restaurer"
+
+#, php-format
+#~ msgid "This is a Past Revision (from %s). %s %s"
+#~ msgstr "Il s’agit d’une révision passée (à partir de %s). %s %s"
+
+#~ msgid "Post"
+#~ msgstr "Publication"
+
+#~ msgid "Post Type"
+#~ msgstr "Type de publication"
+
+#~ msgid "Requested By"
+#~ msgstr "Demandé pour "
+
+#~ msgid "Request Date"
+#~ msgstr "Date de la demande"
+
+#~ msgid "Clear Request"
+#~ msgstr "Effacer la demande"
+
+#~ msgid "Delete Permanently"
+#~ msgstr "Supprimer définitivement"
+
+#~ msgid "Select All"
+#~ msgstr "Tout sélectionner"
+
+#, php-format
+#~ msgid "&#8220;%s&#8221; (Edit)"
+#~ msgstr "« %s » (Modifier)"
+
+#, php-format
+#~ msgid "%s ago"
+#~ msgstr "Il y a %s"
+
+#~ msgid "Y/m/d g:i a"
+#~ msgstr "Y/m/d g:i a"
+
+#~ msgid "View published post"
+#~ msgstr "Voir la publication publiée"
+
+#~ msgid "View"
+#~ msgstr "Voir"
+
+#~ msgid "Preview"
+#~ msgstr "Aperçu"
+
+#~ msgid "Delete"
+#~ msgstr "Supprimer"
+
+#, php-format
+#~ msgid "%s deletion requested."
+#~ msgstr "%s suppression demandée."
+
+#, php-format
+#~ msgid "%s post deleted."
+#~ msgstr "%s publication supprimée."
+
+#~ msgid "Request Deletion"
+#~ msgstr "Suppression de la demande"
+
+#~ msgid "Deletion Queue"
+#~ msgstr "File d’attente de suppression"
+
+#~ msgid "You are not allowed to manage deletion requests."
+#~ msgstr ""
+#~ "Vous n’avez pas l’autorisation de gérer les demandes de suppression."
+
+#, php-format
+#~ msgid "%s revision submitted."
+#~ msgstr "%s révision envoyée."
+
+#, php-format
+#~ msgid "%s deletion request cleared."
+#~ msgstr "La demande de suppression de %s a été effacée."
+
+#, php-format
+#~ msgid "%sPost Author: %s"
+#~ msgstr "%sAuteur/autrice de la publication : %s"
+
+#, php-format
+#~ msgid "Deletion Queue %s"
+#~ msgstr "File d’attente de suppression %s"
+
+#, php-format
+#~ msgid "Search results for \"%s\""
+#~ msgstr "Résultats de recherche pour « %s »"
+
+#, php-format
+#~ msgid "[%s] %s"
+#~ msgstr "[%s] %s"
+
+#, php-format
+#~ msgid "%1$s submitted a deletion request for the %2$s \"%3$s\"."
+#~ msgstr "%1$s a envoyé une demande de suppression pour la %2$s « %3$s »."
+
+#~ msgid "Deletion Queue: "
+#~ msgstr "File d’attente des suppression : "
+
+#~ msgid "Edit Post:"
+#~ msgstr "Modifier la publication : "
+
+#, php-format
+#~ msgid ""
+#~ "There is a new version of %1$s available. %2$sView version %3$s "
+#~ "details%4$s."
+#~ msgstr ""
+#~ "Une nouvelle version pour %1$s est disponible. %2$sAfficher les détails "
+#~ "de la version %3$s%4$s."
+
+#, php-format
+#~ msgid ""
+#~ "There is a new version of %1$s available. %2$sView version %3$s "
+#~ "details%4$s or %5$supdate now%6$s."
+#~ msgstr ""
+#~ "Une nouvelle version pour %1$s est disponible. %2$sAfficher les détails "
+#~ "de la version %3$s%4$s ou %5$smettre à jour maintenant%6$s."
+
+#~ msgid "You do not have permission to install plugin updates"
+#~ msgstr ""
+#~ "Vous n’avez pas les droits pour installer les mises à jour de l’extension"
+
+#~ msgid "Error"
+#~ msgstr "Erreur"
+
+#~ msgid ""
+#~ "Sorry, an error occurred. Please check the error log and contact the "
+#~ "PublishPress support team."
+#~ msgstr ""
+#~ "Désolé, une erreur s’est produite. Veuillez vérifier le journal des "
+#~ "erreurs et contacter l’équipe de support de PublishPress."
+
+#~ msgid "Missing license"
+#~ msgstr "Licence manquante"
+
+#~ msgid "Your license key is expired"
+#~ msgstr "Votre clé de licence a expiré"
+
+#~ msgid "Your license key has been disabled"
+#~ msgstr "Votre clé de licence a été désactivée"
+
+#~ msgid "Invalid license"
+#~ msgstr "Licence invalide"
+
+#~ msgid "Your license is not active for this URL"
+#~ msgstr "Votre licence n’est pas active pour cette URL"
+
+#~ msgid "This appears to be an invalid license key for this product"
+#~ msgstr "Il semble que la clé de licence de ce produit ne soit pas valide."
+
+#~ msgid "Your license key has reached its activation limit"
+#~ msgstr "Votre clé de licence a atteint sa limite d’activation"
+
+#~ msgid "Activated"
+#~ msgstr "Activée"
+
+#~ msgid "Status"
+#~ msgstr "État"
+
+#~ msgid "Click here to read more about licenses."
+#~ msgstr "Cliquez ici pour en savoir plus sur les licences."
+
+#~ msgid "More information"
+#~ msgstr "Plus d’informations"
+
+#~ msgid "Enter the license key for being able to update the plugin."
+#~ msgstr "Saisissez la clé de licence pour pouvoir mettre à jour l’extension."
+
+#~ msgid "An error occurred. Please, try again or contact the support team."
+#~ msgstr ""
+#~ "Une erreur s’est produite. Veuillez réessayer ou contacter l’équipe de "
+#~ "support."
+
+#~ msgid ""
+#~ "This plugin is outdated. You already have a more recent version "
+#~ "installed. Please remove this version."
+#~ msgstr ""
+#~ "Cette extension est obsolète. Vous avez déjà installé une version plus "
+#~ "récente. Veuillez supprimer cette version."
+
+#, php-format
+#~ msgid ""
+#~ "This plugin is not installed in the standard folder. The current path is "
+#~ "%1$s but it is expected to be %2$s."
+#~ msgstr ""
+#~ "Cette extension n’est pas installée dans le dossier standard. Le chemin "
+#~ "actuel est %1$s mais il devrait être %2$s."
+
+#, php-format
+#~ msgid ""
+#~ "You have activated multiple instances of %s. Please keep only one "
+#~ "activated and remove the others."
+#~ msgstr ""
+#~ "Vous avez activé plusieurs instances de %s. Veuillez n’en garder qu’une "
+#~ "seule activée et supprimer les autres."
+
+#, php-format
+#~ msgid "Please deactivate %1$s when %2$s is activated."
+#~ msgstr "Veuillez désactiver %1$s lorsque %2$s est activée."
+
+#~ msgid "Could not insert revision into the database"
+#~ msgstr "Impossible d’insérer une révision dans la base de données"
+
+#, php-format
+#~ msgid "[%s] %s Updated"
+#~ msgstr "[%s] %s a été mis à jour"
+
+#, php-format
+#~ msgid "%1$s updated a %2$s of the %3$s \"%4$s\"."
+#~ msgstr "%1$s a mis à jour une %2$s de la %3$s « %4$s »."
+
+#, php-format
+#~ msgid ""
+#~ "%1$s submitted changes to the %2$s \"%3$s\". You can review the changes "
+#~ "for possible publication:"
+#~ msgstr ""
+#~ "%1$s a envoyé des modifications à la « %3$s » de %2$s. Vous pouvez "
+#~ "examiner les modifications en vue d’une éventuelle publication :"
+
+#~ msgid "Preview and Approval: "
+#~ msgstr "Aperçu et approbation : "
+
+#~ msgid "Revision Queue: "
+#~ msgstr "File d’attente des révisions : "
+
+#, php-format
+#~ msgid "Edit %s: "
+#~ msgstr "Modifier %s : "
+
+#, php-format
+#~ msgid ""
+#~ "Another copy of PublishPress Revisions (or Revisionary) is already "
+#~ "activated (version %1$s: \"%2$s\")"
+#~ msgstr ""
+#~ "Une autre copie de PublishPress Revisions (ou Revisionary) est déjà "
+#~ "activée (version %1$s : « %2$s »)"
+
+#, php-format
+#~ msgid ""
+#~ "Another copy of PublishPress Revisions (or Revisionary) is already "
+#~ "activated (version %1$s)"
+#~ msgstr ""
+#~ "Une autre copie de PublishPress Revisions (ou Revisionary) est déjà "
+#~ "activée (version %1$s)"
+
+#~ msgid "Every 2 Minutes"
+#~ msgstr "Toutes les 2 minutes"
+
+#~ msgid "Working Copy"
+#~ msgstr "Copie de travail"
+
+#~ msgid "Create Working Copy"
+#~ msgstr "Créer une copie de travail"
+
+#~ msgid "Copy"
+#~ msgstr "Copier"
+
+#~ msgid "Creating Working Copy..."
+#~ msgstr "Création de la copie de travail…"
+
+#~ msgid "Working Copy ready"
+#~ msgstr "La copie de travail est prête"
+
+#~ msgid "Approve Changes"
+#~ msgstr "Approuver les modifications"
+
+#~ msgid "Approving Changes..."
+#~ msgstr "Approbation des modifications…"
+
+#~ msgid "Publish Changes"
+#~ msgstr "Publier les modifications"
+
+#~ msgid "Save Revision"
+#~ msgstr "Enregistrer la révision"
+
+#~ msgid "Update Revision"
+#~ msgstr "Mettre à jour la révision"
+
+#~ msgid "Working Copies"
+#~ msgstr "Copies de travail"
+
+#~ msgid "Change Request"
+#~ msgstr "Demande de modification"
+
+#~ msgid "Submitting Changes..."
+#~ msgstr "Envoi des modifications…"
+
+#~ msgid "Changes Submitted"
+#~ msgstr "Modifications envoyées."
+
+#~ msgid "Change Requests"
+#~ msgstr "Demandes de modification"
+
+#~ msgid "Enable Change Requests"
+#~ msgstr "Activer les demandes de modification"
+
+#~ msgid "Scheduled Change"
+#~ msgstr "Modification planifiée"
+
+#~ msgid "Schedule Changes"
+#~ msgstr "Planifier les modifications"
+
+#~ msgid "Scheduling Changes..."
+#~ msgstr "Planification des modifications…"
+
+#~ msgid "Changes are Scheduled."
+#~ msgstr "Les modifications ont été planifiées."
+
+#~ msgid "Scheduled Changes"
+#~ msgstr "Modifications planifiées"
+
+#~ msgid "Unsubmitted Revision"
+#~ msgstr "Révision non envoyée"
+
+#~ msgid "Creating Revision..."
+#~ msgstr "Création de la révision…"
+
+#~ msgid "The Revision is ready to edit."
+#~ msgstr "La révision est prête à être modifiée."
+
+#~ msgid "Approve Revision"
+#~ msgstr "Approuver la révision"
+
+#~ msgid "Unsubmitted Revisions"
+#~ msgstr "Révisions non envoyées"
+
+#~ msgid "Not Submitted"
+#~ msgstr "Non envoyée"
+
+#~ msgid "Submitted Revision"
+#~ msgstr "Révision envoyée"
+
+#~ msgid "Submit Revision"
+#~ msgstr "Envoyer la révision"
+
+#~ msgid "Submitting Revision..."
+#~ msgstr "Envoi de la révision…"
+
+#~ msgid "The Revision is Submitted"
+#~ msgstr "La révision est envoyée"
+
+#~ msgid "Submitted Revisions"
+#~ msgstr "Révisions envoyées"
+
+#~ msgid "Submitted"
+#~ msgstr "Envoyé"
+
+#~ msgid "Scheduled Revision"
+#~ msgstr "Révision planifiée"
+
+#~ msgid "Schedule Revision"
+#~ msgstr "Planifier la révision"
+
+#~ msgid "Scheduling Revision..."
+#~ msgstr "Planification de la révision…"
+
+#~ msgid "The Revision is Scheduled"
+#~ msgstr "La révision est planifiée"
+
+#~ msgid "Scheduled"
+#~ msgstr "Planifiée"
+
+#~ msgid "Revision"
+#~ msgstr "Révision"
+
+#~ msgid "Revised By"
+#~ msgstr "Révisé par"
+
+#~ msgid "Post Author"
+#~ msgstr "Auteur/autrice de la publication"
+
+#~ msgid "Published Post"
+#~ msgstr "Publication publiée"
+
+#~ msgid "Submit Changes"
+#~ msgstr "Envoyer les modifications"
+
+#~ msgid "Revisor"
+#~ msgstr "Relecteur/relectrice"
+
+#~ msgid "Revision Workflow"
+#~ msgstr "Flux de travail de révision"
+
+#~ msgid "Delete Revision"
+#~ msgstr "Supprimer la révision"
+
+#~ msgid "Move to Trash"
+#~ msgstr "Déplacer dans la corbeille"
+
+#~ msgid "View / moderate saved revision"
+#~ msgstr "Voir/modérer la révision enregistrée"
+
+#~ msgid "View saved revision"
+#~ msgstr "Voir la révision enregistrée"
+
+#~ msgid "Status:"
+#~ msgstr "État :"
+
+#~ msgid "M j, Y @ G:i"
+#~ msgstr "M j, Y @ G:i"
+
+#, php-format
+#~ msgid "Scheduled for: %s"
+#~ msgstr "Planifié pour : %s"
+
+#, php-format
+#~ msgid "Publish on: %s"
+#~ msgstr "Publier le : %s"
+
+#, php-format
+#~ msgid "Publish %son approval%s"
+#~ msgstr "Publier %son approbation%s"
+
+#~ msgid "Sorry, you are not allowed to approve this revision."
+#~ msgstr "Désolé, vous n’avez pas l’autorisation d’approuver cette révision."
+
+#~ msgid "Sorry, you are not allowed to submit this revision."
+#~ msgstr "Désolé, vous n’êtes pas autorisé à envoyer cette révision."
+
+#~ msgid "Sorry, you are not allowed to decline this revision."
+#~ msgstr "Désolé, vous n’avez pas l’autorisation de refuser cette révision."
+
+#~ msgid "Sorry, you are not allowed to delete this revision."
+#~ msgstr "Désolé, vous n’avez pas l’autorisation de supprimer cette révision."
+
+#~ msgid "Error in deleting."
+#~ msgstr "Erreur lors de la suppression."
+
+#~ msgid "The revision was restored."
+#~ msgstr "La révision a été restaurée."
+
+#~ msgid "The revision was scheduled for publication."
+#~ msgstr "La révision a été planifiée pour la publication."
+
+#~ msgid "The revision was published."
+#~ msgstr "La révision a été publiée."
+
+#~ msgid "Has Revision"
+#~ msgstr "A une révision"
+
+#~ msgid "Revision Queue"
+#~ msgstr "File d’attente des révisions"
+
+#~ msgid "PublishPress Revisions Network Settings"
+#~ msgstr "Réglages de PublishPress Revisions pour le réseau"
+
+#~ msgid "Network Settings"
+#~ msgstr "Réglages du réseau"
+
+#~ msgid "PublishPress Revisions Network Defaults"
+#~ msgstr "Valeurs par défaut de PublishPress Revisions pour le réseau"
+
+#~ msgid "Network Defaults"
+#~ msgstr "Valeurs par défaut du réseau"
+
+#, php-format
+#~ msgid ""
+#~ "Scheduled Revisions are not available because WP-Cron is disabled on this "
+#~ "site. See %sRevisions > Settings > Scheduled Revisions%s."
+#~ msgstr ""
+#~ "Les révisions planifiées ne sont pas disponibles car WP-Cron est "
+#~ "désactivé sur ce site. Voir %sRevisions > Réglages > Révisions "
+#~ "programmées%s."
+
+#~ msgid "Revisions"
+#~ msgstr "Révisions"
+
+#~ msgid "PublishPress Revisions Settings"
+#~ msgstr "Réglages de PublishPress Revisions"
+
+#~ msgid "Settings"
+#~ msgstr "Réglages"
+
+#~ msgid "Upgrade to Pro"
+#~ msgstr "Passer à la version Pro"
+
+#, php-format
+#~ msgid "If you like %s, please leave us a %s rating. Thank you!"
+#~ msgstr "Si vous appréciez %s, veuillez nous laisser une note de %s. Merci !"
+
+#~ msgid "About"
+#~ msgstr "À propos"
+
+#~ msgid "Documentation"
+#~ msgstr "Documentation"
+
+#~ msgid "Contact"
+#~ msgstr "Contact"
+
+#, php-format
+#~ msgid "show current users (%d)"
+#~ msgstr "afficher les utilisateurs et les utilisatrices courant(e)s (%d)"
+
+#, php-format
+#~ msgid "show eligible users (%d)"
+#~ msgstr "afficher les utilisateurs et les utilisatrices admissibles (%d)"
+
+#~ msgid "filter:"
+#~ msgstr "filtrer :"
+
+#~ msgid "select"
+#~ msgstr "sélectionner"
+
+#~ msgid "unselect"
+#~ msgstr "déselectionner"
+
+#~ msgid "Schedule"
+#~ msgstr "Planifier"
+
+#~ msgid "Y/m/d g:i:s a"
+#~ msgstr "Y/m/d g:i:s a"
+
+#, php-format
+#~ msgid "Scheduled publication: %s"
+#~ msgstr "Publication planifiée : %s"
+
+#, php-format
+#~ msgid "Requested publication: %s"
+#~ msgstr "Publication demandée : %s"
+
+#~ msgid "Missed schedule"
+#~ msgstr "Planification manquée"
+
+#~ msgid "No author"
+#~ msgstr "Aucun(e) auteur ou autrice"
+
+#, php-format
+#~ msgid "View only revisions of %s"
+#~ msgstr "Afficher uniquement les révisions de %s"
+
+#~ msgid "Filter"
+#~ msgstr "Filtrer"
+
+#~ msgid "Compare Past Revisions"
+#~ msgstr "Comparer les révisions précédentes"
+
+#~ msgid "History"
+#~ msgstr "Historique"
+
+#~ msgid "Show more details"
+#~ msgstr "Afficher plus de détails"
+
+#~ msgid "My Activity"
+#~ msgstr "Mon activité"
+
+#, php-format
+#~ msgid "All %s"
+#~ msgstr "Tous %s"
+
+#~ msgid "Decline"
+#~ msgstr "Refuser"
+
+#~ msgid "Unschedule"
+#~ msgstr "Déplanifier"
+
+#~ msgid "Filter by category"
+#~ msgstr "Filtrer par catégorie"
+
+#~ msgid "Preview Revision"
+#~ msgstr "Prévisualisation de la révision"
+
+#~ msgid "Compare Changes"
+#~ msgstr "Comparer les modifications"
+
+#~ msgid "Enable public preview"
+#~ msgstr "Activer la prévisualisation publique"
+
+#~ msgid "Publish <b>on approval</b>"
+#~ msgstr "Publier <b>sur approbation</b>"
+
+#~ msgid "Compare this revision to published copy, or to other revisions"
+#~ msgstr "Comparez cette révision à la copie publiée ou à d’autres révisions"
+
+#, php-format
+#~ msgid "Revision updated. %sView Preview%s"
+#~ msgstr "Révision mise à jour. %sVoir aperçu%s"
+
+#, php-format
+#~ msgid "Compare %s of \"%s\""
+#~ msgstr "Comparez %s de « %s »"
+
+#~ msgid "Return to editor"
+#~ msgstr "Retour à l’éditeur"
+
+#~ msgid "(no title)"
+#~ msgstr "(sans titre)"
+
+#~ msgid "Post Date"
+#~ msgstr "Date de la publication"
+
+#~ msgid "Post Parent"
+#~ msgstr "Publication parente"
+
+#~ msgid "Menu Order"
+#~ msgstr "Ordre du menu"
+
+#~ msgid "Comment Status"
+#~ msgstr "État du commentaire"
+
+#~ msgid "Ping Status"
+#~ msgstr "État du ping"
+
+#~ msgid "Page Template"
+#~ msgstr "Modèle de page"
+
+#~ msgid "Scheduled for "
+#~ msgstr "Planifié pour "
+
+#~ msgid "Requested for "
+#~ msgstr "Demandé pour "
+
+#~ msgid "Modified "
+#~ msgstr "Modifiée "
+
+#, php-format
+#~ msgid "%s%s ago"
+#~ msgstr "Il y a %s%s"
+
+#, php-format
+#~ msgid "%s%s from now"
+#~ msgstr "%s%s à partir de maintenant"
+
+#~ msgid "M j, Y @ H:i"
+#~ msgstr "j M Y @ H:i"
+
+#~ msgid "Preview / Approve"
+#~ msgstr "Aperçu/Approbation"
+
+#~ msgid "Preview / Restore"
+#~ msgstr "Aperçu / Restaurer"
+
+#~ msgid "Manage"
+#~ msgstr "Gérer"
+
+#~ msgid "List"
+#~ msgstr "Liste"
+
+#~ msgid "Setting Scope"
+#~ msgstr "Réglage de Scope"
+
+#~ msgid "Post Types"
+#~ msgstr "Types de publication"
+
+#~ msgid "Revisors"
+#~ msgstr "Relecteurs/relectrices"
+
+#~ msgid "Statuses"
+#~ msgstr "États"
+
+#~ msgid "Revision Creation"
+#~ msgstr "Création de révisions"
+
+#~ msgid "Revision Submission"
+#~ msgstr "Envoi des révisions"
+
+#~ msgid "Queue"
+#~ msgstr "File d’attente"
+
+#~ msgid "Preview / Approval"
+#~ msgstr "Aperçu/Approbation"
+
+#~ msgid "Options"
+#~ msgstr "Options"
+
+#~ msgid "Notifications"
+#~ msgstr "Notifications"
+
+#~ msgid ""
+#~ "Use alternate labeling: \"Working Copy\" > \"Change Request\" > "
+#~ "\"Scheduled Change\""
+#~ msgstr ""
+#~ "Utilisez des libellés alternatifs : « Copie de travail » > « Demande de "
+#~ "modification » > « Modification planifiée »."
+
+#, php-format
+#~ msgid "Additional role capability required to manage %s"
+#~ msgstr "Des permissions supplémentaires sont nécessaires pour gérer %s"
+
+#~ msgid "Additional role capability required to create a Working Copy"
+#~ msgstr ""
+#~ "Une permission supplémentaire est nécessaire pour créer une copie de "
+#~ "travail"
+
+#~ msgid "Additional role capability required to create a new revision"
+#~ msgstr ""
+#~ "Une permission supplémentaire est nécessaire pour créer une nouvelle "
+#~ "révision"
+
+#, php-format
+#~ msgid "Posts / Pages list: Use \"Edit\" caption for %s link"
+#~ msgstr ""
+#~ "Liste des publications/pages : Utilisez la légende « Modifier » pour le "
+#~ "lien %s"
+
+#, php-format
+#~ msgid "Enable %s"
+#~ msgstr "Activer %s"
+
+#~ msgid "Auto-submit revisions created by a user with publishing capability"
+#~ msgstr ""
+#~ "Envoi automatique des révisions créées par un utilisateur ou utilisatrice "
+#~ "ayant la capacité de publier."
+
+#~ msgid "Additional role capability required to submit a Change Request"
+#~ msgstr ""
+#~ "Une permission supplémentaire est nécessaire pour soumettre une demande "
+#~ "de modification"
+
+#~ msgid "Additional role capability required to submit a revision"
+#~ msgstr ""
+#~ "Une permission supplémentaire est nécessaire pour soumettre une révision"
+
+#~ msgid "Editing others' revisions requires role capability"
+#~ msgstr ""
+#~ "Pour modifier les révisions des autres, vous devez disposer d’un compte "
+#~ "avec certaines permissions"
+
+#~ msgid "Listing others' revisions requires role capability"
+#~ msgstr ""
+#~ "Pour lister les révisions des autres, vous devez disposer d’un compte "
+#~ "avec certaines permissions"
+
+#~ msgid "Users can always administer revisions to their own editable posts"
+#~ msgstr ""
+#~ "Les utilisateurs et utilisatrices peuvent toujours gérer les révisions de "
+#~ "leurs propres publications modifiables"
+
+#~ msgid "Also notify on Revision Update"
+#~ msgstr "Notifier également la mise à jour de la révision"
+
+#~ msgid "Revision Publication: API actions to mimic Post Update"
+#~ msgstr ""
+#~ "Publication des révisions : Actions API pour imiter la mise à jour des "
+#~ "publications"
+
+#~ msgid "Hide html tags on Compare Revisions screen"
+#~ msgstr "Masquer les balises html sur l’écran comparer les révisions"
+
+#~ msgid "Use WP-Cron scheduling"
+#~ msgstr "Utiliser la planification WP-Cron"
+
+#~ msgid "Site uses a custom trigger for WP-Cron tasks"
+#~ msgstr "Le site utilise un déclencheur personnalisé pour les tâches WP-Cron"
+
+#~ msgid "Asynchronous Publishing"
+#~ msgstr "Publication asynchrone"
+
+#~ msgid "Update Publish Date"
+#~ msgstr "Mettre à jour la date de publication"
+
+#~ msgid "Update Modified Date"
+#~ msgstr "Mettre à jour la date de modification"
+
+#, php-format
+#~ msgid "Email original Author when a %s is submitted"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux auteurs originaux et autrices originales quand une "
+#~ "%s est envoyée"
+
+#, php-format
+#~ msgid "Email the original Author when a %s is approved"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux auteurs originaux et autrices originales quand une "
+#~ "%s est approuvée"
+
+#, php-format
+#~ msgid "Email the Revisor when a %s is approved"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux relecteurs/relectrices quand une %s est approuvée"
+
+#, php-format
+#~ msgid "Email the original Author when a %s is published"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux auteurs originaux et autrices originales quand une "
+#~ "%s est publiée"
+
+#, php-format
+#~ msgid "Email the Revisor when a %s is published"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux relecteurs/relectrices quand une %s est publiée"
+
+#~ msgid "Enable notification buffer"
+#~ msgstr "Activer la mémoire tampon de notification"
+
+#~ msgid "All custom post types available to Revisors"
+#~ msgstr ""
+#~ "Tous les types de publication personnalisés disponibles pour les "
+#~ "relecteurs et les relectrices"
+
+#~ msgid "Prevent Revisors from editing other user's drafts"
+#~ msgstr ""
+#~ "Empêcher les relecteurs et les relectrices de modifier les brouillons "
+#~ "d’autres utilisateurs et utilisatrices"
+
+#~ msgid "Display Hints"
+#~ msgstr "Afficher les conseils"
+
+#~ msgid "Show Preview Links"
+#~ msgstr "Afficher les liens d’aperçu"
+
+#~ msgid "Preview Link Type"
+#~ msgstr "Type de lien d’aperçu"
+
+#~ msgid "Approve Button on Compare Revisions screen"
+#~ msgstr "Bouton « Approuver » sur l’écran « Comparer les révisions »"
+
+#~ msgid "Copy revision comments to published post"
+#~ msgstr "Copier les commentaires de révision dans la publication"
+
+#~ msgid "Compare Past Revisions ordering:"
+#~ msgstr "Trier la comparaison des révisions précédentes :"
+
+#, php-format
+#~ msgid "Include %s in My Activity, Revisions to My Posts views"
+#~ msgstr ""
+#~ "Inclure %s dans les vues « Mon activité » et « Révisions de mes "
+#~ "publications »"
+
+#~ msgid "On Revision publication, delete Editorial Comments"
+#~ msgstr ""
+#~ "Lors de la publication de la révision, supprimer les commentaires "
+#~ "éditoriaux"
+
+#~ msgid "Enable deletion queue"
+#~ msgstr "Activer la file d’attente de suppression"
+
+#, php-format
+#~ msgid "Email designated Publishers when a %s is submitted"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux maisons d’édition désignées quand une %s est envoyée"
+
+#, php-format
+#~ msgid "Email designated Publishers when a %s is published"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux maisons d’édition désignées quand une %s est publiée"
+
+#, php-format
+#~ msgid "Email designated Publishers when a %s is approved"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux maisons d’édition désignées quand une %s est "
+#~ "approuvée"
+
+#, php-format
+#~ msgid "Email Editors and Administrators when a %s is submitted"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux éditeurs et éditrices et aux administrateurs et "
+#~ "administratrices quand une %s est envoyée"
+
+#, php-format
+#~ msgid "Email Editors and Administrators when a %s is published"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux éditeurs et éditrices et aux administrateurs et "
+#~ "administratrices quand une %s est publiée"
+
+#, php-format
+#~ msgid "Email Editors and Administrators when a %s is approved"
+#~ msgstr ""
+#~ "Envoyer un e-mail aux éditeurs et éditrices et aux administrateurs et "
+#~ "administratrices quand une %s est approuvée"
+
+#~ msgid "PublishPress Revisions Site Settings"
+#~ msgstr "Réglages de PublishPress Revisions pour le site"
+
+#~ msgid ""
+#~ "These are the <strong>default</strong> settings for options which can be "
+#~ "adjusted per-site."
+#~ msgstr ""
+#~ "Il s’agit des réglages <strong>par défaut</strong> pour les options qui "
+#~ "peuvent être ajustées par site."
+
+#, php-format
+#~ msgid "You can also specify %1$sdefaults for site-specific settings%2$s."
+#~ msgstr ""
+#~ "Vous pouvez également spécifier %1$sles réglages par défaut spécifiques "
+#~ "au site%2$s."
+
+#, php-format
+#~| msgid ""
+#~| "Use this tab to make <strong>NETWORK-WIDE</strong> changes to "
+#~| "PublishPress Revisions settings. %s"
+#~ msgid ""
+#~ "Use this tab to make NETWORK-WIDE changes to PublishPress Revisions "
+#~ "settings. %s"
+#~ msgstr ""
+#~ "Cet onglet vous permet de modifier les réglages de PublishPress Revisions "
+#~ "à l’échelle du réseau. %s"
+
+#~ msgid ""
+#~ "Here you can change the default value for settings which are controlled "
+#~ "separately on each site."
+#~ msgstr ""
+#~ "Ici, vous pouvez modifier la valeur par défaut pour les réglages qui sont "
+#~ "contrôlés séparément sur chaque site."
+
+#, php-format
+#~ msgid "Note that %1$s network-wide settings%2$s may also be available."
+#~ msgstr ""
+#~ "Notez que des %1$sréglages à l’échelle du réseau%2$s de peuvent également "
+#~ "être disponibles."
+
+#~ msgid "License"
+#~ msgstr "Licence"
+
+#~ msgid "Enable revisions for these Post Types:"
+#~ msgstr "Activez les révisions pour ces types de publication :"
+
+#, php-format
+#~ msgid "%s capabilities"
+#~ msgstr "%s permissions"
+
+#~ msgid ""
+#~ "Note: Third party code may cause some post types to be incompatible with "
+#~ "PublishPress Revisions."
+#~ msgstr ""
+#~ "Note : Le code d’un tiers peut entraîner l’incompatibilité de certains "
+#~ "types de publication avec PublishPress Revisions."
+
+#~ msgid ""
+#~ "The user role \"Revisor\" role is now available. Include capabilities for "
+#~ "all custom post types in this role?"
+#~ msgstr ""
+#~ "Le rôle du compte « Relecteur/Relectrice » est maintenant disponible. "
+#~ "Inclure des permissions pour tous les types de publication personnalisées "
+#~ "dans ce rôle ?"
+
+#~ msgid ""
+#~ "If checked, users lacking site-wide publishing capabilities will also be "
+#~ "checked for the edit_others_drafts capability"
+#~ msgstr ""
+#~ "Si cette case est cochée, les utilisateurs et les utilisatrices ne "
+#~ "disposant pas de permissions de publication à l’échelle du site seront "
+#~ "également soumis à une vérification de la permission "
+#~ "« edit_others_drafts »"
+
+#~ msgid ""
+#~ "Default labels are \"Not Submitted for Approval\", \"Submitted for "
+#~ "Approval\", \"Scheduled Revision\""
+#~ msgstr ""
+#~ "Les libellés par défaut sont « Non envoyée pour approbation », « Envoyée "
+#~ "pour approbation », « Révision planifiée »"
+
+#~ msgid ""
+#~ "This restriction applies to users who are not full editors for the post "
+#~ "type. To enable a role, add capabilities: copy_posts, copy_others_pages, "
+#~ "etc."
+#~ msgstr ""
+#~ "Cette restriction s’applique aux utilisateurs et utilisatrices qui ne "
+#~ "sont pas des éditeurs ou éditrices complet(e)s pour le type de "
+#~ "publication. Pour activer un rôle, ajoutez les permissions : copy_posts, "
+#~ "copy_others_pages, etc."
+
+#~ msgid ""
+#~ "To expand the Posts / Pages listing for non-Editors, add capabilities: "
+#~ "list_others_pages, list_published_posts, etc."
+#~ msgstr ""
+#~ "Pour déplier la liste des articles/pages pour les non-éditeurs ou non-"
+#~ "éditrices, ajoutez les permissions : list_others_pages, "
+#~ "list_published_posts, etc."
+
+#~ msgid "To enable a role, add the manage_unsubmitted_revisions capability"
+#~ msgstr ""
+#~ "Pour activer un rôle, ajoutez la permission "
+#~ "« manage_unsubmitted_revisions »"
+
+#, php-format
+#~ msgid ""
+#~ "If the user does not have a regular Edit link, recaption the %s link as "
+#~ "\"Edit\""
+#~ msgstr ""
+#~ "Si l’utilisateur ou l’utilisatrice ne dispose pas d’un lien régulier de "
+#~ "modification, rectifiez le lien de %s comme « Modifier »."
+
+#, php-format
+#~ msgid ""
+#~ "Enable published content to be copied, edited, submitted for approval and "
+#~ "managed in %sRevision Queue%s."
+#~ msgstr ""
+#~ "Activez le contenu publié pour qu’il puisse être copié, modifié, envoyé "
+#~ "pour approbation et géré dans %sFile d’attente des révisions%s."
+
+#~ msgid ""
+#~ "This restriction applies to users who are not full editors for the post "
+#~ "type. To enable a role, add capabilities: revise_posts, "
+#~ "revise_others_pages, etc."
+#~ msgstr ""
+#~ "Cette restriction s’applique aux utilisateurs et utilisatrices qui ne "
+#~ "sont pas des éditeurs ou éditrices complet(e)s pour le type de "
+#~ "publication. Pour activer un rôle, ajoutez les permissions : "
+#~ "edit_others_revisions, etc."
+
+#, php-format
+#~ msgid "When a %s is published, update post publish date to current time."
+#~ msgstr ""
+#~ "Lorsqu’une %s est publiée, mettre à jour la date de publication de la "
+#~ "publication à l’heure actuelle."
+
+#, php-format
+#~ msgid "When a %s is published, update post modified date to current time."
+#~ msgstr ""
+#~ "Lorsqu’une %s est publiée, mettre à jour la date de modification de la "
+#~ "publication à l’heure actuelle."
+
+#~ msgid ""
+#~ "If a currently published post or page is edited and a future date set, "
+#~ "the change will not be applied until the selected date."
+#~ msgstr ""
+#~ "Si une publication ou une page actuellement publiée est modifiée et "
+#~ "qu’une date future est définie, la modification ne sera pas appliquée "
+#~ "avant la date sélectionnée."
+
+#~ msgid ""
+#~ "Publish scheduled revisions using the WP-Cron mechanism. On some sites, "
+#~ "publication will fail if this setting is disabled."
+#~ msgstr ""
+#~ "Publier les révisions planifiées en utilisant le mécanisme WP-Cron. Sur "
+#~ "certains sites, la publication échouera si ce réglage est désactivé."
+
+#~ msgid ""
+#~ "Publish scheduled revisions asynchronously, via a secondary http request "
+#~ "from the server.  This is usually best since it eliminates delay, but "
+#~ "some servers may not support it."
+#~ msgstr ""
+#~ "Publier les révisions programmées de manière asynchrone, via une requête "
+#~ "http secondaire du serveur.  C’est généralement la meilleure solution car "
+#~ "elle élimine les délais, mais certains serveurs ne la prennent pas en "
+#~ "charge."
+
+#~ msgid ""
+#~ "The WP-Cron trigger is disabled, but scheduled tasks are still excecuted "
+#~ "using a custom trigger."
+#~ msgstr ""
+#~ "Le déclencheur WP-Cron est désactivé, mais les tâches planifiées sont "
+#~ "toujours exécutées à l’aide d’un déclencheur personnalisé."
+
+#~ msgid ""
+#~ "This restriction applies to users who are not full editors for the post "
+#~ "type. To enable a role, give it the edit_others_revisions capability."
+#~ msgstr ""
+#~ "Cette restriction s’applique aux comptes qui n’ont pas tous les droits "
+#~ "d’édition sur ce type de publication. Pour activer un rôle, donnez-lui la "
+#~ "permission edit_others_revisions."
+
+#~ msgid ""
+#~ "This restriction applies to users who are not full editors for the post "
+#~ "type. To enable a role, give it the list_others_revisions capability."
+#~ msgstr ""
+#~ "Cette restriction s’applique aux utilisateurs et utilisatrices qui ne "
+#~ "sont pas des éditeurs ou éditrices complet(e)s pour le type de "
+#~ "publication. Pour activer un rôle, donnez-lui la permission "
+#~ "list_others_revisions."
+
+#~ msgid ""
+#~ "Bypass the above restrictions for others' revisions to logged in user's "
+#~ "own posts."
+#~ msgstr ""
+#~ "Contourner les restrictions ci-dessus pour les révisions par d’autres des "
+#~ "publications de la personne connectée."
+
+#~ msgid "Regenerate \"post has revision\" flags"
+#~ msgstr "Régénérer les drapeaux « publication avec révision »"
+
+#~ msgid ""
+#~ "For themes that block revision preview, hide preview links from non-"
+#~ "Administrators"
+#~ msgstr ""
+#~ "Pour les thèmes qui bloquent l’aperçu de révision, masquer les liens "
+#~ "d’aperçu des non-administrateurs et non-administratrices"
+
+#~ msgid "Published Post Slug"
+#~ msgstr "Slug de la publication publiée"
+
+#~ msgid "Revision Slug"
+#~ msgstr "Slug de la révision"
+
+#~ msgid "Revision ID only"
+#~ msgstr "ID de révision uniquement"
+
+#~ msgid ""
+#~ "Some themes or plugins may require Revision Slug or Revision ID link type "
+#~ "for proper template loading and field display."
+#~ msgstr ""
+#~ "Certains thèmes ou extensions peuvent nécessiter le type de lien « Slug "
+#~ "de révision » ou « ID de révision » pour un chargement correct du modèle "
+#~ "et l’affichage du champ."
+
+#~ msgid "If disabled, Compare screen links to Revision Preview for approval"
+#~ msgstr ""
+#~ "S’il est désactivé, l’écran de comparaison renvoie à la prévisualisation "
+#~ "des révisions pour approbation"
+
+#, php-format
+#~ msgid ""
+#~ "For compatibility with Advanced Custom Fields, Beaver Builder and WPML, "
+#~ "upgrade to %sPublishPress Revisions Pro%s."
+#~ msgstr ""
+#~ "Pour la compatibilité avec Advanced Custom Fields, Beaver Builder and "
+#~ "WPML, effectuez une mise à niveau vers %sPublishPress Revisions Pro%s."
+
+#~ msgid "This may improve compatibility with some plugins."
+#~ msgstr "Cela peut améliorer la compatibilité avec certaines extensions."
+
+#~ msgid "Modification Date"
+#~ msgstr "Date de modification"
+
+#~ msgid "Show descriptive captions for PublishPress Revisions settings"
+#~ msgstr ""
+#~ "Affiche les légendes descriptives sur les réglages de publishPress "
+#~ "Revisions"
+
+#~ msgid "Never"
+#~ msgstr "Jamais"
+
+#~ msgid "By default"
+#~ msgstr "Par défaut"
+
+#~ msgid "Always"
+#~ msgstr "Toujours"
+
+#~ msgid "select recipients"
+#~ msgstr "sélectionner les destinataires"
+
+#~ msgid ""
+#~ "To avoid notification failures, buffer emails for delayed sending once "
+#~ "minute, hour or day limits are exceeded"
+#~ msgstr ""
+#~ "Pour éviter les échecs de notification, les e-mails sont mis en mémoire "
+#~ "tampon pour un envoi différé lorsque les limites de minutes, d’heures ou "
+#~ "de jours sont dépassées."
+
+#~ msgid "Notification Buffer"
+#~ msgstr "Tampon de notification"
+
+#~ msgid "Notification Log"
+#~ msgstr "Journal de notification"
+
+#~ msgid "Purge Notification Buffer"
+#~ msgstr "Tampon de notification de purge"
+
+#~ msgid "Truncate Notification Log"
+#~ msgstr "Journal des notifications tronquées"
+
+#, php-format
+#~ msgid "Sent in last minute: %d / %d"
+#~ msgstr "Envoyée à la dernière minute : %d/%d"
+
+#, php-format
+#~ msgid "Sent in last hour: %d / %d"
+#~ msgstr "Envoyé dans la dernière heure: %d/%d"
+
+#, php-format
+#~ msgid "Sent in last day: %d / %d"
+#~ msgstr "Envoyé le dernier jour: %d/%d"
+
+#, php-format
+#~ msgid "Seconds until next buffer processing time: %d"
+#~ msgstr ""
+#~ "Secondes jusqu’au temps de traitement de la mémoire tampon suivante : %d"
+
+#~ msgid "Show Notification Log / Buffer"
+#~ msgstr "Afficher le journal des notifications/tampon"
+
+#~ msgid "Show with message content"
+#~ msgstr "Afficher avec le contenu du message"
+
+#~ msgid "WPML Translation Management"
+#~ msgstr "Gestion des traductions WPML"
+
+#~ msgid "Sync \"Needs Update\" flags"
+#~ msgstr "Synchroniser les drapeaux « Nécessite une mise à jour »"
+
+#~ msgid ""
+#~ "Set \"Needs Update\" for any post with translations which was updated "
+#~ "(possibly by revision approval) more recently than its translations."
+#~ msgstr ""
+#~ "Définissez « Nécessite une mise à jour » pour toute publication avec des "
+#~ "traductions qui a été mise à jour (éventuellement par approbation de la "
+#~ "révision) plus récemment que ses traductions."
+
+#~ msgid ""
+#~ "Specify which PublishPress Revisions Settings to control network-wide. "
+#~ "Unselected settings are controlled separately on each site."
+#~ msgstr ""
+#~ "Spécifiez quels réglages de PublishPress Revisions pour contrôler "
+#~ "l’ensemble du réseau. Les réglages non sélectionnés sont contrôlés "
+#~ "séparément sur chaque site."
+
+#, php-format
+#~ msgid "network-wide control of \"%s\""
+#~ msgstr "contrôle à l’échelle du réseau des « %s »"
+
+#~ msgid ""
+#~ "All settings in this form (including those on unselected tabs) will be "
+#~ "reset to DEFAULTS.  Are you sure?"
+#~ msgstr ""
+#~ "Tous les réglages de ce formulaire (y compris ceux sur les onglets non "
+#~ "sélectionnés) seront réinitialisés aux valeurs par défaut.  Confirmez-"
+#~ "vous ?"
+
+#~ msgid "Author"
+#~ msgstr "Auteur/autrice"
+
+#~ msgid "Current Time"
+#~ msgstr "Heure actuelle"
+
+#~ msgid "Compare"
+#~ msgstr "Comparer"
+
+#~ msgid "(on approval)"
+#~ msgstr "(sur approbation)"
+
+#~ msgid "Preview this Revision"
+#~ msgstr "Aperçu de cette révision"
+
+#~ msgid "View / Publish"
+#~ msgstr "Voir/publier"
+
+#~ msgid "View / Approve"
+#~ msgstr "Voir/approuver"
+
+#~ msgid "View / Approve saved revision"
+#~ msgstr "Voir/Approuver une révision enregistrée"
+
+#~ msgid "Preview / Submit"
+#~ msgstr "Aperçu/Envoyer"
+
+#~ msgid "View / Submit"
+#~ msgstr "Voir/Envoyer"
+
+#~ msgid "View / Submit saved revision"
+#~ msgstr "Voir/Envoyer la révision enregistrée"
+
+#~ msgid "View unsaved changes"
+#~ msgstr "Afficher les modifications non enregistrées"
+
+#, php-format
+#~ msgid "%s%s Revision Edit"
+#~ msgstr "%s%s Modification de révision"
+
+#~ msgid "Revision Submission Error"
+#~ msgstr "Erreur lors de l’envoi de la révision"
+
+#~ msgid "Approving the Revision..."
+#~ msgstr "Approbation de la révision…"
+
+#~ msgid "Edit Revision"
+#~ msgstr "Modifier la révision :"
+
+#, php-format
+#~ msgid "Update post before creating %s."
+#~ msgstr "Mettez à jour la publication avant de créer %s."
+
+#~ msgid "Error Creating Revision"
+#~ msgstr "Erreur pendant la création de la révision"
+
+#, php-format
+#~ msgid "For custom field changes, edit a scheduled %s."
+#~ msgstr ""
+#~ "Pour les modifications de champs personnalisés, modifiez une %s "
+#~ "programmée."
+
+#, php-format
+#~ msgid "[%s] Revision Approval Notice"
+#~ msgstr "[%s] Notification d’approbation de révision"
+
+#, php-format
+#~ msgid "A revision to the %1$s \"%2$s\" has been approved."
+#~ msgstr "Une révision de la %1$s « %2$s » a été approuvée."
+
+#, php-format
+#~ msgid "The submitter was %1$s."
+#~ msgstr "Le demandeur était %1$s."
+
+#, php-format
+#~ msgid "It will be published on %s"
+#~ msgstr "Elle sera publiée le %s"
+
+#~ msgid "Preview it here: "
+#~ msgstr "Prévisualisez-le ici : "
+
+#~ msgid "Editor: "
+#~ msgstr "Éditeur/éditrice : "
+
+#~ msgid "View it online: "
+#~ msgstr "Voir en ligne : "
+
+#, php-format
+#~ msgid "The revision you submitted for the %1$s \"%2$s\" has been approved."
+#~ msgstr "La demande de révision pour %1$s « %2$s » a été traitée."
+
+#, php-format
+#~ msgid "[%s] %s Publication Notice"
+#~ msgstr "[%s] %s Notification de publication"
+
+#, php-format
+#~ msgid ""
+#~ "The scheduled revision you submitted for the %1$s \"%2$s\" has been "
+#~ "published."
+#~ msgstr ""
+#~ "Votre demande de révision planifiée pour %1$s « %2$s » a été publiée."
+
+#, php-format
+#~ msgid "A scheduled revision to your %1$s \"%2$s\" has been published."
+#~ msgstr ""
+#~ "Une demande de révision planifiée pour votre %1$s « %2$s » a été publiée."
+
+#, php-format
+#~ msgid "It was submitted by %1$s."
+#~ msgstr "Envoyé par %1$s."
+
+#, php-format
+#~ msgid "[%s] %s Publication"
+#~ msgstr "[%s] %s Publication"
+
+#, php-format
+#~ msgid "A scheduled revision to the %1$s \"%2$s\" has been published."
+#~ msgstr ""
+#~ "Une demande de révision planifiée pour votre %1$s « %2$s » a été publiée."
+
+#~ msgid "You are not allowed to manage revisions."
+#~ msgstr "Vous n’avez pas l’autorisation de gérer les révisions."
+
+#, php-format
+#~ msgid "%s and %s are both disabled. See Revisions > Settings."
+#~ msgstr "%s et %s sont toutes deux désactivées. Voir Révisions > Réglages."
+
+#, php-format
+#~ msgid "%s revision declined."
+#~ msgstr "%s révision refusée."
+
+#, php-format
+#~ msgid "%s revision approved."
+#~ msgstr "%s révision approuvée."
+
+#, php-format
+#~ msgid "%s revision unscheduled."
+#~ msgstr "%s révision non planifiée."
+
+#, php-format
+#~ msgid "%s revision permanently deleted."
+#~ msgstr "%s révision supprimée définitivement."
+
+#, php-format
+#~ msgid "Revision Queue %s"
+#~ msgstr "File d’attente de révision %s"
+
+#~ msgid "Undo"
+#~ msgstr "Rétablir"
+
+#~ msgid "Publishers will be notified (but cannot be selected here)."
+#~ msgstr ""
+#~ "Les éditeurs et les éditrices seront avisé(e)s (mais ne peuvent pas être "
+#~ "sélectionné(e)s ici)."
+
+#~ msgid "No email notifications will be sent."
+#~ msgstr "Aucune notification par e-mail ne sera envoyée."
+
+#, php-format
+#~ msgid "%1$s (Current)"
+#~ msgstr "%1$s (Courant)"
+
+#, php-format
+#~ msgid "%1$s (Autosave)"
+#~ msgstr "%1$s (Sauvegarde automatique)"
+
+#, php-format
+#~ msgid ""
+#~ "%1$s <span class=\"rvy-revision-pubish-date\">(Requested publication: "
+#~ "%2$s)</span>"
+#~ msgstr ""
+#~ "%1$s <span class=\"rvy-revision-pubish-date\">(Publication demandée : "
+#~ "%2$s)</span>"
+
+#, php-format
+#~ msgid ""
+#~ "%1$s <span class=\"rvy-revision-pubish-date\">(Publish date: %2$s)</span>"
+#~ msgstr ""
+#~ "%1$s <span class=\"rvy-revision-pubish-date\">(Date de publication : "
+#~ "%2$s)</span>"
+
+#, php-format
+#~ msgid "Preview &#8220;%s&#8221;"
+#~ msgstr "Aperçu de « %s »"
+
+#~ msgid "The revision will be deleted. Are you sure?"
+#~ msgstr "La publication sera supprimée. Confirmez-vous ?"
+
+#~ msgid "Modified Date"
+#~ msgstr "Date de modification"
+
+#~ msgid "Actions"
+#~ msgstr "Actions"
+
+#~ msgid "Bulk Actions"
+#~ msgstr "Actions groupées"
+
+#~ msgid ""
+#~ "<strong>Note:</strong> For visual display of revisions, add the following "
+#~ "code to foliopress-wysiwyg.php:<br />&nbsp;&nbsp;if "
+#~ "( strpos( $_SERVER['REQUEST_URI'], 'admin.php?page=rvy-revisions' ) ) "
+#~ "return;"
+#~ msgstr ""
+#~ "<strong>Note :</strong> Pour l’affichage visuel des révisions, ajoutez le "
+#~ "code suivant à foliopress-wysiwyg.php : <br />if "
+#~ "( strpos( $_SERVER[’REQUEST_URI’], ’admin.php?page=rvy-revisions’) ) "
+#~ "return ;"
+
+#~ msgid "No revision specified."
+#~ msgstr "Aucune révision spécifié."
+
+#~ msgid "Past"
+#~ msgstr "Précédentes"
+
+#~ msgid "Pending"
+#~ msgstr "En attente"
+
+#, php-format
+#~ msgid "Revisions of %s"
+#~ msgstr "Révisions de %s"
+
+#~ msgid "The requested revision does not exist."
+#~ msgstr "La révision demandée n’existe pas."
+
+#~ msgid "Past Revisions"
+#~ msgstr "Révisions précédentes"
+
+#, php-format
+#~ msgid "%1$s %2$s (%3$s)%4$s"
+#~ msgstr "%1$s %2$s (%3$s)%4$s"
+
+#, php-format
+#~ msgid "no %s revisions available."
+#~ msgstr "aucune révision %s disponible."
+
+#, php-format
+#~ msgid "%1$s queries in %2$s seconds. %3$s MB used."
+#~ msgstr "%1$s requêtes en %2$s secondes. %3$s Mo utilisé."
+
+#, php-format
+#~ msgid "PublishPress Revisions requires PHP version %s or higher."
+#~ msgstr ""
+#~ "PublishPress Revisions nécessite la version %s de PHP ou supérieure."
+
+#, php-format
+#~ msgid "PublishPress Revisions requires WordPress version %s or higher."
+#~ msgstr ""
+#~ "PublishPress Revisions nécessite la version WordPress %s ou supérieure."
+
+#~ msgid "Not validated yet"
+#~ msgstr "Pas encore validé"
+
+#, php-format
+#~ msgid ""
+#~ "Hey, you've been using %1$s for %2$s on your site. We hope the plugin has "
+#~ "been useful. Please could you quickly leave a 5-star rating on "
+#~ "WordPress.org? It really does help to keep %1$s growing."
+#~ msgstr ""
+#~ "Vous avez utilisé %1$s pour %2$s sur votre site. Nous espérons que "
+#~ "l’extension vous a été utile. Pourriez-vous laisser une note de 5 étoiles "
+#~ "sur WordPress.org ? Cela nous aidera vraiment à faire grandir %1$s."
+
+#~ msgid "1 week"
+#~ msgstr "1 semaine"
+
+#~ msgid "1 month"
+#~ msgstr "1 mois"
+
+#~ msgid "3 months"
+#~ msgstr "3 mois"
+
+#, php-format
+#~ msgid "Click here to add your rating for %s"
+#~ msgstr "Cliquez ici pour ajouter votre note pour %s"
+
+#~ msgid "Maybe later"
+#~ msgstr "Peut-être plus tard"
+
+#~ msgid "I already did"
+#~ msgstr "Je l’ai déjà fait"
+
+#~ msgid "View Knowledge Base"
+#~ msgstr "Voir la base de connaissances"
+
+#~ msgid "Detailed documentation is also available on the plugin website."
+#~ msgstr ""
+#~ "Une documentation détaillée est également disponible sur le site de "
+#~ "l’extension."
+
+#~ msgid "If you need help or have a new feature request, let us know."
+#~ msgstr ""
+#~ "Si vous avez besoin d’aide ou si vous avez une nouvelle demande de "
+#~ "fonctionnalité, faites-le nous savoir."
+
+#~ msgid "Need PublishPress Revisions Support?"
+#~ msgstr "Avez-vous besoin du support de Publishpress Revisions ?"
+
+#~ msgid "plugin integration details..."
+#~ msgstr "détails de l’intégration de l’extension…"
+
+#~ msgid "WPML"
+#~ msgstr "WPML"
+
+#~ msgid "WooCommerce"
+#~ msgstr "WooCommerce"
+
+#~ msgid "Pods"
+#~ msgstr "Pods"
+
+#~ msgid "Advanced Custom Fields"
+#~ msgstr "Advanced Custom Fields"
+
+#~ msgid "Divi Builder"
+#~ msgstr "Divi Builder"
+
+#~ msgid ""
+#~ "Upgrade to PublishPress Revisions Pro for integration with key features "
+#~ "of these plugins:"
+#~ msgstr ""
+#~ "Passez à PublishPress Revisions Pro pour intégrer les principales "
+#~ "fonctionnalités de ces extensions :"
+
+#~ msgctxt "opentag option_tabname closetag (explanatory note)"
+#~ msgid "%1$s%2$s%3$s (%4$s)"
+#~ msgstr "%1$s%2$s%3$s (%4$s)"
+
+#~ msgid "Scheduled Changes <span class=\"count\">(%d)</span>"
+#~ msgid_plural "Scheduled Changes <span class=\"count\">(%d)</span>"
+#~ msgstr[0] "Modification planifiée <span class=\"count\">(%d)</span>"
+#~ msgstr[1] "Modifications planifiées <span class=\"count\">(%d)</span>"
+
+#~ msgid "%sRevisions to My Posts%s(%s)</span>"
+#~ msgid_plural "%sRevisions to My Posts%s(%s)"
+#~ msgstr[0] "%sRévision de ma publications%s(%s)</span>"
+#~ msgstr[1] "%sRévisions de mes publications%s(%s)"
+
+#~ msgid "%sMy Revisions%s(%s)</span>"
+#~ msgid_plural "%sMy Revisions%s(%s)</span>"
+#~ msgstr[0] "%sMa révision%s(%s)</span>"
+#~ msgstr[1] "%sMes révisions%s(%s)</span>"
+
+#~ msgid "%sMy Copies & Changes%s(%s)</span>"
+#~ msgid_plural "%sMy Copies & Changes%s(%s)</span>"
+#~ msgstr[0] "%sMes copies et modifications%s(%s)</span>"
+#~ msgstr[1] "%sMes copies et modifications%s(%s)</span>"
+
+#~ msgid "Submitted for Approval <span class=\"count\">(%s)</span>"
+#~ msgid_plural "Submitted for Approval <span class=\"count\">(%s)</span>"
+#~ msgstr[0] "Envoyée pour approbation <span class=\"count\">(%s)</span>"
+#~ msgstr[1] "Envoyées pour approbation <span class=\"count\">(%s)</span>"
+
+#~ msgid "Not Submitted for Approval <span class=\"count\">(%s)</span>"
+#~ msgid_plural "Not Submitted for Approval <span class=\"count\">(%s)</span>"
+#~ msgstr[0] "Non envoyée pour l’approbation <span class=\"count\">(%s)</span>"
+#~ msgstr[1] ""
+#~ "Non envoyées pour l’approbation <span class=\"count\">(%s)</span>"
+
+#~ msgid "Change Requests <span class=\"count\">(%d)</span>"
+#~ msgid_plural "Change Requests <span class=\"count\">(%d)</span>"
+#~ msgstr[0] "Demande de modification <span class=\"count\">(%d)</span>"
+#~ msgstr[1] "Demandes de modification <span class=\"count\">(%d)</span>"
+
+#~ msgid "Working Copies <span class=\"count\">(%d)</span>"
+#~ msgid_plural "Working Copies <span class=\"count\">(%d)</span>"
+#~ msgstr[0] "Copie de travail <span class=\"count\">(%d)</span>"
+#~ msgstr[1] "Copies de travail <span class=\"count\">(%d)</span>"
+
+#~ msgctxt "PublishedPostName (other filter captions)"
+#~ msgid "Revision Queue for \"%s\"%s"
+#~ msgstr "File d’attente de révision pour « %s »%s"
+
+#~ msgctxt "Posts / Pages / etc."
+#~ msgid "of %s"
+#~ msgstr "de %s"
+
+#~ msgctxt "Author Name"
+#~ msgid "%s: "
+#~ msgstr "%s : "
+
+#~ msgctxt "User role"
+#~ msgid "Revisor"
+#~ msgstr "Relecteur/relectrice"
+
+#~ msgctxt "revision date short format"
+#~ msgid "j M @ H:i"
+#~ msgstr "j M @ H:i"
+
+#~ msgctxt "revision date short format"
+#~ msgid "j M @ g:i a"
+#~ msgstr "M j, Y @ g:i a"
+
+#~ msgid "Scheduled Revision <span class=\"count\">(%s)</span>"
+#~ msgid_plural "Scheduled Revisions <span class=\"count\">(%s)</span>"
+#~ msgstr[0] "Révision planifiée <span class=\"count\">(%s)</span>"
+#~ msgstr[1] "Révisions planifiées <span class=\"count\">(%s)</span>"
+
+#~ msgid "<strong>This plugin can be deleted.</strong>"
+#~ msgstr "<strong>Cette extension peut être supprimée.</strong>"
+
+#~ msgctxt "post revision"
+#~ msgid "%1$s by %2$s"
+#~ msgstr "%1$s par %2$s"
+
+#~ msgctxt "revision schedule date format"
+#~ msgid "j F, Y, g:i a"
+#~ msgstr "j F, Y, g : i a"
+
+#~ msgctxt "revision date format"
+#~ msgid "j F, Y @ g:i a"
+#~ msgstr "j F, Y @ g:i a"

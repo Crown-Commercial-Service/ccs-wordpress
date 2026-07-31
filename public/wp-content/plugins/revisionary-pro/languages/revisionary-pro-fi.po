@@ -1,0 +1,488 @@
+# Copyright (C) 2026 PublishPress
+# This file is distributed under the same license as the PublishPress Revisions Pro plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: PublishPress Revisions Pro 3.8.0-rc\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/project\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-04-03T22:24:42+00:00\n"
+"PO-Revision-Date: 2026-07-27 19:03+0000\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: revisionary-pro\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: fi\n"
+
+#: revisionary-pro.php:3
+#. Plugin Name of the plugin
+msgid "PublishPress Revisions Pro"
+msgstr "PublishPress Revisions Pro"
+
+#: revisionary-pro.php:4, fuzzy
+#. Plugin URI of the plugin
+msgid "https://publishpress.com/revisionary/"
+msgstr "https://publishpress.com/revisionary/"
+
+#: revisionary-pro.php:5
+#. Description of the plugin
+msgid ""
+"Maintain published content with teamwork and precision using the Revisions "
+"model to submit, approve and schedule changes."
+msgstr ""
+"Ylläpidä julkaistua sisältöä tiimityön ja tarkkuuden avulla käyttämällä "
+"Revision-mallia muutosten lähettämiseen, hyväksymiseen ja "
+"aikatauluttamiseen."
+
+#: revisionary-pro.php:6
+#. Author of the plugin
+msgid "PublishPress"
+msgstr "PublishPress"
+
+#: revisionary-pro.php:7, fuzzy
+#. Author URI of the plugin
+msgid "https://publishpress.com"
+msgstr "https://publishpress.com"
+
+#: includes-pro/admin-load.php:71
+msgid "Current Post"
+msgstr "Nykyinen kirjoitus"
+
+#: includes-pro/compat.php:411
+msgid "Featured Image"
+msgstr "Esittelykuva"
+
+#: includes-pro/compat.php:587
+msgid "Requested Slug"
+msgstr "Pyydetty slug"
+
+#: includes-pro/compat.php:590
+msgid "Beaver Builder Data"
+msgstr "Beaver Builder -data"
+
+#: includes-pro/compat.php:591
+msgid "Beaver Builder Settings"
+msgstr "Beaver Builder -asetukset"
+
+#: includes-pro/compat.php:595
+msgid "Author(s)"
+msgstr "Kirjoittaja(t)"
+
+#: includes-pro/compat/beaver-builder.php:121
+#: includes-pro/compat/divi.php:106
+#: includes-pro/compat/divi.php:107
+#: includes-pro/compat/elementor.php:1054
+msgid "Approve"
+msgstr "Hyväksy"
+
+#: includes-pro/compat/beaver-builder.php:212, fuzzy
+msgid "Beaver Builder"
+msgstr "Beaver Builder"
+
+#: includes-pro/compat/divi.php:211
+#: includes-pro/compat/divi.php:212, fuzzy
+msgid "Divi"
+msgstr "Divi"
+
+#: includes-pro/compat/elementor.php:599
+msgid "Generate CSS file for revision if needed"
+msgstr "Luo CSS-tiedosto revision varalta, jos tarpeen"
+
+#: includes-pro/compat/elementor.php:600
+msgid "Also generate CSS for published pages"
+msgstr "Luo myös CSS julkaistuille sivuille"
+
+#: includes-pro/compat/elementor.php:601
+msgid "Auto-submit Template Revisions"
+msgstr "Auto-lähetä mallin revisions"
+
+#: includes-pro/compat/elementor.php:602
+msgid "Send notifications for auto-submitted Template Revisions"
+msgstr "Lähetä ilmoituksia automaattisesti lähetetyistä mallin revisions"
+
+#: includes-pro/compat/elementor.php:603
+msgid "Send notifications when a Template Revision is updated"
+msgstr "Lähetä ilmoituksia, kun mallin revision päivitys tapahtuu"
+
+#: includes-pro/compat/elementor.php:604
+msgid "Redirect to preview after editing a revision"
+msgstr "Ohjaa esikatseluun revision muokkaamisen jälkeen"
+
+#: includes-pro/compat/elementor.php:605
+msgid "Generate CSS file for revision templates"
+msgstr "Generoi CSS-tiedosto tarkistusmalleille"
+
+#: includes-pro/compat/elementor.php:606
+msgid "Fully clear Elementor cache at revision publication"
+msgstr "Tyhjennä Elementor-välimuisti täysin tarkistuksen julkaisemisen yhteydessä"
+
+#: includes-pro/compat/elementor.php:625
+#: includes-pro/compat/elementor.php:648, fuzzy
+msgid "Elementor:"
+msgstr "Elementor:"
+
+#: includes-pro/compat/elementor.php:635
+msgid ""
+"NOTE: You will also need to enable Elementor > Settings > Advanced > CSS "
+"Print Method > External."
+msgstr ""
+"HUOM: Sinun on myös otettava käyttöön Elementor > Asetukset > Laajennettu > "
+"CSS-tulostusmenetelmä > Ulkoinen."
+
+#: includes-pro/compat/elementor.php:637
+msgid "Disable this setting if there is any problem with front end styling."
+msgstr "Poista tämä asetus käytöstä, jos etusivun tyylittelyssä on ongelmia."
+
+#: includes-pro/compat/elementor.php:643
+msgid "Leave this disabled for better performance if possible."
+msgstr ""
+"Pidä tämä asetuksena pois käytöstä paremman suorituskyvyn vuoksi, jos "
+"mahdollista."
+
+#: includes-pro/compat/elementor.php:658
+msgid ""
+"Redirect to preview if the revision is updated at least 15 seconds after "
+"loading the Elementor editor. This redirect relies on detection of UI "
+"messaging elements. Disable it here if it is triggered improperly"
+msgstr ""
+"Ohjaa esikatseluun, jos tarkistus päivitetään vähintään 15 sekuntia "
+"Elementor-editorin lataamisen jälkeen. Tämä ohjaus perustuu käyttöliittymän "
+"viestintäelementtien tunnistamiseen. Poista se käytöstä täällä, jos se "
+"laukaisee väärin"
+
+#: includes-pro/compat/elementor.php:996
+msgid "Approval done."
+msgstr "Hyväksyntä tehty."
+
+#: includes-pro/compat/elementor.php:998
+msgid "Revision updated."
+msgstr "Tarkistus päivitetty."
+
+#: includes-pro/compat/elementor.php:1027
+#: includes-pro/compat/elementor.php:1028, fuzzy
+msgid "Elementor"
+msgstr "Elementor"
+
+#: includes-pro/compat/elementor.php:1044
+msgid "Submit"
+msgstr "Lähetä"
+
+#: includes-pro/compat/elementor.php:1046
+#: includes-pro/compat/elementor.php:1056
+#: includes-pro/compat/elementor.php:1062
+#: includes-pro/compat/elementor.php:1066
+msgid "Update"
+msgstr "Päivitä"
+
+#: includes-pro/compat/elementor.php:1054
+msgid "Publish"
+msgstr "Julkaise"
+
+#: includes-pro/compat/wpml-translation-management.php:121
+#, php-format
+msgid "WPML Translation Management: %s translation flagged."
+msgid_plural "WPML Translation Management: %s translations flagged."
+msgstr[0] "WPML Käännösjohto: %s käännös merkitty."
+msgstr[1] "WPML Käännösjohto: %s käännöstä merkitty."
+
+#: includes-pro/compat/wpml-translation-management.php:123
+msgid "WPML Translation Management: Flags already synchronized"
+msgstr "WPML Käännösjohto: Liput on jo synkronoitu"
+
+#: includes-pro/NotificationDefaults.php:298
+msgid "New Revision created"
+msgstr "Uusi tarkistus luotu"
+
+#: includes-pro/NotificationDefaults.php:344
+msgid "Revision submitted"
+msgstr "Tarkistus lähetetty"
+
+#: includes-pro/NotificationDefaults.php:396
+msgid "Revision deferred or rejected"
+msgstr "Tarkistus siirretty tai hylätty"
+
+#: includes-pro/NotificationDefaults.php:455
+msgid "Revision scheduled"
+msgstr "Tarkistus aikataulutettu"
+
+#: includes-pro/NotificationDefaults.php:506
+msgid "Revision published"
+msgstr "Tarkistus julkaistu"
+
+#: includes-pro/NotificationDefaults.php:558
+msgid "Revision applied"
+msgstr "Muutos sovellettu"
+
+#: includes-pro/NotificationDefaults.php:610
+msgid "Scheduled Revision published"
+msgstr "Aikataulutettu muutos julkaistu"
+
+#: includes-pro/NotificationDefaults.php:656
+msgid "Revision status changed"
+msgstr "Muutosstatus muuttunut"
+
+#: includes-pro/pro-load.php:132
+#, php-format
+msgid ""
+"To control revision editing and deletion, please set %1$sRevisions > Post "
+"Types > Compatibility Mode%2$s to \"Enhanced Revision access control\""
+msgstr ""
+"Muokkaamisen ja poistamisen hallitsemiseksi, aseta %1$sMuutokset > "
+"Julkaisutyypit > Yhteensopivuustila%2$s \"Parannettu pääsynhallinta "
+"muutoksiin\""
+
+#: includes-pro/pro-load.php:400
+#, php-format
+msgid "%sCompare%s%sView Current Draft%s"
+msgstr "%sVertaa%s%sNäytä nykyinen luonnos%s"
+
+#: includes-pro/pro-load.php:413
+#, php-format
+msgid "%sView Current Draft%s"
+msgstr "%sNäytä nykyinen luonnos%s"
+
+#: includes-pro/SettingsLicense.php:60
+#, php-format
+msgid ""
+"Your license key has expired. For continued priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr ""
+"Lisenssiavaimesi on vanhentunut. Jatkuvaa ensisijaista tukea varten, <a "
+"href=\"%s\">ole hyvä ja uusi</a>."
+
+#: includes-pro/SettingsLicense.php:71
+#, php-format
+msgid ""
+"Your license key will expire today. For updates and priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr ""
+"Lisenssiavaimesi vanhenee tänään. Päivityksiä ja ensisijaista tukea varten, "
+"<a href=\"%s\">ole hyvä ja uusi</a>."
+
+#: includes-pro/SettingsLicense.php:77
+#, php-format
+msgid ""
+"Your license key (for plugin updates) will expire in %d days. For updates "
+"and priority support, <a href=\"%s\">please renew</a>."
+msgstr ""
+"Lisenssiavain (laajennuspäivityksille) vanhenee %d päivän kuluttua. "
+"Päivityksiä ja ensisijaista tukea varten, <a href=\"%s\">ole hyvä ja "
+"uusi</a>."
+
+#: includes-pro/SettingsLicense.php:90
+#, php-format
+msgid ""
+"For updates to PublishPress Revisions Pro, activate your %sPublishPress "
+"license key%s."
+msgstr ""
+"Päivityksiä varten PublishPress Revisions Pro:ta varten, aktivoi "
+"%sPublishPress-lisenssiavain%s."
+
+#: includes-pro/SettingsLicense.php:103
+msgid "Key Expired"
+msgstr "Avain vanhentunut"
+
+#: includes-pro/SettingsLicense.php:106
+#: includes-pro/SettingsLicense.php:117
+#: includes-pro/SettingsLicense.php:226
+msgid "Deactivate Key"
+msgstr "Deaktivoi avain"
+
+#: includes-pro/SettingsLicense.php:109
+msgid "Key Activated"
+msgstr "Avain aktivoitu"
+
+#: includes-pro/SettingsLicense.php:110
+#: includes-pro/SettingsProUI.php:18
+msgid "License Key"
+msgstr "Lisenssiavain"
+
+#: includes-pro/SettingsLicense.php:117
+#: includes-pro/SettingsLicense.php:225
+msgid "Activate Key"
+msgstr "Aktivoi avain"
+
+#: includes-pro/SettingsLicense.php:125
+msgid "review your account info"
+msgstr "tarkista tili-informaasi"
+
+#: includes-pro/SettingsLicense.php:132
+msgid ""
+"note: Renewal does not require deactivation. If you do deactivate, re-entry "
+"of the license key will be required."
+msgstr ""
+"huom: Uusiminen ei vaadi deaktivointia. Jos deaktivoit, lisenssiavaimen "
+"syöttäminen uudelleen on tarpeen."
+
+#: includes-pro/SettingsLicense.php:136
+msgid ""
+"note: If you deactive, re-entry of the license key will be required for "
+"re-activation."
+msgstr ""
+"huom: Jos deaktivoit, lisenssiavaimen syöttäminen uudelleen on tarpeen "
+"uudelle aktivoimiselle."
+
+#: includes-pro/SettingsLicense.php:193
+#, fuzzy, php-format
+msgid "%1$s PublishPress Revisions Pro %2$s %3$s"
+msgstr "%1$s PublishPress Revisions Pro %2$s %3$s"
+
+#: includes-pro/SettingsLicense.php:194
+#, php-format
+msgid "%1$sInstalled Version:%2$s"
+msgstr "%1$sAsennettu versio:%2$s"
+
+#: includes-pro/SettingsLicense.php:201
+#, php-format
+msgid "view %s&nbsp;details"
+msgstr "näytä %s&nbsp;lisätietoja"
+
+#: includes-pro/SettingsLicense.php:211
+msgid "update check / install"
+msgstr "päivityksen tarkistus / asennus"
+
+#: includes-pro/SettingsLicense.php:227
+msgid "Connecting to publishpress.com server..."
+msgstr "Yhdistetään publishpress.com-palvelimeen..."
+
+#: includes-pro/SettingsLicense.php:228
+msgid "The request could not be processed due to a connection failure."
+msgstr "Pyyntöä ei voitu käsitellä yhteysvirheen vuoksi."
+
+#: includes-pro/SettingsLicense.php:229
+msgid "Please enter the license key shown on your order receipt."
+msgstr "Ole hyvä ja syötä tilauskuittisi osoittama lisenssiavain."
+
+#: includes-pro/SettingsLicense.php:230
+msgid "An unidentified error occurred."
+msgstr "Tuntematon virhe tapahtui."
+
+#: includes-pro/SettingsLicense.php:232
+msgid "The key has been deactivated."
+msgstr "Avain on poistettu käytöstä."
+
+#: includes-pro/SettingsLicense.php:233
+msgid "The key has been activated."
+msgstr "Avain on aktivoitu."
+
+#: includes-pro/SettingsLicense.php:234
+msgid "The key has expired."
+msgstr "Avain on vanhentunut."
+
+#: includes-pro/SettingsLicense.php:235
+msgid "The key is invalid."
+msgstr "Avain on virheellinen."
+
+#: includes-pro/SettingsLicense.php:236
+msgid "An unknown activation error occurred."
+msgstr "Tuntematon aktivointivirhe tapahtui."
+
+#: includes-pro/SettingsLicense.php:237
+msgid "The key provided is not valid. Please double-check your entry."
+msgstr "Annettua avainta ei voida hyväksyä. Ole hyvä ja tarkista syötteesi."
+
+#: includes-pro/SettingsLicense.php:238
+msgid "This site is not valid to activate the key."
+msgstr "Tämä sivusto ei ole voimassa avaimen aktivointiin."
+
+#: includes-pro/SettingsLicense.php:239
+#: includes-pro/SettingsLicense.php:245
+msgid "The key provided could not be validated by publishpress.com."
+msgstr "Annettua avainta ei voitu vahvistaa publishpress.com:illa."
+
+#: includes-pro/SettingsLicense.php:240
+msgid "The key provided is already active on another site."
+msgstr "Annettu avain on jo aktiivinen toisella sivustolla."
+
+#: includes-pro/SettingsLicense.php:241
+msgid "The key has already been activated on the allowed number of sites."
+msgstr "Avain on jo aktivoitu sallitulle sivustojen määrälle."
+
+#: includes-pro/SettingsLicense.php:242
+msgid "An unknown deactivation error occurred."
+msgstr "Tuntematon poistovirhe tapahtui."
+
+#: includes-pro/SettingsLicense.php:243
+msgid "Unable to deactivate because the provided key is not valid."
+msgstr "Poistaminen käytöstä ei onnistu, koska annettu avain ei ole voimassa."
+
+#: includes-pro/SettingsLicense.php:244
+msgid "This site is not valid to deactivate the key."
+msgstr "Tämä sivusto ei ole voimassa avaimen poistamiseen käytöstä."
+
+#: includes-pro/SettingsLicense.php:246
+msgid "The key provided is not active on the specified site."
+msgstr "Annettu avain ei ole aktiivinen määritetyllä sivustolla."
+
+#: includes-pro/SettingsLicense.php:251
+#, php-format
+msgid "If this is incorrect, <a href=\"%s\">request activation help</a>."
+msgstr "Jos tämä on virheellinen, <a href=\"%s\">pyydä aktivointiapua</a>."
+
+#: includes-pro/SettingsLicense.php:252
+msgid "Please save settings before uploading site configuration."
+msgstr "Tallenna asetukset ennen sivuston konfiguraation lataamista."
+
+#: includes-pro/SettingsProUI.php:16
+msgid "Use unfiltered preview links"
+msgstr "Käytä suodattamattomia esikatselulinkkejä"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Change Requests for Unpublished Posts"
+msgstr "Muutospyynnöt julkaisemattomille julkaisuilla"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Revision Submission for Unpublished Posts"
+msgstr "Muokkauslähetys julkaisemattomille julkaisuilla"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Change Request"
+msgstr "Julkaise muutospyynnön avulla"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Revision"
+msgstr "Julkaise muokkauksen avulla"
+
+#: includes-pro/SettingsProUI.php:28
+msgid "Prevent Redundant Revisions"
+msgstr "Estä tarpeettomat muokkaukset"
+
+#: includes-pro/SettingsProUI.php:52
+msgid ""
+"Approval of a Change Request to an unpublished post causes it to be "
+"published."
+msgstr ""
+"Muutospyynnön hyväksyminen julkaisemattomalle julkaisu aiheuttaa sen "
+"julkaisemisen."
+
+#: includes-pro/SettingsProUI.php:53
+msgid "Approval of a Revision to an unpublished post causes it to be published."
+msgstr ""
+"Muokkauksen hyväksyminen julkaisemattomalle julkaisu aiheuttaa sen "
+"julkaisemisen."
+
+#: includes-pro/SettingsProUI.php:75
+msgid ""
+"Some third party plugins (including WPML with language subdomains) may "
+"require this for compatibility."
+msgstr ""
+"Jotkin kolmannen osapuolen lisäosat (mukaan lukien WPML "
+"kielialidomeeneilla) saattavat vaatia tätä yhteensopivuuden vuoksi."
+
+#: includes-pro/SettingsProUI.php:83
+msgid ""
+"Prevent REST requests from generating revisions (which may be stored "
+"without ACF fields)."
+msgstr ""
+"Estä REST-pyyntöjen tuottamasta muokkauksista (jotka voidaan tallentaa "
+"ilman ACF-kenttiä)."
+
+#: includes-pro/SettingsProUI.php:91
+msgid ""
+"Revisors can request the deletion of a published post. The Deletion Queue "
+"is not shown until a deletion request exists."
+msgstr ""
+"Tarkistajat voivat pyytää julkaistun julkaisu poistamista. Poistojonoa ei "
+"näytetä ennen kuin poistopyyntö on olemassa."

@@ -1,0 +1,454 @@
+# Copyright (C) 2026 PublishPress
+# This file is distributed under the same license as the PublishPress Revisions Pro plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: PublishPress Revisions Pro 3.8.0-rc\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/project\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-04-03T22:24:42+00:00\n"
+"PO-Revision-Date: 2026-07-27 19:03+0000\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: revisionary-pro\n"
+"Language: ko_KR\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: revisionary-pro.php:3
+#. Plugin Name of the plugin
+msgid "PublishPress Revisions Pro"
+msgstr "PublishPress Revisions Pro"
+
+#: revisionary-pro.php:4, fuzzy
+#. Plugin URI of the plugin
+msgid "https://publishpress.com/revisionary/"
+msgstr "https://publishpress.com/revisionary/"
+
+#: revisionary-pro.php:5
+#. Description of the plugin
+msgid ""
+"Maintain published content with teamwork and precision using the Revisions "
+"model to submit, approve and schedule changes."
+msgstr "Revisions 모델을 사용하여 팀워크와 정밀도로 게시된 콘텐츠를 유지하고, 변경 사항을 제출, 승인 및 예약합니다."
+
+#: revisionary-pro.php:6
+#. Author of the plugin
+msgid "PublishPress"
+msgstr "PublishPress"
+
+#: revisionary-pro.php:7, fuzzy
+#. Author URI of the plugin
+msgid "https://publishpress.com"
+msgstr "https://publishpress.com"
+
+#: includes-pro/admin-load.php:71
+msgid "Current Post"
+msgstr "현재 게시물"
+
+#: includes-pro/compat.php:411
+msgid "Featured Image"
+msgstr "추천 이미지"
+
+#: includes-pro/compat.php:587
+msgid "Requested Slug"
+msgstr "요청된 슬러그"
+
+#: includes-pro/compat.php:590
+msgid "Beaver Builder Data"
+msgstr "Beaver Builder 데이터"
+
+#: includes-pro/compat.php:591
+msgid "Beaver Builder Settings"
+msgstr "Beaver Builder 설정"
+
+#: includes-pro/compat.php:595
+msgid "Author(s)"
+msgstr "작성자(들)"
+
+#: includes-pro/compat/beaver-builder.php:121
+#: includes-pro/compat/divi.php:106
+#: includes-pro/compat/divi.php:107
+#: includes-pro/compat/elementor.php:1054
+msgid "Approve"
+msgstr "승인"
+
+#: includes-pro/compat/beaver-builder.php:212, fuzzy
+msgid "Beaver Builder"
+msgstr "Beaver Builder"
+
+#: includes-pro/compat/divi.php:211
+#: includes-pro/compat/divi.php:212, fuzzy
+msgid "Divi"
+msgstr "Divi"
+
+#: includes-pro/compat/elementor.php:599
+msgid "Generate CSS file for revision if needed"
+msgstr "필요한 경우 수정에 대한 CSS 파일 생성"
+
+#: includes-pro/compat/elementor.php:600
+msgid "Also generate CSS for published pages"
+msgstr "게시된 페이지에 대한 CSS도 생성"
+
+#: includes-pro/compat/elementor.php:601
+msgid "Auto-submit Template Revisions"
+msgstr "템플릿 수정 자동 제출"
+
+#: includes-pro/compat/elementor.php:602
+msgid "Send notifications for auto-submitted Template Revisions"
+msgstr "자동 제출된 템플릿 수정에 대한 알림 전송"
+
+#: includes-pro/compat/elementor.php:603
+msgid "Send notifications when a Template Revision is updated"
+msgstr "템플릿 수정이 업데이트될 때 알림 전송"
+
+#: includes-pro/compat/elementor.php:604
+msgid "Redirect to preview after editing a revision"
+msgstr "수정을 편집한 후 미리보기로 리디렉션"
+
+#: includes-pro/compat/elementor.php:605
+msgid "Generate CSS file for revision templates"
+msgstr "수정 템플릿용 CSS 파일 생성"
+
+#: includes-pro/compat/elementor.php:606
+msgid "Fully clear Elementor cache at revision publication"
+msgstr "수정 게시 시 Elementor 캐시 완전히 지우기"
+
+#: includes-pro/compat/elementor.php:625
+#: includes-pro/compat/elementor.php:648, fuzzy
+msgid "Elementor:"
+msgstr "Elementor:"
+
+#: includes-pro/compat/elementor.php:635
+msgid ""
+"NOTE: You will also need to enable Elementor > Settings > Advanced > CSS "
+"Print Method > External."
+msgstr "참고: Elementor > 설정 > 고급 > CSS 인쇄 방법 > 외부를 활성화해야 합니다."
+
+#: includes-pro/compat/elementor.php:637
+msgid "Disable this setting if there is any problem with front end styling."
+msgstr "프론트 엔드 스타일링에 문제가 있는 경우 이 설정을 비활성화하세요."
+
+#: includes-pro/compat/elementor.php:643
+msgid "Leave this disabled for better performance if possible."
+msgstr "가능한 경우 성능 향상을 위해 이 설정을 비활성화 상태로 두세요."
+
+#: includes-pro/compat/elementor.php:658
+msgid ""
+"Redirect to preview if the revision is updated at least 15 seconds after "
+"loading the Elementor editor. This redirect relies on detection of UI "
+"messaging elements. Disable it here if it is triggered improperly"
+msgstr ""
+"Elementor 편집기를 로드한 후 최소 15초가 지나면 미리보기로 리디렉션합니다. 이 리디렉션은 UI 메시지 요소 감지에 "
+"의존합니다. 잘못 발동되면 여기서 비활성화하세요."
+
+#: includes-pro/compat/elementor.php:996
+msgid "Approval done."
+msgstr "승인 완료."
+
+#: includes-pro/compat/elementor.php:998
+msgid "Revision updated."
+msgstr "수정 업데이트됨."
+
+#: includes-pro/compat/elementor.php:1027
+#: includes-pro/compat/elementor.php:1028, fuzzy
+msgid "Elementor"
+msgstr "Elementor"
+
+#: includes-pro/compat/elementor.php:1044
+msgid "Submit"
+msgstr "제출"
+
+#: includes-pro/compat/elementor.php:1046
+#: includes-pro/compat/elementor.php:1056
+#: includes-pro/compat/elementor.php:1062
+#: includes-pro/compat/elementor.php:1066
+msgid "Update"
+msgstr "업데이트"
+
+#: includes-pro/compat/elementor.php:1054
+msgid "Publish"
+msgstr "게시"
+
+#: includes-pro/compat/wpml-translation-management.php:121
+#, php-format
+msgid "WPML Translation Management: %s translation flagged."
+msgid_plural "WPML Translation Management: %s translations flagged."
+msgstr[0] "WPML 번역 관리: %s 번역이 플래그가 지정되었습니다."
+
+#: includes-pro/compat/wpml-translation-management.php:123
+msgid "WPML Translation Management: Flags already synchronized"
+msgstr "WPML 번역 관리: 플래그가 이미 동기화되었습니다"
+
+#: includes-pro/NotificationDefaults.php:298
+msgid "New Revision created"
+msgstr "새로운 수정이 생성되었습니다"
+
+#: includes-pro/NotificationDefaults.php:344
+msgid "Revision submitted"
+msgstr "수정이 제출되었습니다"
+
+#: includes-pro/NotificationDefaults.php:396
+msgid "Revision deferred or rejected"
+msgstr "수정이 연기되거나 거부되었습니다"
+
+#: includes-pro/NotificationDefaults.php:455
+msgid "Revision scheduled"
+msgstr "수정이 예정되었습니다"
+
+#: includes-pro/NotificationDefaults.php:506
+msgid "Revision published"
+msgstr "수정이 게시되었습니다"
+
+#: includes-pro/NotificationDefaults.php:558
+msgid "Revision applied"
+msgstr "수정이 적용되었습니다"
+
+#: includes-pro/NotificationDefaults.php:610
+msgid "Scheduled Revision published"
+msgstr "일정된 수정이 게시되었습니다"
+
+#: includes-pro/NotificationDefaults.php:656
+msgid "Revision status changed"
+msgstr "수정 상태가 변경되었습니다"
+
+#: includes-pro/pro-load.php:132
+#, php-format
+msgid ""
+"To control revision editing and deletion, please set %1$sRevisions > Post "
+"Types > Compatibility Mode%2$s to \"Enhanced Revision access control\""
+msgstr "수정 편집 및 삭제를 제어하려면 %1$s수정 > 게시물 유형 > 호환성 모드%2$s를 \"향상된 수정 접근 제어\"로 설정하십시오"
+
+#: includes-pro/pro-load.php:400
+#, php-format
+msgid "%sCompare%s%sView Current Draft%s"
+msgstr "%s비교%s%s현재 초안 보기%s"
+
+#: includes-pro/pro-load.php:413
+#, php-format
+msgid "%sView Current Draft%s"
+msgstr "%s현재 초안 보기%s"
+
+#: includes-pro/SettingsLicense.php:60
+#, php-format
+msgid ""
+"Your license key has expired. For continued priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr "귀하의 라이선스 키가 만료되었습니다. 지속적인 우선 지원을 받으시려면 <a href=\"%s\">갱신해 주십시오</a>."
+
+#: includes-pro/SettingsLicense.php:71
+#, php-format
+msgid ""
+"Your license key will expire today. For updates and priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr "귀하의 라이선스 키가 오늘 만료됩니다. 업데이트 및 우선 지원을 받으시려면 <a href=\"%s\">갱신해 주십시오</a>."
+
+#: includes-pro/SettingsLicense.php:77
+#, php-format
+msgid ""
+"Your license key (for plugin updates) will expire in %d days. For updates "
+"and priority support, <a href=\"%s\">please renew</a>."
+msgstr ""
+"플러그인 업데이트용 라이센스 키가 %d일 후에 만료됩니다. 업데이트 및 우선 지원을 받으려면 <a href=\"%s\">갱신해 "
+"주십시오</a>."
+
+#: includes-pro/SettingsLicense.php:90
+#, php-format
+msgid ""
+"For updates to PublishPress Revisions Pro, activate your %sPublishPress "
+"license key%s."
+msgstr "PublishPress Revisions Pro의 업데이트를 위해 %sPublishPress 라이선스 키%s를 활성화하십시오."
+
+#: includes-pro/SettingsLicense.php:103
+msgid "Key Expired"
+msgstr "키 만료됨"
+
+#: includes-pro/SettingsLicense.php:106
+#: includes-pro/SettingsLicense.php:117
+#: includes-pro/SettingsLicense.php:226
+msgid "Deactivate Key"
+msgstr "키 비활성화"
+
+#: includes-pro/SettingsLicense.php:109
+msgid "Key Activated"
+msgstr "키 활성화됨"
+
+#: includes-pro/SettingsLicense.php:110
+#: includes-pro/SettingsProUI.php:18
+msgid "License Key"
+msgstr "라이선스 키"
+
+#: includes-pro/SettingsLicense.php:117
+#: includes-pro/SettingsLicense.php:225
+msgid "Activate Key"
+msgstr "키 활성화"
+
+#: includes-pro/SettingsLicense.php:125
+msgid "review your account info"
+msgstr "계정 정보를 검토하십시오"
+
+#: includes-pro/SettingsLicense.php:132
+msgid ""
+"note: Renewal does not require deactivation. If you do deactivate, re-entry "
+"of the license key will be required."
+msgstr "참고: 갱신은 비활성화를 요구하지 않습니다. 비활성화하는 경우, 라이선스 키를 다시 입력해야 합니다."
+
+#: includes-pro/SettingsLicense.php:136
+msgid ""
+"note: If you deactive, re-entry of the license key will be required for "
+"re-activation."
+msgstr "참고: 비활성화하는 경우, 재활성을 위해 라이선스 키를 다시 입력해야 합니다."
+
+#: includes-pro/SettingsLicense.php:193
+#, fuzzy, php-format
+msgid "%1$s PublishPress Revisions Pro %2$s %3$s"
+msgstr "%1$s PublishPress Revisions Pro %2$s %3$s"
+
+#: includes-pro/SettingsLicense.php:194
+#, php-format
+msgid "%1$sInstalled Version:%2$s"
+msgstr "%1$s설치된 버전:%2$s"
+
+#: includes-pro/SettingsLicense.php:201
+#, php-format
+msgid "view %s&nbsp;details"
+msgstr "%s&nbsp;세부정보 보기"
+
+#: includes-pro/SettingsLicense.php:211
+msgid "update check / install"
+msgstr "업데이트 확인 / 설치"
+
+#: includes-pro/SettingsLicense.php:227
+msgid "Connecting to publishpress.com server..."
+msgstr "publishpress.com 서버에 연결 중..."
+
+#: includes-pro/SettingsLicense.php:228
+msgid "The request could not be processed due to a connection failure."
+msgstr "연결 실패로 인해 요청을 처리할 수 없습니다."
+
+#: includes-pro/SettingsLicense.php:229
+msgid "Please enter the license key shown on your order receipt."
+msgstr "주문 영수증에 표시된 라이센스 키를 입력해 주세요."
+
+#: includes-pro/SettingsLicense.php:230
+msgid "An unidentified error occurred."
+msgstr "알 수 없는 오류가 발생했습니다."
+
+#: includes-pro/SettingsLicense.php:232
+msgid "The key has been deactivated."
+msgstr "키가 비활성화되었습니다."
+
+#: includes-pro/SettingsLicense.php:233
+msgid "The key has been activated."
+msgstr "키가 활성화되었습니다."
+
+#: includes-pro/SettingsLicense.php:234
+msgid "The key has expired."
+msgstr "키가 만료되었습니다."
+
+#: includes-pro/SettingsLicense.php:235
+msgid "The key is invalid."
+msgstr "키가 유효하지 않습니다."
+
+#: includes-pro/SettingsLicense.php:236
+msgid "An unknown activation error occurred."
+msgstr "알 수 없는 활성화 오류가 발생했습니다."
+
+#: includes-pro/SettingsLicense.php:237
+msgid "The key provided is not valid. Please double-check your entry."
+msgstr "제공된 키가 유효하지 않습니다. 입력 내용을 다시 확인해 주세요."
+
+#: includes-pro/SettingsLicense.php:238
+msgid "This site is not valid to activate the key."
+msgstr "이 사이트는 키를 활성화하기 위한 유효한 사이트가 아닙니다."
+
+#: includes-pro/SettingsLicense.php:239
+#: includes-pro/SettingsLicense.php:245
+msgid "The key provided could not be validated by publishpress.com."
+msgstr "제공된 키가 publishpress.com에서 검증할 수 없습니다."
+
+#: includes-pro/SettingsLicense.php:240
+msgid "The key provided is already active on another site."
+msgstr "제공된 키는 다른 사이트에서 이미 활성화되어 있습니다."
+
+#: includes-pro/SettingsLicense.php:241
+msgid "The key has already been activated on the allowed number of sites."
+msgstr "키가 허용된 사이트 수에서 이미 활성화되었습니다."
+
+#: includes-pro/SettingsLicense.php:242
+msgid "An unknown deactivation error occurred."
+msgstr "알 수 없는 비활성화 오류가 발생했습니다."
+
+#: includes-pro/SettingsLicense.php:243
+msgid "Unable to deactivate because the provided key is not valid."
+msgstr "제공된 키가 유효하지 않아 비활성화할 수 없습니다."
+
+#: includes-pro/SettingsLicense.php:244
+msgid "This site is not valid to deactivate the key."
+msgstr "이 사이트는 키를 비활성화하기 위한 유효한 사이트가 아닙니다."
+
+#: includes-pro/SettingsLicense.php:246
+msgid "The key provided is not active on the specified site."
+msgstr "제공된 키는 지정된 사이트에서 활성화되어 있지 않습니다."
+
+#: includes-pro/SettingsLicense.php:251
+#, php-format
+msgid "If this is incorrect, <a href=\"%s\">request activation help</a>."
+msgstr "이 정보가 잘못되었다면, <a href=\"%s\">활성화 도움 요청</a>."
+
+#: includes-pro/SettingsLicense.php:252
+msgid "Please save settings before uploading site configuration."
+msgstr "사이트 구성을 업로드하기 전에 설정을 저장하십시오."
+
+#: includes-pro/SettingsProUI.php:16
+msgid "Use unfiltered preview links"
+msgstr "필터링되지 않은 미리보기 링크 사용"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Change Requests for Unpublished Posts"
+msgstr "게시되지 않은 게시물에 대한 변경 요청"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Revision Submission for Unpublished Posts"
+msgstr "게시되지 않은 게시물에 대한 수정 제출"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Change Request"
+msgstr "변경 요청으로 게시"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Revision"
+msgstr "수정으로 게시"
+
+#: includes-pro/SettingsProUI.php:28
+msgid "Prevent Redundant Revisions"
+msgstr "중복 수정을 방지"
+
+#: includes-pro/SettingsProUI.php:52
+msgid ""
+"Approval of a Change Request to an unpublished post causes it to be "
+"published."
+msgstr "게시되지 않은 게시물에 대한 변경 요청이 승인되면 게시됩니다."
+
+#: includes-pro/SettingsProUI.php:53
+msgid "Approval of a Revision to an unpublished post causes it to be published."
+msgstr "게시되지 않은 게시물에 대한 수정이 승인되면 게시됩니다."
+
+#: includes-pro/SettingsProUI.php:75
+msgid ""
+"Some third party plugins (including WPML with language subdomains) may "
+"require this for compatibility."
+msgstr "일부 서드파티 플러그인(WPML 언어 서브도메인 포함)은 호환성을 위해 이를 필요로 할 수 있습니다."
+
+#: includes-pro/SettingsProUI.php:83
+msgid ""
+"Prevent REST requests from generating revisions (which may be stored "
+"without ACF fields)."
+msgstr "REST 요청이 수정을 생성하지 않도록 방지합니다(ACF 필드 없이 저장될 수 있음)."
+
+#: includes-pro/SettingsProUI.php:91
+msgid ""
+"Revisors can request the deletion of a published post. The Deletion Queue "
+"is not shown until a deletion request exists."
+msgstr "검토자는 게시된 게시물의 삭제를 요청할 수 있습니다. 삭제 요청이 존재할 때까지 삭제 대기열은 표시되지 않습니다."

@@ -1,0 +1,488 @@
+# Copyright (C) 2026 PublishPress
+# This file is distributed under the same license as the PublishPress Revisions Pro plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: PublishPress Revisions Pro 3.8.0-rc\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/project\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-04-03T22:24:42+00:00\n"
+"PO-Revision-Date: 2026-07-27 19:03+0000\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: revisionary-pro\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: nl-NL\n"
+
+#: revisionary-pro.php:3
+#. Plugin Name of the plugin
+msgid "PublishPress Revisions Pro"
+msgstr "PublishPress Revisions Pro"
+
+#: revisionary-pro.php:4, fuzzy
+#. Plugin URI of the plugin
+msgid "https://publishpress.com/revisionary/"
+msgstr "https://publishpress.com/revisionary/"
+
+#: revisionary-pro.php:5
+#. Description of the plugin
+msgid ""
+"Maintain published content with teamwork and precision using the Revisions "
+"model to submit, approve and schedule changes."
+msgstr ""
+"Onderhoud gepubliceerde inhoud met teamwork en precisie door gebruik te "
+"maken van het Revisies-model om wijzigingen in te dienen, goed te keuren en "
+"te plannen."
+
+#: revisionary-pro.php:6
+#. Author of the plugin
+msgid "PublishPress"
+msgstr "PublishPress"
+
+#: revisionary-pro.php:7, fuzzy
+#. Author URI of the plugin
+msgid "https://publishpress.com"
+msgstr "https://publishpress.com"
+
+#: includes-pro/admin-load.php:71
+msgid "Current Post"
+msgstr "Huidige Bericht"
+
+#: includes-pro/compat.php:411
+msgid "Featured Image"
+msgstr "Uitgelichte Afbeelding"
+
+#: includes-pro/compat.php:587
+msgid "Requested Slug"
+msgstr "Aanvraag Slug"
+
+#: includes-pro/compat.php:590
+msgid "Beaver Builder Data"
+msgstr "Beaver Builder Gegevens"
+
+#: includes-pro/compat.php:591
+msgid "Beaver Builder Settings"
+msgstr "Beaver Builder Instellingen"
+
+#: includes-pro/compat.php:595
+msgid "Author(s)"
+msgstr "Auteur(s)"
+
+#: includes-pro/compat/beaver-builder.php:121
+#: includes-pro/compat/divi.php:106
+#: includes-pro/compat/divi.php:107
+#: includes-pro/compat/elementor.php:1054
+msgid "Approve"
+msgstr "Goedkeuren"
+
+#: includes-pro/compat/beaver-builder.php:212, fuzzy
+msgid "Beaver Builder"
+msgstr "Beaver Builder"
+
+#: includes-pro/compat/divi.php:211
+#: includes-pro/compat/divi.php:212, fuzzy
+msgid "Divi"
+msgstr "Divi"
+
+#: includes-pro/compat/elementor.php:599
+msgid "Generate CSS file for revision if needed"
+msgstr "Genereer CSS-bestand voor revisie indien nodig"
+
+#: includes-pro/compat/elementor.php:600
+msgid "Also generate CSS for published pages"
+msgstr "Genereer ook CSS voor gepubliceerde pagina's"
+
+#: includes-pro/compat/elementor.php:601
+msgid "Auto-submit Template Revisions"
+msgstr "Automatisch indienen van sjabloonrevisies"
+
+#: includes-pro/compat/elementor.php:602
+msgid "Send notifications for auto-submitted Template Revisions"
+msgstr "Stuur meldingen voor automatisch ingediende sjabloonrevisies"
+
+#: includes-pro/compat/elementor.php:603
+msgid "Send notifications when a Template Revision is updated"
+msgstr "Stuur meldingen wanneer een sjabloonrevisie wordt bijgewerkt"
+
+#: includes-pro/compat/elementor.php:604
+msgid "Redirect to preview after editing a revision"
+msgstr "Omleiden naar voorbeeld na het bewerken van een revisie"
+
+#: includes-pro/compat/elementor.php:605
+msgid "Generate CSS file for revision templates"
+msgstr "Genereer CSS-bestand voor revisiesjablonen"
+
+#: includes-pro/compat/elementor.php:606
+msgid "Fully clear Elementor cache at revision publication"
+msgstr "Leeg Elementor-cache volledig bij publicatie van revisie"
+
+#: includes-pro/compat/elementor.php:625
+#: includes-pro/compat/elementor.php:648, fuzzy
+msgid "Elementor:"
+msgstr "Elementor:"
+
+#: includes-pro/compat/elementor.php:635
+msgid ""
+"NOTE: You will also need to enable Elementor > Settings > Advanced > CSS "
+"Print Method > External."
+msgstr ""
+"OPMERKING: U moet ook Elementor > Instellingen > Geavanceerd > CSS "
+"Printmethode > Extern inschakelen."
+
+#: includes-pro/compat/elementor.php:637
+msgid "Disable this setting if there is any problem with front end styling."
+msgstr ""
+"Schakel deze instelling uit als er een probleem is met de styling aan de "
+"voorkant."
+
+#: includes-pro/compat/elementor.php:643
+msgid "Leave this disabled for better performance if possible."
+msgstr "Laat dit uitgeschakeld voor betere prestaties indien mogelijk."
+
+#: includes-pro/compat/elementor.php:658
+msgid ""
+"Redirect to preview if the revision is updated at least 15 seconds after "
+"loading the Elementor editor. This redirect relies on detection of UI "
+"messaging elements. Disable it here if it is triggered improperly"
+msgstr ""
+"Redirect naar voorbeeld als de revisie minstens 15 seconden na het laden "
+"van de Elementor-editor is bijgewerkt. Deze redirect is afhankelijk van de "
+"detectie van UI-messaging-elementen. Schakel het hier uit als het onterecht "
+"wordt geactiveerd"
+
+#: includes-pro/compat/elementor.php:996
+msgid "Approval done."
+msgstr "Goedkeuring voltooid."
+
+#: includes-pro/compat/elementor.php:998
+msgid "Revision updated."
+msgstr "Revisie bijgewerkt."
+
+#: includes-pro/compat/elementor.php:1027
+#: includes-pro/compat/elementor.php:1028, fuzzy
+msgid "Elementor"
+msgstr "Elementor"
+
+#: includes-pro/compat/elementor.php:1044
+msgid "Submit"
+msgstr "Indienen"
+
+#: includes-pro/compat/elementor.php:1046
+#: includes-pro/compat/elementor.php:1056
+#: includes-pro/compat/elementor.php:1062
+#: includes-pro/compat/elementor.php:1066
+msgid "Update"
+msgstr "Bijwerken"
+
+#: includes-pro/compat/elementor.php:1054
+msgid "Publish"
+msgstr "Publiceren"
+
+#: includes-pro/compat/wpml-translation-management.php:121
+#, php-format
+msgid "WPML Translation Management: %s translation flagged."
+msgid_plural "WPML Translation Management: %s translations flagged."
+msgstr[0] "WPML Vertaalbeheer: %s vertaling gemarkeerd."
+msgstr[1] "WPML Vertaalbeheer: %s vertalingen gemarkeerd."
+
+#: includes-pro/compat/wpml-translation-management.php:123
+msgid "WPML Translation Management: Flags already synchronized"
+msgstr "WPML Vertaalbeheer: Vlaggen al gesynchroniseerd"
+
+#: includes-pro/NotificationDefaults.php:298
+msgid "New Revision created"
+msgstr "Nieuwe revisie aangemaakt"
+
+#: includes-pro/NotificationDefaults.php:344
+msgid "Revision submitted"
+msgstr "Revisie ingediend"
+
+#: includes-pro/NotificationDefaults.php:396
+msgid "Revision deferred or rejected"
+msgstr "Revisie uitgesteld of afgewezen"
+
+#: includes-pro/NotificationDefaults.php:455
+msgid "Revision scheduled"
+msgstr "Revisie gepland"
+
+#: includes-pro/NotificationDefaults.php:506
+msgid "Revision published"
+msgstr "Revisie gepubliceerd"
+
+#: includes-pro/NotificationDefaults.php:558
+msgid "Revision applied"
+msgstr "Herziening toegepast"
+
+#: includes-pro/NotificationDefaults.php:610
+msgid "Scheduled Revision published"
+msgstr "Geplande herziening gepubliceerd"
+
+#: includes-pro/NotificationDefaults.php:656
+msgid "Revision status changed"
+msgstr "Herzieningsstatus gewijzigd"
+
+#: includes-pro/pro-load.php:132
+#, php-format
+msgid ""
+"To control revision editing and deletion, please set %1$sRevisions > Post "
+"Types > Compatibility Mode%2$s to \"Enhanced Revision access control\""
+msgstr ""
+"Om revisiebewerking en -verwijdering te beheren, stelt u %1$sRevisies > "
+"Berichten typen > Compatibiliteitsmodus%2$s in op \"Verbeterde toegang tot "
+"revisies\""
+
+#: includes-pro/pro-load.php:400
+#, php-format
+msgid "%sCompare%s%sView Current Draft%s"
+msgstr "%sVergelijk%s%sBekijk huidige concept%s"
+
+#: includes-pro/pro-load.php:413
+#, php-format
+msgid "%sView Current Draft%s"
+msgstr "%sBekijk huidige concept%s"
+
+#: includes-pro/SettingsLicense.php:60
+#, php-format
+msgid ""
+"Your license key has expired. For continued priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr ""
+"Uw licentiecode is verlopen. Voor voortdurende prioriteit ondersteuning, <a "
+"href=\"%s\">gelieve te vernieuwen</a>."
+
+#: includes-pro/SettingsLicense.php:71
+#, php-format
+msgid ""
+"Your license key will expire today. For updates and priority support, <a "
+"href=\"%s\">please renew</a>."
+msgstr ""
+"Uw licentiecode verloopt vandaag. Voor updates en prioriteit ondersteuning, "
+"<a href=\"%s\">gelieve te vernieuwen</a>."
+
+#: includes-pro/SettingsLicense.php:77
+#, php-format
+msgid ""
+"Your license key (for plugin updates) will expire in %d days. For updates "
+"and priority support, <a href=\"%s\">please renew</a>."
+msgstr ""
+"Uw licentiecode (voor plugin-updates) verloopt over %d dagen. Voor updates "
+"en prioritaire ondersteuning, <a href=\"%s\">gelieve te verlengen</a>."
+
+#: includes-pro/SettingsLicense.php:90
+#, php-format
+msgid ""
+"For updates to PublishPress Revisions Pro, activate your %sPublishPress "
+"license key%s."
+msgstr ""
+"Voor updates van PublishPress Revisions Pro, activeer uw %sPublishPress "
+"licentiecode%s."
+
+#: includes-pro/SettingsLicense.php:103
+msgid "Key Expired"
+msgstr "Sleutel verlopen"
+
+#: includes-pro/SettingsLicense.php:106
+#: includes-pro/SettingsLicense.php:117
+#: includes-pro/SettingsLicense.php:226
+msgid "Deactivate Key"
+msgstr "Deactiveer sleutel"
+
+#: includes-pro/SettingsLicense.php:109
+msgid "Key Activated"
+msgstr "Sleutel geactiveerd"
+
+#: includes-pro/SettingsLicense.php:110
+#: includes-pro/SettingsProUI.php:18
+msgid "License Key"
+msgstr "Licentiesleutel"
+
+#: includes-pro/SettingsLicense.php:117
+#: includes-pro/SettingsLicense.php:225
+msgid "Activate Key"
+msgstr "Activeer sleutel"
+
+#: includes-pro/SettingsLicense.php:125
+msgid "review your account info"
+msgstr "beoordeel uw accountinformatie"
+
+#: includes-pro/SettingsLicense.php:132
+msgid ""
+"note: Renewal does not require deactivation. If you do deactivate, re-entry "
+"of the license key will be required."
+msgstr ""
+"opmerking: Vernieuwing vereist geen deactivatie. Als u deactiveert, moet de "
+"licentiecode opnieuw worden ingevoerd."
+
+#: includes-pro/SettingsLicense.php:136
+msgid ""
+"note: If you deactive, re-entry of the license key will be required for "
+"re-activation."
+msgstr ""
+"opmerking: Als u deactiveert, moet de licentiecode opnieuw worden ingevoerd "
+"voor heractivatie."
+
+#: includes-pro/SettingsLicense.php:193
+#, fuzzy, php-format
+msgid "%1$s PublishPress Revisions Pro %2$s %3$s"
+msgstr "%1$s PublishPress Revisions Pro %2$s %3$s"
+
+#: includes-pro/SettingsLicense.php:194
+#, php-format
+msgid "%1$sInstalled Version:%2$s"
+msgstr "%1$sGeïnstalleerde versie:%2$s"
+
+#: includes-pro/SettingsLicense.php:201
+#, php-format
+msgid "view %s&nbsp;details"
+msgstr "bekijk %s&nbsp;details"
+
+#: includes-pro/SettingsLicense.php:211
+msgid "update check / install"
+msgstr "update controle / installeren"
+
+#: includes-pro/SettingsLicense.php:227
+msgid "Connecting to publishpress.com server..."
+msgstr "Verbinden met de publishpress.com server..."
+
+#: includes-pro/SettingsLicense.php:228
+msgid "The request could not be processed due to a connection failure."
+msgstr "Het verzoek kon niet worden verwerkt vanwege een verbindingsfout."
+
+#: includes-pro/SettingsLicense.php:229
+msgid "Please enter the license key shown on your order receipt."
+msgstr "Voer de licentiecode in die op uw bestelbon staat."
+
+#: includes-pro/SettingsLicense.php:230
+msgid "An unidentified error occurred."
+msgstr "Er is een niet-geïdentificeerde fout opgetreden."
+
+#: includes-pro/SettingsLicense.php:232
+msgid "The key has been deactivated."
+msgstr "De sleutel is gedeactiveerd."
+
+#: includes-pro/SettingsLicense.php:233
+msgid "The key has been activated."
+msgstr "De sleutel is geactiveerd."
+
+#: includes-pro/SettingsLicense.php:234
+msgid "The key has expired."
+msgstr "De sleutel is verlopen."
+
+#: includes-pro/SettingsLicense.php:235
+msgid "The key is invalid."
+msgstr "De sleutel is ongeldig."
+
+#: includes-pro/SettingsLicense.php:236
+msgid "An unknown activation error occurred."
+msgstr "Er is een onbekende activatiefout opgetreden."
+
+#: includes-pro/SettingsLicense.php:237
+msgid "The key provided is not valid. Please double-check your entry."
+msgstr "De opgegeven sleutel is niet geldig. Controleer uw invoer alstublieft."
+
+#: includes-pro/SettingsLicense.php:238
+msgid "This site is not valid to activate the key."
+msgstr "Deze site is niet geldig om de sleutel te activeren."
+
+#: includes-pro/SettingsLicense.php:239
+#: includes-pro/SettingsLicense.php:245
+msgid "The key provided could not be validated by publishpress.com."
+msgstr "De opgegeven sleutel kon niet worden gevalideerd door publishpress.com."
+
+#: includes-pro/SettingsLicense.php:240
+msgid "The key provided is already active on another site."
+msgstr "De opgegeven sleutel is al actief op een andere site."
+
+#: includes-pro/SettingsLicense.php:241
+msgid "The key has already been activated on the allowed number of sites."
+msgstr "De sleutel is al geactiveerd op het toegestane aantal sites."
+
+#: includes-pro/SettingsLicense.php:242
+msgid "An unknown deactivation error occurred."
+msgstr "Er is een onbekende deactivatiefout opgetreden."
+
+#: includes-pro/SettingsLicense.php:243
+msgid "Unable to deactivate because the provided key is not valid."
+msgstr "Kan niet deactiveren omdat de opgegeven sleutel ongeldig is."
+
+#: includes-pro/SettingsLicense.php:244
+msgid "This site is not valid to deactivate the key."
+msgstr "Deze site is niet geldig om de sleutel te deactiveren."
+
+#: includes-pro/SettingsLicense.php:246
+msgid "The key provided is not active on the specified site."
+msgstr "De opgegeven sleutel is niet actief op de opgegeven site."
+
+#: includes-pro/SettingsLicense.php:251
+#, php-format
+msgid "If this is incorrect, <a href=\"%s\">request activation help</a>."
+msgstr "Als dit onjuist is, <a href=\"%s\">vraag activatiehulp aan</a>."
+
+#: includes-pro/SettingsLicense.php:252
+msgid "Please save settings before uploading site configuration."
+msgstr "Sla de instellingen op voordat u de siteconfiguratie uploadt."
+
+#: includes-pro/SettingsProUI.php:16
+msgid "Use unfiltered preview links"
+msgstr "Gebruik ongefilterde voorbeeldlinks"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Change Requests for Unpublished Posts"
+msgstr "Veranderverzoeken voor niet-gepubliceerde berichten"
+
+#: includes-pro/SettingsProUI.php:24
+msgid "Revision Submission for Unpublished Posts"
+msgstr "Herzieningsindiening voor niet-gepubliceerde berichten"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Change Request"
+msgstr "Publiceren via veranderverzoek"
+
+#: includes-pro/SettingsProUI.php:25
+msgid "Publish by Revision"
+msgstr "Publiceren via herziening"
+
+#: includes-pro/SettingsProUI.php:28
+msgid "Prevent Redundant Revisions"
+msgstr "Voorkom overbodige herzieningen"
+
+#: includes-pro/SettingsProUI.php:52
+msgid ""
+"Approval of a Change Request to an unpublished post causes it to be "
+"published."
+msgstr ""
+"Goedkeuring van een wijzigingsverzoek voor een niet-gepubliceerd bericht "
+"zorgt ervoor dat het wordt gepubliceerd."
+
+#: includes-pro/SettingsProUI.php:53
+msgid "Approval of a Revision to an unpublished post causes it to be published."
+msgstr ""
+"Goedkeuring van een herziening voor een niet-gepubliceerd bericht zorgt "
+"ervoor dat het wordt gepubliceerd."
+
+#: includes-pro/SettingsProUI.php:75
+msgid ""
+"Some third party plugins (including WPML with language subdomains) may "
+"require this for compatibility."
+msgstr ""
+"Sommige plugins van derden (waaronder WPML met taalsubdomeinen) kunnen dit "
+"vereisen voor compatibiliteit."
+
+#: includes-pro/SettingsProUI.php:83
+msgid ""
+"Prevent REST requests from generating revisions (which may be stored "
+"without ACF fields)."
+msgstr ""
+"Voorkom dat REST-verzoeken revisies genereren (die mogelijk worden "
+"opgeslagen zonder ACF-velden)."
+
+#: includes-pro/SettingsProUI.php:91
+msgid ""
+"Revisors can request the deletion of a published post. The Deletion Queue "
+"is not shown until a deletion request exists."
+msgstr ""
+"Revisors kunnen verzoeken om de verwijdering van een gepubliceerd bericht. "
+"De Verwijderingswachtrij wordt niet weergegeven totdat er een "
+"verwijderverzoek bestaat."

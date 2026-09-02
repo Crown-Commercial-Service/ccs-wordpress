@@ -998,6 +998,9 @@ class WP_REST_Server {
 				$this->route_options[ $route ] = array();
 			}
 
+			if ( empty( $handlers ) || ! is_array( $handlers ) ) {
+				continue;
+			}
 			foreach ( $handlers as $key => &$handler ) {
 
 				if ( ! is_numeric( $key ) ) {
